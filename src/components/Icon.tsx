@@ -15,6 +15,7 @@ export type IconName =
   | 'skipBack'
   | 'skipForward'
   | 'play'
+  | 'pause'
   | 'video'
   | 'lock'
   | 'download'
@@ -129,6 +130,13 @@ export function Icon({ name, size = 20, color = '#9aa3b5', strokeWidth = 2, ...r
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
           <Path d="M7 5l13 7-13 7z" fill={color} />
+        </Svg>
+      );
+    case 'pause':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Rect x={6} y={5} width={4} height={14} rx={1} fill={color} />
+          <Rect x={14} y={5} width={4} height={14} rx={1} fill={color} />
         </Svg>
       );
     case 'video':

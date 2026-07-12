@@ -27,12 +27,15 @@ import {
   variationChord,
   type VariationId,
 } from '@/data/music';
+import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
-import { useEditorSession } from '@/features/editor/session';
+import { getSession, useEditorSession } from '@/features/editor/session';
 import { isLocked } from '@/lib/entitlements';
 import { logger } from '@/lib/logger';
 import { MAX_BARS, durationLabel, totalBars as calcTotalBars } from '@/lib/progression';
 import { useEntitlements } from '@/services/billing';
+import { audioService } from '@/services/audio';
+import type { PlaybackState } from '@/services/audio/types';
 import { colors, font, functionColor, primaryGradient, radius } from '@/theme/tokens';
 import type { ChordDuration, ChordFunction, LibraryChord, MajorKey } from '@/types';
 
@@ -94,6 +97,21 @@ export default function EditorScreen() {
     }
   }, [id]);
 
+  /* ---- audio engine lifecycle (mount → prepare, unmount → release) */
+  useEffect(() => {
+    audioService.prepare().catch((e) => logger.error('Audio prepare failed', { error: String(e) }));
+    const stateSub = audioService.addStateListener((e) => {
+      setPlaybackState(e.state);
+      if (e.state === 'stopped' || e.state === 'idle' || e.state === 'ready') setPlayingIndex(-1);
+    });
+    const posSub = audioService.addPositionListener((e) => setPlayingIndex(e.chordIndex));
+    return () => {
+      stateSub?.remove();
+      posSub?.remove();
+      audioService.teardown().catch(() => undefined);
+    };
+  }, []);
+
   /* ---- session-backed state (aliased for the render below) ------ */
   const key = s.key;
   const progression = s.progression;
@@ -106,7 +124,8 @@ export default function EditorScreen() {
   /* ---- UI-only local state -------------------------------------- */
   const [metronome, setMetronome] = useState(true);
   const [loop, setLoop] = useState(true);
-  const [playing, setPlaying] = useState(false);
+  const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
+  const [playingIndex, setPlayingIndex] = useState(-1);
   const [keyPickerOpen, setKeyPickerOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(true);
   const [tab, setTab] = useState<LibraryTab>('diatonic');
@@ -136,12 +155,36 @@ export default function EditorScreen() {
   const deleteSelected = session.deleteSelected;
   const undo = session.undo;
 
+  const isPlaying = playbackState === 'playing';
+
+  function togglePlayback() {
+    const s = getSession();
+    if (isPlaying) {
+      audioService.pause().catch((e) => logger.error('Audio pause failed', { error: String(e) }));
+      return;
+    }
+    if (playbackState === 'paused') {
+      audioService.resume().catch((e) => logger.error('Audio resume failed', { error: String(e) }));
+      return;
+    }
+    if (s.progression.length === 0) return;
+    audioService
+      .play(sessionToPlaybackRequest(s, loop))
+      .catch((e) => logger.error('Audio play failed', { error: String(e) }));
+  }
+
   function addChord(c: LibraryChord) {
     if (isLocked(c.isPro, ent)) {
       router.push('/paywall');
       return;
     }
     session.addChord(libToEvent(c));
+    // Audition the freshly added chord (skipped while the progression plays).
+    if (!isPlaying) {
+      audioService
+        .previewChord(chordPreviewRequest(c, getSession().key, getSession().tempoBpm))
+        .catch(() => undefined);
+    }
   }
 
   function setDuration(beats: ChordDuration) {
@@ -217,13 +260,17 @@ export default function EditorScreen() {
           <ToggleField label="ﾒﾄﾛﾉｰﾑ" value={metronome} onValueChange={setMetronome} />
           <ToggleField label="ループ" value={loop} onValueChange={setLoop} />
         </View>
-        <Pressable onPress={() => setPlaying((p) => !p)}>
+        <Pressable onPress={togglePlayback} disabled={progression.length === 0}>
           <LinearGradient
             colors={primaryGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={[styles.playBtn, playing && styles.playBtnActive]}>
-            <Icon name="play" size={22} color="#fff" />
+            style={[
+              styles.playBtn,
+              isPlaying && styles.playBtnActive,
+              progression.length === 0 && styles.playBtnDisabled,
+            ]}>
+            <Icon name={isPlaying ? 'pause' : 'play'} size={22} color="#fff" />
           </LinearGradient>
         </Pressable>
       </View>
@@ -267,6 +314,7 @@ export default function EditorScreen() {
                       styles.timeCard,
                       { borderLeftColor: functionColor[ev.function] },
                       i === selected && styles.timeCardSelected,
+                      i === playingIndex && styles.timeCardPlaying,
                     ]}>
                     <View style={styles.timeTop}>
                       <Text style={styles.timeName} numberOfLines={1}>
@@ -702,7 +750,8 @@ const styles = StyleSheet.create({
     shadowRadius: 14,
     shadowOffset: { width: 0, height: 8 },
   },
-  playBtnActive: { opacity: 0.85 },
+  playBtnActive: { opacity: 0.9 },
+  playBtnDisabled: { opacity: 0.4 },
 
   summaryRow: { flexDirection: 'row', gap: 8, marginBottom: 18 },
   summaryChip: {
@@ -767,6 +816,15 @@ const styles = StyleSheet.create({
     shadowColor: colors.primary,
     shadowOpacity: 0.35,
     shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  timeCardPlaying: {
+    borderColor: colors.success,
+    borderWidth: 1.5,
+    borderLeftWidth: 4,
+    shadowColor: colors.success,
+    shadowOpacity: 0.5,
+    shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
   },
   timeTop: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 4 },

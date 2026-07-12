@@ -134,6 +134,11 @@ function tonicPc(key: MajorKey): number {
   return NOTE_PC[MAJOR_SCALES[key][0]];
 }
 
+/** Pitch class (0 = C) of the key's tonic — used by audio voicing to build MIDI notes. */
+export function keyTonicPc(key: MajorKey): number {
+  return tonicPc(key);
+}
+
 /** Note name `offset` semitones above the tonic, spelled for the key. */
 export function noteAt(key: MajorKey, offset: number): string {
   return chromaticName(key, tonicPc(key) + offset);
