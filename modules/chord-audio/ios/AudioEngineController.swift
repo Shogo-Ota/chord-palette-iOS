@@ -149,6 +149,13 @@ final class AudioEngineController {
   // MARK: - Transport
 
   func play(bpm: Double, totalBeats: Double, loop: Bool, events: [NoteEventValue]) {
+    // §3.1: play() is a fresh-from-top playback, never a resume. It is only valid
+    // once the engine is prepared and from ready/playing/paused/stopped. From
+    // idle/preparing/failed it is a no-op (no state change, no onStateChange).
+    // Gate BEFORE taking the lock or building a snapshot.
+    guard prepared, state == .ready || state == .playing || state == .paused || state == .stopped else {
+      return
+    }
     let snapshot = PlanSnapshot(bpm: bpm, totalBeats: totalBeats, loop: loop, events: events)
     os_unfair_lock_lock(&unfairLock)
     plan = snapshot
@@ -186,6 +193,10 @@ final class AudioEngineController {
     }
     os_unfair_lock_unlock(&unfairLock)
     if canResume {
+      // Re-arm the engine in case the OS stopped it (interruption / config change)
+      // while paused. Called on the caller (main) thread, never the audio thread,
+      // and never inside the lock (engine.start() must not be held under the lock).
+      if !engine.isRunning { try? engine.start() }
       state = .playing
       startPositionTimer()
     }
@@ -247,7 +258,6 @@ final class AudioEngineController {
     os_unfair_lock_unlock(&unfairLock)
 
     var producedSound = false
-    var lastFrameAbs = base
 
     for frame in 0..<Int(frameCount) {
       let absoluteSample = sampleTime + Double(frame)
@@ -255,7 +265,6 @@ final class AudioEngineController {
 
       if playing, let snap = snap {
         let absFrame = absoluteSample - base
-        lastFrameAbs = absFrame
         let progression = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr)
         value += progression
       }
@@ -276,7 +285,11 @@ final class AudioEngineController {
 
     // Advance / expire preview under the lock.
     os_unfair_lock_lock(&unfairLock)
-    if playing { currentFrame = max(currentFrame, lastFrameAbs + Double(frameCount)) }
+    // UI-only position. Track the absolute playback frame at the END of this
+    // buffer ((sampleTime + frameCount) - base); no extra buffer-length offset so
+    // the displayed frame doesn't overshoot the audio by one buffer. max() keeps
+    // it monotonic. This value never feeds the audio clock (§4.2).
+    if playing { currentFrame = max(currentFrame, (sampleTime + Double(frameCount)) - base) }
     if previewActive, let pb = previewBase {
       let elapsed = (sampleTime + Double(frameCount) - pb) / sampleRate
       if elapsed >= previewDurationSec { previewActive = false }
@@ -300,6 +313,10 @@ final class AudioEngineController {
     let snap = plan
     let playing = isPlaying
     let sr = sampleRate
+    // Establish the shared base here too, using the SAME formula as renderChord,
+    // so whichever render callback runs first on a fresh start/resume pins the
+    // base; the other simply reads it. Prevents a one-buffer skew (§4.2).
+    if playing && baseSampleTime == nil { baseSampleTime = sampleTime - pausedFrames }
     let base = baseSampleTime ?? sampleTime
     os_unfair_lock_unlock(&unfairLock)
 
@@ -437,6 +454,15 @@ final class AudioEngineController {
       name: AVAudioSession.routeChangeNotification,
       object: nil
     )
+    // The OS stops+uninitializes the engine on a hardware config change (sample
+    // rate / channel count). Re-arm it so playback stays audible (§4.1). Nodes
+    // remain attached/connected, so a plain start() is enough here.
+    center.addObserver(
+      self,
+      selector: #selector(handleEngineConfigurationChange(_:)),
+      name: Notification.Name.AVAudioEngineConfigurationChange,
+      object: engine
+    )
   }
 
   @objc private func handleInterruption(_ note: Notification) {
@@ -445,8 +471,33 @@ final class AudioEngineController {
       let raw = info[AVAudioSessionInterruptionTypeKey] as? UInt,
       let type = AVAudioSession.InterruptionType(rawValue: raw)
     else { return }
-    // Pause on interruption; do NOT auto-resume (avoid surprise playback).
-    if type == .began { pause() }
+    switch type {
+    case .began:
+      // Pause on interruption; position is preserved for a later resume().
+      pause()
+    case .ended:
+      // Even if the system suggests .shouldResume, we deliberately do NOT
+      // auto-resume playback (avoid surprise playback, §4.1). We only re-arm the
+      // engine so a user-triggered resume() from the UI will actually sound. The
+      // state (e.g. .paused) is left untouched.
+      if let optionsRaw = info[AVAudioSessionInterruptionOptionKey] as? UInt {
+        let options = AVAudioSession.InterruptionOptions(rawValue: optionsRaw)
+        _ = options.contains(.shouldResume) // intentionally ignored: no auto-resume
+      }
+      if prepared && !engine.isRunning {
+        try? AVAudioSession.sharedInstance().setActive(true)
+        try? engine.start()
+      }
+    @unknown default:
+      break
+    }
+  }
+
+  @objc private func handleEngineConfigurationChange(_ note: Notification) {
+    // Posted on an internal queue after the OS stopped the engine. We only read a
+    // bool and call start() (never deallocate the engine here, per Apple's
+    // deadlock warning), and never take the state lock around start().
+    if prepared && !engine.isRunning { try? engine.start() }
   }
 
   @objc private func handleRouteChange(_ note: Notification) {

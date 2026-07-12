@@ -58,6 +58,8 @@ public class ChordAudioModule: Module {
     }
 
     Function("getVersion") { () -> String in
+      // NOTE: this is a display/Phase label and is intentionally NOT the same as
+      // ChordAudio.podspec's `s.version` (the pod/build version, currently 1.0.0).
       return "2A.0.0"
     }
 
