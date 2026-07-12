@@ -42,6 +42,19 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "posthogKey": "",
+      "posthogHost": "https://us.i.posthog.com",
+      "sentryDsn": "",
+      "revenueCatIosKey": "",
+      "convexUrl": "",
+      "clerkPublishableKey": "",
+      "router": {},
+      "eas": {
+        "projectId": "c5743ea3-8817-45fb-9521-ee687d055714"
+      }
+    },
+    "owner": "shogoota"
   }
 }
