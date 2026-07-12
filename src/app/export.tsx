@@ -214,25 +214,19 @@ export default function ExportScreen() {
         <Toggle value={watermark} onValueChange={setWatermark} width={46} height={28} />
       </View>
 
-      {/* actions */}
-      <View style={{ flexDirection: 'row', gap: 11, marginTop: 2 }}>
-        <Pressable style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSaveToPhotos} disabled={saving}>
-          <Icon name="download" size={17} color={colors.textPrimary} strokeWidth={2.2} />
+      {/* action — primary CTA: the real "save to Photos" export */}
+      <Pressable style={styles.saveBtnWrap} onPress={handleSaveToPhotos} disabled={saving}>
+        <LinearGradient
+          colors={primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.saveBtn, saving && styles.saveBtnDisabled]}>
+          <Icon name="download" size={17} color="#fff" strokeWidth={2.2} />
           <Text style={styles.saveBtnText}>
             {saving ? `書き出し中… ${Math.round(progress * 100)}%` : '写真に保存'}
           </Text>
-        </Pressable>
-        <Pressable style={{ flex: 1 }} disabled={saving}>
-          <LinearGradient
-            colors={primaryGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[styles.shareBtn, saving && styles.saveBtnDisabled]}>
-            <Icon name="share" size={17} color="#fff" strokeWidth={2.2} />
-            <Text style={styles.shareBtnText}>共有</Text>
-          </LinearGradient>
-        </Pressable>
-      </View>
+        </LinearGradient>
+      </Pressable>
     </ScreenScaffold>
   );
 }
@@ -339,21 +333,8 @@ const styles = StyleSheet.create({
   formatMain: { fontSize: 13, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
   formatSub: { fontSize: 11, color: '#7f8aa0' },
 
+  saveBtnWrap: { marginTop: 2 },
   saveBtn: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 8,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    borderRadius: radius['2xl'],
-    paddingVertical: 15,
-  },
-  saveBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
-  saveBtnDisabled: { opacity: 0.55 },
-  shareBtn: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
@@ -365,5 +346,6 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 12 },
   },
-  shareBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: '#fff' },
+  saveBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: '#fff' },
+  saveBtnDisabled: { opacity: 0.55 },
 });
