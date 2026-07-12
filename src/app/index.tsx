@@ -76,7 +76,13 @@ export default function ProjectListScreen() {
     <ScreenScaffold>
       <View style={styles.header}>
         <Wordmark size={22} withIcon iconSize={38} />
-        <Pressable style={styles.iconBtn} hitSlop={8}>
+        <Pressable
+          style={styles.iconBtn}
+          hitSlop={8}
+          onPress={() => {
+            // DEV-only shortcut to the Phase 2A audio verification screen.
+            if (__DEV__) router.push('/dev-audio');
+          }}>
           <Icon name="gear" size={19} color={colors.textMuted} strokeWidth={1.9} />
         </Pressable>
       </View>
