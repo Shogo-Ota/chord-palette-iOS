@@ -130,6 +130,7 @@ export default function EditorScreen() {
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [playingIndex, setPlayingIndex] = useState(-1);
   const [keyPickerOpen, setKeyPickerOpen] = useState(false);
+  const [keyMode, setKeyMode] = useState<'change' | 'transpose'>('change');
   const [bpmPickerOpen, setBpmPickerOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(true);
   const [tab, setTab] = useState<LibraryTab>('diatonic');
@@ -226,7 +227,8 @@ export default function EditorScreen() {
   }
 
   function changeKey(k: MajorKey) {
-    session.setKey(k);
+    if (keyMode === 'transpose') session.transposeTo(k);
+    else session.setKey(k);
     setKeyPickerOpen(false);
   }
 
@@ -588,6 +590,20 @@ export default function EditorScreen() {
         <Pressable style={styles.modalBackdrop} onPress={() => setKeyPickerOpen(false)}>
           <View style={styles.keyPicker}>
             <Text style={styles.keyPickerTitle}>キーを選択</Text>
+            <SegTrack
+              options={[
+                { key: 'change', label: 'キー変更' },
+                { key: 'transpose', label: '移調' },
+              ]}
+              value={keyMode}
+              onChange={(k) => setKeyMode(k as 'change' | 'transpose')}
+              style={styles.keyModeTrack}
+            />
+            <Text style={styles.keyModeHint}>
+              {keyMode === 'transpose'
+                ? '曲全体を選んだキーへ移調します（配置済みコードも動きます）'
+                : '配置済みコードはそのまま。ライブラリ／スケールの基準キーだけ変えます'}
+            </Text>
             <View style={styles.keyGrid}>
               {MAJOR_KEYS.map((k) => (
                 <Pressable
@@ -1166,6 +1182,14 @@ const styles = StyleSheet.create({
     fontFamily: font.bold,
     fontWeight: '700',
     color: colors.textHeading,
+    marginBottom: 12,
+  },
+  keyModeTrack: { marginBottom: 8 },
+  keyModeHint: {
+    fontSize: 11,
+    color: colors.textFaint,
+    fontFamily: font.regular,
+    lineHeight: 16,
     marginBottom: 14,
   },
   keyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },

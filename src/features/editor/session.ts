@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react';
 
 import { buildPresetProgression } from '@/lib/presets';
 import { canAdd, canSetDuration } from '@/lib/progression';
-import { transposeProgression } from '@/lib/transpose';
+import { rebaseProgression, transposeProgression } from '@/lib/transpose';
 import {
   createProject,
   getProject,
@@ -235,9 +235,18 @@ export function undo(): void {
 
 /* ---- settings ----------------------------------------------------- */
 
+/**
+ * Change the reference key WITHOUT moving placed chords: each chord keeps its
+ * absolute pitch and name; only the diatonic library/scale reference changes.
+ */
 export function setKey(key: MajorKey): void {
-  // Re-spell every placed chord for the new key so the timeline auto-transposes
-  // while degree functions are preserved (requirements §5.2).
+  if (key === state.key) return;
+  set({ key, progression: rebaseProgression(state.progression, state.key, key), dirty: true });
+}
+
+/** Transpose the whole song to `key` (moves every placed chord). */
+export function transposeTo(key: MajorKey): void {
+  if (key === state.key) return;
   set({ key, progression: transposeProgression(state.progression, key), dirty: true });
 }
 

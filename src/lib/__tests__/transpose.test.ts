@@ -1,7 +1,8 @@
 import { diatonicLibrary, secondaryDominants, slashChord, variationChord } from '@/data/music';
 import { PRESETS } from '@/data/presets';
 import { buildPresetProgression } from '@/lib/presets';
-import { transposeEvent, transposeProgression } from '@/lib/transpose';
+import { rebaseProgression, transposeEvent, transposeProgression } from '@/lib/transpose';
+import { chordMidiNotes } from '@/lib/voicing';
 import type { ChordEvent, MajorKey } from '@/types';
 
 function preset(id: string) {
@@ -13,6 +14,28 @@ function preset(id: string) {
 function toEvents(presetId: string, key: MajorKey): ChordEvent[] {
   return buildPresetProgression(preset(presetId), key).map((e, i) => ({ ...e, id: `e-${i}` }));
 }
+
+describe('rebaseProgression (key change WITHOUT moving chords)', () => {
+  it('keeps displayed chord names when the reference key changes', () => {
+    const inC = toEvents('jpop-royal', 'C'); // C G Am F
+    const rebased = rebaseProgression(inC, 'C', 'D');
+    expect(rebased.map((e) => e.displayName)).toEqual(['C', 'G', 'Am', 'F']);
+  });
+
+  it('preserves absolute pitch (voicing is identical before/after)', () => {
+    const inC = toEvents('city-pop', 'C');
+    const rebased = rebaseProgression(inC, 'C', 'A♭');
+    for (let i = 0; i < inC.length; i++) {
+      expect(chordMidiNotes(rebased[i], 'A♭')).toEqual(chordMidiNotes(inC[i], 'C'));
+    }
+  });
+
+  it('is the inverse of itself (round-trips back to the original offsets)', () => {
+    const inC = toEvents('komuro', 'C');
+    const round = rebaseProgression(rebaseProgression(inC, 'C', 'F'), 'F', 'C');
+    expect(round.map((e) => e.rootOffset)).toEqual(inC.map((e) => e.rootOffset));
+  });
+});
 
 describe('transposeProgression (requirements §5.2)', () => {
   it('transposes the royal progression C → G (I V vi IV)', () => {
