@@ -128,6 +128,47 @@ src/
 - クライアント同梱値は `EXPO_PUBLIC_*` 接頭辞のみ。`app.config.ts` の `extra` に渡り、`src/lib/env.ts` から型付きで参照する（`process.env` を画面で直接読まない）。
 - 秘密鍵（R2 / 各サービスのサーバーシークレット）はクライアントに埋め込まない。`.env` はコミットしない。
 
+### Phase 2A: ネイティブ音声モジュール（`modules/chord-audio`）
+
+Phase 2A から、独自 Swift 製の音声エンジンを Expo Custom Native Module として追加した。**Expo Go では動作しない**（ネイティブモジュールが未リンクのため）。EAS Development Build が必要。
+
+- ネイティブ実装: `modules/chord-audio/ios/*.swift`（AVAudioEngine による同期再生 / ループ / 3系統ミキサー）
+- TS ラッパ: `modules/chord-audio`（`@modules/chord-audio` で import）
+- サービス層: `src/services/audio`（`audioService` 経由でのみ利用。音量の正典は SQLite）
+- 純粋ロジック/テスト: `src/services/audio/schedule.ts` ＋ `__tests__/schedule.test.ts`
+- 検証専用画面: `src/app/dev-audio.tsx`（ルート `/dev-audio`。本番導線からは非表示）
+- 音源は**技術検証用の合成音**（`SynthInstrumentProvider` / `SynthDrumProvider`）。Phase 2B で `InstrumentProvider` / `DrumProvider` を通じてサンプル音源へ交換する。
+
+詳細な設計・API・同期基準・AVAudioSession 設定は `docs/sprints/sprint-2.md` を参照。
+
+### EAS Development Build（Windows → iPhone 実機）
+
+Windows PC には Xcode が無いため、クラウドの EAS Build で Development Build を作成し、実機へインストールする。以下は**ユーザー本人の操作が必要**な手順（対話・認証を含む）。
+
+```bash
+# 1. EAS CLI（未導入なら）
+npm install -g eas-cli
+
+# 2. Expo アカウントにログイン（ブラウザ/対話）
+eas login
+
+# 3. プロジェクトを EAS に紐付け（初回のみ。projectId を app に書き込む）
+eas init
+
+# 4. iOS Development Build を作成（Apple ログイン・端末UDID登録・証明書はここで対話）
+eas build --profile development --platform ios
+#   - Apple Developer アカウントでのログインを求められる
+#   - 実機の UDID 登録（未登録なら eas device:create で QR から登録）
+#   - Distribution Certificate / Provisioning Profile は EAS に生成・管理させてよい
+
+# 5. ビルド完了後、表示される QR / URL から iPhone にインストール
+
+# 6. 開発サーバーを Dev Client 用に起動して接続
+npx expo start --dev-client
+```
+
+`eas.json` に `development` / `preview` / `production` プロファイルを定義済み。`development` は `developmentClient: true` / 内部配布 / 実機向け（simulator=false）。
+
 ## ライセンス
 
 MIT
