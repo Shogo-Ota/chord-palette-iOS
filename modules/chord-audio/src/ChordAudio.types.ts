@@ -1,6 +1,7 @@
 import type { EventSubscription } from 'expo-modules-core';
 
 import type {
+  AudioDiagnostics,
   PlaybackRequest,
   PlaybackState,
   PositionEvent,
@@ -28,6 +29,9 @@ export interface ChordAudioNativeModule {
 
   prepare(): Promise<void>;
   teardown(): Promise<void>;
+
+  /** SoundFont resolution + sampled-load diagnostics (synth-fallback debugging). */
+  getAudioDiagnostics(): Promise<AudioDiagnostics>;
 
   previewChord(req: PreviewRequest): Promise<void>;
 

@@ -137,6 +137,13 @@ public class ChordAudioModule: Module {
       return ["uri": result.url.absoluteString, "sampleRate": result.sampleRate]
     }
 
+    // Diagnostics: SoundFont resolution + sampled-load state, readable from JS so
+    // the "synth fallback instead of real piano" root cause is observable in Metro
+    // logs (Windows dev cannot read native os_log). See AudioEngineController.
+    AsyncFunction("getAudioDiagnostics") { () -> [String: Any] in
+      return self.controller.audioDiagnostics()
+    }
+
     AsyncFunction("pause") {
       self.controller.pause()
     }

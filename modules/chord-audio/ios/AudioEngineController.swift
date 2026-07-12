@@ -42,6 +42,9 @@ final class AudioEngineController {
   private let drumProvider: DrumProvider = SynthDrumProvider()
   /// Cache of loaded sampled instruments, keyed by instrument id (avoids re-render).
   private var sampledCache: [String: SampledInstrumentProvider] = [:]
+  /// The most recent SampledInstrumentProvider we tried to load — retained even on
+  /// failure so `audioDiagnostics()` can surface its `lastLoadError` to JS.
+  private var lastSampledAttempt: SampledInstrumentProvider?
   private var currentInstrument: String = ""
 
   /// Instrument id → General MIDI program number.
@@ -110,11 +113,13 @@ final class AudioEngineController {
     }
   }
 
-  /// Locate the bundled General MIDI SoundFont across the possible bundles a
-  /// CocoaPods static framework / resource bundle can end up in.
-  private static func soundFontURL() -> URL? {
-    let names = ["FluidR3_GM2-2"]
-    let exts = ["SF2", "sf2"]
+  private static let soundFontNames = ["FluidR3_GM2-2"]
+  private static let soundFontExts = ["SF2", "sf2"]
+
+  /// Candidate bundles the SoundFont could live in for a CocoaPods static
+  /// framework: the module's own bundle, the app bundle, and the named
+  /// `ChordAudioAssets` resource bundle nested in either.
+  private static func candidateBundles() -> [Bundle] {
     var bundles: [Bundle] = [Bundle(for: AudioEngineController.self), Bundle.main]
     for base in [Bundle(for: AudioEngineController.self), Bundle.main] {
       if let url = base.url(forResource: "ChordAudioAssets", withExtension: "bundle"),
@@ -122,14 +127,70 @@ final class AudioEngineController {
         bundles.append(assets)
       }
     }
-    for bundle in bundles {
-      for name in names {
-        for ext in exts {
+    return bundles
+  }
+
+  /// Locate the bundled General MIDI SoundFont across the possible bundles a
+  /// CocoaPods static framework / resource bundle can end up in. Falls back to a
+  /// recursive scan of the resource roots so a resource bundle that landed under
+  /// an unexpected subdirectory (or a renamed bundle) is still found.
+  private static func soundFontURL() -> URL? {
+    // 1. Fast path: direct named lookup in each candidate bundle.
+    for bundle in candidateBundles() {
+      for name in soundFontNames {
+        for ext in soundFontExts {
           if let url = bundle.url(forResource: name, withExtension: ext) { return url }
         }
       }
     }
+    // 2. Fallback: recursively scan the resource roots for ANY *.SF2 file. Runs
+    //    once on the (non-audio) calling thread during setInstrument.
+    let lowerExts = Set(soundFontExts.map { $0.lowercased() })
+    for root in resourceRoots() {
+      guard
+        let en = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil)
+      else { continue }
+      for case let url as URL in en where lowerExts.contains(url.pathExtension.lowercased()) {
+        return url
+      }
+    }
     return nil
+  }
+
+  /// Resource directories scanned as a last resort, and reported by diagnostics.
+  private static func resourceRoots() -> [URL] {
+    var roots: [URL] = []
+    if let u = Bundle(for: AudioEngineController.self).resourceURL { roots.append(u) }
+    if let u = Bundle.main.resourceURL, !roots.contains(u) { roots.append(u) }
+    return roots
+  }
+
+  /// Snapshot of SoundFont resolution + load state for JS-side diagnostics. Safe
+  /// to call anytime; touches the filesystem but not the audio thread.
+  func audioDiagnostics() -> [String: Any] {
+    var result: [String: Any] = [:]
+    let url = Self.soundFontURL()
+    result["soundFontFound"] = (url != nil)
+    if let url = url {
+      result["soundFontPath"] = url.path
+      if let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+        let size = attrs[.size] as? NSNumber {
+        // 134 ≈ a Git-LFS pointer smuggled into the bundle; ~148 MB = the real file.
+        result["soundFontBytes"] = size.intValue
+      }
+    }
+    os_unfair_lock_lock(&unfairLock)
+    let provider = chordProvider
+    os_unfair_lock_unlock(&unfairLock)
+    result["sampledLoaded"] = provider is SampledInstrumentProvider
+    result["currentInstrument"] = currentInstrument
+    result["prepared"] = prepared
+    if let err = lastSampledAttempt?.lastLoadError {
+      result["lastLoadError"] = err
+    }
+    result["searchedBundlePaths"] = Self.candidateBundles().map { $0.bundlePath }
+    result["searchedResourceRoots"] = Self.resourceRoots().map { $0.path }
+    return result
   }
 
   /// Swap the chord voice to `instrumentId`, loading + caching the sampled
@@ -144,6 +205,8 @@ final class AudioEngineController {
       provider = cached
     } else if let url = Self.soundFontURL() {
       let sampled = SampledInstrumentProvider(sampleRate: sampleRate)
+      // Retain before load so a failed attempt's lastLoadError stays observable.
+      lastSampledAttempt = sampled
       if sampled.load(soundFontURL: url, program: program) {
         sampledCache[instrumentId] = sampled
         provider = sampled

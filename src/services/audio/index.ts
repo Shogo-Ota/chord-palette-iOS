@@ -1,9 +1,11 @@
 import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordAudioNative } from '@modules/chord-audio';
+import { logger } from '@/lib/logger';
 import { getVolumeLevels, setVolumeLevel } from '@/repositories/settingsRepository';
 import { clampVolume } from '@/services/audio/schedule';
 import type {
+  AudioDiagnostics,
   PlaybackRequest,
   PlaybackState,
   PositionEvent,
@@ -57,6 +59,36 @@ export const audioService = {
 
   async teardown(): Promise<void> {
     await ChordAudioNative?.teardown();
+  },
+
+  /**
+   * Fetch SoundFont resolution + sampled-load diagnostics from the native engine.
+   * Returns null when the native module is unavailable (Expo Go / JS export) or
+   * the running binary predates the diagnostics API.
+   */
+  async getDiagnostics(): Promise<AudioDiagnostics | null> {
+    if (!ChordAudioNative?.getAudioDiagnostics) return null;
+    return await ChordAudioNative.getAudioDiagnostics();
+  },
+
+  /**
+   * Fetch diagnostics and print them to the Metro/JS console via `logger`, so the
+   * synth-fallback root cause can be read (and copy-pasted) without native os_log.
+   * Never throws — diagnostics must not break playback.
+   */
+  async logDiagnostics(reason: string): Promise<AudioDiagnostics | null> {
+    try {
+      const diag = await this.getDiagnostics();
+      if (!diag) {
+        logger.info(`[audio-diagnostics] ${reason}: native module unavailable`);
+        return null;
+      }
+      logger.info(`[audio-diagnostics] ${reason}`, diag as unknown as Record<string, unknown>);
+      return diag;
+    } catch (e) {
+      logger.warn(`[audio-diagnostics] ${reason}: failed`, { error: String(e) });
+      return null;
+    }
   },
 
   async previewChord(req: PreviewRequest): Promise<void> {

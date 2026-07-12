@@ -102,7 +102,13 @@ export default function EditorScreen() {
 
   /* ---- audio engine lifecycle (mount → prepare, unmount → release) */
   useEffect(() => {
-    audioService.prepare().catch((e) => logger.error('Audio prepare failed', { error: String(e) }));
+    audioService
+      .prepare()
+      .then(() => {
+        // Surface SoundFont resolution to Metro so a synth fallback is diagnosable.
+        if (__DEV__) void audioService.logDiagnostics('editor: after prepare');
+      })
+      .catch((e) => logger.error('Audio prepare failed', { error: String(e) }));
     const stateSub = audioService.addStateListener((e) => {
       setPlaybackState(e.state);
       if (e.state === 'stopped' || e.state === 'idle' || e.state === 'ready') setPlayingIndex(-1);

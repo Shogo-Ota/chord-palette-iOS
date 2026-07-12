@@ -4,7 +4,12 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { audioService } from '@/services/audio';
 import { buildVerificationRequest, verificationPreview } from '@/services/audio/fixtures';
-import { VOLUME_DEFAULTS, type PlaybackState, type VolumeChannel } from '@/services/audio/types';
+import {
+  VOLUME_DEFAULTS,
+  type AudioDiagnostics,
+  type PlaybackState,
+  type VolumeChannel,
+} from '@/services/audio/types';
 import { colors, font, radius, spacing } from '@/theme/tokens';
 
 /**
@@ -19,6 +24,7 @@ export default function DevAudioScreen() {
     { chordIndex: -1, beat: 0, loopCount: 0 },
   );
   const [volumes, setVolumes] = useState(VOLUME_DEFAULTS);
+  const [diag, setDiag] = useState<AudioDiagnostics | null>(null);
 
   useEffect(() => {
     const stateSub = audioService.addStateListener((e) => setState(e.state));
@@ -38,6 +44,11 @@ export default function DevAudioScreen() {
     setState(audioService.getState());
     const v = audioService.getVolumes();
     if (v) setVolumes(v);
+    setDiag(await audioService.logDiagnostics('dev-audio: after prepare'));
+  };
+
+  const onDiagnose = async () => {
+    setDiag(await audioService.logDiagnostics('dev-audio: manual'));
   };
 
   const onPlay = () => audioService.play(buildVerificationRequest(true));
@@ -70,6 +81,34 @@ export default function DevAudioScreen() {
             {position.loopCount}
           </Text>
           <Text style={styles.meta}>engine: {audioService.getVersion() ?? '—'}</Text>
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>SoundFont 診断</Text>
+          <View style={styles.row}>
+            <Btn label="診断を取得" onPress={onDiagnose} />
+          </View>
+          {diag ? (
+            <>
+              <Text style={styles.meta}>
+                found: {String(diag.soundFontFound)} / sampledLoaded:{' '}
+                {String(diag.sampledLoaded)}
+              </Text>
+              <Text style={styles.meta}>
+                bytes: {diag.soundFontBytes ?? '—'}
+                {typeof diag.soundFontBytes === 'number' && diag.soundFontBytes < 1000
+                  ? '  ← LFS ポインタの疑い'
+                  : ''}
+              </Text>
+              <Text style={styles.meta}>path: {diag.soundFontPath ?? '—'}</Text>
+              <Text style={styles.meta}>instrument: {diag.currentInstrument ?? '—'}</Text>
+              {diag.lastLoadError ? (
+                <Text style={styles.meta}>error: {diag.lastLoadError}</Text>
+              ) : null}
+            </>
+          ) : (
+            <Text style={styles.meta}>未取得（「準備」または「診断を取得」を押す）</Text>
+          )}
         </View>
 
         <View style={styles.card}>

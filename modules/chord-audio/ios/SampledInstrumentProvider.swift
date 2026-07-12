@@ -22,6 +22,10 @@ final class SampledInstrumentProvider: InstrumentProvider {
   private let log = OSLog(subsystem: "app.chord-palette.audio", category: "Sampler")
 
   private(set) var isLoaded = false
+  /// Human-readable reason the most recent `load()` failed (or nil on success /
+  /// before any attempt). Surfaced to JS via `getAudioDiagnostics` so the root
+  /// cause is observable from Metro logs without reading native `os_log`.
+  private(set) var lastLoadError: String?
 
   init(sampleRate: Double) {
     self.sampleRate = sampleRate
@@ -33,12 +37,14 @@ final class SampledInstrumentProvider: InstrumentProvider {
   func load(soundFontURL: URL, program: UInt8) -> Bool {
     buffers.removeAll()
     isLoaded = false
+    lastLoadError = nil
 
     let engine = AVAudioEngine()
     let sampler = AVAudioUnitSampler()
     engine.attach(sampler)
 
     guard let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1) else {
+      lastLoadError = "Could not create mono AVAudioFormat at \(sampleRate) Hz"
       return false
     }
     engine.connect(sampler, to: engine.mainMixerNode, format: fmt)
@@ -53,6 +59,7 @@ final class SampledInstrumentProvider: InstrumentProvider {
       )
       try engine.start()
     } catch {
+      lastLoadError = "loadSoundBankInstrument/start failed: \(String(describing: error))"
       os_log("SoundFont load failed: %{public}@", log: log, type: .error, String(describing: error))
       engine.stop()
       return false
@@ -64,6 +71,7 @@ final class SampledInstrumentProvider: InstrumentProvider {
         frameCapacity: engine.manualRenderingMaximumFrameCount
       )
     else {
+      lastLoadError = "Could not allocate offline render scratch buffer"
       engine.stop()
       return false
     }
@@ -98,6 +106,9 @@ final class SampledInstrumentProvider: InstrumentProvider {
 
     engine.stop()
     isLoaded = !buffers.isEmpty
+    if !isLoaded {
+      lastLoadError = "SoundFont loaded but no note buffers were rendered"
+    }
     return isLoaded
   }
 

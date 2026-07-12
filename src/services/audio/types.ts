@@ -104,3 +104,40 @@ export type PositionEvent = {
 export type StateChangeEvent = {
   state: PlaybackState;
 };
+
+/* ------------------------------------------------------------------ */
+/* Diagnostics (SoundFont resolution — for the synth-fallback bug)     */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Snapshot of how the native engine resolved (or failed to resolve/load) the
+ * bundled General MIDI SoundFont. Surfaced so the root cause of "synth fallback
+ * instead of the sampled grand piano" is visible from Metro logs — a Windows dev
+ * cannot read native `os_log`.
+ *
+ * Decisive signals:
+ * - `soundFontFound === false` → the .SF2 is not in the shipped bundle.
+ * - `soundFontBytes ≈ 134`     → a Git-LFS pointer was bundled, not the real file.
+ * - `soundFontBytes ≈ 148 MB`  → the real file shipped.
+ * - `sampledLoaded === false` with a `lastLoadError` → `loadSoundBankInstrument` failed.
+ */
+export type AudioDiagnostics = {
+  /** True when `soundFontURL()` resolved a non-nil URL. */
+  soundFontFound: boolean;
+  /** Absolute path of the resolved SoundFont, when found. */
+  soundFontPath?: string;
+  /** Real byte size of the resolved file (134 ≈ LFS pointer, ~148 MB ≈ real). */
+  soundFontBytes?: number;
+  /** True when the active chord voice is the sampled (SoundFont) provider. */
+  sampledLoaded: boolean;
+  /** Instrument id currently loaded into the engine. */
+  currentInstrument?: string;
+  /** Whether the engine has completed `prepare()`. */
+  prepared?: boolean;
+  /** Last `loadSoundBankInstrument` error string, when the sampled load failed. */
+  lastLoadError?: string;
+  /** Bundle paths the engine searched for the SoundFont (debugging aid). */
+  searchedBundlePaths?: string[];
+  /** Resource roots recursively scanned as a fallback (debugging aid). */
+  searchedResourceRoots?: string[];
+};
