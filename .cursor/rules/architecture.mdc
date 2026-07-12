@@ -1,0 +1,29 @@
+---
+description: Chord Palette のアーキテクチャと層分離
+alwaysApply: true
+---
+
+# アーキテクチャ（層分離）
+
+UI・ドメインロジック・データアクセス・外部サービスを分離する。
+
+- `src/app/` … 画面(expo-router)。**薄く保つ**（表示と入力のみ）。
+- `src/features/` … 画面固有ロジック（editor/player/projects/presets/export/paywall/community/auth）。
+- `src/lib/`(domain) … 純粋ロジック（音楽計算・転調・16小節判定・上限判定）。UI非依存で**単体テスト可能**にする。
+- `src/repositories/` … データアクセス（SQLite / Convex）。
+- `src/services/` … 外部SaaSの抽象化（RevenueCat / PostHog / Sentry / Clerk / Convex / R2 / 通知）。
+- `src/modules/` … Expo Custom Native Module（chord-audio / chord-video-export）。TS側は**必ず型定義**する。
+
+## 必須ルール
+- **課金・認証・分析・Native呼び出しを画面コンポーネントに直書きしない。** 必ず Service / Repository / hook 経由。
+- 巨大コンポーネントを作らない。責務ごとに分割する。
+- 外部サービスは Repository または Service 層でラップし、差し替え可能にする。
+- クライアントの申告（Pro状態・投稿数・いいね数等）を信用しない。権限・上限は**サーバー側(Convex)でも再検証**する。
+
+## 例（❌ → ✅）
+```tsx
+// ❌ 画面で直接
+const purchases = await Purchases.getOfferings();
+// ✅ Service 経由
+const offerings = await billingService.getOfferings();
+```

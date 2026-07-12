@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style data-omelette-print-defaults>
+@media print {
+  @page { margin: 0.5in; }
+  h1, h2, h3, h4, h5, h6 { break-after: avoid; }
+  figure, table, pre, blockquote, img, svg, tr, [class~="card" i] { break-inside: avoid; }
+  img, svg { max-width: 100%; }
+  p { orphans: 3; widows: 3; }
+}
+</style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet data-dc-atomics>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#070a12}
+*::-webkit-scrollbar{width:0;height:0;background:transparent}
+@keyframes eq{0%,100%{transform:scaleY(.35)}50%{transform:scaleY(1)}}
+@keyframes glowpulse{0%,100%{opacity:.5}50%{opacity:.9}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:radial-gradient(1200px 700px at 50% -5%,#16203a 0%,#0b1020 45%,#070a12 100%);padding:52px 44px 90px;font-family:'Noto Sans JP',-apple-system,system-ui,sans-serif">
+
+  <div style="max-width:1520px;margin:0 auto 52px;display:flex;align-items:center;gap:22px">
+    <img src="assets/icon.png" alt="Chord Palette" style="width:76px;height:76px;border-radius:20px;box-shadow:0 12px 30px -8px rgba(124,77,255,.5),0 0 0 1px rgba(255,255,255,.06)">
+    <div>
+      <div style="font-size:30px;font-weight:800;letter-spacing:.2px;color:#f4f6fb"><span>Chord </span><span style="background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent">Palette</span></div>
+      <div style="margin-top:6px;font-size:15px;color:#9aa3b5;font-weight:500">iPhone向け 作曲スケッチアプリ ／ UIモックアップ 全6画面</div>
+    </div>
+    <div style="margin-left:auto;display:flex;align-items:center;gap:10px;color:#7a melody;font-size:12.5px;color:#7e8798;font-weight:600;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);padding:11px 16px;border-radius:14px;line-height:1.7">
+      ダークテーマ ／ 深いネイビー・チャコール基調<br>プライマリ 紫〜青　・　アクセント 虹色（控えめ）
+    </div>
+  </div>
+
+  <div style="display:flex;flex-wrap:wrap;gap:60px 46px;justify-content:center;align-items:flex-start;max-width:1520px;margin:0 auto">
+
+    <!-- ============ SCREEN 1 : プロジェクト一覧 ============ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:9px;color:#aab3c6;font-size:13px;font-weight:700"><span style="width:22px;height:22px;border-radius:6px;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">1</span>プロジェクト一覧</div>
+      <div style="position:relative;width:414px;padding:11px;background:linear-gradient(155deg,#40454f,#14161b);border-radius:56px;box-shadow:0 34px 60px -20px rgba(0,0,0,.8),0 0 0 2px #05070c,inset 0 0 4px rgba(255,255,255,.18)">
+        <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:60"></div>
+        <div style="position:relative;width:390px;height:842px;background:#0d1422;border-radius:46px;overflow:hidden;color:#eef1f6;display:flex;flex-direction:column">
+          <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 28px 8px;flex:none"><span style="font-size:15px;font-weight:700;letter-spacing:.3px">9:41</span><div style="display:flex;align-items:center;gap:7px"><svg width="18" height="11" viewBox="0 0 18 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg><svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><path d="M8 11L15.5 2.6A11 11 0 0 0 .5 2.6z" opacity=".95"/></svg><svg width="27" height="12" viewBox="0 0 27 12"><rect x="0.5" y="1" width="22" height="10" rx="3" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2" y="2.5" width="17.5" height="7" rx="1.5" fill="#fff"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg></div></div>
+          <div style="flex:1;overflow:hidden auto;padding:6px 20px 28px">
+            <div style="display:flex;align-items:center;gap:11px;padding:6px 2px 18px">
+              <img src="assets/icon.png" style="width:38px;height:38px;border-radius:11px;box-shadow:0 0 0 1px rgba(255,255,255,.07)">
+              <div style="font-size:22px;font-weight:800;letter-spacing:.2px"><span>Chord </span><span style="background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent">Palette</span></div>
+              <div style="margin-left:auto;width:36px;height:36px;border-radius:11px;background:#151d2c;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#aab3c6" stroke-width="1.9"><circle cx="12" cy="12" r="3.2"/><path d="M12 2.5v3M12 18.5v3M21.5 12h-3M5.5 12h-3M18.4 5.6l-2.1 2.1M7.7 16.3l-2.1 2.1M18.4 18.4l-2.1-2.1M7.7 7.7L5.6 5.6" stroke-linecap="round"/></svg></div>
+            </div>
+
+            <button style="width:100%;border:none;cursor:pointer;padding:18px;border-radius:18px;background:linear-gradient(135deg,#7c5cff,#5b8cff);color:#fff;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:10px;font-size:17px;font-weight:700;box-shadow:0 14px 30px -10px rgba(124,92,255,.7)" style-active="transform:scale(.98)"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>新しい進行を作る</button>
+
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin:26px 2px 12px"><span style="font-size:15px;font-weight:700;color:#e6eaf2">最近のプロジェクト</span><span style="font-size:12.5px;color:#6d footer;color:#68melody;color:#6b footer;color:#6a footer;color:#69melody;color:#6c footer;color:#6b7688">4件</span></div>
+
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px 16px 16px 20px;overflow:hidden">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#7c4dff"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:16.5px;font-weight:700">Morning Sketch</span><span style="font-size:11.5px;color:#6b7688">2時間前</span></div>
+                <div style="display:flex;gap:7px;margin:10px 0 12px"><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">C Major</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">120 BPM</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">4小節</span></div>
+                <div style="font-size:13px;color:#9aa3b5;font-family:'Noto Sans JP',ui-monospace,monospace;letter-spacing:.4px">Cmaj7 · G7 · Am7 · Fmaj7</div>
+              </div>
+
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px 16px 16px 20px;overflow:hidden">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#3b82f6"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:16.5px;font-weight:700">City Night</span><span style="font-size:11.5px;color:#6b7688">昨日</span></div>
+                <div style="display:flex;gap:7px;margin:10px 0 12px"><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">A Major</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">105 BPM</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">8小節</span></div>
+                <div style="font-size:13px;color:#9aa3b5;font-family:'Noto Sans JP',ui-monospace,monospace;letter-spacing:.4px">F#m7 · D · A · E</div>
+              </div>
+
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px 16px 16px 20px;overflow:hidden">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#22c55e"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:16.5px;font-weight:700">Rainy Afternoon</span><span style="font-size:11.5px;color:#6b7688">3日前</span></div>
+                <div style="display:flex;gap:7px;margin:10px 0 12px"><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">D Minor</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">88 BPM</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">4小節</span></div>
+                <div style="font-size:13px;color:#9aa3b5;font-family:'Noto Sans JP',ui-monospace,monospace;letter-spacing:.4px">Dm7 · G7 · Cmaj7 · Am7</div>
+              </div>
+
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:18px;padding:16px 16px 16px 20px;overflow:hidden">
+                <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#f97316"></div>
+                <div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:16.5px;font-weight:700">Neon Drive</span><span style="font-size:11.5px;color:#6b7688">先週</span></div>
+                <div style="display:flex;gap:7px;margin:10px 0 12px"><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">F Major</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">128 BPM</span><span style="font-size:11.5px;font-weight:600;color:#b9c2d4;background:#1e293c;padding:4px 9px;border-radius:7px">8小節</span></div>
+                <div style="font-size:13px;color:#9aa3b5;font-family:'Noto Sans JP',ui-monospace,monospace;letter-spacing:.4px">F · G · Em · Am</div>
+              </div>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.55);z-index:40"></div>
+        </div>
+      </div>
+      <div style="width:360px;text-align:center;color:#6b7688;font-size:12px;line-height:1.65">保存済み進行の一覧。<span style="color:#9aa3b5">「新しい進行を作る」</span>→ <span style="color:#9aa3b5">編集画面（2）</span>へ</div>
+    </div>
+
+    <!-- ============ SCREEN 2 : メイン編集画面（最重要） ============ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:9px;color:#aab3c6;font-size:13px;font-weight:700"><span style="width:22px;height:22px;border-radius:6px;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">2</span>メイン編集画面<span style="color:#7c4dff;font-weight:800">★最重要</span></div>
+      <div style="position:relative;width:414px;padding:11px;background:linear-gradient(155deg,#40454f,#14161b);border-radius:56px;box-shadow:0 34px 60px -20px rgba(0,0,0,.8),0 0 0 2px #05070c,inset 0 0 4px rgba(255,255,255,.18)">
+        <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:60"></div>
+        <div style="position:relative;width:390px;height:842px;background:#0d1422;border-radius:46px;overflow:hidden;color:#eef1f6;display:flex;flex-direction:column">
+          <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 28px 8px;flex:none"><span style="font-size:15px;font-weight:700;letter-spacing:.3px">9:41</span><div style="display:flex;align-items:center;gap:7px"><svg width="18" height="11" viewBox="0 0 18 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg><svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><path d="M8 11L15.5 2.6A11 11 0 0 0 .5 2.6z" opacity=".95"/></svg><svg width="27" height="12" viewBox="0 0 27 12"><rect x="0.5" y="1" width="22" height="10" rx="3" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2" y="2.5" width="17.5" height="7" rx="1.5" fill="#fff"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg></div></div>
+          <div style="flex:1;overflow:hidden auto;padding:2px 18px 26px">
+
+            <div style="display:flex;align-items:center;gap:10px;padding:4px 2px 4px">
+              <img src="assets/icon.png" style="width:34px;height:34px;border-radius:10px;box-shadow:0 0 0 1px rgba(255,255,255,.07)">
+              <div style="font-size:18px;font-weight:800"><span>Chord </span><span style="background:linear-gradient(90deg,#ef4444,#f97316,#22c55e,#3b82f6,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent">Palette</span></div>
+              <div style="margin-left:auto;width:34px;height:34px;border-radius:10px;background:#151d2c;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center;gap:2.5px"><span style="width:3.5px;height:3.5px;border-radius:50%;background:#aab3c6"></span><span style="width:3.5px;height:3.5px;border-radius:50%;background:#aab3c6"></span><span style="width:3.5px;height:3.5px;border-radius:50%;background:#aab3c6"></span></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;padding:2px 4px 14px"><span style="font-size:14px;font-weight:700;color:#cdd4e2">Morning Sketch</span><span style="display:flex;align-items:center;gap:4px;font-size:11.5px;color:#22c55e;font-weight:600"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>保存済み</span></div>
+
+            <!-- 基本設定 -->
+            <div style="display:flex;gap:10px;margin-bottom:18px">
+              <div style="flex:1.15;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 12px"><div style="font-size:10.5px;color:#6b7688;font-weight:600;margin-bottom:3px">キー</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:15.5px;font-weight:700">C Major</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div style="flex:1.1;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 12px"><div style="font-size:10.5px;color:#6b7688;font-weight:600;margin-bottom:3px">テンポ</div><div style="display:flex;align-items:center;gap:6px"><span style="font-size:15.5px;font-weight:700">120</span><span style="font-size:9.5px;color:#94a0b5;font-weight:700;background:#243149;padding:3px 7px;border-radius:6px">TAP</span></div></div>
+              <div style="flex:1;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 11px"><div style="font-size:10.5px;color:#6b7688;font-weight:600;margin-bottom:5px">メトロノーム</div><div style="width:42px;height:25px;border-radius:14px;background:linear-gradient(90deg,#5b8cff,#7c4dff);position:relative"><div style="position:absolute;top:2.5px;left:19px;width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.4)"></div></div></div>
+            </div>
+
+            <!-- ダイアトニックコード -->
+            <div style="font-size:14px;font-weight:700;color:#e6eaf2;margin:0 2px 10px">ダイアトニックコード</div>
+            <div style="display:flex;gap:7px;overflow:hidden;margin-bottom:9px">
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #ef4444;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:14px;font-weight:700">Cmaj7</span><span style="font-size:9.5px;color:#8a94a8;font-weight:600">I</span></div>
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #f97316;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:14px;font-weight:700">Dm7</span><span style="font-size:9.5px;color:#8a94a8;font-weight:600">ii</span></div>
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #eab308;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:14px;font-weight:700">Em7</span><span style="font-size:9.5px;color:#8a94a8;font-weight:600">iii</span></div>
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #22c55e;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:14px;font-weight:700">Fmaj7</span><span style="font-size:9.5px;color:#8a94a8;font-weight:600">IV</span></div>
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #3b82f6;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:15px;font-weight:700">G7</span><span style="font-size:9.5px;color:#8a94a8;font-weight:600">V</span></div>
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #8b5cf6;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px"><span style="font-size:14px;font-weight:700">Am7</span><span style="font-size:9.5px;color:#8a94a8;font-weight:600">vi</span></div>
+              <div style="flex:none;width:47px;height:60px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-bottom:2.5px solid #d6409f;border-radius:11px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px"><span style="font-size:11.5px;font-weight:700">Bm7♭5</span><span style="font-size:9px;color:#8a94a8;font-weight:600">vii°</span></div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:20px"><div style="flex:none;padding:8px 18px;background:rgba(214,64,159,.12);border:1px solid rgba(214,64,159,.4);border-radius:10px;font-size:14px;font-weight:700;color:#f0a3d0">sus4</div><div style="flex:none;padding:8px 18px;background:rgba(124,92,255,.12);border:1px solid rgba(124,92,255,.45);border-radius:10px;font-size:14px;font-weight:700;color:#b9a6ff">add9</div><span style="align-self:center;font-size:11px;color:#6b7688;margin-left:2px">基本コードに追加</span></div>
+
+            <!-- コード進行タイムライン -->
+            <div style="display:flex;align-items:center;justify-content:space-between;margin:0 2px 10px"><span style="font-size:14px;font-weight:700;color:#e6eaf2">コード進行</span><span style="font-size:10.5px;color:#6b7688">4 / 最大16小節</span></div>
+            <div style="display:flex;align-items:stretch;gap:5px;overflow:hidden;margin-bottom:11px">
+              <div style="flex:none;width:78px;background:#151d2c;border:1.5px solid #7c5cff;border-left:4px solid #ef4444;border-radius:12px;padding:9px 8px;box-shadow:0 0 0 3px rgba(124,92,255,.16)"><div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:14px;font-weight:700">Cmaj7</span><span style="font-size:9px;color:#8a94a8">I</span></div><div style="margin-top:9px;display:flex;align-items:center;justify-content:space-between;background:#0f1626;border-radius:7px;padding:4px 6px"><span style="font-size:9.5px;color:#b9c2d4">1小節</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <span style="align-self:center;color:#525c70;font-size:15px">→</span>
+              <div style="flex:none;width:78px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-left:4px solid #3b82f6;border-radius:12px;padding:9px 8px"><div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:15px;font-weight:700">G7</span><span style="font-size:9px;color:#8a94a8">V</span></div><div style="margin-top:9px;display:flex;align-items:center;justify-content:space-between;background:#0f1626;border-radius:7px;padding:4px 6px"><span style="font-size:9.5px;color:#b9c2d4">1小節</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <span style="align-self:center;color:#525c70;font-size:15px">→</span>
+              <div style="flex:none;width:78px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-left:4px solid #8b5cf6;border-radius:12px;padding:9px 8px"><div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:14px;font-weight:700">Am7</span><span style="font-size:9px;color:#8a94a8">vi</span></div><div style="margin-top:9px;display:flex;align-items:center;justify-content:space-between;background:#0f1626;border-radius:7px;padding:4px 6px"><span style="font-size:9.5px;color:#b9c2d4">1小節</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <span style="align-self:center;color:#525c70;font-size:15px">→</span>
+              <div style="flex:none;width:78px;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-left:4px solid #22c55e;border-radius:12px;padding:9px 8px"><div style="display:flex;align-items:baseline;justify-content:space-between"><span style="font-size:13px;font-weight:700">Fmaj7</span><span style="font-size:9px;color:#8a94a8">IV</span></div><div style="margin-top:9px;display:flex;align-items:center;justify-content:space-between;background:#0f1626;border-radius:7px;padding:4px 6px"><span style="font-size:9.5px;color:#b9c2d4">1小節</span><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.6" stroke-linecap="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+            </div>
+            <div style="display:flex;align-items:center;gap:7px;margin-bottom:20px">
+              <span style="font-size:11px;color:#6b7688;margin-right:auto">選択中：Cmaj7</span>
+              <div style="width:32px;height:32px;border-radius:9px;background:#141c2b;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center" title="追加"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+              <div style="width:32px;height:32px;border-radius:9px;background:#141c2b;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center" title="複製"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linejoin="round"><rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M4 16V6a2 2 0 0 1 2-2h10"/></svg></div>
+              <div style="width:32px;height:32px;border-radius:9px;background:#141c2b;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center" title="左へ"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div>
+              <div style="width:32px;height:32px;border-radius:9px;background:#141c2b;border:1px solid rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center" title="右へ"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+              <div style="width:32px;height:32px;border-radius:9px;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);display:flex;align-items:center;justify-content:center" title="削除"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#ef6a6a" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7h16M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M6 7l1 13h10l1-13"/></svg></div>
+            </div>
+
+            <!-- 小節の長さ -->
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px"><span style="font-size:12.5px;color:#8a94a8;font-weight:600;flex:none">小節の長さ</span><div style="flex:1;display:flex;gap:4px;background:#0f1626;border-radius:11px;padding:4px"><div style="flex:1;text-align:center;padding:7px 0;border-radius:8px;background:linear-gradient(135deg,#7c5cff,#5b8cff);font-size:12px;font-weight:700">1小節</div><div style="flex:1;text-align:center;padding:7px 0;border-radius:8px;font-size:12px;font-weight:600;color:#8a94a8">1/2小節</div><div style="flex:1;text-align:center;padding:7px 0;border-radius:8px;font-size:12px;font-weight:600;color:#8a94a8">1/4小節</div></div></div>
+
+            <!-- 再生コントロール -->
+            <div style="font-size:14px;font-weight:700;color:#e6eaf2;margin:0 2px 10px">再生コントロール</div>
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#101828;border:1px solid rgba(255,255,255,.06);border-radius:18px;padding:12px 16px;margin-bottom:20px">
+              <div style="display:flex;align-items:center;gap:9px">
+                <div style="width:38px;height:38px;border-radius:11px;background:#1b2436;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 14L4 9l5-5"/><path d="M4 9h11a5 5 0 0 1 0 10h-1"/></svg></div>
+                <div style="width:38px;height:38px;border-radius:11px;background:#1b2436;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20L9 12l10-8zM5 19V5"/></svg></div>
+              </div>
+              <div style="width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#5b8cff);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 26px -8px rgba(124,92,255,.75)"><svg width="26" height="26" viewBox="0 0 24 24" fill="#fff"><path d="M7 5l13 7-13 7z"/></svg></div>
+              <div style="display:flex;align-items:center;gap:9px">
+                <div style="width:38px;height:38px;border-radius:11px;background:#1b2436;display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8zM19 5v14"/></svg></div>
+                <div style="display:flex;flex-direction:column;align-items:center;gap:3px"><div style="width:38px;height:24px;border-radius:13px;background:linear-gradient(90deg,#5b8cff,#7c4dff);position:relative"><div style="position:absolute;top:2.5px;left:16px;width:19px;height:19px;border-radius:50%;background:#fff"></div></div><span style="font-size:9px;color:#8a94a8;font-weight:600">ループ</span></div>
+              </div>
+            </div>
+
+            <!-- 演奏設定 -->
+            <div style="font-size:14px;font-weight:700;color:#e6eaf2;margin:0 2px 10px">演奏設定</div>
+            <div style="display:flex;gap:10px;margin-bottom:11px">
+              <div style="flex:1;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 12px"><div style="font-size:10.5px;color:#6b7688;font-weight:600;margin-bottom:4px">音色</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14.5px;font-weight:700">Piano</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+              <div style="flex:1;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:10px 12px"><div style="font-size:10.5px;color:#6b7688;font-weight:600;margin-bottom:4px">ドラム</div><div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:14.5px;font-weight:700">Pop 8beat</span><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg></div></div>
+            </div>
+            <div style="font-size:11.5px;color:#8a94a8;font-weight:600;margin:6px 2px 8px">伴奏パターン</div>
+            <div style="display:flex;gap:7px;margin-bottom:16px">
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(91,140,255,.22));border:1.5px solid #7c5cff;font-size:12.5px;font-weight:700">Block</div>
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12.5px;font-weight:600;color:#9aa3b5">8beat</div>
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12.5px;font-weight:600;color:#9aa3b5">16beat</div>
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12.5px;font-weight:600;color:#9aa3b5">Arpeggio</div>
+            </div>
+            <div style="background:#101828;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:13px 15px;margin-bottom:20px;display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:#b9c2d4;font-weight:600;width:56px">コード音</span><div style="flex:1;height:5px;border-radius:3px;background:#2a3346;position:relative"><div style="position:absolute;left:0;top:0;height:100%;width:70%;border-radius:3px;background:linear-gradient(90deg,#5b8cff,#7c4dff)"></div><div style="position:absolute;left:70%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div><span style="font-size:12px;color:#9aa3b5;font-weight:700;width:34px;text-align:right">70%</span></div>
+              <div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:#b9c2d4;font-weight:600;width:56px">ドラム</span><div style="flex:1;height:5px;border-radius:3px;background:#2a3346;position:relative"><div style="position:absolute;left:0;top:0;height:100%;width:90%;border-radius:3px;background:linear-gradient(90deg,#5b8cff,#7c4dff)"></div><div style="position:absolute;left:90%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div><span style="font-size:12px;color:#9aa3b5;font-weight:700;width:34px;text-align:right">90%</span></div>
+            </div>
+
+            <!-- 下部CTA -->
+            <button style="width:100%;border:none;cursor:pointer;padding:16px;border-radius:16px;background:#151d2c;border:1.5px solid rgba(124,92,255,.55);color:#c9bbff;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:9px;font-size:15.5px;font-weight:700"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#c9bbff" stroke-width="2" stroke-linejoin="round"><rect x="2" y="5" width="15" height="14" rx="2.5"/><path d="M17 10l5-3v10l-5-3z"/></svg>動画を書き出す</button>
+
+          </div>
+          <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.55);z-index:40"></div>
+        </div>
+      </div>
+      <div style="width:360px;text-align:center;color:#6b7688;font-size:12px;line-height:1.65">キー選択 → ダイアトニックをタップして進行を作り、その場で再生。<span style="color:#9aa3b5">アプリの中心画面</span></div>
+    </div>
+
+    <!-- ============ SCREEN 3 : プリセット選択 ============ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:9px;color:#aab3c6;font-size:13px;font-weight:700"><span style="width:22px;height:22px;border-radius:6px;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">3</span>プリセット選択</div>
+      <div style="position:relative;width:414px;padding:11px;background:linear-gradient(155deg,#40454f,#14161b);border-radius:56px;box-shadow:0 34px 60px -20px rgba(0,0,0,.8),0 0 0 2px #05070c,inset 0 0 4px rgba(255,255,255,.18)">
+        <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:60"></div>
+        <div style="position:relative;width:390px;height:842px;background:#0d1422;border-radius:46px;overflow:hidden;color:#eef1f6;display:flex;flex-direction:column">
+          <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 28px 8px;flex:none"><span style="font-size:15px;font-weight:700;letter-spacing:.3px">9:41</span><div style="display:flex;align-items:center;gap:7px"><svg width="18" height="11" viewBox="0 0 18 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg><svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><path d="M8 11L15.5 2.6A11 11 0 0 0 .5 2.6z" opacity=".95"/></svg><svg width="27" height="12" viewBox="0 0 27 12"><rect x="0.5" y="1" width="22" height="10" rx="3" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2" y="2.5" width="17.5" height="7" rx="1.5" fill="#fff"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg></div></div>
+          <div style="flex:1;overflow:hidden auto;padding:2px 20px 26px">
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0 16px"><div style="width:34px;height:34px;border-radius:10px;background:#151d2c;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#cdd4e2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div><span style="font-size:20px;font-weight:800">進行プリセット</span></div>
+
+            <div style="display:flex;gap:4px;background:#0f1626;border-radius:13px;padding:4px;margin-bottom:20px">
+              <div style="flex:1;text-align:center;padding:10px 0;border-radius:9px;font-size:13.5px;font-weight:600;color:#9aa3b5">無料</div>
+              <div style="flex:1;text-align:center;padding:10px 0;border-radius:9px;background:linear-gradient(135deg,#7c5cff,#5b8cff);font-size:13.5px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:5px">Palette Pro<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+
+            <div style="font-size:12px;color:#8a94a8;font-weight:700;margin:0 2px 10px">無料</div>
+            <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-radius:18px;padding:16px 18px;overflow:hidden;margin-bottom:22px">
+              <div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#eab308"></div>
+              <div style="font-size:17px;font-weight:700;margin-bottom:8px">J-POP王道進行</div>
+              <div style="font-size:14px;color:#cdd4e2;font-family:'Noto Sans JP',ui-monospace,monospace;letter-spacing:.6px;margin-bottom:13px">C · G · Am · F</div>
+              <div style="display:flex;gap:7px"><span style="font-size:11px;font-weight:600;color:#e6c34a;background:rgba(234,179,8,.14);padding:5px 10px;border-radius:8px">明るい</span><span style="font-size:11px;font-weight:600;color:#e6c34a;background:rgba(234,179,8,.14);padding:5px 10px;border-radius:8px">王道</span><span style="font-size:11px;font-weight:600;color:#e6c34a;background:rgba(234,179,8,.14);padding:5px 10px;border-radius:8px">サビ向き</span></div>
+            </div>
+
+            <div style="display:flex;align-items:center;gap:6px;margin:0 2px 10px"><span style="font-size:12px;color:#b9a6ff;font-weight:700">Palette Pro</span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#b9a6ff" stroke-width="2.4"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+            <div style="display:flex;flex-direction:column;gap:11px">
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px 16px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#d6409f"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:15.5px;font-weight:700">J-POP丸サ進行</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div style="font-size:12.5px;color:#9aa3b5;font-family:ui-monospace,monospace;letter-spacing:.4px;margin-bottom:10px">FM7 · E7 · Am7 · C7</div><div style="display:flex;gap:6px"><span style="font-size:10.5px;color:#c99ad8;background:rgba(214,64,159,.14);padding:4px 9px;border-radius:7px">エモい</span><span style="font-size:10.5px;color:#c99ad8;background:rgba(214,64,159,.14);padding:4px 9px;border-radius:7px">浮遊感</span></div></div>
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px 16px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#3b82f6"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:15.5px;font-weight:700">Just The Two of Us進行</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div style="font-size:12.5px;color:#9aa3b5;font-family:ui-monospace,monospace;letter-spacing:.4px;margin-bottom:10px">FM7 · E7 · Am7 · Gm7-C7</div><div style="display:flex;gap:6px"><span style="font-size:10.5px;color:#8fb6f2;background:rgba(59,130,246,.14);padding:4px 9px;border-radius:7px">おしゃれ</span><span style="font-size:10.5px;color:#8fb6f2;background:rgba(59,130,246,.14);padding:4px 9px;border-radius:7px">都会的</span></div></div>
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px 16px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#ef4444"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:15.5px;font-weight:700">Pop Punk進行</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div style="font-size:12.5px;color:#9aa3b5;font-family:ui-monospace,monospace;letter-spacing:.4px;margin-bottom:10px">C · G · Am · F</div><div style="display:flex;gap:6px"><span style="font-size:10.5px;color:#f0918f;background:rgba(239,68,68,.14);padding:4px 9px;border-radius:7px">疾走感</span><span style="font-size:10.5px;color:#f0918f;background:rgba(239,68,68,.14);padding:4px 9px;border-radius:7px">ロック</span></div></div>
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px 16px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#8b5cf6"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:15.5px;font-weight:700">小室進行</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div style="font-size:12.5px;color:#9aa3b5;font-family:ui-monospace,monospace;letter-spacing:.4px;margin-bottom:10px">Am · F · G · C</div><div style="display:flex;gap:6px"><span style="font-size:10.5px;color:#b9a6ff;background:rgba(139,92,246,.16);padding:4px 9px;border-radius:7px">切ない</span><span style="font-size:10.5px;color:#b9a6ff;background:rgba(139,92,246,.16);padding:4px 9px;border-radius:7px">ドラマチック</span></div></div>
+              <div style="position:relative;background:#141c2b;border:1px solid rgba(255,255,255,.08);border-radius:16px;padding:15px 16px;overflow:hidden"><div style="position:absolute;left:0;top:0;bottom:0;width:4px;background:#22c55e"></div><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px"><span style="font-size:15.5px;font-weight:700">City Pop進行</span><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div><div style="font-size:12.5px;color:#9aa3b5;font-family:ui-monospace,monospace;letter-spacing:.4px;margin-bottom:10px">FM7 · G7 · Em7 · Am7</div><div style="display:flex;gap:6px"><span style="font-size:10.5px;color:#7fd99b;background:rgba(34,197,94,.14);padding:4px 9px;border-radius:7px">爽やか</span><span style="font-size:10.5px;color:#7fd99b;background:rgba(34,197,94,.14);padding:4px 9px;border-radius:7px">夜景</span></div></div>
+            </div>
+            <div style="text-align:center;font-size:11.5px;color:#6b7688;margin-top:18px;line-height:1.6">選ぶと編集画面（2）に読み込まれ、<br>自由に編集できます。</div>
+          </div>
+          <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.55);z-index:40"></div>
+        </div>
+      </div>
+      <div style="width:360px;text-align:center;color:#6b7688;font-size:12px;line-height:1.65">初心者のたたき台。<span style="color:#9aa3b5">無料は1つ、Pro解放で5つ追加</span>。選択 → 編集画面へ</div>
+    </div>
+
+    <!-- ============ SCREEN 4 : 再生・グルーヴ設定 ============ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:9px;color:#aab3c6;font-size:13px;font-weight:700"><span style="width:22px;height:22px;border-radius:6px;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">4</span>再生・グルーヴ設定</div>
+      <div style="position:relative;width:414px;padding:11px;background:linear-gradient(155deg,#40454f,#14161b);border-radius:56px;box-shadow:0 34px 60px -20px rgba(0,0,0,.8),0 0 0 2px #05070c,inset 0 0 4px rgba(255,255,255,.18)">
+        <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:60"></div>
+        <div style="position:relative;width:390px;height:842px;background:#0d1422;border-radius:46px;overflow:hidden;color:#eef1f6;display:flex;flex-direction:column">
+          <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 28px 8px;flex:none"><span style="font-size:15px;font-weight:700;letter-spacing:.3px">9:41</span><div style="display:flex;align-items:center;gap:7px"><svg width="18" height="11" viewBox="0 0 18 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg><svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><path d="M8 11L15.5 2.6A11 11 0 0 0 .5 2.6z" opacity=".95"/></svg><svg width="27" height="12" viewBox="0 0 27 12"><rect x="0.5" y="1" width="22" height="10" rx="3" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2" y="2.5" width="17.5" height="7" rx="1.5" fill="#fff"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg></div></div>
+          <div style="flex:1;overflow:hidden auto;padding:2px 20px 26px">
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0 16px"><div style="width:34px;height:34px;border-radius:10px;background:#151d2c;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#cdd4e2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div><span style="font-size:20px;font-weight:800">再生 &amp; グルーヴ</span></div>
+
+            <!-- current prog -->
+            <div style="background:#101828;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:14px 15px;margin-bottom:16px">
+              <div style="font-size:10.5px;color:#6b7688;font-weight:600;margin-bottom:10px">現在の進行</div>
+              <div style="display:flex;align-items:center;gap:6px">
+                <span style="flex:1;text-align:center;font-size:13px;font-weight:700;color:#f0918f;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);border-radius:9px;padding:8px 0">Cmaj7</span><span style="color:#525c70">→</span>
+                <span style="flex:1;text-align:center;font-size:13px;font-weight:700;color:#8fb6f2;background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.3);border-radius:9px;padding:8px 0">G7</span><span style="color:#525c70">→</span>
+                <span style="flex:1;text-align:center;font-size:13px;font-weight:700;color:#b9a6ff;background:rgba(139,92,246,.14);border:1px solid rgba(139,92,246,.35);border-radius:9px;padding:8px 0">Am7</span><span style="color:#525c70">→</span>
+                <span style="flex:1;text-align:center;font-size:13px;font-weight:700;color:#7fd99b;background:rgba(34,197,94,.12);border:1px solid rgba(34,197,94,.3);border-radius:9px;padding:8px 0">Fmaj7</span>
+              </div>
+            </div>
+
+            <!-- big play -->
+            <div style="display:flex;align-items:center;justify-content:center;gap:22px;background:#101828;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:16px;margin-bottom:20px">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 20L9 12l10-8zM5 19V5"/></svg>
+              <div style="width:66px;height:66px;border-radius:50%;background:linear-gradient(135deg,#7c5cff,#5b8cff);display:flex;align-items:center;justify-content:center;box-shadow:0 12px 26px -8px rgba(124,92,255,.75)"><svg width="27" height="27" viewBox="0 0 24 24" fill="#fff"><path d="M7 5l13 7-13 7z"/></svg></div>
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9aa3b5" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 4l10 8-10 8zM19 5v14"/></svg>
+            </div>
+
+            <!-- 音色 -->
+            <div style="font-size:13.5px;font-weight:700;color:#e6eaf2;margin:0 2px 10px">音色</div>
+            <div style="display:flex;gap:8px;margin-bottom:9px">
+              <div style="flex:1;text-align:center;padding:12px 0;border-radius:12px;background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(91,140,255,.22));border:1.5px solid #7c5cff;font-size:13px;font-weight:700">Piano</div>
+              <div style="flex:1;text-align:center;padding:12px 0;border-radius:12px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:13px;font-weight:600;color:#cdd4e2">E.Piano</div>
+            </div>
+            <div style="display:flex;gap:8px;margin-bottom:20px">
+              <div style="position:relative;flex:1;text-align:center;padding:12px 0;border-radius:12px;background:#10151f;border:1px solid rgba(255,255,255,.05);font-size:12px;font-weight:600;color:#6b7688">アコギ<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.4" style="position:absolute;top:6px;right:7px"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+              <div style="position:relative;flex:1;text-align:center;padding:12px 0;border-radius:12px;background:#10151f;border:1px solid rgba(255,255,255,.05);font-size:12px;font-weight:600;color:#6b7688">エレキ<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.4" style="position:absolute;top:6px;right:7px"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+              <div style="position:relative;flex:1;text-align:center;padding:12px 0;border-radius:12px;background:#10151f;border:1px solid rgba(255,255,255,.05);font-size:12px;font-weight:600;color:#6b7688">ストリングス<svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c8a24a" stroke-width="2.4" style="position:absolute;top:6px;right:7px"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+            </div>
+
+            <!-- ドラムグルーヴ -->
+            <div style="font-size:13.5px;font-weight:700;color:#e6eaf2;margin:0 2px 10px">ドラムグルーヴ</div>
+            <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:20px">
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(91,140,255,.22));border:1.5px solid #7c5cff;font-size:12px;font-weight:700">Pop 8beat</div>
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:600;color:#cdd4e2">Pop 16beat</div>
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:600;color:#cdd4e2">Rock 8beat</div>
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:600;color:#cdd4e2">Rock 16beat</div>
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:600;color:#cdd4e2">Soul 16beat</div>
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:600;color:#cdd4e2">Jazz Swing</div>
+              <div style="text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12px;font-weight:600;color:#cdd4e2">Bossa Nova</div>
+            </div>
+
+            <!-- 伴奏パターン -->
+            <div style="font-size:13.5px;font-weight:700;color:#e6eaf2;margin:0 2px 10px">伴奏パターン</div>
+            <div style="display:flex;gap:7px;margin-bottom:20px">
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:linear-gradient(135deg,rgba(124,92,255,.22),rgba(91,140,255,.22));border:1.5px solid #7c5cff;font-size:12.5px;font-weight:700">Block</div>
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12.5px;font-weight:600;color:#9aa3b5">8beat</div>
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12.5px;font-weight:600;color:#9aa3b5">16beat</div>
+              <div style="flex:1;text-align:center;padding:11px 0;border-radius:11px;background:#141c2b;border:1px solid rgba(255,255,255,.08);font-size:12.5px;font-weight:600;color:#9aa3b5">Arpeggio</div>
+            </div>
+
+            <!-- 音量 -->
+            <div style="background:#101828;border:1px solid rgba(255,255,255,.06);border-radius:14px;padding:13px 15px;margin-bottom:18px;display:flex;flex-direction:column;gap:13px">
+              <div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:#b9c2d4;font-weight:600;width:56px">コード音</span><div style="flex:1;height:5px;border-radius:3px;background:#2a3346;position:relative"><div style="position:absolute;left:0;top:0;height:100%;width:70%;border-radius:3px;background:linear-gradient(90deg,#5b8cff,#7c4dff)"></div><div style="position:absolute;left:70%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div><span style="font-size:12px;color:#9aa3b5;font-weight:700;width:34px;text-align:right">70%</span></div>
+              <div style="display:flex;align-items:center;gap:12px"><span style="font-size:12px;color:#b9c2d4;font-weight:600;width:56px">ドラム</span><div style="flex:1;height:5px;border-radius:3px;background:#2a3346;position:relative"><div style="position:absolute;left:0;top:0;height:100%;width:90%;border-radius:3px;background:linear-gradient(90deg,#5b8cff,#7c4dff)"></div><div style="position:absolute;left:90%;top:50%;transform:translate(-50%,-50%);width:16px;height:16px;border-radius:50%;background:#fff;box-shadow:0 1px 4px rgba(0,0,0,.5)"></div></div><span style="font-size:12px;color:#9aa3b5;font-weight:700;width:34px;text-align:right">90%</span></div>
+            </div>
+
+            <!-- pro upsell -->
+            <div style="display:flex;align-items:center;gap:12px;background:linear-gradient(135deg,rgba(124,92,255,.14),rgba(214,64,159,.12));border:1px solid rgba(124,92,255,.35);border-radius:16px;padding:14px 16px">
+              <div style="width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,#7c4dff,#d6409f);display:flex;align-items:center;justify-content:center;flex:none"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
+              <div style="flex:1"><div style="font-size:13.5px;font-weight:700">音色をもっと増やす</div><div style="font-size:11px;color:#9aa3b5;margin-top:2px">Palette Proでギター・ストリングスを解放</div></div>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#b9a6ff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.55);z-index:40"></div>
+        </div>
+      </div>
+      <div style="width:360px;text-align:center;color:#6b7688;font-size:12px;line-height:1.65">ドラム＋伴奏で「すぐ曲になる」。<span style="color:#9aa3b5">Pro音色は鍵アイコン＋導線を表示</span></div>
+    </div>
+<!-- ============ SCREEN 5 : 動画書き出し ============ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:9px;color:#aab3c6;font-size:13px;font-weight:700"><span style="width:22px;height:22px;border-radius:6px;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">5</span>動画書き出し</div>
+      <div style="position:relative;width:414px;padding:11px;background:linear-gradient(155deg,#40454f,#14161b);border-radius:56px;box-shadow:0 34px 60px -20px rgba(0,0,0,.8),0 0 0 2px #05070c,inset 0 0 4px rgba(255,255,255,.18)">
+        <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:60"></div>
+        <div style="position:relative;width:390px;height:842px;background:#0d1422;border-radius:46px;overflow:hidden;color:#eef1f6;display:flex;flex-direction:column">
+          <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 28px 8px;flex:none"><span style="font-size:15px;font-weight:700;letter-spacing:.3px">9:41</span><div style="display:flex;align-items:center;gap:7px"><svg width="18" height="11" viewBox="0 0 18 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg><svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><path d="M8 11L15.5 2.6A11 11 0 0 0 .5 2.6z" opacity=".95"/></svg><svg width="27" height="12" viewBox="0 0 27 12"><rect x="0.5" y="1" width="22" height="10" rx="3" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2" y="2.5" width="17.5" height="7" rx="1.5" fill="#fff"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg></div></div>
+          <div style="flex:1;overflow:hidden auto;padding:2px 20px 26px">
+            <div style="display:flex;align-items:center;gap:10px;padding:6px 0 16px"><div style="width:34px;height:34px;border-radius:10px;background:#151d2c;border:1px solid rgba(255,255,255,.06);display:flex;align-items:center;justify-content:center"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#cdd4e2" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg></div><span style="font-size:20px;font-weight:800">動画を書き出し</span></div>
+
+            <!-- 9:16 preview -->
+            <div style="position:relative;width:214px;height:380px;margin:0 auto 20px;border-radius:20px;overflow:hidden;background:radial-gradient(120% 80% at 50% 0%,#1a1140,#0b0a1c 55%,#07060f);box-shadow:0 20px 40px -14px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.05)">
+              <div style="position:absolute;top:22px;left:0;right:0;text-align:center"><div style="font-size:15px;font-weight:800;letter-spacing:.3px">Morning Sketch</div><div style="font-size:10px;color:#9aa3b5;margin-top:3px;font-weight:600">BPM 120 · 4小節</div></div>
+              <div style="position:absolute;top:96px;left:0;right:0;text-align:center"><div style="font-size:58px;font-weight:900;line-height:1;background:linear-gradient(120deg,#ff5a6e,#ff9d3f,#ffd23f);-webkit-background-clip:text;background-clip:text;color:transparent">Am7</div><div style="font-size:10.5px;color:#cdd4e2;margin-top:7px;font-weight:500">温かく柔らかな響き</div></div>
+              <div style="position:absolute;bottom:96px;left:0;right:0;height:70px;display:flex;align-items:flex-end;justify-content:center;gap:2px;padding:0 16px">
+                <sc-for list="{{ bars }}" as="b" hint-placeholder-count="38"><div style="{{ b.style }}"></div></sc-for>
+              </div>
+              <div style="position:absolute;bottom:52px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:4px;padding:0 14px">
+                <span style="font-size:10px;font-weight:700;color:#8fb6f2;border:1px solid rgba(59,130,246,.5);border-radius:6px;padding:3px 6px">Cmaj7</span><span style="color:#556;font-size:9px">›</span>
+                <span style="font-size:10px;font-weight:700;color:#f0918f;border:1px solid rgba(239,68,68,.5);border-radius:6px;padding:3px 6px">G7</span><span style="color:#556;font-size:9px">›</span>
+                <span style="font-size:10px;font-weight:700;color:#ffb838;border:1.5px solid #ffb838;border-radius:6px;padding:3px 6px;background:rgba(255,184,56,.12)">Am7</span><span style="color:#556;font-size:9px">›</span>
+                <span style="font-size:10px;font-weight:700;color:#7fd99b;border:1px solid rgba(34,197,94,.5);border-radius:6px;padding:3px 6px">Fmaj7</span>
+              </div>
+              <div style="position:absolute;bottom:16px;left:0;right:0;display:flex;align-items:center;justify-content:center;gap:6px;opacity:.55"><img src="assets/icon.png" style="width:16px;height:16px;border-radius:5px"><span style="font-size:9.5px;font-weight:700">Chord <span style="color:#c9a6ff">Palette</span></span></div>
+              <div style="position:absolute;top:10px;right:10px;font-size:8px;font-weight:700;color:#cdd4e2;background:rgba(0,0,0,.4);border-radius:5px;padding:3px 6px">9:16</div>
+            </div>
+
+            <!-- 長さ -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:12px 14px;margin-bottom:11px">
+              <span style="font-size:13.5px;font-weight:600;color:#cdd4e2">長さ</span>
+              <div style="display:flex;gap:5px;background:#0f1626;border-radius:10px;padding:3px"><span style="font-size:12px;font-weight:600;color:#8a94a8;padding:6px 12px;border-radius:7px">15秒</span><span style="font-size:12px;font-weight:700;color:#fff;padding:6px 12px;border-radius:7px;background:linear-gradient(135deg,#7c5cff,#5b8cff)">30秒</span><span style="font-size:12px;font-weight:600;color:#8a94a8;padding:6px 12px;border-radius:7px">60秒</span></div>
+            </div>
+            <!-- フォーマット -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px;margin-bottom:11px">
+              <span style="font-size:13.5px;font-weight:600;color:#cdd4e2">フォーマット</span>
+              <div style="display:flex;align-items:center;gap:8px"><span style="font-size:13px;font-weight:700">縦動画 (9:16)</span><span style="font-size:11px;color:#7f8aa0">1080×1920</span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7f8aa0" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg></div>
+            </div>
+            <!-- ウォーターマーク -->
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#141c2b;border:1px solid rgba(255,255,255,.07);border-radius:14px;padding:14px;margin-bottom:22px">
+              <div><div style="font-size:13.5px;font-weight:600;color:#cdd4e2">ウォーターマーク</div><div style="font-size:11px;color:#6b7688;margin-top:3px">アプリアイコンを表示</div></div>
+              <div style="width:46px;height:28px;border-radius:16px;background:#2f3849;position:relative"><div style="position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;background:#c4ccd9"></div></div>
+            </div>
+
+            <div style="display:flex;gap:11px">
+              <button style="flex:1;border:none;cursor:pointer;padding:15px;border-radius:15px;background:#151d2c;border:1px solid rgba(255,255,255,.1);color:#e6eaf2;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#e6eaf2" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v13M7 11l5 5 5-5M5 21h14"/></svg>写真に保存</button>
+              <button style="flex:1;border:none;cursor:pointer;padding:15px;border-radius:15px;background:linear-gradient(135deg,#7c5cff,#5b8cff);color:#fff;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:700;box-shadow:0 12px 26px -10px rgba(124,92,255,.75)"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V3M8 7l4-4 4 4M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/></svg>共有</button>
+            </div>
+          </div>
+          <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.55);z-index:40"></div>
+        </div>
+      </div>
+      <div style="width:360px;text-align:center;color:#6b7688;font-size:12px;line-height:1.65">作った進行をSNS用の縦動画に。<span style="color:#9aa3b5">Instagram / TikTok 投稿を想定</span></div>
+    </div>
+
+    <!-- ============ SCREEN 6 : Palette Pro購入 ============ -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:16px">
+      <div style="display:flex;align-items:center;gap:9px;color:#aab3c6;font-size:13px;font-weight:700"><span style="width:22px;height:22px;border-radius:6px;background:#7c4dff;color:#fff;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800">6</span>Palette Pro 購入</div>
+      <div style="position:relative;width:414px;padding:11px;background:linear-gradient(155deg,#40454f,#14161b);border-radius:56px;box-shadow:0 34px 60px -20px rgba(0,0,0,.8),0 0 0 2px #05070c,inset 0 0 4px rgba(255,255,255,.18)">
+        <div style="position:absolute;top:22px;left:50%;transform:translateX(-50%);width:122px;height:34px;background:#000;border-radius:20px;z-index:60"></div>
+        <div style="position:relative;width:390px;height:842px;background:radial-gradient(120% 60% at 50% 0%,#1a1338,#0d1422 55%);border-radius:46px;overflow:hidden;color:#eef1f6;display:flex;flex-direction:column">
+          <div style="height:54px;display:flex;align-items:flex-end;justify-content:space-between;padding:14px 28px 8px;flex:none"><span style="font-size:15px;font-weight:700;letter-spacing:.3px">9:41</span><div style="display:flex;align-items:center;gap:7px"><svg width="18" height="11" viewBox="0 0 18 11" fill="#fff"><rect x="0" y="7" width="3" height="4" rx="1"/><rect x="5" y="5" width="3" height="6" rx="1"/><rect x="10" y="2.5" width="3" height="8.5" rx="1"/><rect x="15" y="0" width="3" height="11" rx="1"/></svg><svg width="16" height="11" viewBox="0 0 16 11" fill="#fff"><path d="M8 11L15.5 2.6A11 11 0 0 0 .5 2.6z" opacity=".95"/></svg><svg width="27" height="12" viewBox="0 0 27 12"><rect x="0.5" y="1" width="22" height="10" rx="3" fill="none" stroke="#fff" stroke-opacity=".45"/><rect x="2" y="2.5" width="17.5" height="7" rx="1.5" fill="#fff"/><rect x="24" y="4" width="2" height="4" rx="1" fill="#fff" fill-opacity=".5"/></svg></div></div>
+          <div style="flex:1;overflow:hidden auto;padding:2px 22px 26px">
+            <div style="display:flex;justify-content:flex-end;padding:4px 0 8px"><div style="width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#cdd4e2" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></div></div>
+
+            <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:22px">
+              <img src="assets/icon.png" style="width:92px;height:92px;border-radius:24px;box-shadow:0 16px 40px -10px rgba(124,77,255,.6),0 0 0 1px rgba(255,255,255,.07);margin-bottom:16px">
+              <div style="font-size:30px;font-weight:900"><span style="background:linear-gradient(90deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6);-webkit-background-clip:text;background-clip:text;color:transparent">Palette</span><span> Pro</span></div>
+              <div style="font-size:15px;color:#b9c2d4;font-weight:600;margin-top:8px">もっと自由に、もっと深く。</div>
+            </div>
+
+            <!-- price card -->
+            <div style="position:relative;border-radius:20px;padding:1.5px;background:linear-gradient(120deg,#ef4444,#f97316,#eab308,#22c55e,#3b82f6,#8b5cf6);margin-bottom:14px;box-shadow:0 14px 34px -12px rgba(124,92,255,.5)">
+              <div style="display:flex;align-items:center;gap:14px;background:#0f1424;border-radius:19px;padding:17px 18px">
+                <div style="width:48px;height:48px;border-radius:14px;background:linear-gradient(135deg,#7c4dff,#d6409f);display:flex;align-items:center;justify-content:center;flex:none;font-size:22px">👑</div>
+                <div style="flex:1"><div style="display:flex;align-items:baseline;gap:8px"><span style="font-size:13px;color:#9aa3b5;font-weight:600">買い切り</span><span style="font-size:24px;font-weight:900">¥490</span></div><div style="font-size:11.5px;color:#8a94a8;margin-top:3px">一度の購入でずっと使える</div></div>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#8a94a8" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+
+            <!-- perks -->
+            <div style="display:flex;flex-direction:column;gap:11px;margin-bottom:22px">
+              <div style="display:flex;align-items:center;gap:14px;background:#131a2a;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:15px 16px">
+                <div style="width:46px;height:46px;border-radius:13px;background:rgba(59,130,246,.14);border:1px solid rgba(59,130,246,.3);display:flex;align-items:center;justify-content:center;flex:none;font-size:20px;color:#8fb6f2">♪</div>
+                <div style="flex:1"><div style="font-size:15px;font-weight:700">高度コード</div><div style="font-size:11px;color:#8a94a8;margin-top:3px;line-height:1.5">6th / 借用和音 / セカンダリードミナント / オンコード</div></div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#556" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#131a2a;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:15px 16px">
+                <div style="width:46px;height:46px;border-radius:13px;background:rgba(239,68,68,.13);border:1px solid rgba(239,68,68,.3);display:flex;align-items:center;justify-content:center;flex:none;font-size:21px;color:#f0918f">♫</div>
+                <div style="flex:1"><div style="font-size:15px;font-weight:700">追加音色</div><div style="font-size:11px;color:#8a94a8;margin-top:3px;line-height:1.5">アコギ / エレキギター / ストリングス</div></div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#556" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+              <div style="display:flex;align-items:center;gap:14px;background:#131a2a;border:1px solid rgba(255,255,255,.06);border-radius:16px;padding:15px 16px">
+                <div style="width:46px;height:46px;border-radius:13px;background:rgba(139,92,246,.15);border:1px solid rgba(139,92,246,.35);display:flex;align-items:center;justify-content:center;flex:none;font-size:20px;color:#b9a6ff">★</div>
+                <div style="flex:1"><div style="font-size:15px;font-weight:700">追加プリセット</div><div style="font-size:11px;color:#8a94a8;margin-top:3px;line-height:1.5">丸サ / Just The Two of Us / Pop Punk / 小室 / City Pop</div></div>
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#556" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+
+            <button style="width:100%;border:none;cursor:pointer;padding:17px;border-radius:16px;background:linear-gradient(100deg,#8b5cf6,#5b8cff,#22c55e,#eab308,#f97316,#ef4444);color:#fff;font-family:inherit;font-size:16.5px;font-weight:800;box-shadow:0 14px 32px -10px rgba(124,92,255,.7);text-shadow:0 1px 2px rgba(0,0,0,.25)">Palette Proを購入</button>
+            <div style="text-align:center;margin-top:16px"><span style="font-size:13.5px;color:#8fa0c4;font-weight:600">購入を復元する</span></div>
+            <div style="text-align:center;font-size:10.5px;color:#5a footer;color:#5c footer;color:#57melody;color:#5a6478;margin-top:14px;line-height:1.6">サブスクリプションではありません。<br>買い切りで、追加課金なしでずっと使えます。</div>
+          </div>
+          <div style="position:absolute;bottom:9px;left:50%;transform:translateX(-50%);width:134px;height:5px;border-radius:3px;background:rgba(255,255,255,.55);z-index:40"></div>
+        </div>
+      </div>
+      <div style="width:360px;text-align:center;color:#6b7688;font-size:12px;line-height:1.65">買い切り¥490の価値を明確に。<span style="color:#9aa3b5">サブスクではないことを強調</span></div>
+    </div>
+
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  renderVals() {
+    const pal = ['#ef4444','#f97316','#eab308','#22c55e','#3b82f6','#8b5cf6','#d6409f'];
+    const bars = Array.from({length: 38}, (_, i) => {
+      const h = 12 + Math.round((Math.sin(i * 0.9) * 0.5 + 0.5) * 52 + (i % 3) * 7);
+      const c = pal[i % pal.length];
+      const dur = (0.8 + (i % 5) * 0.13).toFixed(2);
+      const del = ((i % 7) * 0.09).toFixed(2);
+      return { style: `flex:none;width:5px;height:${h}px;border-radius:3px;background:${c};transform-origin:bottom;animation:eq ${dur}s ease-in-out ${del}s infinite` };
+    });
+    return { bars };
+  }
+}
+</script>
+<script>
+(async () => {
+  if (!document.title || !document.title.trim()) document.title = "Chord Palette";
+  // Prepend so page-supplied @page / break rules (deck-stage's margin:0,
+  // author CSS) keep source-order precedence over the baseline.
+  const baseCss = document.createElement('style');
+  baseCss.textContent = "@media print {\n  figure, table { break-inside: avoid; }\n  *, *::before, *::after {\n    print-color-adjust: exact; -webkit-print-color-adjust: exact;\n    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;\n    animation-delay: -99s !important; animation-duration: .001s !important;\n    animation-iteration-count: 1 !important; animation-fill-mode: both !important;\n    animation-play-state: running !important; transition-duration: 0s !important;\n  }\n}";
+  document.head.prepend(baseCss);
+  if (document.readyState === 'loading') {
+    await new Promise((r) => document.addEventListener('DOMContentLoaded', r, { once: true }));
+  }
+  let ds = document.querySelector('deck-stage');
+  // whenDefined never resolves when nothing registers the element, so only
+  // await it when a <deck-stage> tag exists (and race a timeout regardless).
+  if (ds && !customElements.get('deck-stage')) {
+    try {
+      await Promise.race([
+        customElements.whenDefined('deck-stage'),
+        new Promise((r) => setTimeout(r, 3000)),
+      ]);
+    } catch (e) {}
+    ds = document.querySelector('deck-stage');
+  }
+  // dc-runtime assigns window.DCLogic at init and mounts into #dc-root on
+  // DOMContentLoaded; settle on that subtree so React has rendered before
+  // print(). Non-DC pages fall through to weighing body.
+  const isDc = !ds && 'DCLogic' in window;
+  const settleRoot = ds || (isDc ? document.getElementById('dc-root') : null) || document.body;
+  if (settleRoot) {
+    // Weigh only content children — skip script/style/template so inline
+    // Babel/CSS doesn't register as stable "content" before the framework
+    // has mounted anything.
+    const MEDIA = 'img,svg,canvas,video,picture,iframe,embed,object';
+    const weigh = () => {
+      let text = 0, media = 0;
+      for (const c of settleRoot.children) {
+        const t = c.tagName;
+        if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+        text += (c.textContent || '').trim().length;
+        media += c.querySelectorAll(MEDIA).length + (c.matches(MEDIA) ? 1 : 0);
+      }
+      return text + media * 100;
+    };
+    // "Non-zero and stable" alone is not sufficient to mean rendered: generic
+    // body can carry a static shell while async main content is pending, and
+    // #dc-root can carry the root DC's static text while child refs are still
+    // .sc-placeholder boxes. Gate generic on readyState 'complete', and never
+    // accept stability while a dc-runtime placeholder is present.
+    const isGeneric = settleRoot === document.body;
+    const deadline = Date.now() + 15000;
+    let last = -1, stable = 0;
+    while (Date.now() < deadline) {
+      const n = weigh();
+      const ready =
+        (!isGeneric || document.readyState === 'complete') &&
+        !settleRoot.querySelector('.sc-placeholder');
+      if (n > 0 && n === last && ready) { if (++stable >= 2) break; } else { stable = 0; }
+      last = n;
+      await new Promise((r) => setTimeout(r, 250));
+    }
+  }
+  // Project support.js may predate runtime default-seeding; push via bridge.
+  if (isDc && window.__dcSetProps && window.__dcRootName) {
+    try {
+      const dpEl = document.querySelector('script[data-dc-script]');
+      const meta = JSON.parse((dpEl && dpEl.getAttribute('data-props')) || '{}');
+      const bag = {};
+      for (const k in meta)
+        if (k[0] !== '$' && meta[k] && meta[k].default !== undefined)
+          bag[k] = meta[k].default;
+      if (Object.keys(bag).length) {
+        window.__dcSetProps(window.__dcRootName(), bag);
+        await new Promise((r) => setTimeout(r, 50));
+      }
+    } catch (e) {}
+  }
+  // Reveal content gated on scroll or visibility before printing. Lazy <img>,
+  // IntersectionObserver fade-ins, and collapsed <details> don't render while
+  // off-screen, so a long page would print with them blank or closed. Open
+  // every <details>, force native-lazy images eager, and scroll the document
+  // through its full height to trip lazy-load + IO; then wait (bounded) for the
+  // newly-triggered images. Inert for deck-stage (slides aren't scroll-gated).
+  try {
+    for (const d of document.querySelectorAll('details')) d.open = true;
+    for (const img of document.querySelectorAll('img[loading="lazy"]'))
+      img.loading = 'eager';
+    const scroller = document.scrollingElement || document.documentElement;
+    const full = Math.max(scroller.scrollHeight, document.body.scrollHeight);
+    const step = window.innerHeight || 800;
+    for (let y = 0; y <= full; y += step) {
+      window.scrollTo(0, y);
+      await new Promise((r) => requestAnimationFrame(r));
+    }
+    window.scrollTo(0, 0);
+    await Promise.race([
+      Promise.all(
+        [...document.images].map((img) =>
+          img.complete
+            ? null
+            : new Promise((res) => {
+                img.addEventListener('load', res, { once: true });
+                img.addEventListener('error', res, { once: true });
+              })
+        )
+      ),
+      new Promise((r) => setTimeout(r, 4000)),
+    ]);
+  } catch (e) {}
+  try { await document.fonts.ready; } catch (e) {}
+  // Jump every animation to its end state so print() never captures a slide
+  // mid-entrance. Ordering matters: the 0s-transition style must be live
+  // BEFORE data-deck-active is set so attribute-keyed transitions don't
+  // start a (now-0s) run from the pre-active base.
+  const st = document.createElement('style');
+  st.textContent = '*,*::before,*::after{animation-delay:-99s !important;animation-duration:.001s !important;animation-iteration-count:1 !important;animation-fill-mode:both !important;animation-play-state:running !important;transition-duration:0s !important}';
+  document.head.appendChild(st);
+  for (const d of document.querySelectorAll('deck-stage')) {
+    for (const c of d.children) {
+      const t = c.tagName;
+      if (t === 'SCRIPT' || t === 'STYLE' || t === 'TEMPLATE') continue;
+      c.setAttribute('data-deck-active', '');
+    }
+  }
+  // Re-append deck-stage's @page last so no author @page can add a margin and
+  // spill each full-bleed slide onto two sheets. Backstop for old copies.
+  if (ds) {
+    let pg = document.getElementById('deck-stage-print-page');
+    if (!pg) {
+      pg = document.createElement('style');
+      pg.textContent = '@page{size:' + (+ds.getAttribute('width') || 1920) +
+        'px ' + (+ds.getAttribute('height') || 1080) + 'px;margin:0}';
+    }
+    document.body.appendChild(pg);
+  }
+  try {
+    const sweep = () => {
+      for (const a of document.getAnimations()) {
+        try { a.finish(); } catch (e) {
+          try { a.currentTime = (a.effect && a.effect.getComputedTiming().duration) || 0; a.pause(); } catch (e2) {}
+        }
+      }
+    };
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+    sweep();
+    await new Promise((r) => requestAnimationFrame(r));
+  } catch (e) {}
+  // Size the PDF page to the rendered design unless the file opted into
+  // standard paper via @page{size:letter|A4|…}. Decks own their own @page.
+  // Wrappers (body, …) lose padding+margin so the frame sits at (0,0); the
+  // frame itself loses only margin — its padding is INSIDE the measured
+  // rect and must stay, or content shifts and leaves a gap at bottom/right.
+  var __m = null;
+  try { __m = (() => {
+  var STAMP = true;
+  var docEl = document.documentElement;
+  var doc = { width: docEl.scrollWidth, height: docEl.scrollHeight };
+
+  var ds = document.querySelector('deck-stage');
+  if (ds) {
+    var dw = Number(ds.getAttribute('width')) || 1920;
+    var dh = Number(ds.getAttribute('height')) || 1080;
+    var n = typeof ds.length === 'number' ? ds.length : ds.children.length;
+    var idx = typeof ds.index === 'number' ? ds.index : 0;
+    var frames = [];
+    for (var i = 0; i < n; i++) frames.push({ left: 0, top: 0, width: dw, height: dh });
+    return { kind: 'deck', source: 'declared', doc: doc, frames: frames,
+      authored: frames.map(function(){return{width:true,height:true}}),
+      deck: { width: dw, height: dh, slideCount: n, index: idx },
+      signals: { paperPage: false, pxPage: false } };
+  }
+
+  // Declared kind: a doc-page tag names the kind outright, so no signal
+  // heuristics run (like the deck branch above, signals report false —
+  // they describe inferred classifications only). The tag alone is not
+  // trusted: the element must have upgraded (shadowRoot present), so a
+  // leftover tag whose script was deleted falls through to the heuristics
+  // that handle plain markup.
+  var stageSx = window.scrollX || 0, stageSy = window.scrollY || 0;
+  var dp = document.querySelector('doc-page');
+  if (dp && dp.shadowRoot) {
+    // Crop to the sheet, not the host — the desk around it is screen-only
+    // chrome that must not land in PNG exports.
+    var sheet = dp.shadowRoot.querySelector('.sheet');
+    var sr = (sheet || dp).getBoundingClientRect();
+    return { kind: 'paper-doc', source: 'declared', doc: doc,
+      frames: [{ left: sr.left + stageSx, top: sr.top + stageSy,
+        width: sr.width, height: sr.height }],
+      authored: [{ width: false, height: false }],
+      signals: { paperPage: false, pxPage: false } };
+  }
+  var paperPage = false, pxPage = false;
+  var eachRule = function (fn) {
+    for (var s = 0; s < document.styleSheets.length; s++) {
+      var rs; try { rs = document.styleSheets[s].cssRules; } catch (e) { continue; }
+      for (var r = 0; r < rs.length; r++) {
+        fn(rs[r]);
+        if (rs[r].cssRules) for (var n = 0; n < rs[r].cssRules.length; n++) fn(rs[r].cssRules[n]);
+      }
+    }
+  };
+  eachRule(function (r) {
+    if (r.type !== 6) return;
+    var m = /\bsize\s*:\s*([^;}]+)/i.exec(r.cssText || '');
+    if (!m) return;
+    if (/\b(letter|a[3-5]|legal|ledger)\b/i.test(m[1])) paperPage = true;
+    if (/\d+(?:\.\d+)?px\b/i.test(m[1])) pxPage = true;
+  });
+  var signals = { paperPage: paperPage, pxPage: pxPage };
+
+  var pxVal = function (v) {
+    var m = /^(\d+(?:\.\d+)?)px$/.exec(v || ''); return m ? +m[1] : 0;
+  };
+  var authoredPx = function (el, prop) {
+    if (pxVal(el.style[prop])) return true;
+    var attr = el.getAttribute(prop);
+    if (attr && /^\d+$/.test(attr)) return true;
+    var hit = false;
+    eachRule(function (r) {
+      if (hit || r.type !== 1 || !r.style) return;
+      try { if (el.matches(r.selectorText) && pxVal(r.style[prop])) hit = true; } catch (e) {}
+    });
+    return hit;
+  };
+
+  var el = document.body, rootPxW = false;
+  for (;;) {
+    var kids = [];
+    for (var c = 0; c < el.children.length; c++) {
+      var t = el.children[c].tagName;
+      if (t !== 'SCRIPT' && t !== 'STYLE' && t !== 'TEMPLATE') kids.push(el.children[c]);
+    }
+    if (kids.length !== 1 || !(kids[0] instanceof HTMLElement)) break;
+    if (STAMP) el.setAttribute('data-om-frame-wrap', '');
+    el = kids[0];
+    rootPxW = authoredPx(el, 'width');
+    if (rootPxW) break;
+  }
+  if (!rootPxW) rootPxW = authoredPx(el, 'width');
+
+  // @page{size:letter} alone is a flowing doc; with a px-width root it's a
+  // fixed sheet pretending to be paper — fall through and size to render.
+  if (paperPage && !rootPxW) {
+    return { kind: 'paper-doc', source: 'inferred', doc: doc, signals: signals,
+      frames: [{ left: 0, top: 0, width: doc.width, height: doc.height }],
+      authored: [{ width: false, height: false }] };
+  }
+
+  var sx = window.scrollX || 0, sy = window.scrollY || 0;
+  var rectOf = function (e) {
+    var r = e.getBoundingClientRect();
+    var oy; try { oy = getComputedStyle(e).overflowY; } catch (err) {}
+    var h = oy === 'visible' ? Math.max(r.height, e.scrollHeight || 0) : r.height;
+    return { left: r.left + sx, top: r.top + sy, width: r.width, height: h };
+  };
+
+  // Multi-frame: ≥2 visible non-fixed children, each with authored px width
+  // AND height, all within ±2px of each other. Off unless the page opts in
+  // via data-om-multi-frame on the stop element — guards against card grids
+  // and pricing tables that match the geometry but aren't separate canvases.
+  if (el.hasAttribute('data-om-multi-frame')) {
+    var cands = [];
+    for (var k = 0; k < el.children.length; k++) {
+      var ch = el.children[k];
+      var cs; try { cs = getComputedStyle(ch); } catch (e) { continue; }
+      if (cs.display === 'none' || cs.visibility === 'hidden' || cs.position === 'fixed') continue;
+      var rc = rectOf(ch);
+      if (rc.width < 2 || rc.height < 2) continue;
+      if (!authoredPx(ch, 'width') || !authoredPx(ch, 'height')) continue;
+      cands.push(rc);
+    }
+    if (cands.length >= 2) {
+      var w0 = cands[0].width, h0 = cands[0].height, ok = true;
+      for (var q = 1; q < cands.length; q++)
+        if (Math.abs(cands[q].width - w0) > 2 || Math.abs(cands[q].height - h0) > 2) ok = false;
+      if (ok) return { kind: 'multi-frame', source: 'inferred', doc: doc, signals: signals,
+        frames: cands, authored: cands.map(function(){return{width:true,height:true}}) };
+    }
+  }
+
+  if (STAMP) el.setAttribute('data-om-frame', '');
+  return { kind: 'single-canvas', source: 'inferred', doc: doc, signals: signals,
+    frames: [rectOf(el)],
+    authored: [{ width: rootPxW, height: authoredPx(el, 'height') }] };
+})(); } catch (e) {}
+  var frame = null;
+  if (__m && __m.kind === 'single-canvas') {
+    var f = __m.frames && __m.frames[0];
+    if (f && f.width >= 200 && f.height >= 200) {
+      frame = f;
+      var fst = document.createElement('style');
+      fst.textContent = '@media print{@page{size:' + Math.ceil(f.width) + 'px ' +
+        Math.ceil(f.height) + 'px;margin:0}' +
+        'html,body,[data-om-frame-wrap]{padding:0!important;margin:0!important;background:none!important}' +
+        '[data-om-frame]{margin:0!important}}';
+      document.body.appendChild(fst);
+    }
+  }
+  // Relax break-inside on oversized elements. An element taller than a
+  // printable page can't honor break-inside: avoid — browsers either overflow
+  // it or push it whole to the next page, leaving a blank gap, then break it
+  // anyway at an arbitrary point. After the final layout (content revealed,
+  // animations jumped), find elements taller than a page that still compute
+  // break-inside: avoid and reset them to auto, so the browser breaks them at
+  // their children's boundaries instead (children keep their own avoid). PAGE_PX
+  // is a conservative portrait estimate at 96 CSS px/in — Letter/A4 usable
+  // height minus our 0.5in margins — so only clearly-oversized elements are
+  // touched and under-page elements still stay whole. Skipped for decks (slides
+  // are sized to the page) and for fixed-size canvases (frame set, or an author
+  // px-based @page) — runs as before for flowing docs on letter/A4.
+  try {
+    if (!ds && !frame && !(__m && __m.signals && __m.signals.pxPage)) {
+      const PAGE_PX = 1024;
+      // Our print defaults add a real @page margin only when the source has
+      // no @page of its own; computed style can't tell us (it reports screen
+      // media), so read the injected rule directly.
+      const defaults = document.querySelector('style[data-omelette-print-defaults]');
+      const pageInset = /@page\s*\{[^}]*margin/.test(defaults ? defaults.textContent || '' : '');
+      const SEL = 'section,article,figure,table,pre,blockquote,[class~="card" i],[class~="page" i],[class~="sheet" i]';
+      for (const el of document.body.querySelectorAll(SEL)) {
+        if (el instanceof HTMLElement && el.offsetHeight > PAGE_PX) {
+          el.setAttribute('data-om-oversized', '');
+          // Fake-paged docs simulate sheets with over-tall break-after:page
+          // boxes; honoring the break spills half-blank pages and ends a
+          // colored box mid-sheet. Flow them, and (only when we own the page
+          // inset) drop the redundant padding/background via the rule below.
+          const cs = getComputedStyle(el);
+          if (cs.breakAfter === 'page' || cs.pageBreakAfter === 'always') {
+            el.setAttribute('data-om-fakepage', '');
+          }
+        }
+      }
+      const ost = document.createElement('style');
+      ost.textContent = '@media print{' +
+        '[data-om-oversized]{break-inside:auto !important;page-break-inside:auto !important}' +
+        '[data-om-fakepage]{break-after:auto !important;page-break-after:auto !important}' +
+        (pageInset ? '[data-om-fakepage]{padding:0 !important;background:none !important}' : '') +
+        '}';
+      document.head.appendChild(ost);
+    }
+  } catch (e) {}
+  // macOS Preview renders Skia-PDF Luminosity soft-masks as opaque grey boxes;
+  // swap the CSS that triggers them for Preview-safe forms.
+  try {
+    for (const el of document.body.querySelectorAll('*')) {
+      const cs = getComputedStyle(el);
+
+      if (cs.boxShadow !== 'none' && cs.filter === 'none') {
+        const outs = [], kept = [];
+        for (const s of cs.boxShadow.split(/,(?![^(]*[)])/)) {
+          const t = s.trim();
+          const m = t.match(/^(rgba?[(][^)]+[)]) (-?[0-9.]+px) (-?[0-9.]+px) ([0-9.]+px) -?[0-9.]+px$/);
+          if (m && parseFloat(m[4]) > 0) outs.push('drop-shadow(' + m[2] + ' ' + m[3] + ' ' + m[4] + ' ' + m[1] + ')');
+          else kept.push(t);
+        }
+        if (outs.length) {
+          el.style.setProperty('filter', outs.join(' '), 'important');
+          el.style.setProperty('box-shadow', kept.join(', ') || 'none', 'important');
+        }
+      }
+
+      const mask = cs.maskImage && cs.maskImage !== 'none' ? cs.maskImage : cs.webkitMaskImage;
+      if (mask && mask !== 'none' && cs.filter === 'none') el.style.setProperty('filter', 'opacity(1)', 'important');
+    }
+  } catch (e) {}
+  setTimeout(() => { try { window.print(); } catch (e) {} }, 200);
+})();
+</script>
+</body>
+</html>

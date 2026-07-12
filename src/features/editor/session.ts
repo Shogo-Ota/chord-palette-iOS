@@ -1,0 +1,281 @@
+import { useSyncExternalStore } from 'react';
+
+import { buildPresetProgression } from '@/lib/presets';
+import { canAdd, canSetDuration } from '@/lib/progression';
+import { transposeProgression } from '@/lib/transpose';
+import {
+  createProject,
+  getProject,
+  saveProject,
+} from '@/repositories/projectRepository';
+import type {
+  AccompanimentPattern,
+  ChordDuration,
+  ChordEvent,
+  GrooveId,
+  InstrumentId,
+  MajorKey,
+  Preset,
+  Project,
+} from '@/types';
+
+/**
+ * Shared editor session — the single source of truth for the composition being
+ * edited. The editor screen renders it; the groove and presets screens mutate
+ * it; persistence flows through the project repository. Implemented as a tiny
+ * external store so any screen can subscribe without prop drilling or fragile
+ * navigation-param round-trips.
+ */
+export type EditorSession = {
+  projectId: string | null;
+  title: string;
+  key: MajorKey;
+  tempoBpm: number;
+  instrumentId: InstrumentId;
+  grooveId: GrooveId;
+  accompanimentPattern: AccompanimentPattern;
+  progression: ChordEvent[];
+  history: ChordEvent[][];
+  selected: number;
+  dirty: boolean;
+  loading: boolean;
+  createdAt: number;
+};
+
+function initialState(): EditorSession {
+  return {
+    projectId: null,
+    title: '新しい進行',
+    key: 'C',
+    tempoBpm: 120,
+    instrumentId: 'piano',
+    grooveId: 'pop8',
+    accompanimentPattern: 'block',
+    progression: [],
+    history: [],
+    selected: -1,
+    dirty: false,
+    loading: false,
+    createdAt: 0,
+  };
+}
+
+let state: EditorSession = initialState();
+const listeners = new Set<() => void>();
+let counter = 0;
+
+function nextEventId(): string {
+  return `ev-${Date.now().toString(36)}-${counter++}`;
+}
+
+function emit() {
+  for (const l of listeners) l();
+}
+
+function set(patch: Partial<EditorSession>) {
+  state = { ...state, ...patch };
+  emit();
+}
+
+function subscribe(cb: () => void) {
+  listeners.add(cb);
+  return () => {
+    listeners.delete(cb);
+  };
+}
+
+function getSnapshot(): EditorSession {
+  return state;
+}
+
+/** Subscribe a component to the editor session. */
+export function useEditorSession(): EditorSession {
+  return useSyncExternalStore(subscribe, getSnapshot, getSnapshot);
+}
+
+/** Non-reactive read. */
+export function getSession(): EditorSession {
+  return state;
+}
+
+/* ---- lifecycle ---------------------------------------------------- */
+
+/** Reset to a blank new composition. */
+export function startNew(): void {
+  state = initialState();
+  emit();
+}
+
+function applyProject(p: Project): void {
+  state = {
+    ...initialState(),
+    projectId: p.id,
+    title: p.title,
+    key: p.key,
+    tempoBpm: p.tempoBpm,
+    instrumentId: p.instrumentId,
+    grooveId: p.grooveId,
+    accompanimentPattern: p.accompanimentPattern,
+    progression: p.chordEvents,
+    selected: p.chordEvents.length > 0 ? 0 : -1,
+    createdAt: p.createdAt,
+  };
+  emit();
+}
+
+/** Load an existing project from local storage into the session. */
+export async function load(id: string): Promise<void> {
+  set({ loading: true });
+  const project = await getProject(id);
+  if (project) applyProject(project);
+  else startNew();
+  set({ loading: false });
+}
+
+function toProject(id: string): Project {
+  return {
+    id,
+    title: state.title,
+    key: state.key,
+    tempoBpm: state.tempoBpm,
+    timeSignature: '4/4',
+    instrumentId: state.instrumentId,
+    grooveId: state.grooveId,
+    accompanimentPattern: state.accompanimentPattern,
+    chordEvents: state.progression,
+    createdAt: state.createdAt || Date.now(),
+    updatedAt: Date.now(),
+  };
+}
+
+/** Persist the session (create on first save, update thereafter). */
+export async function save(): Promise<void> {
+  if (state.projectId) {
+    const saved = await saveProject(toProject(state.projectId));
+    set({ projectId: saved.id, createdAt: saved.createdAt, dirty: false });
+  } else {
+    const created = await createProject({
+      title: state.title,
+      key: state.key,
+      tempoBpm: state.tempoBpm,
+      instrumentId: state.instrumentId,
+      grooveId: state.grooveId,
+      accompanimentPattern: state.accompanimentPattern,
+      chordEvents: state.progression,
+    });
+    set({ projectId: created.id, createdAt: created.createdAt, dirty: false });
+  }
+}
+
+/* ---- progression mutations (history-aware) ------------------------ */
+
+function commit(next: ChordEvent[], selected = state.selected): void {
+  set({
+    history: [...state.history, state.progression],
+    progression: next,
+    selected,
+    dirty: true,
+  });
+}
+
+export function setSelected(index: number): void {
+  set({ selected: index });
+}
+
+/** Append a chord (built from a library pick). Respects the 16-bar cap. */
+export function addChord(chord: Omit<ChordEvent, 'id'>): void {
+  if (!canAdd(state.progression, chord.durationBeats)) return;
+  const next = [...state.progression, { ...chord, id: nextEventId() }];
+  commit(next, next.length - 1);
+}
+
+export function setDuration(beats: ChordDuration): void {
+  if (state.selected < 0) return;
+  if (!canSetDuration(state.progression, state.selected, beats)) return;
+  const next = state.progression.map((e, i) =>
+    i === state.selected ? { ...e, durationBeats: beats } : e,
+  );
+  commit(next);
+}
+
+export function duplicateSelected(): void {
+  const e = state.progression[state.selected];
+  if (!e) return;
+  if (!canAdd(state.progression, e.durationBeats)) return;
+  const next = [...state.progression];
+  next.splice(state.selected + 1, 0, { ...e, id: nextEventId() });
+  commit(next, state.selected + 1);
+}
+
+export function moveSelected(dir: -1 | 1): void {
+  const to = state.selected + dir;
+  if (state.selected < 0 || to < 0 || to >= state.progression.length) return;
+  const next = [...state.progression];
+  [next[state.selected], next[to]] = [next[to], next[state.selected]];
+  commit(next, to);
+}
+
+export function deleteSelected(): void {
+  if (state.selected < 0) return;
+  const next = [...state.progression];
+  next.splice(state.selected, 1);
+  commit(next, Math.min(state.selected, next.length - 1));
+}
+
+export function undo(): void {
+  if (state.history.length === 0) return;
+  const prev = state.history[state.history.length - 1];
+  set({
+    progression: prev,
+    history: state.history.slice(0, -1),
+    selected: Math.min(state.selected, prev.length - 1),
+    dirty: true,
+  });
+}
+
+/* ---- settings ----------------------------------------------------- */
+
+export function setKey(key: MajorKey): void {
+  // Re-spell every placed chord for the new key so the timeline auto-transposes
+  // while degree functions are preserved (requirements §5.2).
+  set({ key, progression: transposeProgression(state.progression, key), dirty: true });
+}
+
+export function setTempo(bpm: number): void {
+  set({ tempoBpm: Math.min(300, Math.max(40, Math.round(bpm))), dirty: true });
+}
+
+export function setInstrument(instrumentId: InstrumentId): void {
+  set({ instrumentId, dirty: true });
+}
+
+export function setGroove(grooveId: GrooveId): void {
+  set({ grooveId, dirty: true });
+}
+
+export function setAccompaniment(accompanimentPattern: AccompanimentPattern): void {
+  set({ accompanimentPattern, dirty: true });
+}
+
+/* ---- presets ------------------------------------------------------ */
+
+/**
+ * Start a fresh composition from a preset, auto-transposed to `targetKey`
+ * (defaults to the session's current key so presets honor the selected key —
+ * requirements §6). The degree-based preset is rendered concretely for the key.
+ */
+export function startFromPreset(preset: Preset, targetKey: MajorKey = state.key): void {
+  const events = buildPresetProgression(preset, targetKey).map((e) => ({
+    ...e,
+    id: nextEventId(),
+  }));
+  state = {
+    ...initialState(),
+    title: preset.name,
+    key: targetKey,
+    progression: events,
+    selected: events.length > 0 ? 0 : -1,
+    dirty: true,
+  };
+  emit();
+}

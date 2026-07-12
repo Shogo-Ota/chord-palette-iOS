@@ -1,0 +1,30 @@
+---
+description: TypeScript コーディング規約（Chord Palette）
+globs: **/*.{ts,tsx}
+alwaysApply: false
+---
+
+# TypeScript 規約
+
+- TS `strict` 前提。`any` を安易に使わない（必要時は理由をコメントし範囲を最小化）。
+- マジックナンバーを避け、定数・トークン（`src/theme/tokens.ts`）を使う。
+- エラーメッセージはユーザー向けと開発者向けを分離する。
+- 秘密情報をGitに入れない。`.env` は除外し `.env.example` を用意する。
+- Native Module の API は TS で完全に型定義する。
+
+## エラーハンドリング
+```ts
+// ❌ 握り潰し
+try { await save(); } catch (e) {}
+
+// ✅ ログ＋意味のある送出
+try {
+  await save();
+} catch (e) {
+  logger.error('project save failed', { error: e });
+  throw new ProjectSaveError('保存に失敗しました', { cause: e });
+}
+```
+
+## import
+- パスエイリアス `@/*`（= `src/*`）、`@/assets/*` を使う。相対の `../../..` を避ける。

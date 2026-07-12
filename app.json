@@ -1,0 +1,47 @@
+{
+  "expo": {
+    "name": "Chord Palette",
+    "slug": "chord-palette",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon/app-icon.png",
+    "scheme": "chordpalette",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#0d1422",
+    "ios": {
+      "supportsTablet": false,
+      "bundleIdentifier": "app.chordpalette",
+      "icon": "./assets/icon/app-icon.png"
+    },
+    "android": {
+      "package": "app.chordpalette",
+      "adaptiveIcon": {
+        "backgroundColor": "#0d1422",
+        "foregroundImage": "./assets/icon/icon.png"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "backgroundColor": "#0d1422",
+          "image": "./assets/icon/icon.png",
+          "imageWidth": 96
+        }
+      ],
+      "expo-font",
+      "expo-web-browser",
+      "expo-sqlite"
+    ],
+    "experiments": {
+      "typedRoutes": true,
+      "reactCompiler": true
+    }
+  }
+}
