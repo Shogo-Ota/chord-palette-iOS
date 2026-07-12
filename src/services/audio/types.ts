@@ -64,6 +64,8 @@ export type PlaybackRequest = {
   chordEvents: NoteEvent[];
   /** Native holds the concrete drum-pattern definition for this id. */
   drumPatternId: string;
+  /** Instrument id → native maps to a General MIDI program (SoundFont). */
+  instrument: string;
 };
 
 /** Single-chord audition (chord-card tap). */
@@ -72,6 +74,8 @@ export type PreviewRequest = {
   velocity: number;
   lengthBeats?: number;
   bpm?: number;
+  /** Instrument id → native maps to a General MIDI program (SoundFont). */
+  instrument: string;
 };
 
 /** UI-only position update. NEVER used to drive the audio clock (§4.2). */

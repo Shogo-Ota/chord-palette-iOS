@@ -16,6 +16,7 @@ struct PlaybackRequestRecord: Record {
   @Field var loop: Bool = true
   @Field var chordEvents: [NoteEventRecord] = []
   @Field var drumPatternId: String = "pop8-min"
+  @Field var instrument: String = "piano"
 }
 
 /// JS-facing single-chord audition request.
@@ -24,6 +25,7 @@ struct PreviewRequestRecord: Record {
   @Field var velocity: Int = 100
   @Field var lengthBeats: Double?
   @Field var bpm: Double?
+  @Field var instrument: String = "piano"
 }
 
 /// Expo Custom Native Module bridging JS ↔ `AudioEngineController` (Phase 2A).
@@ -60,7 +62,7 @@ public class ChordAudioModule: Module {
     Function("getVersion") { () -> String in
       // NOTE: this is a display/Phase label and is intentionally NOT the same as
       // ChordAudio.podspec's `s.version` (the pod/build version, currently 1.0.0).
-      return "2A.0.0"
+      return "2B.0.0"
     }
 
     Function("getState") { () -> String in
@@ -82,7 +84,8 @@ public class ChordAudioModule: Module {
       self.controller.previewChord(
         notes: req.midiNotes,
         velocity: req.velocity,
-        durationSec: durationSec
+        durationSec: durationSec,
+        instrument: req.instrument
       )
     }
 
@@ -99,7 +102,8 @@ public class ChordAudioModule: Module {
         bpm: req.bpm,
         totalBeats: req.totalBeats,
         loop: req.loop,
-        events: events
+        events: events,
+        instrument: req.instrument
       )
     }
 

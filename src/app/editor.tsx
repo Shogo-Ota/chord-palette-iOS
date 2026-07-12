@@ -207,8 +207,9 @@ export default function EditorScreen() {
     session.addChord(libToEvent(c));
     // Audition the freshly added chord (skipped while the progression plays).
     if (!isPlaying) {
+      const cur = getSession();
       audioService
-        .previewChord(chordPreviewRequest(c, getSession().key, getSession().tempoBpm))
+        .previewChord(chordPreviewRequest(c, cur.key, cur.tempoBpm, cur.instrumentId))
         .catch(() => undefined);
     }
   }

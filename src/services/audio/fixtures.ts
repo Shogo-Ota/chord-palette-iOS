@@ -27,10 +27,17 @@ export function buildVerificationRequest(loop = true): PlaybackRequest {
     loop,
     chordEvents,
     drumPatternId: VERIFICATION_DRUM_PATTERN,
+    instrument: 'piano',
   };
 }
 
 /** Single Cmaj7 audition. */
 export function verificationPreview(): PreviewRequest {
-  return { midiNotes: [60, 64, 67, 71], velocity: 100, lengthBeats: 2, bpm: VERIFICATION_BPM };
+  return {
+    midiNotes: [60, 64, 67, 71],
+    velocity: 100,
+    lengthBeats: 2,
+    bpm: VERIFICATION_BPM,
+    instrument: 'piano',
+  };
 }

@@ -17,4 +17,11 @@ Pod::Spec.new do |s|
   }
 
   s.source_files = "**/*.{h,m,mm,swift,hpp,cpp}"
+
+  # Bundle the General MIDI SoundFont used by SampledInstrumentProvider. Kept in a
+  # named resource bundle so it survives static-framework linking; the engine
+  # resolves it from either the module resource bundle or the main bundle.
+  s.resource_bundles = {
+    'ChordAudioAssets' => ['soundfonts/*.SF2', 'soundfonts/*.sf2']
+  }
 end

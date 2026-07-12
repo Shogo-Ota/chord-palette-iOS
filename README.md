@@ -137,7 +137,19 @@ Phase 2A から、独自 Swift 製の音声エンジンを Expo Custom Native Mo
 - サービス層: `src/services/audio`（`audioService` 経由でのみ利用。音量の正典は SQLite）
 - 純粋ロジック/テスト: `src/services/audio/schedule.ts` ＋ `__tests__/schedule.test.ts`
 - 検証専用画面: `src/app/dev-audio.tsx`（ルート `/dev-audio`。本番導線からは非表示）
-- 音源は**技術検証用の合成音**（`SynthInstrumentProvider` / `SynthDrumProvider`）。Phase 2B で `InstrumentProvider` / `DrumProvider` を通じてサンプル音源へ交換する。
+- ドラムは**技術検証用の合成音**（`SynthDrumProvider`）。Phase 2B で `DrumProvider` を通じてサンプル音源へ交換予定。
+
+### Phase 2B: サンプル音源（SoundFont）
+
+コード音色は SoundFont（General MIDI）から実音を鳴らす。`AVAudioUnitSampler` で各 MIDI ノートを**オフライン事前レンダリングして PCM 化**し、既存の `InstrumentProvider` プル型エンジンにそのまま流す（再生/同期/ループ/一時停止のロジックは不変）。
+
+- 音源ファイル: `modules/chord-audio/ios/soundfonts/FluidR3_GM2-2.SF2`（Git LFS 管理・約141MB）
+- 実装: `SampledInstrumentProvider.swift`（プログラム番号ごとにキャッシュ）
+- 楽器→GM プログラム: Piano→0 / E.Piano→4（無料）。Guitar/Strings は Pro（UI でロック）
+- 読み込み失敗時は合成音へフォールバックし、無音にはならない
+
+> **音源ライセンス**: FluidR3 GM SoundFont（by Frank Wen）。再配布可（MIT 系）。アプリ内クレジット表記を用意すること。
+> **アプリ容量注意**: フル GM のため約141MB。リリース前にピアノ/エレピのみへ削減（サブセット sf2 化）を検討。
 
 詳細な設計・API・同期基準・AVAudioSession 設定は `docs/sprints/sprint-2.md` を参照。
 

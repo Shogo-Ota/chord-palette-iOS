@@ -35,8 +35,23 @@ enum PlaybackState: String {
 final class AudioEngineController {
   private let engine = AVAudioEngine()
   private var mixer: Mixer?
-  private let chordProvider: InstrumentProvider = SynthInstrumentProvider()
+  private let synthProvider = SynthInstrumentProvider()
+  /// Active chord voice. Starts as the synth and is swapped for a sampled
+  /// (SoundFont) provider once an instrument is loaded. Read/written under the lock.
+  private var chordProvider: InstrumentProvider = SynthInstrumentProvider()
   private let drumProvider: DrumProvider = SynthDrumProvider()
+  /// Cache of loaded sampled instruments, keyed by instrument id (avoids re-render).
+  private var sampledCache: [String: SampledInstrumentProvider] = [:]
+  private var currentInstrument: String = ""
+
+  /// Instrument id → General MIDI program number.
+  private static let programForInstrument: [String: UInt8] = [
+    "piano": 0, // Acoustic Grand Piano
+    "ePiano": 4, // Electric Piano 1
+    "acousticGuitar": 25, // Acoustic Guitar (steel)
+    "electricGuitar": 27, // Electric Guitar (clean)
+    "strings": 48, // String Ensemble 1
+  ]
   private var chordSource: AVAudioSourceNode?
   private var drumSource: AVAudioSourceNode?
   private var format: AVAudioFormat?
@@ -85,11 +100,60 @@ final class AudioEngineController {
       registerObservers()
       try engine.start()
       prepared = true
+      // Load the default instrument (piano). Falls back to the synth on failure,
+      // so playback is never silent even if the SoundFont is missing.
+      setInstrument("piano")
       state = .ready
     } catch {
       state = .failed
       throw error
     }
+  }
+
+  /// Locate the bundled General MIDI SoundFont across the possible bundles a
+  /// CocoaPods static framework / resource bundle can end up in.
+  private static func soundFontURL() -> URL? {
+    let names = ["FluidR3_GM2-2"]
+    let exts = ["SF2", "sf2"]
+    var bundles: [Bundle] = [Bundle(for: AudioEngineController.self), Bundle.main]
+    for base in [Bundle(for: AudioEngineController.self), Bundle.main] {
+      if let url = base.url(forResource: "ChordAudioAssets", withExtension: "bundle"),
+        let assets = Bundle(url: url) {
+        bundles.append(assets)
+      }
+    }
+    for bundle in bundles {
+      for name in names {
+        for ext in exts {
+          if let url = bundle.url(forResource: name, withExtension: ext) { return url }
+        }
+      }
+    }
+    return nil
+  }
+
+  /// Swap the chord voice to `instrumentId`, loading + caching the sampled
+  /// SoundFont program on first use. Heavy work (offline render) runs on the
+  /// calling (non-audio) thread; the pointer swap is done under the lock.
+  func setInstrument(_ instrumentId: String) {
+    guard prepared, instrumentId != currentInstrument else { return }
+    let program = Self.programForInstrument[instrumentId] ?? 0
+    var provider: InstrumentProvider = synthProvider
+
+    if let cached = sampledCache[instrumentId], cached.isLoaded {
+      provider = cached
+    } else if let url = Self.soundFontURL() {
+      let sampled = SampledInstrumentProvider(sampleRate: sampleRate)
+      if sampled.load(soundFontURL: url, program: program) {
+        sampledCache[instrumentId] = sampled
+        provider = sampled
+      }
+    }
+
+    os_unfair_lock_lock(&unfairLock)
+    chordProvider = provider
+    currentInstrument = instrumentId
+    os_unfair_lock_unlock(&unfairLock)
   }
 
   func teardown() {
@@ -148,7 +212,7 @@ final class AudioEngineController {
 
   // MARK: - Transport
 
-  func play(bpm: Double, totalBeats: Double, loop: Bool, events: [NoteEventValue]) {
+  func play(bpm: Double, totalBeats: Double, loop: Bool, events: [NoteEventValue], instrument: String) {
     // §3.1: play() is a fresh-from-top playback, never a resume. It is only valid
     // once the engine is prepared and from ready/playing/paused/stopped. From
     // idle/preparing/failed it is a no-op (no state change, no onStateChange).
@@ -156,6 +220,8 @@ final class AudioEngineController {
     guard prepared, state == .ready || state == .playing || state == .paused || state == .stopped else {
       return
     }
+    // Ensure the requested voice is loaded before playback (no-op if unchanged).
+    setInstrument(instrument)
     let snapshot = PlanSnapshot(bpm: bpm, totalBeats: totalBeats, loop: loop, events: events)
     os_unfair_lock_lock(&unfairLock)
     plan = snapshot
@@ -215,7 +281,8 @@ final class AudioEngineController {
     if wasActive { state = .stopped }
   }
 
-  func previewChord(notes: [Int], velocity: Int, durationSec: Double) {
+  func previewChord(notes: [Int], velocity: Int, durationSec: Double, instrument: String) {
+    setInstrument(instrument)
     os_unfair_lock_lock(&unfairLock)
     previewNotes = notes
     previewVelocity = velocity
@@ -246,6 +313,7 @@ final class AudioEngineController {
     let snap = plan
     let playing = isPlaying
     let sr = sampleRate
+    let provider = chordProvider
     if playing && baseSampleTime == nil { baseSampleTime = sampleTime - pausedFrames }
     let base = baseSampleTime ?? sampleTime
     // preview base
@@ -265,7 +333,7 @@ final class AudioEngineController {
 
       if playing, let snap = snap {
         let absFrame = absoluteSample - base
-        let progression = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr)
+        let progression = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr, provider: provider)
         value += progression
       }
 
@@ -274,7 +342,7 @@ final class AudioEngineController {
         if t >= 0 && t < pvDur {
           let velGain = Float(pvVel) / 127.0
           for note in pvNotes {
-            value += chordProvider.sample(note: note, tSeconds: t, durationSeconds: pvDur) * velGain
+            value += provider.sample(note: note, tSeconds: t, durationSeconds: pvDur) * velGain
           }
         }
       }
@@ -336,7 +404,12 @@ final class AudioEngineController {
     return noErr
   }
 
-  private func chordSampleValue(snap: PlanSnapshot, absFrame: Double, sr: Double) -> Float {
+  private func chordSampleValue(
+    snap: PlanSnapshot,
+    absFrame: Double,
+    sr: Double,
+    provider: InstrumentProvider
+  ) -> Float {
     let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
     if !snap.loop && absFrame >= loopFrames {
       signalFinishedIfNeeded()
@@ -352,7 +425,7 @@ final class AudioEngineController {
     let dur = event.lengthBeats * spb
     var sum: Float = 0
     for note in event.midiNotes {
-      sum += chordProvider.sample(note: note, tSeconds: t, durationSeconds: dur)
+      sum += provider.sample(note: note, tSeconds: t, durationSeconds: dur)
     }
     return sum * velGain
   }

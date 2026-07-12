@@ -23,6 +23,7 @@ export function sessionToPlaybackRequest(session: EditorSession, loop: boolean):
     // Phase 2A native plays a single synth pattern regardless of id; the real
     // groove id is forwarded so Phase 2B can map it to a sampled pattern.
     drumPatternId: session.grooveId,
+    instrument: session.instrumentId,
   };
 }
 
@@ -31,6 +32,7 @@ export function chordPreviewRequest(
   chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
   key: MajorKey,
   bpm: number,
+  instrument: string,
 ): PreviewRequest {
-  return { midiNotes: chordMidiNotes(chord, key), velocity: 100, lengthBeats: 2, bpm };
+  return { midiNotes: chordMidiNotes(chord, key), velocity: 100, lengthBeats: 2, bpm, instrument };
 }
