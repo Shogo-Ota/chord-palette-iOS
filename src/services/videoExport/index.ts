@@ -1,4 +1,3 @@
-import * as MediaLibrary from 'expo-media-library';
 import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordVideoExportNative } from '@modules/chord-video-export';
@@ -85,6 +84,9 @@ export const videoExportService = {
       const { uri } = await ChordVideoExportNative.exportVideo(plan);
 
       // 4) Save to the photo library (add-only permission).
+      // Lazy-load expo-media-library so a build without the native module doesn't
+      // crash at import time — only the export flow is disabled, not the whole app.
+      const MediaLibrary = await import('expo-media-library');
       const perm = await MediaLibrary.requestPermissionsAsync();
       if (!perm.granted) {
         throw new VideoExportError('写真ライブラリへの保存が許可されていません。設定から許可してください。');
