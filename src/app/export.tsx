@@ -1,37 +1,95 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect } from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
-import Animated, {
-  Easing,
-  useAnimatedStyle,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withTiming,
-} from 'react-native-reanimated';
+import React, { useEffect, useState } from 'react';
+import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { GradientText } from '@/components/GradientText';
+import { ChordKeyboard } from '@/components/ChordKeyboard';
 import { Icon } from '@/components/Icon';
 import { Toggle } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
-import { colors, font, primaryGradient, radius, rainbowFull } from '@/theme/tokens';
+import { useEditorSession } from '@/features/editor/session';
+import { VideoExportError } from '@/lib/errors';
+import { chordMidiNotes } from '@/lib/voicing';
+import { videoExportService } from '@/services/videoExport';
+import { colors, font, functionColor, primaryGradient, radius } from '@/theme/tokens';
+import type { ChordEvent } from '@/types';
 
 const ICON = require('../../assets/icon/icon.png');
 
-const STRIP = [
-  { name: 'Cmaj7', text: '#8fb6f2', border: 'rgba(59,130,246,0.5)', bw: 1, bg: 'transparent' as const },
-  { name: 'G7', text: '#f0918f', border: 'rgba(239,68,68,0.5)', bw: 1, bg: 'transparent' as const },
-  { name: 'Am7', text: '#ffb838', border: '#ffb838', bw: 1.5, bg: 'rgba(255,184,56,0.12)' },
-  { name: 'Fmaj7', text: '#7fd99b', border: 'rgba(34,197,94,0.5)', bw: 1, bg: 'transparent' as const },
-] as const;
+const PREVIEW_W = 214;
+const PREVIEW_PAD = 14;
+const KEYBOARD_W = PREVIEW_W - PREVIEW_PAD * 2;
 
-const BAR_COUNT = 26;
+/**
+ * Cycle through the progression for the in-app preview, honoring each chord's beat
+ * length at the project's tempo. This is a preview only — the real synced render is
+ * done natively (Phase 4), so a JS timer here is fine.
+ */
+function usePreviewIndex(progression: ChordEvent[], bpm: number): number {
+  const [idx, setIdx] = useState(0);
+  useEffect(() => {
+    setIdx(0);
+    if (progression.length === 0) return;
+    let cur = 0;
+    let timer: ReturnType<typeof setTimeout>;
+    const secPerBeat = 60 / Math.max(1, bpm);
+    const schedule = () => {
+      const dur = Math.max(0.25, (progression[cur]?.durationBeats ?? 4) * secPerBeat);
+      timer = setTimeout(() => {
+        cur = (cur + 1) % progression.length;
+        setIdx(cur);
+        schedule();
+      }, dur * 1000);
+    };
+    schedule();
+    return () => clearTimeout(timer);
+  }, [progression, bpm]);
+  return progression.length === 0 ? 0 : idx % progression.length;
+}
 
 export default function ExportScreen() {
   const router = useRouter();
-  const [duration, setDuration] = React.useState('30');
-  const [watermark, setWatermark] = React.useState(false);
+  const s = useEditorSession();
+  const [duration, setDuration] = useState('30');
+  const [watermark, setWatermark] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [progress, setProgress] = useState(0);
+
+  async function handleSaveToPhotos() {
+    if (saving) return;
+    if (s.progression.length === 0) {
+      Alert.alert('コードがありません', '動画を書き出す前に進行を作成してください。');
+      return;
+    }
+    setSaving(true);
+    setProgress(0);
+    try {
+      await videoExportService.exportAndSave(
+        {
+          title: s.title,
+          key: s.key,
+          bpm: s.tempoBpm,
+          progression: s.progression,
+          grooveId: s.grooveId,
+          instrumentId: s.instrumentId,
+        },
+        { durationSec: Number(duration), watermark, onProgress: setProgress },
+      );
+      Alert.alert('保存しました', '写真アプリに動画を保存しました。');
+    } catch (e) {
+      const msg = e instanceof VideoExportError ? e.userMessage : '動画の書き出しに失敗しました。';
+      Alert.alert('書き出しに失敗', msg);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  const idx = usePreviewIndex(s.progression, s.tempoBpm);
+  const current = s.progression[idx];
+  const accent = current ? functionColor[current.function] : colors.primary;
+  const notes = current ? chordMidiNotes(current, s.key) : [];
+  const totalBeats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
+  const bars = Math.max(1, Math.ceil(totalBeats / 4));
 
   return (
     <ScreenScaffold>
@@ -42,10 +100,10 @@ export default function ExportScreen() {
         <Text style={styles.title}>動画を書き出し</Text>
       </View>
 
-      {/* 9:16 preview */}
+      {/* 9:16 preview — matches the exported frame composition */}
       <View style={styles.preview}>
         <LinearGradient
-          colors={['#1a1140', '#0b0a1c', '#07060f']}
+          colors={[colors.screenGradientTop, colors.screenGradientMid, colors.appBg]}
           locations={[0, 0.55, 1]}
           style={StyleSheet.absoluteFill}
         />
@@ -53,37 +111,59 @@ export default function ExportScreen() {
           <Text style={styles.badge916Text}>9:16</Text>
         </View>
 
-        <View style={styles.previewTop}>
-          <Text style={styles.previewTitle}>Morning Sketch</Text>
-          <Text style={styles.previewMeta}>BPM 120 · 4小節</Text>
-        </View>
-
-        <View style={styles.previewCenter}>
-          <GradientText colors={['#ff5a6e', '#ff9d3f', '#ffd23f']} style={styles.bigChord} end={{ x: 1, y: 0.6 }}>
-            Am7
-          </GradientText>
-          <Text style={styles.chordDesc}>温かく柔らかな響き</Text>
-        </View>
-
-        <EqBars />
-
-        <View style={styles.strip}>
-          {STRIP.map((c, i) => (
-            <React.Fragment key={c.name}>
-              <View style={[styles.stripChip, { borderColor: c.border, borderWidth: c.bw, backgroundColor: c.bg }]}>
-                <Text style={[styles.stripText, { color: c.text }]}>{c.name}</Text>
-              </View>
-              {i < STRIP.length - 1 && <Text style={styles.stripArrow}>›</Text>}
-            </React.Fragment>
-          ))}
-        </View>
-
-        <View style={styles.watermarkRow}>
-          <Image source={ICON} style={styles.wmIcon} />
-          <Text style={styles.wmText}>
-            Chord <Text style={{ color: '#c9a6ff' }}>Palette</Text>
+        <View style={styles.pvTop}>
+          <Text style={styles.pvTitle} numberOfLines={1}>
+            {s.title}
+          </Text>
+          <Text style={styles.pvMeta}>
+            {s.key} · BPM {s.tempoBpm} · {bars}小節
           </Text>
         </View>
+
+        <View style={styles.pvCenter}>
+          {current ? (
+            <>
+              <Text style={[styles.bigChord, { color: accent }]} numberOfLines={1}>
+                {current.displayName}
+              </Text>
+              <Text style={styles.degree}>{current.degreeLabel}</Text>
+            </>
+          ) : (
+            <Text style={styles.emptyChord}>コードがありません</Text>
+          )}
+        </View>
+
+        {s.progression.length > 0 && (
+          <View style={styles.pvStrip}>
+            {s.progression.slice(0, 8).map((c, i) => {
+              const on = i === idx;
+              const col = functionColor[c.function];
+              return (
+                <View
+                  key={c.id}
+                  style={[
+                    styles.stripDot,
+                    { borderColor: col },
+                    on && { backgroundColor: col, width: 14 },
+                  ]}
+                />
+              );
+            })}
+          </View>
+        )}
+
+        <View style={styles.pvKeyboard}>
+          <ChordKeyboard notes={notes} musicKey={s.key} color={accent} width={KEYBOARD_W} />
+        </View>
+
+        {watermark && (
+          <View style={styles.watermarkRow}>
+            <Image source={ICON} style={styles.wmIcon} />
+            <Text style={styles.wmText}>
+              Chord <Text style={{ color: colors.purpleText }}>Palette</Text>
+            </Text>
+          </View>
+        )}
       </View>
 
       {/* 長さ */}
@@ -99,7 +179,11 @@ export default function ExportScreen() {
             return (
               <Pressable key={o.key} onPress={() => setDuration(o.key)}>
                 {active ? (
-                  <LinearGradient colors={primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.durActive}>
+                  <LinearGradient
+                    colors={primaryGradient}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={styles.durActive}>
                     <Text style={styles.durTextActive}>{o.label}</Text>
                   </LinearGradient>
                 ) : (
@@ -132,54 +216,24 @@ export default function ExportScreen() {
 
       {/* actions */}
       <View style={{ flexDirection: 'row', gap: 11, marginTop: 2 }}>
-        <Pressable style={styles.saveBtn}>
+        <Pressable style={[styles.saveBtn, saving && styles.saveBtnDisabled]} onPress={handleSaveToPhotos} disabled={saving}>
           <Icon name="download" size={17} color={colors.textPrimary} strokeWidth={2.2} />
-          <Text style={styles.saveBtnText}>写真に保存</Text>
+          <Text style={styles.saveBtnText}>
+            {saving ? `書き出し中… ${Math.round(progress * 100)}%` : '写真に保存'}
+          </Text>
         </Pressable>
-        <Pressable style={{ flex: 1 }}>
-          <LinearGradient colors={primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.shareBtn}>
+        <Pressable style={{ flex: 1 }} disabled={saving}>
+          <LinearGradient
+            colors={primaryGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={[styles.shareBtn, saving && styles.saveBtnDisabled]}>
             <Icon name="share" size={17} color="#fff" strokeWidth={2.2} />
             <Text style={styles.shareBtnText}>共有</Text>
           </LinearGradient>
         </Pressable>
       </View>
     </ScreenScaffold>
-  );
-}
-
-function EqBars() {
-  return (
-    <View style={styles.eqRow}>
-      {Array.from({ length: BAR_COUNT }).map((_, i) => (
-        <EqBar key={i} index={i} />
-      ))}
-    </View>
-  );
-}
-
-function EqBar({ index }: { index: number }) {
-  const h = 12 + Math.round((Math.sin(index * 0.9) * 0.5 + 0.5) * 46 + (index % 3) * 6);
-  const color = rainbowFull[index % rainbowFull.length];
-  const scale = useSharedValue(0.35);
-
-  useEffect(() => {
-    const dur = 800 + (index % 5) * 130;
-    const delay = (index % 7) * 90;
-    scale.value = withDelay(
-      delay,
-      withRepeat(withTiming(1, { duration: dur, easing: Easing.inOut(Easing.ease) }), -1, true),
-    );
-  }, [index, scale]);
-
-  const animStyle = useAnimatedStyle(() => ({ transform: [{ scaleY: scale.value }] }));
-
-  return (
-    <Animated.View
-      style={[
-        { width: 5, height: h, borderRadius: 3, backgroundColor: color, transformOrigin: 'bottom' },
-        animStyle,
-      ]}
-    />
   );
 }
 
@@ -198,7 +252,7 @@ const styles = StyleSheet.create({
   title: { fontSize: 20, fontFamily: font.extrabold, fontWeight: '800', color: colors.textPrimary },
 
   preview: {
-    width: 214,
+    width: PREVIEW_W,
     height: 380,
     alignSelf: 'center',
     marginBottom: 20,
@@ -206,6 +260,9 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
     borderWidth: 1,
     borderColor: colors.borderFaint,
+    paddingHorizontal: PREVIEW_PAD,
+    paddingTop: 22,
+    paddingBottom: 16,
   },
   badge916: {
     position: 'absolute',
@@ -217,42 +274,24 @@ const styles = StyleSheet.create({
     paddingVertical: 3,
   },
   badge916Text: { fontSize: 8, fontFamily: font.bold, fontWeight: '700', color: colors.textSecondary },
-  previewTop: { position: 'absolute', top: 22, left: 0, right: 0, alignItems: 'center' },
-  previewTitle: { fontSize: 15, fontFamily: font.extrabold, fontWeight: '800', color: colors.textPrimary, letterSpacing: 0.3 },
-  previewMeta: { fontSize: 10, color: colors.textMuted, marginTop: 3, fontFamily: font.semibold, fontWeight: '600' },
-  previewCenter: { position: 'absolute', top: 96, left: 0, right: 0, alignItems: 'center' },
-  bigChord: { fontSize: 58, fontFamily: font.black, fontWeight: '900', lineHeight: 60 },
-  chordDesc: { fontSize: 10.5, color: colors.textSecondary, marginTop: 7, fontFamily: font.medium, fontWeight: '500' },
 
-  eqRow: {
-    position: 'absolute',
-    bottom: 96,
-    left: 16,
-    right: 16,
-    height: 70,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    justifyContent: 'center',
-    gap: 2,
-  },
+  pvTop: { alignItems: 'center' },
+  pvTitle: { fontSize: 15, fontFamily: font.extrabold, fontWeight: '800', color: colors.textPrimary, letterSpacing: 0.3 },
+  pvMeta: { fontSize: 10, color: colors.textMuted, marginTop: 3, fontFamily: font.semibold, fontWeight: '600' },
 
-  strip: {
-    position: 'absolute',
-    bottom: 52,
-    left: 14,
-    right: 14,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 4,
-  },
-  stripChip: { borderRadius: 6, paddingHorizontal: 6, paddingVertical: 3 },
-  stripText: { fontSize: 10, fontFamily: font.bold, fontWeight: '700' },
-  stripArrow: { color: '#556', fontSize: 9 },
+  pvCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  bigChord: { fontSize: 46, fontFamily: font.black, fontWeight: '900', lineHeight: 50 },
+  degree: { fontSize: 15, color: colors.textSecondary, marginTop: 4, fontFamily: font.bold, fontWeight: '700', letterSpacing: 0.5 },
+  emptyChord: { fontSize: 13, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
+
+  pvStrip: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12 },
+  stripDot: { width: 7, height: 7, borderRadius: 4, borderWidth: 1.2 },
+
+  pvKeyboard: { alignItems: 'center' },
 
   watermarkRow: {
     position: 'absolute',
-    bottom: 16,
+    bottom: 8,
     left: 0,
     right: 0,
     flexDirection: 'row',
@@ -313,6 +352,7 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
   },
   saveBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
+  saveBtnDisabled: { opacity: 0.55 },
   shareBtn: {
     flexDirection: 'row',
     alignItems: 'center',

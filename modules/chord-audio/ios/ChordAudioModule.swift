@@ -28,6 +28,17 @@ struct PreviewRequestRecord: Record {
   @Field var instrument: String = "piano"
 }
 
+/// JS-facing offline render request (Phase 4 video export). Loops the progression
+/// to fill `durationSec`.
+struct RenderAudioRequestRecord: Record {
+  @Field var bpm: Double = 120
+  @Field var totalBeats: Double = 0
+  @Field var chordEvents: [NoteEventRecord] = []
+  @Field var drumPatternId: String = "pop8-min"
+  @Field var instrument: String = "piano"
+  @Field var durationSec: Double = 15
+}
+
 /// Expo Custom Native Module bridging JS ↔ `AudioEngineController` (Phase 2A).
 /// Holds no playback logic itself; it only marshals records and forwards calls.
 public class ChordAudioModule: Module {
@@ -105,6 +116,25 @@ public class ChordAudioModule: Module {
         events: events,
         instrument: req.instrument
       )
+    }
+
+    AsyncFunction("renderAudioFile") { (req: RenderAudioRequestRecord) -> [String: Any] in
+      let events = req.chordEvents.map { event in
+        NoteEventValue(
+          midiNotes: event.midiNotes,
+          startBeat: event.startBeat,
+          lengthBeats: event.lengthBeats,
+          velocity: event.velocity
+        )
+      }
+      let result = try self.controller.renderToFile(
+        bpm: req.bpm,
+        totalBeats: req.totalBeats,
+        events: events,
+        instrument: req.instrument,
+        durationSec: req.durationSec
+      )
+      return ["uri": result.url.absoluteString, "sampleRate": result.sampleRate]
     }
 
     AsyncFunction("pause") {

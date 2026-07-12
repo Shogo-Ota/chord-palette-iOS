@@ -8,6 +8,8 @@ import type {
   PlaybackState,
   PositionEvent,
   PreviewRequest,
+  RenderAudioRequest,
+  RenderAudioResult,
   StateChangeEvent,
   VolumeChannel,
   VolumeLevels,
@@ -63,6 +65,14 @@ export const audioService = {
 
   async play(req: PlaybackRequest): Promise<void> {
     await ChordAudioNative?.play(req);
+  },
+
+  /**
+   * Offline-render the looped progression to a temp audio file for video export.
+   * Returns null when the native module is unavailable (JS export / Expo Go).
+   */
+  async renderAudioFile(req: RenderAudioRequest): Promise<RenderAudioResult | null> {
+    return (await ChordAudioNative?.renderAudioFile(req)) ?? null;
   },
 
   async pause(): Promise<void> {

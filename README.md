@@ -153,6 +153,19 @@ Phase 2A から、独自 Swift 製の音声エンジンを Expo Custom Native Mo
 
 詳細な設計・API・同期基準・AVAudioSession 設定は `docs/sprints/sprint-2.md` を参照。
 
+### Phase 4: ネイティブ動画書き出し（`chord-video-export`）
+
+9:16・1080×1920 の縦動画 MP4 を**ネイティブで生成**する（画面収録に依存しない）。音楽ロジックは JS に集約し、native は描画＋符号化に専念する。
+
+- 音声: `chord-audio` の `renderAudioFile` が進行＋ドラムを尺ぶん**オフライン決定論レンダリング**（`.m4a`）。
+- 映像: `chord-video-export`（`AVAssetWriter`）が各フレームを Core Graphics で描画（背景ダークグラデ＋大コード名＋度数＋鍵盤ハイライト＋任意ウォーターマーク）し、音声トラックと多重化。
+- プラン構築（純粋）: `src/lib/exportPlan.ts`。サービス: `src/services/videoExport`。保存: `expo-media-library`。
+- 同期: 音声・映像とも「拍→サンプル/秒」（`schedule.ts` / `Scheduler.swift`）を唯一の基準にする。
+
+> **新規ネイティブモジュール＋`expo-media-library` 追加のため EAS 再ビルド必須。** ビルド後、書き出し画面「写真に保存」で 15/30/60 秒の MP4 を生成→写真アプリで再生し、コード表示と音声の同期・鍵盤ハイライト一致を確認する。写真保存には権限（`NSPhotoLibraryAddUsageDescription`）が必要。
+
+4A（実証）→ 4B（タイトル/度数/ドット/WM/共有/進捗・失敗UI/60秒性能）の分割。詳細は `docs/sprints/sprint-4.md` を参照。
+
 ### EAS Development Build（Windows → iPhone 実機）
 
 Windows PC には Xcode が無いため、クラウドの EAS Build で Development Build を作成し、実機へインストールする。以下は**ユーザー本人の操作が必要**な手順（対話・認証を含む）。

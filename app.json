@@ -40,7 +40,15 @@
       ],
       "expo-font",
       "expo-web-browser",
-      "expo-sqlite"
+      "expo-sqlite",
+      [
+        "expo-media-library",
+        {
+          "savePhotosPermission": "作成した動画をカメラロールに保存するために使用します。",
+          "photosPermission": "作成した動画をカメラロールに保存するために使用します。",
+          "isAccessMediaLocationEnabled": false
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true,

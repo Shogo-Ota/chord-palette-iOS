@@ -144,6 +144,11 @@ export function noteAt(key: MajorKey, offset: number): string {
   return chromaticName(key, tonicPc(key) + offset);
 }
 
+/** Note name (no octave) of a MIDI note, spelled for the key. Used by the keyboard visual. */
+export function midiNoteName(key: MajorKey, midi: number): string {
+  return chromaticName(key, midi);
+}
+
 /** Semitones a spelled note sits above the key's tonic (0..11). */
 export function offsetFromTonic(key: MajorKey, note: string): number {
   return (((NOTE_PC[note] ?? 0) - tonicPc(key)) % 12 + 12) % 12;

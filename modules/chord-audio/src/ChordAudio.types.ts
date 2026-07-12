@@ -5,6 +5,8 @@ import type {
   PlaybackState,
   PositionEvent,
   PreviewRequest,
+  RenderAudioRequest,
+  RenderAudioResult,
   StateChangeEvent,
 } from '@/services/audio/types';
 
@@ -28,6 +30,9 @@ export interface ChordAudioNativeModule {
   teardown(): Promise<void>;
 
   previewChord(req: PreviewRequest): Promise<void>;
+
+  /** Offline-render the looped progression to a temp audio file (Phase 4 export). */
+  renderAudioFile(req: RenderAudioRequest): Promise<RenderAudioResult>;
 
   play(req: PlaybackRequest): Promise<void>;
   pause(): Promise<void>;

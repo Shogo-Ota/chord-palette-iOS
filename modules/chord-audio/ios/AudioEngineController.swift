@@ -582,4 +582,87 @@ final class AudioEngineController {
     // Headphones unplugged → pause instead of blasting the speaker.
     if reason == .oldDeviceUnavailable { pause() }
   }
+
+  // MARK: - Offline render (Phase 4 export)
+
+  /// Deterministically render `durationSec` of the looped progression + drums to a
+  /// temporary `.m4a` and return its URL + sample rate. Independent of the
+  /// real-time engine/session (its own providers, fixed 44.1 kHz) so it works even
+  /// when playback isn't prepared, and JS-timer-free — sample positions come from
+  /// `Scheduler`, the same clock used for playback (sprint-4.md §4).
+  func renderToFile(
+    bpm: Double,
+    totalBeats: Double,
+    events: [NoteEventValue],
+    instrument: String,
+    durationSec: Double
+  ) throws -> (url: URL, sampleRate: Double) {
+    let sr = 44_100.0
+    let program = Self.programForInstrument[instrument] ?? 0
+    var chordProv: InstrumentProvider = synthProvider
+    if let url = Self.soundFontURL() {
+      let sampled = SampledInstrumentProvider(sampleRate: sr)
+      if sampled.load(soundFontURL: url, program: program) { chordProv = sampled }
+    }
+    let drumProv: DrumProvider = SynthDrumProvider()
+    let snap = PlanSnapshot(bpm: bpm, totalBeats: max(1, totalBeats), loop: true, events: events)
+
+    let outURL = FileManager.default.temporaryDirectory
+      .appendingPathComponent("chord-export-\(UUID().uuidString).m4a")
+    let settings: [String: Any] = [
+      AVFormatIDKey: kAudioFormatMPEG4AAC,
+      AVSampleRateKey: sr,
+      AVNumberOfChannelsKey: 2,
+    ]
+    let file = try AVAudioFile(forWriting: outURL, settings: settings)
+    guard let fmt = AVAudioFormat(standardFormatWithSampleRate: sr, channels: 2) else {
+      throw NSError(
+        domain: "ChordAudio", code: -1,
+        userInfo: [NSLocalizedDescriptionKey: "Could not create render format"])
+    }
+
+    let total = Int((durationSec * sr).rounded())
+    let chunk = 4096
+    // Mirror the real-time mixer defaults (buildEngine) so export loudness matches.
+    let masterGain: Float = 0.9
+    let chordGain: Float = 0.85
+    let drumGain: Float = 0.8
+
+    var frame = 0
+    while frame < total {
+      let n = min(chunk, total - frame)
+      guard
+        let buf = AVAudioPCMBuffer(pcmFormat: fmt, frameCapacity: AVAudioFrameCount(n)),
+        let ch = buf.floatChannelData
+      else { break }
+      buf.frameLength = AVAudioFrameCount(n)
+      for i in 0..<n {
+        let absFrame = Double(frame + i)
+        let c = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr, provider: chordProv)
+        let d = offlineDrumSample(snap: snap, absFrame: absFrame, sr: sr, provider: drumProv)
+        var v = (c * chordGain + d * drumGain) * masterGain
+        if v > 1 { v = 1 } else if v < -1 { v = -1 }
+        ch[0][i] = v
+        ch[1][i] = v
+      }
+      try file.write(from: buf)
+      frame += n
+    }
+    return (outURL, sr)
+  }
+
+  private func offlineDrumSample(
+    snap: PlanSnapshot,
+    absFrame: Double,
+    sr: Double,
+    provider: DrumProvider
+  ) -> Float {
+    let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
+    let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: true)
+    let beat = Scheduler.beat(forFrameInLoop: folded.frameInLoop, bpm: snap.bpm, sampleRate: sr)
+    let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
+    var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
+    if beatInBar < 0 { beatInBar += 4.0 }
+    return provider.sample(beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame))
+  }
 }

@@ -78,6 +78,22 @@ export type PreviewRequest = {
   instrument: string;
 };
 
+/** Offline render request for video export (§sprint-4). Loops to fill `durationSec`. */
+export type RenderAudioRequest = {
+  bpm: number;
+  totalBeats: number;
+  chordEvents: NoteEvent[];
+  drumPatternId: string;
+  instrument: string;
+  durationSec: number;
+};
+
+/** Result of an offline audio render: a temp file URI + its sample rate. */
+export type RenderAudioResult = {
+  uri: string;
+  sampleRate: number;
+};
+
 /** UI-only position update. NEVER used to drive the audio clock (§4.2). */
 export type PositionEvent = {
   chordIndex: number;
