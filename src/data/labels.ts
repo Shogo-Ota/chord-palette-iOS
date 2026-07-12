@@ -23,6 +23,15 @@ export const FREE_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
 /** Pro instruments, in selector order. */
 export const PRO_INSTRUMENTS: InstrumentId[] = ['acousticGuitar', 'electricGuitar', 'strings'];
 
+/**
+ * Instruments actually selectable in the app right now. Kept as a single switch
+ * so more voices can be enabled later without touching the UI: the bundled
+ * SoundFont already contains all GM programs and native maps every id to one
+ * (see AudioEngineController.programForInstrument). To add e.g. strings later,
+ * just append 'strings' here (and revisit Pro gating if it should be paid).
+ */
+export const ENABLED_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
+
 /** Drum grooves (all free — requirements §6). */
 export const GROOVE_LABELS: Record<GrooveId, string> = {
   pop8: 'Pop 8beat',

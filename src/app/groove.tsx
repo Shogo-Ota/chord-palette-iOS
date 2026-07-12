@@ -9,15 +9,13 @@ import { ScreenScaffold } from '@/components/ScreenScaffold';
 import {
   ACCOMPANIMENT_IDS,
   ACCOMPANIMENT_LABELS,
-  FREE_INSTRUMENTS,
+  ENABLED_INSTRUMENTS,
   GROOVE_IDS,
   GROOVE_LABELS,
   INSTRUMENT_LABELS,
-  PRO_INSTRUMENTS,
 } from '@/data/labels';
 import * as session from '@/features/editor/session';
 import { useEditorSession } from '@/features/editor/session';
-import { useEntitlements } from '@/services/billing';
 import { colors, font, primaryGradient, radius } from '@/theme/tokens';
 import type { AccompanimentPattern, ChordFunction, InstrumentId } from '@/types';
 
@@ -39,16 +37,7 @@ export default function GrooveScreen() {
   const { width } = useWindowDimensions();
   const chipW = (width - 40 - 16) / 3; // 3-col grid, 20 padH, 8 gap
   const s = useEditorSession();
-  const ent = useEntitlements();
   const [playing, setPlaying] = useState(false);
-
-  const selectInstrument = (id: InstrumentId, pro: boolean) => {
-    if (pro && !ent.palettePro) {
-      router.push('/paywall');
-      return;
-    }
-    session.setInstrument(id);
-  };
 
   return (
     <ScreenScaffold>
@@ -102,31 +91,15 @@ export default function GrooveScreen() {
         <Icon name="skipForward" size={22} color={colors.textMuted} strokeWidth={2.2} />
       </View>
 
-      {/* 音色 */}
+      {/* 音色（現在は Piano / E.Piano のみ有効。追加は labels.ts の ENABLED_INSTRUMENTS） */}
       <SectionTitle>音色</SectionTitle>
       <ChipRow
-        options={FREE_INSTRUMENTS.map((id) => ({ key: id, label: INSTRUMENT_LABELS[id] }))}
+        options={ENABLED_INSTRUMENTS.map((id) => ({ key: id, label: INSTRUMENT_LABELS[id] }))}
         value={s.instrumentId}
-        onChange={(k) => selectInstrument(k as InstrumentId, false)}
-        style={{ marginBottom: 9 }}
+        onChange={(k) => session.setInstrument(k as InstrumentId)}
+        style={{ marginBottom: 20 }}
         chipStyle={{ paddingVertical: 12 }}
       />
-      <View style={{ flexDirection: 'row', gap: 8, marginBottom: 20 }}>
-        {PRO_INSTRUMENTS.map((id) => {
-          const unlocked = ent.palettePro;
-          return (
-            <Chip
-              key={id}
-              label={INSTRUMENT_LABELS[id]}
-              locked={!unlocked}
-              active={unlocked && s.instrumentId === id}
-              onPress={() => selectInstrument(id, true)}
-              style={{ flex: 1, paddingVertical: 12 }}
-              textStyle={{ fontSize: 12 }}
-            />
-          );
-        })}
-      </View>
 
       {/* ドラムグルーヴ */}
       <SectionTitle>ドラムグルーヴ</SectionTitle>
@@ -157,24 +130,6 @@ export default function GrooveScreen() {
         <VolumeSlider label="コード音" percent={70} />
         <VolumeSlider label="ドラム" percent={90} />
       </View>
-
-      {/* Pro upsell */}
-      {!ent.palettePro && (
-        <Pressable style={styles.upsell} onPress={() => router.push('/paywall')}>
-          <LinearGradient
-            colors={['#7c4dff', '#d6409f']}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.upsellIcon}>
-            <Icon name="lock" size={18} color="#fff" strokeWidth={2.2} />
-          </LinearGradient>
-          <View style={{ flex: 1 }}>
-            <Text style={styles.upsellTitle}>音色をもっと増やす</Text>
-            <Text style={styles.upsellSub}>Palette Proでギター・ストリングスを解放</Text>
-          </View>
-          <Icon name="chevronRight" size={16} color={colors.purpleText} strokeWidth={2.4} />
-        </Pressable>
-      )}
     </ScreenScaffold>
   );
 }
@@ -246,19 +201,4 @@ const styles = StyleSheet.create({
     marginBottom: 18,
     gap: 13,
   },
-
-  upsell: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 12,
-    backgroundColor: rgba('#7c5cff', 0.14),
-    borderWidth: 1,
-    borderColor: 'rgba(124,92,255,0.35)',
-    borderRadius: radius['2xl'],
-    paddingVertical: 14,
-    paddingHorizontal: 16,
-  },
-  upsellIcon: { width: 38, height: 38, borderRadius: radius.lg, alignItems: 'center', justifyContent: 'center' },
-  upsellTitle: { fontSize: 13.5, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
-  upsellSub: { fontSize: 11, color: colors.textMuted, marginTop: 2 },
 });
