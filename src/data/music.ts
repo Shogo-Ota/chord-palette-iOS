@@ -173,6 +173,27 @@ export function diatonicLibrary(key: MajorKey): LibraryChord[] {
   }));
 }
 
+/**
+ * Diatonic library cards where the big name is the seventh chord (Cmaj7, Dm7…)
+ * and the sub-label is the plain triad. Free tier — lets users place 4-note
+ * diatonic chords directly (the triad grid keeps the sub-label as the seventh).
+ */
+export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
+  const triads = diatonicTriads(key);
+  const sevenths = diatonicSevenths(key);
+  return sevenths.map((s, i) => ({
+    id: `dia7-${s.id}-${key}`,
+    displayName: s.displayName,
+    degreeLabel: s.degreeLabel,
+    function: s.function,
+    subLabel: triads[i].displayName,
+    category: 'diatonic',
+    isPro: false,
+    rootOffset: s.rootOffset,
+    suffix: s.suffix,
+  }));
+}
+
 /* ------------------------------------------------------------------ */
 /* Library: variations (apply to a chosen degree)                      */
 /* ------------------------------------------------------------------ */

@@ -20,6 +20,7 @@ import {
   CHORD_VARIATIONS,
   chromaticBassNotes,
   diatonicLibrary,
+  diatonicSeventhLibrary,
   MAJOR_KEYS,
   modalInterchange,
   secondaryDominants,
@@ -46,6 +47,8 @@ const DURATION_OPTIONS = [
   { key: '2', label: '1/2小節' },
   { key: '1', label: '1/4小節' },
 ];
+
+const BPM_PRESETS = [60, 70, 80, 90, 100, 110, 120, 130, 140, 160, 180, 200];
 
 const FUNCTION_BADGE: Record<ChordFunction, string> = {
   tonic: 'T',
@@ -127,15 +130,37 @@ export default function EditorScreen() {
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [playingIndex, setPlayingIndex] = useState(-1);
   const [keyPickerOpen, setKeyPickerOpen] = useState(false);
+  const [bpmPickerOpen, setBpmPickerOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(true);
   const [tab, setTab] = useState<LibraryTab>('diatonic');
+  const [chordSize, setChordSize] = useState<'triad' | 'seventh'>('triad');
   const [varDegree, setVarDegree] = useState(0);
   const [slashTarget, setSlashTarget] = useState(0);
 
   const tapsRef = useRef<number[]>([]);
 
+  /* ---- editing invalidates playback: stop so the next ▶ rebuilds --- */
+  const didMountRef = useRef(false);
+  const playbackStateRef = useRef(playbackState);
+  playbackStateRef.current = playbackState;
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    // Only edits (progression/tempo/key/loop) trigger this — not transport state
+    // changes — so starting playback never stops itself.
+    if (playbackStateRef.current === 'playing' || playbackStateRef.current === 'paused') {
+      audioService.stop().catch(() => undefined);
+    }
+  }, [progression, bpm, key, loop]);
+
   /* ---- derived library ------------------------------------------ */
   const diatonic = useMemo(() => diatonicLibrary(key), [key]);
+  const diatonicGrid = useMemo(
+    () => (chordSize === 'seventh' ? diatonicSeventhLibrary(key) : diatonicLibrary(key)),
+    [key, chordSize],
+  );
   const secDoms = useMemo(() => secondaryDominants(key), [key]);
   const modals = useMemo(() => modalInterchange(key), [key]);
   const bassNotes = useMemo(() => chromaticBassNotes(key), [key]);
@@ -205,6 +230,10 @@ export default function EditorScreen() {
     setKeyPickerOpen(false);
   }
 
+  function changeTempo(next: number) {
+    session.setTempo(next);
+  }
+
   function tapTempo() {
     const now = Date.now();
     const taps = tapsRef.current.filter((t) => now - t < 2000);
@@ -250,8 +279,16 @@ export default function EditorScreen() {
       {/* ── Transport & settings bar ───────────────────── */}
       <View style={styles.transportBar}>
         <View style={styles.bpmBox}>
-          <Text style={styles.bpmValue}>{bpm}</Text>
-          <Text style={styles.bpmUnit}>BPM</Text>
+          <Pressable style={styles.bpmStep} onPress={() => changeTempo(bpm - 1)} hitSlop={6}>
+            <Text style={styles.bpmStepText}>−</Text>
+          </Pressable>
+          <Pressable style={styles.bpmValueBtn} onPress={() => setBpmPickerOpen(true)} hitSlop={4}>
+            <Text style={styles.bpmValue}>{bpm}</Text>
+            <Text style={styles.bpmUnit}>BPM</Text>
+          </Pressable>
+          <Pressable style={styles.bpmStep} onPress={() => changeTempo(bpm + 1)} hitSlop={6}>
+            <Text style={styles.bpmStepText}>+</Text>
+          </Pressable>
           <Pressable style={styles.tapBtn} onPress={tapTempo} hitSlop={4}>
             <Text style={styles.tapBtnText}>TAP</Text>
           </Pressable>
@@ -383,13 +420,22 @@ export default function EditorScreen() {
 
           {tab === 'diatonic' && (
             <View>
+              <SegTrack
+                options={[
+                  { key: 'triad', label: '3和音' },
+                  { key: 'seventh', label: 'セブンス (4和音)' },
+                ]}
+                value={chordSize}
+                onChange={(k) => setChordSize(k as 'triad' | 'seventh')}
+                style={styles.tabTrack}
+              />
               <View style={styles.grid}>
-                {diatonic.map((c) => (
+                {diatonicGrid.map((c) => (
                   <LibraryCard key={c.id} chord={c} width={wDia} onPress={() => addChord(c)} />
                 ))}
               </View>
 
-              <Text style={styles.subHint}>度数を選んでバリエーション適用</Text>
+              <Text style={styles.subHint}>バリエーションを足す：①適用する度数を選ぶ → ②下のボタンで追加</Text>
               <View style={styles.degreeRow}>
                 {diatonic.map((c, i) => (
                   <Pressable
@@ -406,15 +452,22 @@ export default function EditorScreen() {
                   </Pressable>
                 ))}
               </View>
+              <Text style={styles.varApplyTo}>
+                適用先： {diatonic[varDegree]?.degreeLabel}（{diatonic[varDegree]?.displayName}）
+              </Text>
               <View style={styles.varRow}>
-                {CHORD_VARIATIONS.map((v) => (
-                  <Pressable
-                    key={v.id}
-                    style={styles.varPill}
-                    onPress={() => addChord(variationChord(key, varDegree, v.id as VariationId))}>
-                    <Text style={styles.varPillText}>{v.label}</Text>
-                  </Pressable>
-                ))}
+                {CHORD_VARIATIONS.map((v) => {
+                  const preview = variationChord(key, varDegree, v.id as VariationId);
+                  return (
+                    <Pressable
+                      key={v.id}
+                      style={[styles.varPill, v.isPro && styles.varPillPro]}
+                      onPress={() => addChord(preview)}>
+                      <Text style={styles.varPillText}>{preview.displayName}</Text>
+                      {v.isPro && <Icon name="lock" size={10} color={colors.gold} strokeWidth={2.4} />}
+                    </Pressable>
+                  );
+                })}
               </View>
             </View>
           )}
@@ -488,6 +541,43 @@ export default function EditorScreen() {
         <Icon name="video" size={18} color={colors.purpleSoft} strokeWidth={2} />
         <Text style={styles.exportCtaText}>動画を書き出す</Text>
       </Pressable>
+
+      {/* ── BPM picker modal ───────────────────────────── */}
+      <Modal
+        visible={bpmPickerOpen}
+        transparent
+        animationType="fade"
+        onRequestClose={() => setBpmPickerOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setBpmPickerOpen(false)}>
+          <View style={styles.keyPicker}>
+            <Text style={styles.keyPickerTitle}>テンポ（BPM）</Text>
+            <View style={styles.keyGrid}>
+              {BPM_PRESETS.map((b) => (
+                <Pressable
+                  key={b}
+                  onPress={() => {
+                    changeTempo(b);
+                    setBpmPickerOpen(false);
+                  }}
+                  style={[styles.keyOption, b === bpm && styles.keyOptionActive]}>
+                  <Text style={[styles.keyOptionText, b === bpm && styles.keyOptionTextActive]}>
+                    {b}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
+            <View style={styles.bpmFineRow}>
+              <Pressable style={styles.bpmFineBtn} onPress={() => changeTempo(bpm - 1)} hitSlop={6}>
+                <Text style={styles.bpmFineText}>− 1</Text>
+              </Pressable>
+              <Text style={styles.bpmFineValue}>{bpm} BPM</Text>
+              <Pressable style={styles.bpmFineBtn} onPress={() => changeTempo(bpm + 1)} hitSlop={6}>
+                <Text style={styles.bpmFineText}>+ 1</Text>
+              </Pressable>
+            </View>
+          </View>
+        </Pressable>
+      </Modal>
 
       {/* ── Key picker modal ───────────────────────────── */}
       <Modal
@@ -725,9 +815,38 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12,
     marginBottom: 8,
   },
-  bpmBox: { flexDirection: 'row', alignItems: 'baseline', gap: 4 },
+  bpmBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  bpmStep: {
+    width: 24,
+    height: 24,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceInput,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  bpmStepText: { fontSize: 16, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700', lineHeight: 18 },
+  bpmValueBtn: { flexDirection: 'row', alignItems: 'baseline', gap: 3, paddingHorizontal: 2 },
   bpmValue: { fontSize: 20, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
   bpmUnit: { fontSize: 10, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600' },
+  bpmFineRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginTop: 14,
+    gap: 10,
+  },
+  bpmFineBtn: {
+    backgroundColor: colors.surfaceInput,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+    borderRadius: radius.md,
+    paddingVertical: 10,
+    paddingHorizontal: 18,
+  },
+  bpmFineText: { fontSize: 14, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
+  bpmFineValue: { fontSize: 15, color: colors.textPrimary, fontFamily: font.bold, fontWeight: '700' },
   tapBtn: {
     marginLeft: 4,
     backgroundColor: '#243149',
@@ -962,14 +1081,29 @@ const styles = StyleSheet.create({
     paddingVertical: 7,
     paddingHorizontal: 10,
   },
+  varApplyTo: {
+    fontSize: 11.5,
+    color: colors.textTertiary,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    marginBottom: 8,
+    marginHorizontal: 2,
+  },
   varRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 14 },
   varPill: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
     backgroundColor: rgba(colors.pink, 0.12),
     borderWidth: 1,
     borderColor: rgba(colors.pink, 0.4),
     borderRadius: radius.md,
     paddingVertical: 8,
     paddingHorizontal: 14,
+  },
+  varPillPro: {
+    backgroundColor: colors.surfaceLocked,
+    borderColor: colors.borderFaint,
   },
   varPillText: { fontSize: 13, color: colors.pinkText, fontFamily: font.bold, fontWeight: '700' },
 
