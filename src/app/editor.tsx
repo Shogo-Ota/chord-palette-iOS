@@ -17,6 +17,7 @@ import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
 import { GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
 import {
+  availableVariations,
   CHORD_VARIATIONS,
   chromaticBassNotes,
   diatonicLibrary,
@@ -26,7 +27,6 @@ import {
   secondaryDominants,
   slashChord,
   variationChord,
-  type VariationId,
 } from '@/data/music';
 import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
@@ -150,6 +150,11 @@ export default function EditorScreen() {
   const didMountRef = useRef(false);
   const playbackStateRef = useRef(playbackState);
   playbackStateRef.current = playbackState;
+  // Mirror `loop` in a ref so the sound-setting re-apply effect can read the
+  // latest value WITHOUT depending on it (a loop toggle is handled by the edit-
+  // invalidation effect below, so it must not also trigger a live restart).
+  const loopRef = useRef(loop);
+  loopRef.current = loop;
   useEffect(() => {
     if (!didMountRef.current) {
       didMountRef.current = true;
@@ -161,6 +166,24 @@ export default function EditorScreen() {
       audioService.stop().catch(() => undefined);
     }
   }, [progression, bpm, key, loop]);
+
+  /* ---- sound-setting changes re-apply to the WHOLE progression live -----
+     Instrument / drum groove / accompaniment are session-level, not baked into
+     placed chords, so changing them here rebuilds playback immediately (no need
+     to delete & re-add chords). If not playing, the next ▶ picks up the change. */
+  const didMountSoundRef = useRef(false);
+  useEffect(() => {
+    if (!didMountSoundRef.current) {
+      didMountSoundRef.current = true;
+      return;
+    }
+    if (playbackStateRef.current !== 'playing') return;
+    const cur = getSession();
+    if (cur.progression.length === 0) return;
+    audioService
+      .play(sessionToPlaybackRequest(cur, loopRef.current))
+      .catch((e) => logger.error('Audio re-apply failed', { error: String(e) }));
+  }, [s.instrumentId, s.grooveId, s.accompanimentPattern]);
 
   /* ---- derived library ------------------------------------------ */
   const diatonic = useMemo(() => diatonicLibrary(key), [key]);
@@ -347,7 +370,8 @@ export default function EditorScreen() {
 
       {progression.length === 0 ? (
         <View style={styles.emptyStrip}>
-          <Text style={styles.emptyHint}>下のコードから選んで追加 ↓</Text>
+          <Text style={styles.emptyHint}>① 下のダイアトニックからコードをタップ</Text>
+          <Text style={styles.emptyHintSub}>② 右上の ▶ で再生 — これだけで完成</Text>
         </View>
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stripScroll}>
@@ -464,20 +488,32 @@ export default function EditorScreen() {
               <Text style={styles.varApplyTo}>
                 適用先： {diatonic[varDegree]?.degreeLabel}（{diatonic[varDegree]?.displayName}）
               </Text>
-              <View style={styles.varRow}>
-                {CHORD_VARIATIONS.map((v) => {
-                  const preview = variationChord(key, varDegree, v.id as VariationId);
-                  return (
-                    <Pressable
-                      key={v.id}
-                      style={[styles.varPill, v.isPro && styles.varPillPro]}
-                      onPress={() => addChord(preview)}>
-                      <Text style={styles.varPillText}>{preview.displayName}</Text>
-                      {v.isPro && <Icon name="lock" size={10} color={colors.gold} strokeWidth={2.4} />}
-                    </Pressable>
-                  );
-                })}
-              </View>
+              {availableVariations(varDegree).length === 0 ? (
+                <Text style={styles.varEmptyHint}>
+                  この度数（{diatonic[varDegree]?.degreeLabel}）に足せるテンションはありません
+                </Text>
+              ) : (
+                <View style={styles.varRow}>
+                  {availableVariations(varDegree).map((id) => {
+                    const v = CHORD_VARIATIONS.find((x) => x.id === id)!;
+                    const preview = variationChord(key, varDegree, id);
+                    return (
+                      <Pressable
+                        key={id}
+                        style={[styles.varPill, v.isPro && styles.varPillPro]}
+                        onPress={() => addChord(preview)}>
+                        <View style={styles.varPillInner}>
+                          <Text style={styles.varPillText}>{v.label}</Text>
+                          <Text style={styles.varPillSub} numberOfLines={1}>
+                            {preview.displayName}
+                          </Text>
+                        </View>
+                        {v.isPro && <Icon name="lock" size={10} color={colors.gold} strokeWidth={2.4} />}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              )}
             </View>
           )}
 
@@ -939,7 +975,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 12,
   },
-  emptyHint: { fontSize: 13, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
+  emptyHint: { fontSize: 13, color: colors.textSecondary, fontFamily: font.semibold, fontWeight: '600' },
+  emptyHintSub: {
+    fontSize: 12,
+    color: colors.textFaint,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    marginTop: 6,
+  },
   timeCard: {
     width: 82,
     backgroundColor: colors.surface,
@@ -1128,7 +1171,17 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceLocked,
     borderColor: colors.borderFaint,
   },
+  varPillInner: { alignItems: 'center' },
   varPillText: { fontSize: 13, color: colors.pinkText, fontFamily: font.bold, fontWeight: '700' },
+  varPillSub: { fontSize: 9, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600', marginTop: 1 },
+  varEmptyHint: {
+    fontSize: 11.5,
+    color: colors.textFaint,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    marginBottom: 14,
+    marginHorizontal: 2,
+  },
 
   /* slash */
   slashPreviewBox: {

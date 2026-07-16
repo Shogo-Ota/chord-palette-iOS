@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
+import { ADMIN_UNLOCK } from '@/config/admin';
 import { NO_ENTITLEMENTS, type Entitlements } from '@/lib/entitlements';
 
 /**
@@ -8,7 +9,11 @@ import { NO_ENTITLEMENTS, type Entitlements } from '@/lib/entitlements';
  * `useEntitlements()` / `getEntitlements()` so the implementation can be swapped
  * without touching screens.
  */
-let current: Entitlements = NO_ENTITLEMENTS;
+const ALL_ENTITLEMENTS: Entitlements = { palettePro: true, communityPlus: true };
+
+// Admin/owner builds start fully unlocked (see src/config/admin.ts). Everyone
+// else starts with no entitlements until a real purchase is resolved.
+let current: Entitlements = ADMIN_UNLOCK ? ALL_ENTITLEMENTS : NO_ENTITLEMENTS;
 const listeners = new Set<() => void>();
 
 function emit() {

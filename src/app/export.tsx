@@ -52,36 +52,49 @@ export default function ExportScreen() {
   const s = useEditorSession();
   const [duration, setDuration] = useState('30');
   const [watermark, setWatermark] = useState(false);
-  const [saving, setSaving] = useState(false);
+  const [busy, setBusy] = useState<'idle' | 'save' | 'share'>('idle');
   const [progress, setProgress] = useState(0);
+  const saving = busy !== 'idle';
 
-  async function handleSaveToPhotos() {
-    if (saving) return;
+  function exportInput() {
+    return {
+      title: s.title,
+      key: s.key,
+      bpm: s.tempoBpm,
+      progression: s.progression,
+      grooveId: s.grooveId,
+      accompaniment: s.accompanimentPattern,
+      instrumentId: s.instrumentId,
+    };
+  }
+
+  function runExport(kind: 'save' | 'share') {
+    if (busy !== 'idle') return;
     if (s.progression.length === 0) {
       Alert.alert('コードがありません', '動画を書き出す前に進行を作成してください。');
       return;
     }
-    setSaving(true);
+    setBusy(kind);
     setProgress(0);
-    try {
-      await videoExportService.exportAndSave(
-        {
-          title: s.title,
-          key: s.key,
-          bpm: s.tempoBpm,
-          progression: s.progression,
-          grooveId: s.grooveId,
-          instrumentId: s.instrumentId,
-        },
-        { durationSec: Number(duration), watermark, onProgress: setProgress },
-      );
-      Alert.alert('保存しました', '写真アプリに動画を保存しました。');
-    } catch (e) {
-      const msg = e instanceof VideoExportError ? e.userMessage : '動画の書き出しに失敗しました。';
-      Alert.alert('書き出しに失敗', msg);
-    } finally {
-      setSaving(false);
-    }
+    const opts = { durationSec: Number(duration), watermark, onProgress: setProgress };
+    const work =
+      kind === 'save'
+        ? videoExportService.exportAndSave(exportInput(), opts)
+        : videoExportService.exportAndShare(exportInput(), opts);
+    work
+      .then(() => {
+        if (kind === 'save') {
+          Alert.alert('保存しました', '写真アプリに動画を保存しました。');
+        }
+      })
+      .catch((e) => {
+        const msg = e instanceof VideoExportError ? e.userMessage : '動画の書き出しに失敗しました。';
+        Alert.alert('書き出しに失敗', msg, [
+          { text: '再試行', onPress: () => runExport(kind) },
+          { text: '閉じる', style: 'cancel' },
+        ]);
+      })
+      .finally(() => setBusy('idle'));
   }
 
   const idx = usePreviewIndex(s.progression, s.tempoBpm);
@@ -214,8 +227,8 @@ export default function ExportScreen() {
         <Toggle value={watermark} onValueChange={setWatermark} width={46} height={28} />
       </View>
 
-      {/* action — primary CTA: the real "save to Photos" export */}
-      <Pressable style={styles.saveBtnWrap} onPress={handleSaveToPhotos} disabled={saving}>
+      {/* actions — save is primary; share opens the system sheet (Phase 4B) */}
+      <Pressable style={styles.saveBtnWrap} onPress={() => runExport('save')} disabled={saving}>
         <LinearGradient
           colors={primaryGradient}
           start={{ x: 0, y: 0 }}
@@ -223,9 +236,18 @@ export default function ExportScreen() {
           style={[styles.saveBtn, saving && styles.saveBtnDisabled]}>
           <Icon name="download" size={17} color="#fff" strokeWidth={2.2} />
           <Text style={styles.saveBtnText}>
-            {saving ? `書き出し中… ${Math.round(progress * 100)}%` : '写真に保存'}
+            {busy === 'save' ? `書き出し中… ${Math.round(progress * 100)}%` : '写真に保存'}
           </Text>
         </LinearGradient>
+      </Pressable>
+      <Pressable
+        style={[styles.shareBtn, saving && styles.saveBtnDisabled]}
+        onPress={() => runExport('share')}
+        disabled={saving}>
+        <Icon name="share" size={16} color={colors.textSecondary} strokeWidth={2.2} />
+        <Text style={styles.shareBtnText}>
+          {busy === 'share' ? `書き出し中… ${Math.round(progress * 100)}%` : '共有する'}
+        </Text>
       </Pressable>
     </ScreenScaffold>
   );
@@ -348,4 +370,17 @@ const styles = StyleSheet.create({
   },
   saveBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: '#fff' },
   saveBtnDisabled: { opacity: 0.55 },
+  shareBtn: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: radius['2xl'],
+    paddingVertical: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  shareBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: colors.textSecondary },
 });

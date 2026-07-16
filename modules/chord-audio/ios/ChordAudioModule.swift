@@ -16,6 +16,7 @@ struct PlaybackRequestRecord: Record {
   @Field var loop: Bool = true
   @Field var chordEvents: [NoteEventRecord] = []
   @Field var drumPatternId: String = "pop8-min"
+  @Field var accompaniment: String = "block"
   @Field var instrument: String = "piano"
 }
 
@@ -35,6 +36,7 @@ struct RenderAudioRequestRecord: Record {
   @Field var totalBeats: Double = 0
   @Field var chordEvents: [NoteEventRecord] = []
   @Field var drumPatternId: String = "pop8-min"
+  @Field var accompaniment: String = "block"
   @Field var instrument: String = "piano"
   @Field var durationSec: Double = 15
 }
@@ -114,6 +116,8 @@ public class ChordAudioModule: Module {
         totalBeats: req.totalBeats,
         loop: req.loop,
         events: events,
+        drumPattern: req.drumPatternId,
+        accompaniment: req.accompaniment,
         instrument: req.instrument
       )
     }
@@ -131,6 +135,8 @@ public class ChordAudioModule: Module {
         bpm: req.bpm,
         totalBeats: req.totalBeats,
         events: events,
+        drumPattern: req.drumPatternId,
+        accompaniment: req.accompaniment,
         instrument: req.instrument,
         durationSec: req.durationSec
       )

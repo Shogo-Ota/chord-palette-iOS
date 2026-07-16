@@ -18,36 +18,38 @@ function ev(
 }
 
 describe('chordMidiNotes — quality voicings', () => {
-  it('C major triad in C = C3 E3 G3 (48,52,55)', () => {
-    expect(chordMidiNotes({ rootOffset: 0, suffix: '' }, 'C')).toEqual([48, 52, 55]);
+  it('C major triad in C = C1 C2 bass + C3 E3 G3 body', () => {
+    expect(chordMidiNotes({ rootOffset: 0, suffix: '' }, 'C')).toEqual([24, 36, 48, 52, 55]);
   });
 
   it('minor triad lowers the third by a semitone', () => {
-    expect(chordMidiNotes({ rootOffset: 0, suffix: 'm' }, 'C')).toEqual([48, 51, 55]);
+    expect(chordMidiNotes({ rootOffset: 0, suffix: 'm' }, 'C')).toEqual([24, 36, 48, 51, 55]);
   });
 
   it('Cmaj7 adds the major seventh', () => {
-    expect(chordMidiNotes({ rootOffset: 0, suffix: 'maj7' }, 'C')).toEqual([48, 52, 55, 59]);
+    expect(chordMidiNotes({ rootOffset: 0, suffix: 'maj7' }, 'C')).toEqual([24, 36, 48, 52, 55, 59]);
   });
 
-  it('dominant 7th (G7 = V in C) roots on G3', () => {
-    // V is 7 semitones above the tonic → G3 = 55.
-    expect(chordMidiNotes({ rootOffset: 7, suffix: '7' }, 'C')).toEqual([55, 59, 62, 65]);
+  it('dominant 7th (G7 = V in C) roots on G3 with G1/G2 bass', () => {
+    // V is 7 semitones above the tonic → bass G1/G2 = 31/43, body root G3 = 55.
+    expect(chordMidiNotes({ rootOffset: 7, suffix: '7' }, 'C')).toEqual([31, 43, 55, 59, 62, 65]);
   });
 
-  it('slash chord prepends the bass an octave below (C/E)', () => {
+  it('slash chord anchors the bass octaves on the slash note (C/E)', () => {
     const notes = chordMidiNotes({ rootOffset: 0, suffix: '', bassOffset: 4 }, 'C');
-    expect(notes[0]).toBe(40); // E2 bass = 36 + 4
-    expect(notes.slice(1)).toEqual([48, 52, 55]);
+    expect(notes.slice(0, 2)).toEqual([28, 40]); // E1/E2 bass = 24+4, 36+4
+    expect(notes.slice(2)).toEqual([48, 52, 55]);
   });
 
   it('unknown suffix falls back to a major triad', () => {
-    expect(chordMidiNotes({ rootOffset: 0, suffix: 'weird' as string }, 'C')).toEqual([48, 52, 55]);
+    expect(chordMidiNotes({ rootOffset: 0, suffix: 'weird' as string }, 'C')).toEqual([
+      24, 36, 48, 52, 55,
+    ]);
   });
 });
 
 describe('chordMidiNotes — transposition follows the key', () => {
-  it('the tonic triad tracks the key tonic pitch class', () => {
+  it('the tonic triad body root tracks the key tonic pitch class', () => {
     const keys: [MajorKey, number][] = [
       ['C', 48],
       ['D', 50],
@@ -57,14 +59,16 @@ describe('chordMidiNotes — transposition follows the key', () => {
       ['B', 59],
     ];
     for (const [key, root] of keys) {
-      expect(chordMidiNotes({ rootOffset: 0, suffix: '' }, key)[0]).toBe(root);
+      // Body root is the first note in the C3 band (bass octaves come first).
+      const bodyRoot = chordMidiNotes({ rootOffset: 0, suffix: '' }, key).find((n) => n >= 48);
+      expect(bodyRoot).toBe(root);
     }
   });
 
   it('diatonic V7 root is a perfect fifth above the tonic in every key', () => {
     for (const key of ['C', 'E♭', 'G', 'A'] as MajorKey[]) {
-      const tonic = chordMidiNotes({ rootOffset: 0, suffix: '' }, key)[0];
-      const dominant = chordMidiNotes({ rootOffset: 7, suffix: '7' }, key)[0];
+      const tonic = chordMidiNotes({ rootOffset: 0, suffix: '' }, key).find((n) => n >= 48)!;
+      const dominant = chordMidiNotes({ rootOffset: 7, suffix: '7' }, key).find((n) => n >= 48)!;
       // Roots wrap within one octave band, so compare pitch classes.
       expect((dominant - tonic + 12) % 12).toBe(7);
     }
@@ -79,8 +83,8 @@ describe('progressionToChordSpecs', () => {
     ];
     const specs = progressionToChordSpecs(prog, 'C');
     expect(specs).toEqual([
-      { midiNotes: [48, 52, 55, 59], lengthBeats: 4 },
-      { midiNotes: [55, 59, 62, 65], lengthBeats: 2 },
+      { midiNotes: [24, 36, 48, 52, 55, 59], lengthBeats: 4 },
+      { midiNotes: [31, 43, 55, 59, 62, 65], lengthBeats: 2 },
     ]);
   });
 

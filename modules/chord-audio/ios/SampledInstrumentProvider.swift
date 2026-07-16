@@ -9,8 +9,10 @@ import os
 /// the proven scheduler/mixer/transport untouched (sprint-2.md §10) while giving
 /// a genuine sampled timbre.
 final class SampledInstrumentProvider: InstrumentProvider {
-  /// Lowest note pre-rendered (C2 — covers slash-chord bass) up to C6.
-  private let lowNote = 36
+  /// Lowest note pre-rendered (C1 — covers the doubled sub-octave bass) up to C6.
+  /// Extending down an octave from C2 gives the voicing real low-frequency weight
+  /// instead of a thin mid-register sound.
+  private let lowNote = 24
   private let highNote = 84
   /// How long each note is captured. Long enough to include the natural decay.
   private let captureSeconds = 3.0

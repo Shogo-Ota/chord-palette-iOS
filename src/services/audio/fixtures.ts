@@ -27,6 +27,7 @@ export function buildVerificationRequest(loop = true): PlaybackRequest {
     loop,
     chordEvents,
     drumPatternId: VERIFICATION_DRUM_PATTERN,
+    accompaniment: 'block',
     instrument: 'piano',
   };
 }

@@ -1,10 +1,11 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useRouter } from 'expo-router';
 import React, { useCallback, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
+import { EmptyState } from '@/components/EmptyState';
 import { Icon } from '@/components/Icon';
 import { MetaPill } from '@/components/controls';
+import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
 import { startNew } from '@/features/editor/session';
@@ -87,16 +88,8 @@ export default function ProjectListScreen() {
         </Pressable>
       </View>
 
-      <Pressable onPress={createNew} style={({ pressed }) => pressed && styles.pressed}>
-        <LinearGradient
-          colors={['#7c5cff', '#5b8cff']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={styles.cta}>
-          <Icon name="plus" size={21} color="#fff" strokeWidth={2.6} />
-          <Text style={styles.ctaText}>新しい進行を作る</Text>
-        </LinearGradient>
-      </Pressable>
+      <Text style={styles.heroHint}>コードを並べて、すぐに鳴らす</Text>
+      <PrimaryButton label="新しい進行を作る" icon="plus" onPress={createNew} />
 
       <Pressable onPress={() => router.push('/presets')} style={styles.presetLink} hitSlop={6}>
         <Icon name="dots" size={15} color={colors.purpleSoft} strokeWidth={2} />
@@ -109,10 +102,10 @@ export default function ProjectListScreen() {
       </View>
 
       {projects === null ? null : summaries.length === 0 ? (
-        <View style={styles.empty}>
-          <Text style={styles.emptyTitle}>まだプロジェクトがありません</Text>
-          <Text style={styles.emptyHint}>「新しい進行を作る」から始めましょう</Text>
-        </View>
+        <EmptyState
+          title="まだプロジェクトがありません"
+          hint="上のボタンから曲を始め、下のコードをタップして再生まで30秒で体験できます"
+        />
       ) : (
         <View style={{ gap: 12 }}>
           {summaries.map((p) => (
@@ -180,19 +173,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  cta: {
-    borderRadius: radius['3xl'],
-    paddingVertical: 18,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 10,
-    shadowColor: '#7c5cff',
-    shadowOpacity: 0.5,
-    shadowRadius: 20,
-    shadowOffset: { width: 0, height: 12 },
+  heroHint: {
+    fontSize: 13.5,
+    color: colors.textMuted,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    marginBottom: 12,
+    paddingHorizontal: 2,
   },
-  ctaText: { color: '#fff', fontSize: 17, fontFamily: font.bold, fontWeight: '700' },
   pressed: { opacity: 0.9, transform: [{ scale: 0.985 }] },
 
   presetLink: {
@@ -215,18 +203,6 @@ const styles = StyleSheet.create({
   },
   listHeaderTitle: { fontSize: 15, fontFamily: font.bold, fontWeight: '700', color: colors.textHeading },
   listHeaderCount: { fontSize: 12.5, color: colors.textFaint },
-
-  empty: {
-    borderWidth: 1.5,
-    borderColor: colors.borderSoft,
-    borderStyle: 'dashed',
-    borderRadius: radius['3xl'],
-    paddingVertical: 40,
-    alignItems: 'center',
-    gap: 8,
-  },
-  emptyTitle: { fontSize: 14.5, fontFamily: font.bold, fontWeight: '700', color: colors.textSecondary },
-  emptyHint: { fontSize: 12.5, color: colors.textFaint },
 
   card: {
     position: 'relative',

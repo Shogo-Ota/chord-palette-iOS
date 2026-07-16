@@ -219,7 +219,46 @@ export const CHORD_VARIATIONS = [
 
 export type VariationId = (typeof CHORD_VARIATIONS)[number]['id'];
 
-/** Build a variation chord on top of a diatonic degree (e.g. I + sus4 → Csus4). */
+/**
+ * Diatonic-correct tension mapping. For each major-key degree (I..vi) it maps a
+ * variation to the concrete chord-quality suffix that (a) respects the degree's
+ * major/minor quality and (b) stays INSIDE the key — i.e. avoid-notes and
+ * non-diatonic tensions are simply not offered for that degree. vii° (diminished)
+ * takes no variations. Index = degree (0 = I … 5 = vi). Only listed variations are
+ * available; the editor greys out / omits the rest.
+ *
+ * Reasoning per degree (in C for reference):
+ *  I  (Ionian):     ♮11(F) is the avoid note → no 11; 9/13 voiced as maj9/maj13.
+ *  ii (Dorian):     no avoid note → the full set (minor-quality forms).
+ *  iii(Phrygian):   ♭9(F) & ♭13(C) are avoid → only sus4 & the 11 (add-11, no 9).
+ *  IV (Lydian):     ♮4(B♭) is out of key → no sus4/11; 9/13 as maj9/maj13.
+ *  V  (Mixolydian): ♮11(C) is the avoid note → no 11; 9/13 are dominant 9/13.
+ *  vi (Aeolian):    ♮6(F#) is out of key → no 6/13; minor-quality forms.
+ */
+const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
+  0: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
+  1: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '6': 'm6', '9': 'm9', '11': 'm11', '13': 'm13' },
+  2: { sus4: 'sus4', '11': 'm(add11)' },
+  3: { sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
+  4: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': '9', '13': '13' },
+  5: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '9': 'm9', '11': 'm11' },
+};
+
+/**
+ * Variations that are diatonically usable on the given degree, in button order —
+ * avoid-notes and non-diatonic tensions removed. vii° (index 6) returns [].
+ */
+export function availableVariations(degreeIndex: number): VariationId[] {
+  const map = DEGREE_VARIATION_SUFFIX[degreeIndex] ?? {};
+  return CHORD_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
+}
+
+/**
+ * Build a variation chord on a diatonic degree, respecting the degree's quality
+ * and the key (e.g. I + add9 → Cadd9, but vi + add9 → Am(add9), not Aadd9). If a
+ * variation is not diatonic for the degree it falls back to the raw suffix, but
+ * the editor only offers {@link availableVariations} so that path is unused in UI.
+ */
 export function variationChord(
   key: MajorKey,
   degreeIndex: number,
@@ -227,9 +266,10 @@ export function variationChord(
 ): LibraryChord {
   const root = MAJOR_SCALES[key][degreeIndex];
   const v = CHORD_VARIATIONS.find((x) => x.id === variationId) ?? CHORD_VARIATIONS[0];
+  const suffix = DEGREE_VARIATION_SUFFIX[degreeIndex]?.[variationId] ?? v.suffix;
   return {
-    id: `var-${key}-${root}-${v.suffix}`,
-    displayName: `${root}${v.suffix}`,
+    id: `var-${key}-${root}-${suffix}`,
+    displayName: `${root}${suffix}`,
     degreeLabel: `${DEGREE_LABELS[degreeIndex]} ${v.label}`,
     function: DEGREE_FUNCTIONS[degreeIndex],
     subLabel: v.label,
@@ -237,7 +277,7 @@ export function variationChord(
     variation: v.id,
     isPro: v.isPro,
     rootOffset: MAJOR_SCALE_OFFSETS[degreeIndex],
-    suffix: v.suffix,
+    suffix,
   };
 }
 

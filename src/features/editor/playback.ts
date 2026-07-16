@@ -20,9 +20,10 @@ export function sessionToPlaybackRequest(session: EditorSession, loop: boolean):
     totalBeats,
     loop,
     chordEvents,
-    // Phase 2A native plays a single synth pattern regardless of id; the real
-    // groove id is forwarded so Phase 2B can map it to a sampled pattern.
+    // Native selects the concrete drum pattern by this groove id.
     drumPatternId: session.grooveId,
+    // Native applies this accompaniment rhythm to each chord's body notes.
+    accompaniment: session.accompanimentPattern,
     instrument: session.instrumentId,
   };
 }

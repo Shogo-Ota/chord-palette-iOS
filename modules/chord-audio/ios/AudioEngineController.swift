@@ -3,17 +3,48 @@ import os
 
 /// Immutable snapshot of what to play. Swapped atomically under the lock so the
 /// audio thread never reads a half-mutated plan.
+/// One pre-scheduled note: an instrument voice to play at `start` frames into the
+/// loop, for `dur` frames, at final linear `gain`. Precomputed OFF the audio
+/// thread (velocity/humanize/sparkle/anticipation/ring-cap already resolved) so
+/// the real-time render callback only sums voices — no allocation, no scanning.
+struct NoteStrike {
+  let start: Int // frames from loop head
+  let dur: Int // frames
+  let note: Int // MIDI
+  let gain: Float // final linear gain
+}
+
 final class PlanSnapshot {
   let bpm: Double
   let totalBeats: Double
   let loop: Bool
   let events: [NoteEventValue]
+  /// Drum groove id (requirements §5.6). Resolved to a concrete pattern by the
+  /// DrumProvider on the audio thread.
+  let drumPattern: String
+  /// Accompaniment rhythm id (requirements §5.5): block / eightBeat /
+  /// sixteenthBeat / arpeggio.
+  let accompaniment: String
+  /// Precomputed chord/accompaniment note strikes for ONE loop, sorted by start.
+  /// Built once (off the audio thread) from the accompaniment pattern.
+  let chordStrikes: [NoteStrike]
 
-  init(bpm: Double, totalBeats: Double, loop: Bool, events: [NoteEventValue]) {
+  init(
+    bpm: Double,
+    totalBeats: Double,
+    loop: Bool,
+    events: [NoteEventValue],
+    drumPattern: String = "pop8",
+    accompaniment: String = "block",
+    chordStrikes: [NoteStrike] = []
+  ) {
     self.bpm = bpm
     self.totalBeats = totalBeats
     self.loop = loop
     self.events = events
+    self.drumPattern = drumPattern
+    self.accompaniment = accompaniment
+    self.chordStrikes = chordStrikes
   }
 }
 
@@ -275,7 +306,15 @@ final class AudioEngineController {
 
   // MARK: - Transport
 
-  func play(bpm: Double, totalBeats: Double, loop: Bool, events: [NoteEventValue], instrument: String) {
+  func play(
+    bpm: Double,
+    totalBeats: Double,
+    loop: Bool,
+    events: [NoteEventValue],
+    drumPattern: String,
+    accompaniment: String,
+    instrument: String
+  ) {
     // §3.1: play() is a fresh-from-top playback, never a resume. It is only valid
     // once the engine is prepared and from ready/playing/paused/stopped. From
     // idle/preparing/failed it is a no-op (no state change, no onStateChange).
@@ -285,7 +324,14 @@ final class AudioEngineController {
     }
     // Ensure the requested voice is loaded before playback (no-op if unchanged).
     setInstrument(instrument)
-    let snapshot = PlanSnapshot(bpm: bpm, totalBeats: totalBeats, loop: loop, events: events)
+    // Precompute the note schedule off the audio thread (this is the caller thread).
+    let strikes = buildChordStrikes(
+      bpm: bpm, totalBeats: totalBeats, events: events,
+      accompaniment: accompaniment, sr: sampleRate)
+    let snapshot = PlanSnapshot(
+      bpm: bpm, totalBeats: totalBeats, loop: loop, events: events,
+      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
+    )
     os_unfair_lock_lock(&unfairLock)
     plan = snapshot
     isPlaying = true
@@ -467,6 +513,9 @@ final class AudioEngineController {
     return noErr
   }
 
+  /// Real-time chord render: allocation-free and cheap. Folds the absolute frame
+  /// into the loop and sums every precomputed strike currently sounding. All the
+  /// musical decisions were made off the audio thread in `buildChordStrikes`.
   private func chordSampleValue(
     snap: PlanSnapshot,
     absFrame: Double,
@@ -479,18 +528,280 @@ final class AudioEngineController {
       return 0
     }
     let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: snap.loop)
-    let beat = Scheduler.beat(forFrameInLoop: folded.frameInLoop, bpm: snap.bpm, sampleRate: sr)
-    let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
+    let fi = Int(folded.frameInLoop)
 
-    guard let event = activeEvent(snap: snap, beat: beat) else { return 0 }
-    let velGain = Float(event.velocity) / 127.0
-    let t = (beat - event.startBeat) * spb
-    let dur = event.lengthBeats * spb
     var sum: Float = 0
-    for note in event.midiNotes {
-      sum += provider.sample(note: note, tSeconds: t, durationSeconds: dur)
+    for strike in snap.chordStrikes {
+      let rel = fi - strike.start
+      if rel < 0 || rel >= strike.dur { continue }
+      let t = Double(rel) / sr
+      sum += provider.sample(note: strike.note, tSeconds: t, durationSeconds: Double(strike.dur) / sr)
+        * strike.gain
     }
-    return sum * velGain
+    // Soft-clip the summed voices (tanh) — smooth headroom, no hard digital clip.
+    return tanh(sum)
+  }
+
+  // MARK: - Accompaniment (driving, human-feel comping)
+
+  /// A single articulation on the bar grid. `beat` is its position within the bar
+  /// (0..4), `vel` its base velocity (0..1), and `look` an anticipation amount in
+  /// beats: the harmony is looked up `look` beats AHEAD, so an off-beat can grab
+  /// the upcoming chord early (the "食い"/push that gives momentum).
+  private struct CompStroke { let beat: Double; let vel: Float; var look: Double = 0 }
+
+  /// Deterministic ±jitter so identical render == identical playback, but the
+  /// velocities stop sounding machine-flat. Seed off the onset+note.
+  private static func humanize(_ base: Float, seed: Double, amount: Float = 0.07) -> Float {
+    guard amount > 0 else { return max(0.0, min(1.0, base)) }
+    let h = sin(seed * 12.9898) * 43_758.5453
+    let frac = h - floor(h) // [0,1)
+    let jitter = Float(frac * 2 - 1) * amount
+    return max(0.0, min(1.0, base * (1.0 + jitter)))
+  }
+
+  /// Deterministic micro timing sway in beats (±amount). Same seed → same offset
+  /// so playback and offline export stay bit-identical.
+  private static func timingSway(seed: Double, amountBeats: Double) -> Double {
+    guard amountBeats > 0 else { return 0 }
+    let h = sin(seed * 7.1321) * 43_758.5453
+    let frac = h - floor(h)
+    return (frac * 2 - 1) * amountBeats
+  }
+
+  /// Chord notes sounding at `beat` (loop-folded). Build-time only.
+  private func notesAt(events: [NoteEventValue], totalBeats: Double, beat: Double) -> [Int] {
+    var b = beat
+    if totalBeats > 0 {
+      b = b.truncatingRemainder(dividingBy: totalBeats)
+      if b < 0 { b += totalBeats }
+    }
+    for e in events where b >= e.startBeat && b < e.startBeat + e.lengthBeats { return e.midiNotes }
+    return []
+  }
+
+  /// Event velocity (0..1) active at `beat`. Defaults to 100/127. Build-time only.
+  private func velAt(events: [NoteEventValue], totalBeats: Double, beat: Double) -> Float {
+    var b = beat
+    if totalBeats > 0 {
+      b = b.truncatingRemainder(dividingBy: totalBeats)
+      if b < 0 { b += totalBeats }
+    }
+    for e in events where b >= e.startBeat && b < e.startBeat + e.lengthBeats {
+      return Float(e.velocity) / 127.0
+    }
+    return 100.0 / 127.0
+  }
+
+  /// Beats from `refBeat` to the next chord change (or loop seam). Build-time only.
+  private func beatsUntilChordChange(
+    events: [NoteEventValue], totalBeats: Double, after refBeat: Double
+  ) -> Double {
+    guard totalBeats > 0 else { return .greatestFiniteMagnitude }
+    let iterBase = floor(refBeat / totalBeats) * totalBeats
+    var best = Double.greatestFiniteMagnitude
+    for e in events {
+      for cand in [iterBase + e.startBeat, iterBase + totalBeats + e.startBeat]
+      where cand > refBeat + 1e-6 {
+        best = min(best, cand - refBeat)
+      }
+    }
+    return best
+  }
+
+  /// Ring length (beats) for a note struck at `onset` belonging to the chord `look`
+  /// beats ahead, capped so it stops when THAT chord ends (un-pedal on change — the
+  /// anticipated note still rings THROUGH the downbeat it pushes into). Build-time.
+  private func ringCap(
+    events: [NoteEventValue], totalBeats: Double, onset: Double, look: Double, nominal: Double
+  ) -> Double {
+    let until = beatsUntilChordChange(events: events, totalBeats: totalBeats, after: onset + look)
+    return max(0.05, min(nominal, look + until + 0.06))
+  }
+
+  /// Precompute the accompaniment as a flat list of NoteStrikes for ONE loop.
+  /// Runs OFF the audio thread (allocation is fine here); the render callback then
+  /// only sums the active strikes. This is what makes the engine cheap enough to
+  /// never underrun. Musical principles baked in here (how uptempo pop/rock is
+  /// played): bass locks the pulse on strong beats; the chord drives in steady
+  /// 8th/16ths with down-beats hit and up-beats anticipating the next chord (食い);
+  /// a soft top-octave adds "sparkle"; every note's ring is cut at the chord change
+  /// (un-pedal) for clarity. Chord events stay 1:1 with the timeline (highlight-safe).
+  private func buildChordStrikes(
+    bpm: Double, totalBeats: Double, events: [NoteEventValue], accompaniment: String, sr: Double
+  ) -> [NoteStrike] {
+    guard totalBeats > 0, !events.isEmpty, sr > 0 else { return [] }
+    let fpb = Scheduler.framesPerBeat(bpm: bpm, sampleRate: sr)
+    guard fpb > 0 else { return [] }
+    let loopFrames = Int((totalBeats * fpb).rounded())
+    guard loopFrames > 0 else { return [] }
+    var out: [NoteStrike] = []
+
+    // Emit a (possibly strummed / sparkled) group of notes for one onset.
+    // `timingAmount` / `velAmount` control human feel; block passes 0 for both so
+    // hits stay locked to the beat with flat, even velocity.
+    func emitGroup(
+      onsetBeat: Double, look: Double, baseVel: Float, nominalRing: Double,
+      strumSec: Double, sparkle: Bool, select: (Int) -> Bool,
+      timingAmount: Double = 0, velAmount: Float = 0.07
+    ) {
+      let notes = notesAt(events: events, totalBeats: totalBeats, beat: onsetBeat + look)
+        .filter(select).sorted()
+      guard !notes.isEmpty else { return }
+      let ringB = ringCap(
+        events: events, totalBeats: totalBeats, onset: onsetBeat, look: look, nominal: nominalRing)
+      let durF = max(1, Int((ringB * fpb).rounded()))
+      let vGain = velAt(events: events, totalBeats: totalBeats, beat: onsetBeat + look)
+      let sway = Self.timingSway(seed: onsetBeat + look, amountBeats: timingAmount)
+      let onsetFrame = Int(((onsetBeat + sway) * fpb).rounded())
+      let strumF = Int((strumSec * sr).rounded())
+      var voiced = notes
+      let top12 = (notes.max() ?? 0) + 12
+      if sparkle { voiced.append(top12) }
+      for (i, note) in voiced.enumerated() {
+        let start = onsetFrame + i * strumF
+        if start < 0 || start >= loopFrames { continue }
+        let dur = min(durF, loopFrames - start)
+        if dur <= 0 { continue }
+        let vv: Float = (sparkle && note == top12) ? baseVel * 0.5 : baseVel
+        let gain = Self.humanize(vv, seed: onsetBeat + Double(note), amount: velAmount) * vGain
+        out.append(NoteStrike(start: start, dur: dur, note: note, gain: gain))
+      }
+    }
+
+    // Emit a bar-locked grid of strokes across the whole loop.
+    func emitGrid(
+      _ strokes: [CompStroke], nominalRing: Double, strumSec: Double,
+      sparkle: Bool, select: (Int) -> Bool,
+      timingAmount: Double = 0, velAmount: Float = 0.07
+    ) {
+      let barCount = max(1, Int(ceil(totalBeats / 4.0 - 1e-9)))
+      for bi in 0..<barCount {
+        for st in strokes {
+          let onsetBeat = Double(bi) * 4.0 + st.beat
+          if onsetBeat >= totalBeats - 1e-9 { continue }
+          emitGroup(
+            onsetBeat: onsetBeat, look: st.look, baseVel: st.vel, nominalRing: nominalRing,
+            strumSec: strumSec, sparkle: sparkle, select: select,
+            timingAmount: timingAmount, velAmount: velAmount)
+        }
+      }
+    }
+
+    let isBass: (Int) -> Bool = { $0 < 48 }
+    let isBody: (Int) -> Bool = { $0 >= 48 }
+    let isAll: (Int) -> Bool = { _ in true }
+
+    switch accompaniment {
+    case "eightBeat":
+      // Solid quarter bass on the grid (no syncopation / no sway). Body plays 8ths
+      // with velocity waves, light anticipation on upbeats (食い), and a touch of
+      // timing sway so it feels human without leaving the pocket.
+      emitGrid(
+        [
+          CompStroke(beat: 0, vel: 1.0), CompStroke(beat: 1, vel: 0.92),
+          CompStroke(beat: 2, vel: 0.96), CompStroke(beat: 3, vel: 0.90),
+        ],
+        nominalRing: 0.95, strumSec: 0, sparkle: false, select: isBass,
+        timingAmount: 0, velAmount: 0.03)
+      emitGrid(
+        [
+          CompStroke(beat: 0, vel: 0.96, look: 0),
+          CompStroke(beat: 0.5, vel: 0.58, look: 0.04),
+          CompStroke(beat: 1, vel: 0.78, look: 0),
+          CompStroke(beat: 1.5, vel: 0.66, look: 0.06),
+          CompStroke(beat: 2, vel: 0.92, look: 0),
+          CompStroke(beat: 2.5, vel: 0.55, look: 0.04),
+          CompStroke(beat: 3, vel: 0.80, look: 0),
+          CompStroke(beat: 3.5, vel: 0.70, look: 0.08),
+        ],
+        nominalRing: 0.48, strumSec: 0.005, sparkle: true, select: isBody,
+        timingAmount: 0.018, velAmount: 0.11)
+
+    case "sixteenthBeat":
+      // Grid bass + busy 16th body. Ghost notes on the "e"/"a", push on the "a"
+      // before downbeats, velocity undulates, slight timing sway.
+      emitGrid(
+        [
+          CompStroke(beat: 0, vel: 1.0), CompStroke(beat: 1, vel: 0.90),
+          CompStroke(beat: 2, vel: 0.96), CompStroke(beat: 3, vel: 0.88),
+        ],
+        nominalRing: 0.95, strumSec: 0, sparkle: false, select: isBass,
+        timingAmount: 0, velAmount: 0.03)
+      var body16: [CompStroke] = []
+      var sixteenth = 0.0
+      while sixteenth < 4.0 - 1e-9 {
+        let slot = Int((sixteenth * 4.0).rounded()) % 4 // 0=↓ 1=e 2=& 3=a
+        let onQuarter = slot == 0
+        let onEighth = slot == 2
+        let vel: Float
+        let look: Double
+        if onQuarter {
+          vel = 0.94; look = 0
+        } else if onEighth {
+          vel = 0.72; look = 0.03
+        } else if slot == 3 {
+          // "a" — lean into the next downbeat (syncopation / 食い).
+          vel = 0.68; look = 0.07
+        } else {
+          // "e" — ghost
+          vel = 0.48; look = 0.02
+        }
+        body16.append(CompStroke(beat: sixteenth, vel: vel, look: look))
+        sixteenth += 0.25
+      }
+      emitGrid(
+        body16, nominalRing: 0.24, strumSec: 0.002, sparkle: false, select: isBody,
+        timingAmount: 0.014, velAmount: 0.12)
+
+    case "arpeggio":
+      // Sustained bass drone per chord (rings to the chord change) …
+      for e in events {
+        emitGroup(
+          onsetBeat: e.startBeat, look: 0, baseVel: 0.8, nominalRing: e.lengthBeats,
+          strumSec: 0, sparkle: false, select: isBass)
+      }
+      // … plus a fast 16th broken chord over the body notes.
+      let step = 0.25
+      let order = [0, 1, 2, 3, 4, 2]
+      var stepIndex = 0
+      while true {
+        let onsetBeat = Double(stepIndex) * step
+        if onsetBeat >= totalBeats - 1e-9 { break }
+        let body = notesAt(events: events, totalBeats: totalBeats, beat: onsetBeat)
+          .filter(isBody).sorted()
+        if !body.isEmpty {
+          let ringB = ringCap(
+            events: events, totalBeats: totalBeats, onset: onsetBeat, look: 0, nominal: 1.3)
+          let durF = max(1, Int((ringB * fpb).rounded()))
+          let pick = order[((stepIndex % order.count) + order.count) % order.count]
+          let note = body[pick % body.count]
+          let onQuarter = (stepIndex % 4 == 0)
+          let onEighth = (stepIndex % 2 == 0)
+          let baseVel: Float = onQuarter ? 0.85 : (onEighth ? 0.66 : 0.74)
+          let start = Int((onsetBeat * fpb).rounded())
+          let dur = min(durF, loopFrames - start)
+          if start >= 0 && start < loopFrames && dur > 0 {
+            let gain = Self.humanize(baseVel, seed: onsetBeat + Double(note))
+              * velAt(events: events, totalBeats: totalBeats, beat: onsetBeat)
+            out.append(NoteStrike(start: start, dur: dur, note: note, gain: gain))
+          }
+        }
+        stepIndex += 1
+      }
+
+    default: // "block"
+      // Chord-locked block hits on each chord start only — no syncopation, no
+      // timing sway, nearly flat velocity. Soft roll + sparkle for piano feel.
+      for e in events {
+        emitGroup(
+          onsetBeat: e.startBeat, look: 0, baseVel: 0.92, nominalRing: e.lengthBeats,
+          strumSec: 0.012, sparkle: true, select: isAll,
+          timingAmount: 0, velAmount: 0.02)
+      }
+    }
+
+    return out
   }
 
   private func drumSampleValue(snap: PlanSnapshot, absFrame: Double, sr: Double) -> Float {
@@ -501,7 +812,9 @@ final class AudioEngineController {
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
     var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
     if beatInBar < 0 { beatInBar += 4.0 }
-    return drumProvider.sample(beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame))
+    return drumProvider.sample(
+      groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
+    )
   }
 
   private func activeEvent(snap: PlanSnapshot, beat: Double) -> NoteEventValue? {
@@ -657,6 +970,8 @@ final class AudioEngineController {
     bpm: Double,
     totalBeats: Double,
     events: [NoteEventValue],
+    drumPattern: String,
+    accompaniment: String,
     instrument: String,
     durationSec: Double
   ) throws -> (url: URL, sampleRate: Double) {
@@ -668,7 +983,13 @@ final class AudioEngineController {
       if sampled.load(soundFontURL: url, program: program) { chordProv = sampled }
     }
     let drumProv: DrumProvider = SynthDrumProvider()
-    let snap = PlanSnapshot(bpm: bpm, totalBeats: max(1, totalBeats), loop: true, events: events)
+    let strikes = buildChordStrikes(
+      bpm: bpm, totalBeats: max(1, totalBeats), events: events,
+      accompaniment: accompaniment, sr: sr)
+    let snap = PlanSnapshot(
+      bpm: bpm, totalBeats: max(1, totalBeats), loop: true, events: events,
+      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
+    )
 
     let outURL = FileManager.default.temporaryDirectory
       .appendingPathComponent("chord-export-\(UUID().uuidString).m4a")
@@ -726,6 +1047,8 @@ final class AudioEngineController {
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
     var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
     if beatInBar < 0 { beatInBar += 4.0 }
-    return provider.sample(beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame))
+    return provider.sample(
+      groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
+    )
   }
 }

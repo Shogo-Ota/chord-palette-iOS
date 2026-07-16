@@ -89,6 +89,9 @@ enum FrameRenderer {
         centerX: W / 2, y: H * 0.40, maxWidth: W * 0.9)
     }
 
+    // Progression dots (mirrors export.tsx preview strip).
+    drawProgressionDots(plan: plan, timeSec: timeSec, centerY: H * 0.50, frameWidth: W, frameHeight: H)
+
     // Keyboard (lower area).
     let kbWidth = W * 0.88
     let kbX = (W - kbWidth) / 2
@@ -163,6 +166,59 @@ enum FrameRenderer {
       return s
     }
     return plan.segments.last
+  }
+
+  /// One loop of the progression (first `bars` bars), used for the dot strip.
+  private static func progressionCycle(plan: RenderPlan) -> [RenderSegment] {
+    let loopSec = Double(plan.bars) * 4.0 * (60.0 / Double(max(1, plan.bpm)))
+    let cycle = plan.segments.filter { $0.startSec < loopSec - 1e-9 }
+    return cycle.isEmpty ? Array(plan.segments.prefix(8)) : cycle
+  }
+
+  private static func drawProgressionDots(
+    plan: RenderPlan, timeSec: Double, centerY: CGFloat, frameWidth W: CGFloat, frameHeight H: CGFloat
+  ) {
+    let cycle = progressionCycle(plan: plan)
+    guard !cycle.isEmpty else { return }
+    let activeIdx: Int = {
+      if let i = cycle.firstIndex(where: {
+        timeSec >= $0.startSec && timeSec < $0.startSec + $0.durationSec
+      }) { return i }
+      // When time is past the first loop, map by modular position in the tile list.
+      if let global = plan.segments.firstIndex(where: {
+        timeSec >= $0.startSec && timeSec < $0.startSec + $0.durationSec
+      }) {
+        return global % cycle.count
+      }
+      return 0
+    }()
+
+    let maxDots = min(8, cycle.count)
+    let dots = Array(cycle.prefix(maxDots))
+    let activeDot = activeIdx % maxDots
+    let base: CGFloat = H * 0.007
+    let gap: CGFloat = H * 0.006
+    let widths: [CGFloat] = dots.enumerated().map { i, _ in i == activeDot ? base * 2.0 : base }
+    let totalW = widths.reduce(0, +) + gap * CGFloat(max(0, dots.count - 1))
+    var x = (W - totalW) / 2
+    let y = centerY - base / 2
+    for (i, seg) in dots.enumerated() {
+      let w = widths[i]
+      let h = base
+      let r = CGRect(x: x, y: y, width: w, height: h)
+      let path = UIBezierPath(roundedRect: r, cornerRadius: h / 2)
+      if i == activeDot {
+        seg.color.setFill()
+        path.fill()
+      } else {
+        UIColor.clear.setFill()
+        path.fill()
+        seg.color.setStroke()
+        path.lineWidth = max(1.2, H * 0.0012)
+        path.stroke()
+      }
+      x += w + gap
+    }
   }
 
   /// Draw text horizontally centered on `centerX`, with its top at `y`.

@@ -1,4 +1,5 @@
 import {
+  availableVariations,
   CHORD_VARIATIONS,
   MAJOR_KEYS,
   diatonicLibrary,
@@ -79,7 +80,28 @@ describe('CHORD_VARIATIONS (Pro gating, requirements §7)', () => {
     expect(variationChord('C', 0, 'sus4')).toMatchObject({ displayName: 'Csus4', isPro: false });
     expect(variationChord('C', 0, 'add9')).toMatchObject({ displayName: 'Cadd9', isPro: false });
     expect(variationChord('C', 0, '6')).toMatchObject({ displayName: 'C6', isPro: true });
-    expect(variationChord('C', 0, '9')).toMatchObject({ displayName: 'C9', isPro: true });
+    // I (Ionian): the ♮11 is an avoid note, so 9 is voiced as maj9 (not dominant C9).
+    expect(variationChord('C', 0, '9')).toMatchObject({ displayName: 'Cmaj9', isPro: true });
+  });
+});
+
+describe('variationChord — quality-aware, avoid-note-safe (C major)', () => {
+  it('keeps minor degrees minor (vi + add9 → Am(add9), not the major Aadd9)', () => {
+    expect(variationChord('C', 5, 'add9').displayName).toBe('Am(add9)');
+    expect(variationChord('C', 5, '9').displayName).toBe('Am9');
+    expect(variationChord('C', 1, '6').displayName).toBe('Dm6');
+    expect(variationChord('C', 1, '13').displayName).toBe('Dm13');
+  });
+
+  it('offers only diatonic tensions per degree and none on vii°', () => {
+    // I: no ♮11.
+    expect(availableVariations(0)).toEqual(['sus4', 'add9', '6', 'sus2', '9', '13']);
+    // vi: no ♮6 / 13 (F# is out of key).
+    expect(availableVariations(5)).toEqual(['sus4', 'add9', 'sus2', '9', '11']);
+    // iii (Phrygian): only the 4/11 avoid the ♭9/♭13.
+    expect(availableVariations(2)).toEqual(['sus4', '11']);
+    // vii° (diminished): no variations offered.
+    expect(availableVariations(6)).toEqual([]);
   });
 });
 

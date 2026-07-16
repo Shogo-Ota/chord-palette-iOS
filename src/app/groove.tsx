@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Chip, ChipRow, SectionTitle, VolumeSlider } from '@/components/controls';
@@ -14,8 +14,12 @@ import {
   GROOVE_LABELS,
   INSTRUMENT_LABELS,
 } from '@/data/labels';
+import { sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
-import { useEditorSession } from '@/features/editor/session';
+import { getSession, useEditorSession } from '@/features/editor/session';
+import { logger } from '@/lib/logger';
+import { audioService } from '@/services/audio';
+import type { PlaybackState } from '@/services/audio/types';
 import { colors, font, primaryGradient, radius } from '@/theme/tokens';
 import type { AccompanimentPattern, ChordFunction, InstrumentId } from '@/types';
 
@@ -37,7 +41,37 @@ export default function GrooveScreen() {
   const { width } = useWindowDimensions();
   const chipW = (width - 40 - 16) / 3; // 3-col grid, 20 padH, 8 gap
   const s = useEditorSession();
-  const [playing, setPlaying] = useState(false);
+  const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
+  const playing = playbackState === 'playing';
+
+  // Share the editor's audio engine. It is prepared by the editor (this screen is
+  // pushed on top), but prepare() is idempotent so we call it defensively. We do
+  // NOT tear down here — that stays with the editor which owns the lifecycle.
+  useEffect(() => {
+    audioService.prepare().catch((e) => logger.error('Audio prepare failed', { error: String(e) }));
+    const sub = audioService.addStateListener((e) => setPlaybackState(e.state));
+    return () => sub?.remove();
+  }, []);
+
+  function togglePlayback() {
+    const cur = getSession();
+    if (playing) {
+      audioService.pause().catch((e) => logger.error('Audio pause failed', { error: String(e) }));
+      return;
+    }
+    if (playbackState === 'paused') {
+      audioService.resume().catch((e) => logger.error('Audio resume failed', { error: String(e) }));
+      return;
+    }
+    if (cur.progression.length === 0) return;
+    audioService
+      .play(sessionToPlaybackRequest(cur, true))
+      .catch((e) => logger.error('Audio play failed', { error: String(e) }));
+  }
+
+  // NOTE: live re-apply of instrument/groove/accompaniment is owned by the editor
+  // screen (which stays mounted underneath this one), so changing a setting here
+  // rebuilds playback exactly once. Duplicating it here would double-trigger play().
 
   return (
     <ScreenScaffold>
@@ -79,13 +113,17 @@ export default function GrooveScreen() {
       {/* big play */}
       <View style={styles.playPanel}>
         <Icon name="skipBack" size={22} color={colors.textMuted} strokeWidth={2.2} />
-        <Pressable onPress={() => setPlaying((p) => !p)}>
+        <Pressable onPress={togglePlayback} disabled={s.progression.length === 0}>
           <LinearGradient
             colors={primaryGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={[styles.bigPlay, playing && styles.bigPlayActive]}>
-            <Icon name="play" size={27} color="#fff" />
+            style={[
+              styles.bigPlay,
+              playing && styles.bigPlayActive,
+              s.progression.length === 0 && styles.bigPlayDisabled,
+            ]}>
+            <Icon name={playing ? 'pause' : 'play'} size={27} color="#fff" />
           </LinearGradient>
         </Pressable>
         <Icon name="skipForward" size={22} color={colors.textMuted} strokeWidth={2.2} />
@@ -188,6 +226,7 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 12 },
   },
   bigPlayActive: { opacity: 0.85 },
+  bigPlayDisabled: { opacity: 0.4 },
 
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
 
