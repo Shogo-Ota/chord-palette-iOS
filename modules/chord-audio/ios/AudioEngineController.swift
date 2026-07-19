@@ -23,7 +23,7 @@ final class PlanSnapshot {
   /// DrumProvider on the audio thread.
   let drumPattern: String
   /// Accompaniment rhythm id (requirements §5.5): block / eightBeat /
-  /// sixteenthBeat / arpeggio.
+  /// sixteenthBeat / arpeggio / performance (1:1 PE passthrough).
   let accompaniment: String
   /// Precomputed chord/accompaniment note strikes for ONE loop, sorted by start.
   /// Built once (off the audio thread) from the accompaniment pattern.
@@ -707,15 +707,22 @@ final class AudioEngineController {
       emitGrid(
         [
           CompStroke(beat: 0, vel: 0.96, look: 0),
+          CompStroke(beat: 2, vel: 0.92, look: 0),
+        ],
+        nominalRing: 0.48, strumSec: 0.005, sparkle: true, select: isBody,
+        timingAmount: 0.018, velAmount: 0.11)
+      // Audit P1-4: sparkle only on strong beats (0/2); weak 8ths stay without the
+      // top-octave copy so the part feels less synthetic.
+      emitGrid(
+        [
           CompStroke(beat: 0.5, vel: 0.58, look: 0.04),
           CompStroke(beat: 1, vel: 0.78, look: 0),
           CompStroke(beat: 1.5, vel: 0.66, look: 0.06),
-          CompStroke(beat: 2, vel: 0.92, look: 0),
           CompStroke(beat: 2.5, vel: 0.55, look: 0.04),
           CompStroke(beat: 3, vel: 0.80, look: 0),
           CompStroke(beat: 3.5, vel: 0.70, look: 0.08),
         ],
-        nominalRing: 0.48, strumSec: 0.005, sparkle: true, select: isBody,
+        nominalRing: 0.48, strumSec: 0.005, sparkle: false, select: isBody,
         timingAmount: 0.018, velAmount: 0.11)
 
     case "sixteenthBeat":
@@ -790,9 +797,27 @@ final class AudioEngineController {
         stepIndex += 1
       }
 
-    default: // "block"
+    case "performance":
+      // Sprint-6 Step 3: 1:1 playback of Performance Engine events. Microtiming,
+      // gate, and velocity are already folded into startBeat/lengthBeats/velocity —
+      // do not re-humanize, sparkle, or expand onto a grid (music-supervisor).
+      for e in events {
+        let onsetFrame = Int((e.startBeat * fpb).rounded())
+        let durF = max(1, Int((e.lengthBeats * fpb).rounded()))
+        let gain = max(0.05, Float(e.velocity) / 127.0)
+        for note in e.midiNotes {
+          let start = onsetFrame
+          if start < 0 || start >= loopFrames { continue }
+          let dur = min(durF, loopFrames - start)
+          if dur <= 0 { continue }
+          out.append(NoteStrike(start: start, dur: dur, note: note, gain: gain))
+        }
+      }
+
+    default: // "block" (and unknown ids)
       // Chord-locked block hits on each chord start only — no syncopation, no
       // timing sway, nearly flat velocity. Soft roll + sparkle for piano feel.
+      // `"performance"` is handled above (1:1 passthrough of PE events).
       for e in events {
         emitGroup(
           onsetBeat: e.startBeat, look: 0, baseVel: 0.92, nominalRing: e.lengthBeats,

@@ -53,7 +53,7 @@ describe('buildSegments (tile progression across the clip)', () => {
 
   it('attaches voicing + function color to each segment', () => {
     const [c, g] = buildSegments(PROG, 'C', 120, 4);
-    expect(c.midiNotes).toEqual([24, 36, 48, 52, 55]); // C major triad + C1/C2 bass
+    expect(c.midiNotes).toEqual([36, 48, 52, 55]); // C major triad + C2 bass (P0-2)
     expect(g.midiNotes.find((n) => n >= 48)).toBe(55); // G body root
     expect(c.colorHex).toMatch(/^#/);
     expect(g.colorHex).not.toBe(c.colorHex); // tonic vs dominant differ

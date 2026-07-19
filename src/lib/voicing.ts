@@ -15,12 +15,6 @@ import type { ChordEvent, MajorKey } from '@/types';
 const CHORD_ROOT_MIDI = 48;
 /** Upper bass fundamental (C2), an octave below the chord body. */
 const BASS_ROOT_MIDI = 36;
-/**
- * Sub-octave bass fundamental (C1). Doubled an octave below {@link BASS_ROOT_MIDI}
- * on every chord so there is real low-frequency energy — a bare mid-register triad
- * sounds thin/"cheap" on its own. Requires the sampler's low range to extend to C1.
- */
-const SUB_BASS_ROOT_MIDI = 24;
 
 /**
  * Semitone intervals above the root for each chord quality we produce across the
@@ -82,18 +76,20 @@ function chordVoicingParts(
   const body = intervalsFor(chord.suffix ?? '').map((iv) => rootMidi + iv);
 
   // Slash chords put their explicit bass in the low octaves; otherwise the root.
+  // Audit P0-2: drop the always-on C1 sub-bass stack — it muddies headphones and
+  // is inaudible on iPhone speakers while eating headroom. Keep C2 only; C1 may
+  // return later as a conditional/attenuated layer.
   const bassPc = pitchClass(tonic + (chord.bassOffset ?? chord.rootOffset ?? 0));
-  const bass = [SUB_BASS_ROOT_MIDI + bassPc, BASS_ROOT_MIDI + bassPc];
+  const bass = [BASS_ROOT_MIDI + bassPc];
 
   return { bass, body };
 }
 
 /**
  * Concrete MIDI notes for a chord in the given key. Every chord is anchored by a
- * two-octave bass fundamental (C1 + C2) — the chord root, or the slash bass when
- * present — so the low end carries weight and the timbre reads as a full piano
- * rather than a thin mid-register cluster. The chord body sits in the C3 band.
- * Bass notes come first (lowest → highest).
+ * C2-band bass fundamental (chord root, or slash bass when present). The former
+ * always-on C1 sub-bass doubling was removed (music-supervisor audit P0-2). The
+ * chord body sits in the C3 band. Bass notes come first (lowest → highest).
  *
  * Context-free by design (no previous chord) so it stays correct for single-chord
  * previews and the keyboard visual. Progression-level voice leading is applied in

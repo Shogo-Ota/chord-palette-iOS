@@ -2,11 +2,15 @@ import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordVideoExportNative } from '@modules/chord-video-export';
 import { buildExportPlan } from '@/lib/exportPlan';
-import { progressionToChordSpecs } from '@/lib/voicing';
+import { generatePerformance } from '@/lib/performance/PerformanceEngine';
+import { progressionToPerfChords } from '@/lib/performance/progressionInput';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
-import { buildProgression } from '@/services/audio/schedule';
+import {
+  mapPerfNotesToPlaybackRequest,
+  performanceSeedFromSession,
+} from '@/services/audio/performanceMapper';
 import type { ChordEvent, MajorKey } from '@/types';
 
 /** Minimal snapshot the exporter needs (decoupled from the editor feature layer). */
@@ -46,18 +50,40 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     );
   }
 
-  const specs = progressionToChordSpecs(input.progression, input.key);
-  const { chordEvents, totalBeats } = buildProgression(specs);
+  const chords = progressionToPerfChords(input.progression, input.key);
+  const totalBeats = chords.reduce(
+    (max, c) => Math.max(max, c.startBeat + c.durationBeats),
+    0,
+  );
   if (totalBeats <= 0) {
     throw new VideoExportError('コードがありません。動画を書き出す前に進行を作成してください。');
   }
-  const audio = await audioService.renderAudioFile({
+  const seed = performanceSeedFromSession({
+    key: input.key,
+    tempoBpm: input.bpm,
+    grooveId: input.grooveId,
+    accompanimentPattern: input.accompaniment,
+    instrumentId: input.instrumentId,
+    progression: input.progression,
+  });
+  const notes = generatePerformance(
+    { chords, bpm: input.bpm, seed },
+    { styleId: input.accompaniment, drums: false },
+  );
+  const playback = mapPerfNotesToPlaybackRequest(notes, {
     bpm: input.bpm,
     totalBeats,
-    chordEvents,
+    loop: true,
     drumPatternId: input.grooveId,
-    accompaniment: input.accompaniment,
     instrument: input.instrumentId,
+  });
+  const audio = await audioService.renderAudioFile({
+    bpm: playback.bpm,
+    totalBeats: playback.totalBeats,
+    chordEvents: playback.chordEvents,
+    drumPatternId: playback.drumPatternId,
+    accompaniment: playback.accompaniment,
+    instrument: playback.instrument,
     durationSec: opts.durationSec,
   });
   if (!audio) {

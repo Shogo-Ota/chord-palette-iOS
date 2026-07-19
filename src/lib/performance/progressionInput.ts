@@ -11,16 +11,16 @@ import type { ChordEvent, MajorKey } from '@/types';
 import type { PerfChord } from './PerformanceEngine';
 
 /**
- * Split each voice-led ChordSpec (`[subBass, bass, ...body]`) into the engine's
- * bass/body parts and stamp sequential start beats from the chord lengths.
+ * Split each voice-led ChordSpec into bass (< C3) and body (≥ C3), matching the
+ * native `isBass` / `isBody` split. Bass length is 1 after audit P0-2 (C2 only).
  */
 export function progressionToPerfChords(progression: ChordEvent[], key: MajorKey): PerfChord[] {
   const specs = progressionToChordSpecs(progression, key);
   let beat = 0;
   return specs.map((spec) => {
     const chord: PerfChord = {
-      bassMidi: spec.midiNotes.slice(0, 2),
-      bodyMidi: spec.midiNotes.slice(2),
+      bassMidi: spec.midiNotes.filter((n) => n < 48),
+      bodyMidi: spec.midiNotes.filter((n) => n >= 48),
       startBeat: beat,
       durationBeats: spec.lengthBeats,
     };

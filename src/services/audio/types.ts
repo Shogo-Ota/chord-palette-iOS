@@ -65,9 +65,10 @@ export type PlaybackRequest = {
   /** Native holds the concrete drum-pattern definition for this id. */
   drumPatternId: string;
   /**
-   * Accompaniment rhythm id ('block' | 'eightBeat' | 'sixteenthBeat' | 'arpeggio').
-   * Native re-triggers/arpeggiates each chord's body notes on this grid while the
-   * low bass sustains; chord events stay 1:1 with the timeline (highlight-safe).
+   * Accompaniment rhythm id ('block' | 'eightBeat' | 'sixteenthBeat' | 'arpeggio' |
+   * 'performance'). Native re-triggers/arpeggiates each chord's body notes on this
+   * grid while the low bass sustains — except `'performance'`, which plays each
+   * chord event 1:1 (Performance Engine output; no re-humanize).
    */
   accompaniment: string;
   /** Instrument id → native maps to a General MIDI program (SoundFont). */

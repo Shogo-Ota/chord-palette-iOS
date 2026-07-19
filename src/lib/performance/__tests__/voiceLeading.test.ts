@@ -153,9 +153,9 @@ describe('voiceLeadNext — single step', () => {
 describe('progressionToChordSpecs — acceptance criteria across presets & keys', () => {
   const KEYS: MajorKey[] = ['C', 'D♭', 'D', 'E♭', 'E', 'F', 'G♭', 'G', 'A♭', 'A', 'B♭', 'B'];
 
-  /** Body notes = everything above the two anchored bass octaves (first two notes). */
+  /** Body notes = mid-register (≥ C3); bass is the C2 anchor below. */
   function bodyOf(spec: { midiNotes: number[] }): number[] {
-    return spec.midiNotes.slice(2);
+    return spec.midiNotes.filter((n) => n >= 48);
   }
 
   for (const preset of PRESETS) {
@@ -176,16 +176,17 @@ describe('progressionToChordSpecs — acceptance criteria across presets & keys'
     });
   }
 
-  it('keeps the bass octaves anchored on the chord root (voice leading is body-only)', () => {
+  it('keeps the bass anchored on the chord root (voice leading is body-only)', () => {
     const progression = buildPresetProgression(PRESETS[0], 'C').map((e, i) => ({
       ...e,
       id: `e-${i}`,
     }));
     const specs = progressionToChordSpecs(progression, 'C');
     for (const spec of specs) {
-      // The two lowest notes are exactly one octave apart (C1/C2-style anchor).
-      const [sub, bass] = spec.midiNotes;
-      expect(bass - sub).toBe(12);
+      const bass = spec.midiNotes.filter((n) => n < 48);
+      const body = spec.midiNotes.filter((n) => n >= 48);
+      expect(bass).toHaveLength(1);
+      expect(body.length).toBeGreaterThanOrEqual(3);
     }
   });
 });

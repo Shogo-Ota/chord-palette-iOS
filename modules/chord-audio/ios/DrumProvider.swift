@@ -129,18 +129,29 @@ final class SynthDrumProvider: DrumProvider {
   private func voiceSample(_ voice: Voice, t: Double, frame: Int64) -> Float {
     switch voice {
     case .kick:
+      // Body: pitched sine drop. Attack click (audit P1-1) restores presence on
+      // iPhone speakers where the sub body alone disappears.
       let decay = 0.18
       if t >= decay { return 0 }
       let env = exp(-t / 0.05)
-      let freq = 120.0 * exp(-t / 0.03) + 45.0 // quick pitch drop
-      return Float(sin(2.0 * Double.pi * freq * t) * env) * 0.9
+      let freq = 120.0 * exp(-t / 0.03) + 45.0
+      let body = sin(2.0 * Double.pi * freq * t) * env
+      let clickEnv = exp(-t / 0.0035) // ~3–8ms attack
+      let click =
+        sin(2.0 * Double.pi * 2400.0 * t) * clickEnv * 0.55
+        + Double(SynthDrumProvider.noise(frame)) * clickEnv * 0.3
+      return Float(body * 0.85 + click) * 0.95
     case .snare:
+      // Audit P1-2: less full-band noise, more mid tone so the snare reads on
+      // small speakers without a thin/harsh hash.
       let decay = 0.14
       if t >= decay { return 0 }
       let env = exp(-t / 0.05)
-      let tone = sin(2.0 * Double.pi * 180.0 * t) * 0.3
-      let noise = Double(SynthDrumProvider.noise(frame)) * 0.7
-      return Float((tone + noise) * env) * 0.5
+      let tone =
+        sin(2.0 * Double.pi * 180.0 * t) * 0.4
+        + sin(2.0 * Double.pi * 330.0 * t) * 0.18
+      let noise = Double(SynthDrumProvider.noise(frame)) * 0.42
+      return Float((tone + noise) * env) * 0.55
     case .hatClosed:
       let decay = 0.05
       if t >= decay { return 0 }
