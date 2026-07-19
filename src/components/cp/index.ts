@@ -5,6 +5,7 @@
  */
 
 export { CPChordCard } from './CPChordCard';
+export { CPChordContextMenu } from './CPChordContextMenu';
 export { CPSessionCapsule } from './CPSessionCapsule';
 export { CPPlayPauseButton } from './CPPlayPauseButton';
 export { CPTransportBar } from './CPTransportBar';

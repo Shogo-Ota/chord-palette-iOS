@@ -13,7 +13,7 @@ import {
 } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { CPSessionCapsule, CPTransportBar } from '@/components/cp';
+import { CPChordContextMenu, CPSessionCapsule, CPTransportBar } from '@/components/cp';
 import { SegTrack, Toggle } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
@@ -33,6 +33,8 @@ import {
 import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
+import { useAutosave } from '@/features/editor/useAutosave';
+import { useEditorActions } from '@/features/editor/useEditorActions';
 import { isLocked } from '@/lib/entitlements';
 import { hapticError, hapticSelection, hapticSoft, hapticSuccess } from '@/lib/haptics';
 import { logger } from '@/lib/logger';
@@ -40,16 +42,10 @@ import { MAX_BARS, durationLabel, totalBars as calcTotalBars } from '@/lib/progr
 import { useEntitlements } from '@/services/billing';
 import { audioService } from '@/services/audio';
 import type { PlaybackState } from '@/services/audio/types';
-import { colors, font, functionColor, motion, radius } from '@/theme/tokens';
+import { colors, font, functionColor, motion, radius, spacing, typeSize } from '@/theme/tokens';
 import type { ChordDuration, ChordFunction, LibraryChord, MajorKey } from '@/types';
 
 const H_PAD = 16;
-
-const DURATION_OPTIONS = [
-  { key: '4', label: '1小節' },
-  { key: '2', label: '1/2小節' },
-  { key: '1', label: '1/4小節' },
-];
 
 const BPM_PRESETS = [60, 70, 80, 90, 100, 110, 120, 130, 140, 160, 180, 200];
 
@@ -107,7 +103,6 @@ export default function EditorScreen() {
   const key = s.key;
   const progression = s.progression;
   const selected = s.selected;
-  const history = s.history;
   const bpm = s.tempoBpm;
   const title = s.title;
   const saved = !s.dirty;
@@ -121,6 +116,7 @@ export default function EditorScreen() {
   const [keyMode, setKeyMode] = useState<'change' | 'transpose'>('change');
   const [bpmPickerOpen, setBpmPickerOpen] = useState(false);
   const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
+  const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(true);
   const [tab, setTab] = useState<LibraryTab>('diatonic');
   const [chordSize, setChordSize] = useState<'triad' | 'seventh'>('triad');
@@ -226,14 +222,10 @@ export default function EditorScreen() {
       .catch((e) => logger.error('Audio re-apply failed', { error: String(e) }));
   }, [s.instrumentId, s.grooveId, s.accompanimentPattern]);
 
-  /* ---- Auto-save (sprint-7 Phase C: Remove Save button) ---------- */
-  useEffect(() => {
-    if (!s.dirty) return;
-    const t = setTimeout(() => {
-      session.save().catch((e) => logger.error('Auto-save failed', { error: String(e) }));
-    }, 700);
-    return () => clearTimeout(t);
-  }, [s.dirty, s.progression, s.key, s.tempoBpm, s.title, s.grooveId, s.instrumentId, s.accompanimentPattern]);
+  /* ---- Auto-save (sprint-7 Phase C: Remove Save button) ----------
+     Debounce + persistence live in the useAutosave hook (§4); it calls the
+     existing session.save() only — Data Model unchanged. */
+  useAutosave();
 
   /* ---- derived library ------------------------------------------ */
   const diatonic = useMemo(() => diatonicLibrary(key), [key]);
@@ -258,9 +250,6 @@ export default function EditorScreen() {
     hapticSelection();
     session.setSelected(i);
   };
-  const duplicateSelected = session.duplicateSelected;
-  const moveSelected = session.moveSelected;
-  const deleteSelected = session.deleteSelected;
   const undo = session.undo;
 
   const isPlaying = playbackState === 'playing';
@@ -281,6 +270,29 @@ export default function EditorScreen() {
       .catch((e) => logger.error('Audio play failed', { error: String(e) }));
   }
 
+  /* ---- visibleActions view-model (sprint-7 §3/§6) ----------------
+     Single source of truth for Undo/Loop/Play/Metronome visibility + state,
+     chord-context capability, and the empty→transform Play handler. The View
+     renders these declaratively (no inline can-do checks). */
+  const actions = useEditorActions({
+    playbackState,
+    onRequestFirstChord: () => {
+      // Empty-progression Play transforms into "pick your first chord" instead
+      // of dead-ending: open the chord library (§5 UNAVAILABLE = TRANSFORM).
+      setLibOpen(true);
+    },
+    onTogglePlayback: togglePlayback,
+  });
+  const { visibleActions, chordContext } = actions;
+
+  /* Long Press on a strip card selects it and opens the Context Menu (§4/§2 L2).
+     Tap keeps its existing "select" behavior so the Core Loop is unchanged. */
+  const openChordMenu = (i: number) => {
+    session.setSelected(i);
+    hapticSelection();
+    setContextMenuOpen(true);
+  };
+
   function addChord(c: LibraryChord) {
     if (isLocked(c.isPro, ent)) {
       router.push('/paywall');
@@ -298,10 +310,6 @@ export default function EditorScreen() {
         .previewChord(chordPreviewRequest(c, cur.key, cur.tempoBpm, cur.instrumentId))
         .catch(() => undefined);
     }
-  }
-
-  function setDuration(beats: ChordDuration) {
-    session.setDuration(beats);
   }
 
   function close() {
@@ -375,10 +383,12 @@ export default function EditorScreen() {
       {/* ── Transport (Undo · Play · Loop) ──────────────── */}
       <CPTransportBar
         playing={isPlaying}
-        showUndo={history.length > 0}
-        showLoop={progression.length >= 2}
+        loading={visibleActions.play.state === 'loading'}
+        emptyMode={visibleActions.play.mode === 'empty'}
+        showUndo={visibleActions.undo.state === 'ready'}
+        showLoop={visibleActions.loop.state === 'ready'}
         loopOn={loop}
-        onPlayPause={togglePlayback}
+        onPlayPause={actions.onPlayPause}
         onUndo={undo}
         onLoop={() => setLoop((v) => !v)}
       />
@@ -421,8 +431,11 @@ export default function EditorScreen() {
                 <React.Fragment key={ev.id}>
                   <Pressable
                     onPress={() => setSelected(i)}
+                    onLongPress={() => openChordMenu(i)}
+                    delayLongPress={350}
                     accessibilityRole="button"
                     accessibilityLabel={`${ev.displayName} ${ev.degreeLabel}`}
+                    accessibilityHint="長押しで編集メニュー"
                     accessibilityState={{ selected: i === selected }}>
                     <Animated.View
                       style={[
@@ -466,28 +479,6 @@ export default function EditorScreen() {
             })}
           </View>
         </ScrollView>
-      )}
-
-      {/* ── Inline actions (only when selected) ────────── */}
-      {selectedEvent && (
-        <View style={styles.inlinePanel}>
-          <View style={styles.inlineHeadRow}>
-            <Text style={styles.inlineLabel} numberOfLines={1}>
-              選択中：{selectedEvent.displayName}
-            </Text>
-            <View style={styles.inlineBtns}>
-              <ActionBtn icon="duplicate" onPress={duplicateSelected} />
-              <ActionBtn icon="chevronLeft" onPress={() => moveSelected(-1)} />
-              <ActionBtn icon="chevronRight" onPress={() => moveSelected(1)} />
-              <ActionBtn icon="trash" danger onPress={deleteSelected} />
-            </View>
-          </View>
-          <SegTrack
-            options={DURATION_OPTIONS}
-            value={String(selectedEvent.durationBeats)}
-            onChange={(k) => setDuration(Number(k) as ChordDuration)}
-          />
-        </View>
       )}
 
       {/* ── Chord library (collapsible, the star) ──────── */}
@@ -643,6 +634,29 @@ export default function EditorScreen() {
         </>
       )}
 
+      {/* ── Chord Context Menu (Long Press → 編集) ───────── */}
+      {chordContext.visible && selectedEvent && (
+        <CPChordContextMenu
+          visible={contextMenuOpen}
+          chordLabel={selectedEvent.displayName}
+          degreeLabel={selectedEvent.degreeLabel}
+          durationBeats={selectedEvent.durationBeats}
+          context={chordContext}
+          onRequestClose={() => setContextMenuOpen(false)}
+          onDuplicate={() => {
+            actions.duplicateSelected();
+            setContextMenuOpen(false);
+          }}
+          onMoveLeft={actions.moveSelectedLeft}
+          onMoveRight={actions.moveSelectedRight}
+          onDelete={() => {
+            actions.deleteSelected();
+            setContextMenuOpen(false);
+          }}
+          onSetDuration={(beats) => actions.setDuration(beats)}
+        />
+      )}
+
       {/* ── Session Sheet (Key / Tempo / Style / Sound) ─── */}
       <Modal
         visible={sessionSheetOpen}
@@ -681,10 +695,12 @@ export default function EditorScreen() {
                 {GROOVE_LABELS[s.grooveId]} · {INSTRUMENT_LABELS[s.instrumentId]}
               </Text>
             </Pressable>
-            <View style={styles.sessionRow}>
-              <Text style={styles.sessionRowLabel}>Metronome</Text>
-              <Toggle value={metronome} onValueChange={setMetronome} />
-            </View>
+            {visibleActions.metronome.state !== 'hidden' && (
+              <View style={styles.sessionRow}>
+                <Text style={styles.sessionRowLabel}>Metronome</Text>
+                <Toggle value={metronome} onValueChange={setMetronome} />
+              </View>
+            )}
             <Pressable style={styles.sessionTap} onPress={tapTempo}>
               <Text style={styles.sessionTapText}>TAP TEMPO</Text>
             </Pressable>
@@ -793,29 +809,8 @@ function IconBtn({
       hitSlop={4}>
       <Icon
         name={icon}
-        size={15}
+        size={18}
         color={disabled ? colors.textFaintest : tint ?? colors.textMuted}
-        strokeWidth={2.2}
-      />
-    </Pressable>
-  );
-}
-
-function ActionBtn({
-  icon,
-  onPress,
-  danger,
-}: {
-  icon: IconName;
-  onPress?: () => void;
-  danger?: boolean;
-}) {
-  return (
-    <Pressable onPress={onPress} style={[styles.actionBtn, danger && styles.actionBtnDanger]}>
-      <Icon
-        name={icon}
-        size={15}
-        color={danger ? colors.dangerText : colors.textMuted}
         strokeWidth={2.2}
       />
     </Pressable>
@@ -884,24 +879,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingVertical: 4,
   },
-  headerActions: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  keyChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    backgroundColor: colors.surfaceInput,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    borderRadius: radius.md,
-    paddingHorizontal: 8,
-    paddingVertical: 6,
-  },
-  keyChipLabel: { fontSize: 8.5, color: colors.textFaint, fontFamily: font.bold, fontWeight: '700' },
-  keyChipValue: { fontSize: 13, color: colors.textPrimary, fontFamily: font.bold, fontWeight: '700' },
+  headerActions: { flexDirection: 'row', alignItems: 'center', gap: spacing.s8 },
   iconBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.md,
+    width: 44,
+    height: 44,
+    borderRadius: radius.lg,
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.borderSubtle,
@@ -926,15 +908,15 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textSecondary,
   },
-  savedText: { fontSize: 11, fontFamily: font.semibold, fontWeight: '600' },
+  savedText: { fontSize: typeSize.caption, fontFamily: font.semibold, fontWeight: '600' },
 
   capsuleRow: { paddingBottom: 4 },
   transportHint: {
     textAlign: 'center',
     color: colors.textFaint,
-    fontSize: 11,
+    fontSize: typeSize.caption,
     fontFamily: font.medium,
-    marginBottom: 8,
+    marginBottom: spacing.s8,
   },
   sessionSheet: {
     backgroundColor: colors.surfacePanel,
@@ -976,40 +958,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceRaised,
   },
   sessionTapText: {
-    fontSize: 13,
+    fontSize: typeSize.label,
     fontFamily: font.bold,
     color: colors.primaryBlue,
     letterSpacing: 0.5,
   },
 
-  /* transport */
-  transportBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 10,
-    backgroundColor: colors.surfacePanel,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    borderRadius: radius['2xl'],
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    marginBottom: 8,
-  },
-  bpmBox: { flexDirection: 'row', alignItems: 'center', gap: 4 },
-  bpmStep: {
-    width: 24,
-    height: 24,
-    borderRadius: radius.sm,
-    backgroundColor: colors.surfaceInput,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  bpmStepText: { fontSize: 16, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700', lineHeight: 18 },
-  bpmValueBtn: { flexDirection: 'row', alignItems: 'baseline', gap: 3, paddingHorizontal: 2 },
-  bpmValue: { fontSize: 20, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
-  bpmUnit: { fontSize: 10, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600' },
+  /* transport (BPM fine-tune, used by the BPM picker modal) */
   bpmFineRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -1027,52 +982,6 @@ const styles = StyleSheet.create({
   },
   bpmFineText: { fontSize: 14, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
   bpmFineValue: { fontSize: 15, color: colors.textPrimary, fontFamily: font.bold, fontWeight: '700' },
-  tapBtn: {
-    marginLeft: 4,
-    backgroundColor: '#243149',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 6,
-  },
-  tapBtnText: { fontSize: 9.5, color: '#94a0b5', fontFamily: font.bold, fontWeight: '700' },
-  transportToggles: { flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 10 },
-  toggleField: { alignItems: 'center', gap: 4 },
-  toggleLabel: { fontSize: 8.5, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
-  playBtn: {
-    width: 46,
-    height: 46,
-    borderRadius: 23,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: colors.primary,
-    shadowOpacity: 0.6,
-    shadowRadius: 14,
-    shadowOffset: { width: 0, height: 8 },
-  },
-  playBtnActive: { opacity: 0.9 },
-  playBtnDisabled: { opacity: 0.4 },
-
-  summaryRow: { flexDirection: 'row', gap: 8, marginBottom: 18 },
-  summaryChip: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 6,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    borderRadius: radius.lg,
-    paddingVertical: 9,
-    paddingHorizontal: 11,
-  },
-  summaryLabel: { fontSize: 10.5, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600' },
-  summaryValue: {
-    flex: 1,
-    fontSize: 12,
-    color: colors.textSecondary,
-    fontFamily: font.bold,
-    fontWeight: '700',
-  },
 
   /* progression strip */
   stripHeader: {
@@ -1082,7 +991,7 @@ const styles = StyleSheet.create({
     marginBottom: 9,
     paddingHorizontal: 2,
   },
-  stripKey: { fontSize: 13, fontFamily: font.bold, fontWeight: '700', color: colors.textHeading },
+  stripKey: { fontSize: typeSize.label, fontFamily: font.bold, fontWeight: '700', color: colors.textHeading },
   barCount: { fontSize: 10.5, color: colors.textFaint },
   stripScroll: { marginBottom: 12 },
   stripRow: { flexDirection: 'row', alignItems: 'stretch', gap: 5 },
@@ -1096,7 +1005,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     marginBottom: 12,
   },
-  emptyHint: { fontSize: 13, color: colors.textSecondary, fontFamily: font.semibold, fontWeight: '600' },
+  emptyHint: { fontSize: typeSize.label, color: colors.textSecondary, fontFamily: font.semibold, fontWeight: '600' },
   emptyHintSub: {
     fontSize: 12,
     color: colors.textFaint,
@@ -1168,7 +1077,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   audioErrorRetryText: {
-    fontSize: 13,
+    fontSize: typeSize.label,
     color: colors.primary,
     fontFamily: font.bold,
     fontWeight: '700',
@@ -1186,31 +1095,6 @@ const styles = StyleSheet.create({
   },
   timeDurText: { fontSize: 9.5, color: colors.textTertiary },
   arrow: { alignSelf: 'center', color: colors.textArrow, fontSize: 15 },
-
-  /* inline actions */
-  inlinePanel: {
-    backgroundColor: colors.surfacePanel,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    borderRadius: radius.xl,
-    padding: 10,
-    marginBottom: 18,
-    gap: 10,
-  },
-  inlineHeadRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
-  inlineLabel: { flex: 1, fontSize: 11.5, color: colors.textTertiary, fontFamily: font.semibold, fontWeight: '600' },
-  inlineBtns: { flexDirection: 'row', gap: 6 },
-  actionBtn: {
-    width: 30,
-    height: 30,
-    borderRadius: radius.md,
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.borderSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  actionBtnDanger: { backgroundColor: 'rgba(239,68,68,0.1)', borderColor: 'rgba(239,68,68,0.3)' },
 
   /* library */
   libHeader: {
@@ -1250,7 +1134,7 @@ const styles = StyleSheet.create({
   libDegree: { flexShrink: 1, fontSize: 9.5, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
   libDot: { width: 7, height: 7, borderRadius: 4 },
   libName: {
-    fontSize: 17,
+    fontSize: typeSize.body,
     fontFamily: font.bold,
     fontWeight: '700',
     color: colors.textPrimary,
@@ -1290,23 +1174,27 @@ const styles = StyleSheet.create({
   },
   degreeRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginBottom: 10 },
   degreeChip: {
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: colors.surfaceInput,
     borderWidth: 1,
     borderColor: colors.borderSoft,
     borderRadius: radius.md,
-    paddingVertical: 7,
-    paddingHorizontal: 11,
+    paddingVertical: spacing.s8,
+    paddingHorizontal: spacing.s12,
   },
   degreeChipActive: { backgroundColor: rgba(colors.primary, 0.2), borderColor: colors.primary },
   degreeChipText: { fontSize: 12, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
   degreeChipTextActive: { color: colors.textBright, fontFamily: font.bold, fontWeight: '700' },
   targetChip: {
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: colors.surfaceInput,
     borderWidth: 1,
     borderColor: colors.borderSoft,
     borderRadius: radius.md,
-    paddingVertical: 7,
-    paddingHorizontal: 10,
+    paddingVertical: spacing.s8,
+    paddingHorizontal: spacing.s12,
   },
   varApplyTo: {
     fontSize: 11.5,
@@ -1321,19 +1209,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: 5,
+    minHeight: 44,
     backgroundColor: rgba(colors.pink, 0.12),
     borderWidth: 1,
     borderColor: rgba(colors.pink, 0.4),
     borderRadius: radius.md,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
+    paddingVertical: spacing.s8,
+    paddingHorizontal: spacing.s16,
   },
   varPillPro: {
     backgroundColor: colors.surfaceLocked,
     borderColor: colors.borderFaint,
   },
   varPillInner: { alignItems: 'center' },
-  varPillText: { fontSize: 13, color: colors.pinkText, fontFamily: font.bold, fontWeight: '700' },
+  varPillText: { fontSize: typeSize.label, color: colors.pinkText, fontFamily: font.bold, fontWeight: '700' },
   varPillSub: { fontSize: 9, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600', marginTop: 1 },
   varEmptyHint: {
     fontSize: 11.5,
@@ -1358,29 +1247,16 @@ const styles = StyleSheet.create({
   slashPreviewDim: { fontSize: 15, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600' },
   slashPreviewNote: { fontSize: 10.5, color: colors.textFaint, marginTop: 4 },
   bassChip: {
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: colors.surface,
     borderWidth: 1,
     borderColor: colors.borderSoft,
     borderRadius: radius.md,
-    paddingVertical: 11,
+    paddingVertical: spacing.s12,
     alignItems: 'center',
   },
-  bassChipText: { fontSize: 13, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
-
-  /* export */
-  exportCta: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 9,
-    backgroundColor: colors.surfaceRaised,
-    borderWidth: 1.5,
-    borderColor: 'rgba(124,92,255,0.55)',
-    borderRadius: radius['2xl'],
-    paddingVertical: 15,
-    marginTop: 20,
-  },
-  exportCtaText: { fontSize: 15, fontFamily: font.bold, fontWeight: '700', color: colors.purpleSoft },
+  bassChipText: { fontSize: typeSize.label, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
 
   /* key picker modal */
   modalBackdrop: {
@@ -1407,7 +1283,7 @@ const styles = StyleSheet.create({
   },
   keyModeTrack: { marginBottom: 8 },
   keyModeHint: {
-    fontSize: 11,
+    fontSize: typeSize.caption,
     color: colors.textFaint,
     fontFamily: font.regular,
     lineHeight: 16,
@@ -1416,11 +1292,13 @@ const styles = StyleSheet.create({
   keyGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   keyOption: {
     width: '22%',
+    minHeight: 44,
+    justifyContent: 'center',
     backgroundColor: colors.surfaceInput,
     borderWidth: 1,
     borderColor: colors.borderSoft,
     borderRadius: radius.md,
-    paddingVertical: 12,
+    paddingVertical: spacing.s12,
     alignItems: 'center',
   },
   keyOptionActive: { backgroundColor: rgba(colors.primary, 0.22), borderColor: colors.primary },

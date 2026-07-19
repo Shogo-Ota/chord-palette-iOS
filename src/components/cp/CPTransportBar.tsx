@@ -7,6 +7,8 @@ import { colors, radius, spacing } from '@/theme/tokens';
 export type CPTransportBarProps = {
   playing: boolean;
   loading?: boolean;
+  /** Empty progression → Play transforms into "最初のコードを選ぶ" (no dead-end). */
+  emptyMode?: boolean;
   /** Hide when no undo history (UNAVAILABLE=HIDE). */
   showUndo?: boolean;
   /** Hide when fewer than 2 chords (future Loop). */
@@ -21,6 +23,7 @@ export type CPTransportBarProps = {
 export function CPTransportBar({
   playing,
   loading,
+  emptyMode,
   showUndo,
   showLoop,
   loopOn,
@@ -44,7 +47,12 @@ export function CPTransportBar({
           <View style={styles.glyphSpacer} />
         )}
       </View>
-      <CPPlayPauseButton playing={playing} loading={loading} onPress={onPlayPause} />
+      <CPPlayPauseButton
+        playing={playing}
+        loading={loading}
+        emptyMode={emptyMode}
+        onPress={onPlayPause}
+      />
       <View style={styles.side}>
         {showLoop ? (
           <Pressable
