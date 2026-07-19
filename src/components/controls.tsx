@@ -1,6 +1,8 @@
 import { LinearGradient } from 'expo-linear-gradient';
-import React from 'react';
+import React, { useCallback, useRef } from 'react';
 import {
+  LayoutChangeEvent,
+  PanResponder,
   Pressable,
   StyleProp,
   StyleSheet,
@@ -11,6 +13,7 @@ import {
 } from 'react-native';
 
 import { Icon } from '@/components/Icon';
+import { clampPercent, positionToPercent } from '@/lib/volume';
 import { colors, font, primaryGradient, radius, sliderGradient } from '@/theme/tokens';
 
 /* ------------------------------------------------------------------ */
@@ -253,22 +256,69 @@ export function Toggle({
 }
 
 /* ------------------------------------------------------------------ */
-/* Volume slider (visual)                                              */
+/* Volume slider                                                       */
 /* ------------------------------------------------------------------ */
-export function VolumeSlider({ label, percent }: { label: string; percent: number }) {
+/**
+ * Displays a 0–100% level and, when `onChange` is supplied, becomes an
+ * interactive slider: tap or drag anywhere on the track to set the value. The
+ * touch target is 44pt tall for accessibility while the visual track stays thin.
+ * Without `onChange` it renders exactly as before (display-only, back-compat).
+ */
+export function VolumeSlider({
+  label,
+  percent,
+  onChange,
+}: {
+  label: string;
+  percent: number;
+  onChange?: (percent: number) => void;
+}) {
+  const value = clampPercent(percent);
+  const interactive = !!onChange;
+
+  // Keep the latest callback + measured width in refs so the PanResponder can be
+  // created once (its handlers close over stable refs, never stale props).
+  const onChangeRef = useRef(onChange);
+  onChangeRef.current = onChange;
+  const trackWidthRef = useRef(0);
+
+  const emit = useCallback((x: number) => {
+    const width = trackWidthRef.current;
+    if (width <= 0) return;
+    onChangeRef.current?.(positionToPercent(x, width));
+  }, []);
+
+  const onLayout = useCallback((e: LayoutChangeEvent) => {
+    trackWidthRef.current = e.nativeEvent.layout.width;
+  }, []);
+
+  const panResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponder: () => !!onChangeRef.current,
+      onMoveShouldSetPanResponder: () => !!onChangeRef.current,
+      onPanResponderGrant: (e) => emit(e.nativeEvent.locationX),
+      onPanResponderMove: (e) => emit(e.nativeEvent.locationX),
+    }),
+  ).current;
+
   return (
     <View style={styles.volRow}>
       <Text style={styles.volLabel}>{label}</Text>
-      <View style={styles.volTrack}>
-        <LinearGradient
-          colors={sliderGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 0 }}
-          style={[styles.volFill, { width: `${percent}%` }]}
-        />
-        <View style={[styles.volKnob, { left: `${percent}%` }]} />
+      <View
+        style={styles.volTouch}
+        onLayout={onLayout}
+        {...(interactive ? panResponder.panHandlers : null)}>
+        <View style={styles.volTrack}>
+          <LinearGradient
+            colors={sliderGradient}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 0 }}
+            style={[styles.volFill, { width: `${value}%` }]}
+          />
+          <View style={[styles.volKnob, { left: `${value}%` }]} />
+        </View>
       </View>
-      <Text style={styles.volValue}>{percent}%</Text>
+      <Text style={styles.volValue}>{value}%</Text>
     </View>
   );
 }
@@ -349,7 +399,9 @@ const styles = StyleSheet.create({
 
   volRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   volLabel: { fontSize: 12, color: colors.textTertiary, fontFamily: font.semibold, fontWeight: '600', width: 56 },
-  volTrack: { flex: 1, height: 5, borderRadius: 3, backgroundColor: '#2a3346', justifyContent: 'center' },
+  // Full-width, 44pt-tall hit target that vertically centers the thin track.
+  volTouch: { flex: 1, height: 44, justifyContent: 'center' },
+  volTrack: { alignSelf: 'stretch', height: 5, borderRadius: 3, backgroundColor: '#2a3346', justifyContent: 'center' },
   volFill: { position: 'absolute', left: 0, top: 0, height: '100%', borderRadius: 3 },
   volKnob: {
     position: 'absolute',

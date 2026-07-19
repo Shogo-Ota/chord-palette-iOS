@@ -7,6 +7,7 @@
 export { CPChordCard } from './CPChordCard';
 export { CPChordContextMenu } from './CPChordContextMenu';
 export { CPSessionCapsule } from './CPSessionCapsule';
+export { CPSettingChip } from './CPSettingChip';
 export { CPPlayPauseButton } from './CPPlayPauseButton';
 export { CPTransportBar } from './CPTransportBar';
 export { CPAddSlot } from './CPAddSlot';

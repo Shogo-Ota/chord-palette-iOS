@@ -13,11 +13,11 @@ import {
 } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { CPChordContextMenu, CPSessionCapsule, CPTransportBar } from '@/components/cp';
-import { SegTrack, Toggle } from '@/components/controls';
+import { CPChordContextMenu, CPSettingChip, CPTransportBar } from '@/components/cp';
+import { SegTrack } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
-import { ACCOMPANIMENT_LABELS, GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
+import { GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
 import {
   availableVariations,
   CHORD_VARIATIONS,
@@ -108,14 +108,12 @@ export default function EditorScreen() {
   const saved = !s.dirty;
 
   /* ---- UI-only local state -------------------------------------- */
-  const [metronome, setMetronome] = useState(true);
   const [loop, setLoop] = useState(true);
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [playingIndex, setPlayingIndex] = useState(-1);
   const [keyPickerOpen, setKeyPickerOpen] = useState(false);
   const [keyMode, setKeyMode] = useState<'change' | 'transpose'>('change');
   const [bpmPickerOpen, setBpmPickerOpen] = useState(false);
-  const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(true);
   const [tab, setTab] = useState<LibraryTab>('diatonic');
@@ -369,14 +367,28 @@ export default function EditorScreen() {
         </Text>
       </View>
 
-      {/* ── Session Capsule (Key/BPM/Style/Sound → one control) ─ */}
-      <View style={styles.capsuleRow}>
-        <CPSessionCapsule
-          keyLabel={`${key} Major`}
-          bpm={bpm}
-          styleLabel={`${GROOVE_LABELS[s.grooveId]} / ${ACCOMPANIMENT_LABELS[s.accompanimentPattern] ?? s.accompanimentPattern}`}
-          soundLabel={INSTRUMENT_LABELS[s.instrumentId]}
-          onPress={() => setSessionSheetOpen(true)}
+      {/* ── Session settings: independent Key / Tempo / Style chips ─ */}
+      <View style={styles.settingChips}>
+        <CPSettingChip
+          label="KEY"
+          value={`${key} Major`}
+          accessibilityLabel="キー"
+          accessibilityHint="タップしてキーを変更"
+          onPress={() => setKeyPickerOpen(true)}
+        />
+        <CPSettingChip
+          label="TEMPO"
+          value={`${bpm} BPM`}
+          accessibilityLabel="テンポ"
+          accessibilityHint="タップしてテンポを変更"
+          onPress={() => setBpmPickerOpen(true)}
+        />
+        <CPSettingChip
+          label="STYLE"
+          value={`${GROOVE_LABELS[s.grooveId]} / ${INSTRUMENT_LABELS[s.instrumentId]}`}
+          accessibilityLabel="スタイル"
+          accessibilityHint="タップしてグルーヴと音色を変更"
+          onPress={() => router.push('/groove')}
         />
       </View>
 
@@ -657,57 +669,6 @@ export default function EditorScreen() {
         />
       )}
 
-      {/* ── Session Sheet (Key / Tempo / Style / Sound) ─── */}
-      <Modal
-        visible={sessionSheetOpen}
-        transparent
-        animationType="slide"
-        onRequestClose={() => setSessionSheetOpen(false)}>
-        <Pressable style={styles.modalBackdrop} onPress={() => setSessionSheetOpen(false)}>
-          <Pressable style={styles.sessionSheet} onPress={(e) => e.stopPropagation()}>
-            <Text style={styles.keyPickerTitle}>セッション</Text>
-            <Pressable
-              style={styles.sessionRow}
-              onPress={() => {
-                setSessionSheetOpen(false);
-                setKeyPickerOpen(true);
-              }}>
-              <Text style={styles.sessionRowLabel}>Key</Text>
-              <Text style={styles.sessionRowValue}>{key} Major</Text>
-            </Pressable>
-            <Pressable
-              style={styles.sessionRow}
-              onPress={() => {
-                setSessionSheetOpen(false);
-                setBpmPickerOpen(true);
-              }}>
-              <Text style={styles.sessionRowLabel}>Tempo</Text>
-              <Text style={styles.sessionRowValue}>{bpm} BPM</Text>
-            </Pressable>
-            <Pressable
-              style={styles.sessionRow}
-              onPress={() => {
-                setSessionSheetOpen(false);
-                router.push('/groove');
-              }}>
-              <Text style={styles.sessionRowLabel}>Style / Sound</Text>
-              <Text style={styles.sessionRowValue} numberOfLines={1}>
-                {GROOVE_LABELS[s.grooveId]} · {INSTRUMENT_LABELS[s.instrumentId]}
-              </Text>
-            </Pressable>
-            {visibleActions.metronome.state !== 'hidden' && (
-              <View style={styles.sessionRow}>
-                <Text style={styles.sessionRowLabel}>Metronome</Text>
-                <Toggle value={metronome} onValueChange={setMetronome} />
-              </View>
-            )}
-            <Pressable style={styles.sessionTap} onPress={tapTempo}>
-              <Text style={styles.sessionTapText}>TAP TEMPO</Text>
-            </Pressable>
-          </Pressable>
-        </Pressable>
-      </Modal>
-
       {/* ── BPM picker modal ───────────────────────────── */}
       <Modal
         visible={bpmPickerOpen}
@@ -741,6 +702,14 @@ export default function EditorScreen() {
                 <Text style={styles.bpmFineText}>+ 1</Text>
               </Pressable>
             </View>
+            <Pressable
+              style={styles.sessionTap}
+              onPress={tapTempo}
+              accessibilityRole="button"
+              accessibilityLabel="タップテンポ"
+              accessibilityHint="ボタンを一定間隔で連打してテンポを設定">
+              <Text style={styles.sessionTapText}>TAP TEMPO</Text>
+            </Pressable>
           </View>
         </Pressable>
       </Modal>
@@ -910,7 +879,12 @@ const styles = StyleSheet.create({
   },
   savedText: { fontSize: typeSize.caption, fontFamily: font.semibold, fontWeight: '600' },
 
-  capsuleRow: { paddingBottom: 4 },
+  settingChips: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.s8,
+    paddingBottom: spacing.s8,
+  },
   transportHint: {
     textAlign: 'center',
     color: colors.textFaint,
@@ -918,44 +892,16 @@ const styles = StyleSheet.create({
     fontFamily: font.medium,
     marginBottom: spacing.s8,
   },
-  sessionSheet: {
-    backgroundColor: colors.surfacePanel,
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    paddingHorizontal: 18,
-    paddingTop: 18,
-    paddingBottom: 28,
-    borderWidth: 1,
-    borderColor: colors.border,
-    gap: 4,
-  },
-  sessionRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 14,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  sessionRowLabel: {
-    fontSize: 14,
-    fontFamily: font.semibold,
-    color: colors.textMuted,
-  },
-  sessionRowValue: {
-    flex: 1,
-    textAlign: 'right',
-    marginLeft: 12,
-    fontSize: 14,
-    fontFamily: font.bold,
-    color: colors.textPrimary,
-  },
   sessionTap: {
-    marginTop: 12,
+    marginTop: 14,
+    minHeight: 44,
+    justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 12,
     borderRadius: radius.lg,
     backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
   },
   sessionTapText: {
     fontSize: typeSize.label,

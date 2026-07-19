@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Chip, ChipRow, SectionTitle, VolumeSlider } from '@/components/controls';
@@ -18,8 +18,14 @@ import { sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
 import { logger } from '@/lib/logger';
+import { percentToVolume, volumeToPercent } from '@/lib/volume';
 import { audioService } from '@/services/audio';
-import type { PlaybackState } from '@/services/audio/types';
+import {
+  VOLUME_DEFAULTS,
+  type PlaybackState,
+  type VolumeChannel,
+  type VolumeLevels,
+} from '@/services/audio/types';
 import { colors, font, primaryGradient, radius } from '@/theme/tokens';
 import type { AccompanimentPattern, ChordFunction, InstrumentId } from '@/types';
 
@@ -44,6 +50,12 @@ export default function GrooveScreen() {
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const playing = playbackState === 'playing';
 
+  // Live channel volumes for the sliders. Seeded from the cached/persisted
+  // levels so the UI reflects reality; the canonical store stays SQLite.
+  const [volumes, setVolumes] = useState<VolumeLevels>(
+    () => audioService.getVolumes() ?? VOLUME_DEFAULTS,
+  );
+
   // Share the editor's audio engine. It is prepared by the editor (this screen is
   // pushed on top), but prepare() is idempotent so we call it defensively. We do
   // NOT tear down here — that stays with the editor which owns the lifecycle.
@@ -52,6 +64,73 @@ export default function GrooveScreen() {
     const sub = audioService.addStateListener((e) => setPlaybackState(e.state));
     return () => sub?.remove();
   }, []);
+
+  // Load current volumes on mount: prefer the in-memory cache, otherwise restore
+  // from SQLite (which also re-applies them to the native engine).
+  useEffect(() => {
+    let cancelled = false;
+    const cached = audioService.getVolumes();
+    if (cached) {
+      setVolumes(cached);
+      return;
+    }
+    audioService
+      .restoreVolumes()
+      .then((levels) => {
+        if (!cancelled) setVolumes(levels);
+      })
+      .catch((e) => logger.error('Volume restore failed', { error: String(e) }));
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  // Throttle native/SQLite writes per channel (~60ms) with a trailing flush, so
+  // dragging stays smooth without spamming persistence. UI state updates every
+  // frame so the knob tracks the finger.
+  const volThrottle = useRef<
+    Partial<Record<VolumeChannel, { last: number; timer: ReturnType<typeof setTimeout> | null }>>
+  >({});
+
+  useEffect(
+    () => () => {
+      Object.values(volThrottle.current).forEach((t) => {
+        if (t?.timer) clearTimeout(t.timer);
+      });
+    },
+    [],
+  );
+
+  function commitVolume(channel: VolumeChannel, value: number) {
+    audioService
+      .setVolume(channel, value)
+      .catch((e) => logger.error('Volume set failed', { channel, error: String(e) }));
+  }
+
+  function handleVolumeChange(channel: VolumeChannel, percent: number) {
+    const value = percentToVolume(percent);
+    setVolumes((prev) => ({ ...prev, [channel]: value }));
+
+    const THROTTLE_MS = 60;
+    const now = Date.now();
+    const entry = volThrottle.current[channel] ?? { last: 0, timer: null };
+    volThrottle.current[channel] = entry;
+    if (entry.timer) {
+      clearTimeout(entry.timer);
+      entry.timer = null;
+    }
+    const elapsed = now - entry.last;
+    if (elapsed >= THROTTLE_MS) {
+      entry.last = now;
+      commitVolume(channel, value);
+    } else {
+      entry.timer = setTimeout(() => {
+        entry.last = Date.now();
+        entry.timer = null;
+        commitVolume(channel, value);
+      }, THROTTLE_MS - elapsed);
+    }
+  }
 
   function togglePlayback() {
     const cur = getSession();
@@ -163,10 +242,18 @@ export default function GrooveScreen() {
         style={{ marginBottom: 20 }}
       />
 
-      {/* 音量（Phase 2 の音声エンジンで有効化） */}
+      {/* 音量 */}
       <View style={styles.volPanel}>
-        <VolumeSlider label="コード音" percent={70} />
-        <VolumeSlider label="ドラム" percent={90} />
+        <VolumeSlider
+          label="コード音"
+          percent={volumeToPercent(volumes.chord)}
+          onChange={(p) => handleVolumeChange('chord', p)}
+        />
+        <VolumeSlider
+          label="ドラム"
+          percent={volumeToPercent(volumes.drum)}
+          onChange={(p) => handleVolumeChange('drum', p)}
+        />
       </View>
     </ScreenScaffold>
   );

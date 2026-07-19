@@ -141,6 +141,10 @@ export default function ProjectListScreen() {
                 const full = projects.find((x) => x.id === p.id);
                 if (full) confirmActions(full);
               }}
+              onDelete={() => {
+                const full = projects.find((x) => x.id === p.id);
+                if (full) confirmDelete(full);
+              }}
             />
           ))}
         </View>
@@ -153,10 +157,12 @@ function ProjectCard({
   project,
   onPress,
   onLongPress,
+  onDelete,
 }: {
   project: ProjectSummary;
   onPress: () => void;
   onLongPress: () => void;
+  onDelete: () => void;
 }) {
   return (
     <Pressable
@@ -166,7 +172,9 @@ function ProjectCard({
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={[styles.stripe, { backgroundColor: project.accent }]} />
       <View style={styles.cardTopRow}>
-        <Text style={styles.cardTitle}>{project.title}</Text>
+        <Text style={styles.cardTitle} numberOfLines={1}>
+          {project.title}
+        </Text>
         <Text style={styles.cardTime}>{project.updatedLabel}</Text>
       </View>
       <View style={styles.metaRow}>
@@ -175,6 +183,15 @@ function ProjectCard({
         <MetaPill label={`${project.bars}小節`} />
       </View>
       <Text style={styles.cardChords}>{project.chordsDisplay}</Text>
+      <Pressable
+        onPress={onDelete}
+        hitSlop={8}
+        accessibilityRole="button"
+        accessibilityLabel="削除"
+        accessibilityHint={`${project.title} を削除`}
+        style={({ pressed }) => [styles.deleteBtn, pressed && styles.deleteBtnPressed]}>
+        <Icon name="trash" size={17} color={colors.textMuted} strokeWidth={2} />
+      </Pressable>
     </Pressable>
   );
 }
@@ -240,8 +257,29 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   stripe: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
-  cardTopRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  cardTitle: { fontSize: 16.5, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
+  cardTopRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: 8,
+    paddingRight: 40,
+  },
+  cardTitle: { flex: 1, fontSize: 16.5, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
+  deleteBtn: {
+    position: 'absolute',
+    top: 6,
+    right: 6,
+    width: 44,
+    height: 44,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  deleteBtnPressed: {
+    backgroundColor: colors.surfaceRaised,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+  },
   cardTime: { fontSize: 11.5, color: colors.textFaint },
   metaRow: { flexDirection: 'row', gap: 7, marginTop: 10, marginBottom: 12 },
   cardChords: { fontSize: 13, color: colors.textMuted, letterSpacing: 0.4 },
