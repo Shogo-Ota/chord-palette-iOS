@@ -179,7 +179,9 @@
 - [ ] iPhone SE〜Pro Max のサイズで破綻なし／音源 Load 失敗時に Retry が提示される
 
 ### 評価履歴
-- （未着手）
+- 2026-07-19 Phase A〜C: Control Audit / Foundation / Consolidation（静的 PASS）
+- 2026-07-19 Phase D: Delight（Haptics / Playhead / Starter / Resume / Retry）静的 PASS
+- 2026-07-19 Phase E: 自動検証 PASS・Release Gate は CONDITIONAL PASS（実機チェックリスト残）→ `docs/sprints/sprint-7-phase-e-release-gate.md`
 
 ---
 

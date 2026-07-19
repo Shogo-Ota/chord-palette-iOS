@@ -11,13 +11,15 @@ import { Wordmark } from '@/components/Wordmark';
 import { startNew } from '@/features/editor/session';
 import { logger } from '@/lib/logger';
 import { toSummary } from '@/lib/projectSummary';
-import { deleteProject, duplicateProject, listProjects } from '@/repositories/projectRepository';
+import { deleteProject, duplicateProject, getProject, listProjects } from '@/repositories/projectRepository';
+import { clearLastProjectId, getLastProjectId } from '@/repositories/sessionPrefsRepository';
 import { colors, font, radius } from '@/theme/tokens';
 import type { Project, ProjectSummary } from '@/types';
 
 export default function ProjectListScreen() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[] | null>(null);
+  const [lastId, setLastId] = useState<string | null>(null);
 
   const refresh = useCallback(() => {
     listProjects()
@@ -26,6 +28,20 @@ export default function ProjectListScreen() {
         logger.error('Failed to load projects', { error: String(e) });
         setProjects([]);
       });
+    getLastProjectId()
+      .then(async (id) => {
+        if (!id) {
+          setLastId(null);
+          return;
+        }
+        const p = await getProject(id);
+        if (p) setLastId(id);
+        else {
+          await clearLastProjectId();
+          setLastId(null);
+        }
+      })
+      .catch(() => setLastId(null));
   }, []);
 
   useFocusEffect(
@@ -37,6 +53,11 @@ export default function ProjectListScreen() {
   const createNew = () => {
     startNew();
     router.push('/editor');
+  };
+
+  const resumeLast = () => {
+    if (!lastId) return;
+    router.push(`/editor?id=${lastId}`);
   };
 
   const confirmDelete = (project: Project) => {
@@ -89,6 +110,9 @@ export default function ProjectListScreen() {
       </View>
 
       <Text style={styles.heroHint}>コードを並べて、すぐに鳴らす</Text>
+      {lastId ? (
+        <PrimaryButton label="続きから編集" icon="play" onPress={resumeLast} />
+      ) : null}
       <PrimaryButton label="新しい進行を作る" icon="plus" onPress={createNew} />
 
       <Pressable onPress={() => router.push('/presets')} style={styles.presetLink} hitSlop={6}>

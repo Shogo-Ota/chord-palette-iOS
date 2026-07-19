@@ -1,6 +1,8 @@
 import { useLocalSearchParams, useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
+  AccessibilityInfo,
+  Animated,
   Modal,
   Pressable,
   ScrollView,
@@ -32,12 +34,13 @@ import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
 import { isLocked } from '@/lib/entitlements';
+import { hapticError, hapticSelection, hapticSoft, hapticSuccess } from '@/lib/haptics';
 import { logger } from '@/lib/logger';
 import { MAX_BARS, durationLabel, totalBars as calcTotalBars } from '@/lib/progression';
 import { useEntitlements } from '@/services/billing';
 import { audioService } from '@/services/audio';
 import type { PlaybackState } from '@/services/audio/types';
-import { colors, font, functionColor, radius } from '@/theme/tokens';
+import { colors, font, functionColor, motion, radius } from '@/theme/tokens';
 import type { ChordDuration, ChordFunction, LibraryChord, MajorKey } from '@/types';
 
 const H_PAD = 16;
@@ -100,27 +103,6 @@ export default function EditorScreen() {
     }
   }, [id]);
 
-  /* ---- audio engine lifecycle (mount → prepare, unmount → release) */
-  useEffect(() => {
-    audioService
-      .prepare()
-      .then(() => {
-        // Surface SoundFont resolution to Metro so a synth fallback is diagnosable.
-        if (__DEV__) void audioService.logDiagnostics('editor: after prepare');
-      })
-      .catch((e) => logger.error('Audio prepare failed', { error: String(e) }));
-    const stateSub = audioService.addStateListener((e) => {
-      setPlaybackState(e.state);
-      if (e.state === 'stopped' || e.state === 'idle' || e.state === 'ready') setPlayingIndex(-1);
-    });
-    const posSub = audioService.addPositionListener((e) => setPlayingIndex(e.chordIndex));
-    return () => {
-      stateSub?.remove();
-      posSub?.remove();
-      audioService.teardown().catch(() => undefined);
-    };
-  }, []);
-
   /* ---- session-backed state (aliased for the render below) ------ */
   const key = s.key;
   const progression = s.progression;
@@ -144,8 +126,66 @@ export default function EditorScreen() {
   const [chordSize, setChordSize] = useState<'triad' | 'seventh'>('triad');
   const [varDegree, setVarDegree] = useState(0);
   const [slashTarget, setSlashTarget] = useState(0);
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [reduceMotion, setReduceMotion] = useState(false);
+  const playLift = useRef(new Animated.Value(0)).current;
 
   const tapsRef = useRef<number[]>([]);
+
+  useEffect(() => {
+    AccessibilityInfo.isReduceMotionEnabled?.()
+      .then((v) => setReduceMotion(!!v))
+      .catch(() => undefined);
+    const sub = AccessibilityInfo.addEventListener?.('reduceMotionChanged', (v) => {
+      setReduceMotion(!!v);
+    });
+    return () => {
+      sub?.remove?.();
+    };
+  }, []);
+
+  const prepareAudio = useCallback(() => {
+    setAudioError(null);
+    audioService
+      .prepare()
+      .then(() => {
+        if (__DEV__) void audioService.logDiagnostics('editor: after prepare');
+      })
+      .catch((e) => {
+        logger.error('Audio prepare failed', { error: String(e) });
+        setAudioError('音源の準備に失敗しました。再試行してください。');
+        hapticError();
+      });
+  }, []);
+
+  /* ---- audio engine lifecycle (mount → prepare, unmount → release) */
+  useEffect(() => {
+    prepareAudio();
+    const stateSub = audioService.addStateListener((e) => {
+      setPlaybackState(e.state);
+      if (e.state === 'stopped' || e.state === 'idle' || e.state === 'ready') setPlayingIndex(-1);
+    });
+    const posSub = audioService.addPositionListener((e) => setPlayingIndex(e.chordIndex));
+    return () => {
+      stateSub?.remove();
+      posSub?.remove();
+      audioService.teardown().catch(() => undefined);
+    };
+  }, [prepareAudio]);
+
+  /* Playhead delight: lift active card; Reduce Motion → border/opacity only. */
+  useEffect(() => {
+    const active = playingIndex >= 0;
+    if (reduceMotion) {
+      playLift.setValue(active ? 1 : 0);
+      return;
+    }
+    Animated.timing(playLift, {
+      toValue: active ? 1 : 0,
+      duration: motion.cardMs,
+      useNativeDriver: true,
+    }).start();
+  }, [playingIndex, playLift, reduceMotion]);
 
   /* ---- editing invalidates playback: stop so the next ▶ rebuilds --- */
   const didMountRef = useRef(false);
@@ -214,7 +254,10 @@ export default function EditorScreen() {
   const wBass = colW(6);
 
   /* ---- actions (delegate to the shared session) ----------------- */
-  const setSelected = session.setSelected;
+  const setSelected = (i: number) => {
+    hapticSelection();
+    session.setSelected(i);
+  };
   const duplicateSelected = session.duplicateSelected;
   const moveSelected = session.moveSelected;
   const deleteSelected = session.deleteSelected;
@@ -243,7 +286,11 @@ export default function EditorScreen() {
       router.push('/paywall');
       return;
     }
+    const before = getSession().progression.length;
     session.addChord(libToEvent(c));
+    const after = getSession().progression.length;
+    if (before < 4 && after >= 4) hapticSuccess();
+    else hapticSoft();
     // Audition the freshly added chord (skipped while the progression plays).
     if (!isPlaying) {
       const cur = getSession();
@@ -335,6 +382,19 @@ export default function EditorScreen() {
         onUndo={undo}
         onLoop={() => setLoop((v) => !v)}
       />
+      {audioError ? (
+        <View style={styles.audioErrorBanner} accessibilityRole="alert">
+          <Text style={styles.audioErrorText}>{audioError}</Text>
+          <Pressable
+            onPress={prepareAudio}
+            hitSlop={8}
+            style={styles.audioErrorRetry}
+            accessibilityRole="button"
+            accessibilityLabel="音源の再試行">
+            <Text style={styles.audioErrorRetryText}>再試行</Text>
+          </Pressable>
+        </View>
+      ) : null}
       {progression.length === 0 ? (
         <Text style={styles.transportHint}>コードを追加すると再生できます</Text>
       ) : null}
@@ -350,37 +410,60 @@ export default function EditorScreen() {
       {progression.length === 0 ? (
         <View style={styles.emptyStrip}>
           <Text style={styles.emptyHint}>① 下のダイアトニックからコードをタップ</Text>
-          <Text style={styles.emptyHintSub}>② 右上の ▶ で再生 — これだけで完成</Text>
+          <Text style={styles.emptyHintSub}>② ▶ で再生 — これだけで完成</Text>
         </View>
       ) : (
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.stripScroll}>
           <View style={styles.stripRow}>
-            {progression.map((ev, i) => (
-              <React.Fragment key={ev.id}>
-                <Pressable onPress={() => setSelected(i)}>
-                  <View
-                    style={[
-                      styles.timeCard,
-                      { borderLeftColor: functionColor[ev.function] },
-                      i === selected && styles.timeCardSelected,
-                      i === playingIndex && styles.timeCardPlaying,
-                    ]}>
-                    <View style={styles.timeTop}>
-                      <Text style={styles.timeName} numberOfLines={1}>
-                        {ev.displayName}
-                      </Text>
-                      <Text style={styles.timeDegree} numberOfLines={1}>
-                        {ev.degreeLabel}
-                      </Text>
-                    </View>
-                    <View style={styles.timeDur}>
-                      <Text style={styles.timeDurText}>{durationLabel(ev.durationBeats)}</Text>
-                    </View>
-                  </View>
-                </Pressable>
-                {i < progression.length - 1 && <Text style={styles.arrow}>→</Text>}
-              </React.Fragment>
-            ))}
+            {progression.map((ev, i) => {
+              const isActivePlay = i === playingIndex;
+              return (
+                <React.Fragment key={ev.id}>
+                  <Pressable
+                    onPress={() => setSelected(i)}
+                    accessibilityRole="button"
+                    accessibilityLabel={`${ev.displayName} ${ev.degreeLabel}`}
+                    accessibilityState={{ selected: i === selected }}>
+                    <Animated.View
+                      style={[
+                        styles.timeCard,
+                        { borderLeftColor: functionColor[ev.function] },
+                        i === selected && styles.timeCardSelected,
+                        isActivePlay && styles.timeCardPlaying,
+                        isActivePlay &&
+                          !reduceMotion && {
+                            transform: [
+                              {
+                                translateY: playLift.interpolate({
+                                  inputRange: [0, 1],
+                                  outputRange: [0, -5],
+                                }),
+                              },
+                            ],
+                          },
+                        isActivePlay &&
+                          reduceMotion && {
+                            opacity: 0.92,
+                          },
+                      ]}>
+                      <View style={styles.timeTop}>
+                        <Text style={styles.timeName} numberOfLines={1}>
+                          {ev.displayName}
+                        </Text>
+                        <Text style={styles.timeDegree} numberOfLines={1}>
+                          {ev.degreeLabel}
+                        </Text>
+                      </View>
+                      <View style={styles.timeDur}>
+                        <Text style={styles.timeDurText}>{durationLabel(ev.durationBeats)}</Text>
+                      </View>
+                      {isActivePlay ? <View style={styles.playRing} pointerEvents="none" /> : null}
+                    </Animated.View>
+                  </Pressable>
+                  {i < progression.length - 1 && <Text style={styles.arrow}>→</Text>}
+                </React.Fragment>
+              );
+            })}
           </View>
         </ScrollView>
       )}
@@ -1049,6 +1132,46 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.5,
     shadowRadius: 8,
     shadowOffset: { width: 0, height: 0 },
+  },
+  playRing: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: radius.xl,
+    borderWidth: 1.5,
+    borderColor: rgba(colors.success, 0.55),
+  },
+  audioErrorBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    marginTop: 8,
+    marginBottom: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: radius.lg,
+    backgroundColor: rgba(colors.danger, 0.12),
+    borderWidth: 1,
+    borderColor: rgba(colors.danger, 0.35),
+  },
+  audioErrorText: {
+    flex: 1,
+    fontSize: 12,
+    color: colors.textSecondary,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
+  audioErrorRetry: {
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    borderRadius: radius.md,
+    backgroundColor: colors.surfaceRaised,
+    minHeight: 44,
+    justifyContent: 'center',
+  },
+  audioErrorRetryText: {
+    fontSize: 13,
+    color: colors.primary,
+    fontFamily: font.bold,
+    fontWeight: '700',
   },
   timeTop: { flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between', gap: 4 },
   timeName: { flexShrink: 1, fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },

@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from 'react';
 
+import { PRESETS } from '@/data/presets';
 import { buildPresetProgression } from '@/lib/presets';
 import { canAdd, canSetDuration } from '@/lib/progression';
 import { rebaseProgression, transposeProgression } from '@/lib/transpose';
@@ -8,6 +9,7 @@ import {
   getProject,
   saveProject,
 } from '@/repositories/projectRepository';
+import { setLastProjectId } from '@/repositories/sessionPrefsRepository';
 import type {
   AccompanimentPattern,
   ChordDuration,
@@ -100,9 +102,31 @@ export function getSession(): EditorSession {
 
 /* ---- lifecycle ---------------------------------------------------- */
 
-/** Reset to a blank new composition. */
+/** Free starter progression so new sessions aren't a blank canvas (Phase D). */
+function starterProgression(key: MajorKey = 'C'): ChordEvent[] {
+  const royal = PRESETS.find((p) => p.id === 'jpop-royal');
+  if (!royal) return [];
+  return buildPresetProgression(royal, key).map((e, i) => ({
+    ...e,
+    id: `starter-${i}`,
+  }));
+}
+
+/**
+ * Reset to a new composition with a playable Starter Progression (J-POP 王道).
+ * Blank canvas is intentionally avoided (UI refinement §6 retention).
+ */
 export function startNew(): void {
-  state = initialState();
+  const progression = starterProgression('C');
+  state = {
+    ...initialState(),
+    title: 'はじめての進行',
+    tempoBpm: 104,
+    accompanimentPattern: 'eightBeat',
+    progression,
+    selected: progression.length > 0 ? 0 : -1,
+    dirty: true,
+  };
   emit();
 }
 
@@ -153,6 +177,7 @@ export async function save(): Promise<void> {
   if (state.projectId) {
     const saved = await saveProject(toProject(state.projectId));
     set({ projectId: saved.id, createdAt: saved.createdAt, dirty: false });
+    await setLastProjectId(saved.id);
   } else {
     const created = await createProject({
       title: state.title,
@@ -164,6 +189,7 @@ export async function save(): Promise<void> {
       chordEvents: state.progression,
     });
     set({ projectId: created.id, createdAt: created.createdAt, dirty: false });
+    await setLastProjectId(created.id);
   }
 }
 
