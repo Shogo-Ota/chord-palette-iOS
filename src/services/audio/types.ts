@@ -149,4 +149,24 @@ export type AudioDiagnostics = {
   searchedBundlePaths?: string[];
   /** Resource roots recursively scanned as a fallback (debugging aid). */
   searchedResourceRoots?: string[];
+
+  /* -- Sampled-buffer health (mid/high-register silence bug) ------------- */
+  /**
+   * Number of MIDI notes the sampled provider pre-rendered into PCM. With the
+   * default lowNote=24…highNote=84 range a healthy load reports 61.
+   */
+  sampledNoteCount?: number;
+  /**
+   * MIDI note numbers whose pre-rendered buffer stayed (near-)silent after all
+   * retries. **Empty ⇒ the register-silence bug is fixed.** A populated list
+   * (e.g. `[48, 49, …]`) is the direct fingerprint of the regression.
+   */
+  sampledSilentNotes?: number[];
+  /** Convenience length of {@link sampledSilentNotes} (0 ⇒ healthy). */
+  sampledSilentNoteCount?: number;
+  /**
+   * Peak amplitude bucketed by MIDI octave (`"oct2"`…`"oct7"`). Every bucket
+   * should carry a non-trivial peak; a ~0 bucket pinpoints a dead register.
+   */
+  sampledPeakByOctave?: Record<string, number>;
 };

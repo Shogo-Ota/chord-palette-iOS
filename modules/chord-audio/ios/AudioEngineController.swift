@@ -216,8 +216,19 @@ final class AudioEngineController {
     result["sampledLoaded"] = provider is SampledInstrumentProvider
     result["currentInstrument"] = currentInstrument
     result["prepared"] = prepared
-    if let err = lastSampledAttempt?.lastLoadError {
+    // Prefer the live chord voice; fall back to the last attempt so a *failed*
+    // load's error/silence summary is still observable.
+    let sampled = (provider as? SampledInstrumentProvider) ?? lastSampledAttempt
+    if let err = sampled?.lastLoadError {
       result["lastLoadError"] = err
+    }
+    if let sampled = sampled {
+      // Register-health summary — after the mid/high-silence fix these should
+      // report every note captured and `sampledSilentNotes` empty.
+      result["sampledNoteCount"] = sampled.loadedNoteCount
+      result["sampledSilentNotes"] = sampled.silentNotes
+      result["sampledSilentNoteCount"] = sampled.silentNotes.count
+      result["sampledPeakByOctave"] = sampled.peakByOctaveSummary()
     }
     result["searchedBundlePaths"] = Self.candidateBundles().map { $0.bundlePath }
     result["searchedResourceRoots"] = Self.resourceRoots().map { $0.path }
