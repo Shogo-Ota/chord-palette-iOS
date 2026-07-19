@@ -273,6 +273,11 @@ export interface PerformanceRenderer {
 - [ ] エッジケース（空進行 / 16小節上限 / 全ドラム×全伴奏の組合せ）で破綻しない
 
 ### 評価履歴
+- **2026-07-19 @evaluator / Step 3（Renderer 接続＋音色チューニング）: 合格（静的検証＋契約レビュー・実機未）**
+  - 静的検証: `tsc --noEmit` 0 / `expo lint` 0 / `jest` 17 suites・**178 tests 全パス**。
+  - 契約: playback / videoExport が PE→mapper→`accompaniment:'performance'`。`drums: false`。Swift `performance` は 1:1・再ヒューマナイズなし。P0-2/P1-1/P1-2/P1-4 確認。`PerformanceRenderer` 抽象あり。Domain に native import なし。preview は PE 非経由。
+  - 音楽監修: 合格（P0/P1 無し）。サブエージェント evaluator は API 制限で失敗したため親エージェントが同契約で再判定。
+  - **実機未検証（EAS 再ビルド後）**: performance 伴奏聴感、kick/snare、block/arpeggio→ballad 写像、再生＝書き出し、PE bass と native ドラムのポケット。
 - **2026-07-19 @generator / Step 3（Renderer 接続＋音色チューニング）: 実装完了（静的検証通過・実機未）**
   - PE → `playback` / videoExport 配線。`accompaniment: 'performance'` で 1:1 発音（二重ヒューマナイズ回避）。PE ドラムは送らず native groove 維持。
   - P0-2: `voicing.ts` の C1 サブベース重ねを廃止（C2 のみ）。P1-1/P1-2: `DrumProvider` キッククリック＋スネア整形。P1-4: eightBeat sparkle を強拍のみ。
