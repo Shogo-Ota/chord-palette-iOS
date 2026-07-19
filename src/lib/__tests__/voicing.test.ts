@@ -76,15 +76,20 @@ describe('chordMidiNotes — transposition follows the key', () => {
 });
 
 describe('progressionToChordSpecs', () => {
-  it('maps each event to notes + its beat length', () => {
+  it('maps each event to notes + its beat length (voice-led body, anchored bass)', () => {
     const prog = [
       ev({ rootOffset: 0, suffix: 'maj7', durationBeats: 4 }),
       ev({ rootOffset: 7, suffix: '7', durationBeats: 2 }),
     ];
     const specs = progressionToChordSpecs(prog, 'C');
+    // First chord keeps its root position (nothing precedes it): C1/C2 bass +
+    // Cmaj7 body [C3 E3 G3 B3]. Second chord (G7) is voice-led against Cmaj7: the
+    // bass stays on G (G1/G2 = 31/43) but the body inverts to [D3 F3 G3 B3] so the
+    // common tones G3(55)/B3(59) are held and only C→D, E→F move a step — instead
+    // of the old root-position [55,59,62,65] where the top jumped G3→D4→F4.
     expect(specs).toEqual([
       { midiNotes: [24, 36, 48, 52, 55, 59], lengthBeats: 4 },
-      { midiNotes: [31, 43, 55, 59, 62, 65], lengthBeats: 2 },
+      { midiNotes: [31, 43, 50, 53, 55, 59], lengthBeats: 2 },
     ]);
   });
 

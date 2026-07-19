@@ -7,6 +7,7 @@
  */
 
 import { keyTonicPc } from '@/data/music';
+import { voiceLeadProgression } from '@/lib/performance/voiceLeading';
 import type { ChordSpec } from '@/services/audio/schedule';
 import type { ChordEvent, MajorKey } from '@/types';
 
@@ -66,16 +67,16 @@ function pitchClass(n: number): number {
 }
 
 /**
- * Concrete MIDI notes for a chord in the given key. Every chord is anchored by a
- * two-octave bass fundamental (C1 + C2) — the chord root, or the slash bass when
- * present — so the low end carries weight and the timbre reads as a full piano
- * rather than a thin mid-register cluster. The chord body sits in the C3 band.
- * Bass notes come first (lowest → highest).
+ * Split a chord into its fixed bass octaves and its (root-position) body. Extracted
+ * so both the context-free {@link chordMidiNotes} and the progression-level
+ * {@link progressionToChordSpecs} share one definition — the latter needs the body
+ * on its own to apply voice leading while keeping the bass anchored. This is a pure
+ * refactor: {@link chordMidiNotes} concatenates the exact same notes as before.
  */
-export function chordMidiNotes(
+function chordVoicingParts(
   chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
   key: MajorKey,
-): number[] {
+): { bass: number[]; body: number[] } {
   const tonic = keyTonicPc(key);
   const rootMidi = CHORD_ROOT_MIDI + pitchClass(tonic + (chord.rootOffset ?? 0));
   const body = intervalsFor(chord.suffix ?? '').map((iv) => rootMidi + iv);
@@ -84,13 +85,43 @@ export function chordMidiNotes(
   const bassPc = pitchClass(tonic + (chord.bassOffset ?? chord.rootOffset ?? 0));
   const bass = [SUB_BASS_ROOT_MIDI + bassPc, BASS_ROOT_MIDI + bassPc];
 
+  return { bass, body };
+}
+
+/**
+ * Concrete MIDI notes for a chord in the given key. Every chord is anchored by a
+ * two-octave bass fundamental (C1 + C2) — the chord root, or the slash bass when
+ * present — so the low end carries weight and the timbre reads as a full piano
+ * rather than a thin mid-register cluster. The chord body sits in the C3 band.
+ * Bass notes come first (lowest → highest).
+ *
+ * Context-free by design (no previous chord) so it stays correct for single-chord
+ * previews and the keyboard visual. Progression-level voice leading is applied in
+ * {@link progressionToChordSpecs}.
+ */
+export function chordMidiNotes(
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
+  key: MajorKey,
+): number[] {
+  const { bass, body } = chordVoicingParts(chord, key);
   return [...bass, ...body];
 }
 
-/** Map a progression to the ChordSpec list consumed by the scheduler. */
+/**
+ * Map a progression to the ChordSpec list consumed by the scheduler, applying
+ * basic voice leading (requirements §5.5 / sprint-6 §4 Step 1). The bass octaves
+ * stay anchored on each chord's root/slash note; only the mid-register body is
+ * re-voiced so consecutive chords hold common tones and move by the smallest
+ * distance instead of every chord snapping back to root position. The output shape
+ * (bass first, then body) is unchanged, so downstream consumers (scheduler, video
+ * export) are unaffected. Voice leading is delegated to the pure
+ * `performance/voiceLeading` module (RN/Expo-independent, unit-tested).
+ */
 export function progressionToChordSpecs(progression: ChordEvent[], key: MajorKey): ChordSpec[] {
-  return progression.map((e) => ({
-    midiNotes: chordMidiNotes(e, key),
+  const parts = progression.map((e) => chordVoicingParts(e, key));
+  const ledBodies = voiceLeadProgression(parts.map((p) => p.body));
+  return progression.map((e, i) => ({
+    midiNotes: [...parts[i].bass, ...ledBodies[i]],
     lengthBeats: e.durationBeats,
   }));
 }
