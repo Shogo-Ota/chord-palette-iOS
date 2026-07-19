@@ -98,6 +98,13 @@ export const spacing = {
   xl: 18,
   xxl: 20,
   xxxl: 26,
+  /** Design-system scale (UI/UX refinement §6): 4 / 8 / 12 / 16 / 24 / 32 */
+  s4: 4,
+  s8: 8,
+  s12: 12,
+  s16: 16,
+  s24: 24,
+  s32: 32,
 } as const;
 
 export const radius = {
@@ -109,6 +116,10 @@ export const radius = {
   '3xl': 18,
   '4xl': 20,
   pill: 999,
+  /** Refinement §6 named radii */
+  chordCard: 16,
+  sheet: 20,
+  capsule: 999,
 } as const;
 
 export const font = {
@@ -120,6 +131,28 @@ export const font = {
   extrabold: 'NotoSansJP_800ExtraBold',
   black: 'NotoSansJP_900Black',
   mono: 'ui-monospace',
+} as const;
+
+/** Typography sizes from UI/UX refinement §6 (pt). */
+export const typeSize = {
+  chord: 26,
+  body: 17,
+  label: 13,
+  caption: 11,
+} as const;
+
+/** Motion timings (ms). Prefer Opacity/Stroke when Reduce Motion is on. */
+export const motion = {
+  selectMs: 120,
+  cardMs: 200,
+  springGentle: { damping: 18, stiffness: 220 },
+} as const;
+
+/** Haptic roles (refinement §6). Wire via expo-haptics in Phase D. */
+export const haptics = {
+  chordSelect: 'selection',
+  reorderDrop: 'soft',
+  fourChordSuccess: 'success',
 } as const;
 
 /** Chord-function → color helper. */
