@@ -1,45 +1,126 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React from 'react';
-import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { logger } from '@/lib/logger';
+import { billingService, type BillingProduct } from '@/services/billing';
 import { colors, font, radius, rainbow } from '@/theme/tokens';
 
 const APP_ICON = require('../../assets/icon/app-icon.png');
 
-type Perk = { glyph: string; color: string; bg: string; border: string; title: string; desc: string };
+/** Fallback price shown until the provider's localized offering resolves. */
+const FALLBACK_PRICE = '¥490';
+const PERIOD_SUFFIX = '/ 月';
+
+type Perk = { glyph: string; color: string; bg: string; border: string; title: string; desc: string; included: boolean };
 const PERKS: Perk[] = [
   {
     glyph: '♪',
-    color: '#8fb6f2',
-    bg: 'rgba(59,130,246,0.14)',
-    border: 'rgba(59,130,246,0.3)',
+    color: colors.blueText,
+    bg: 'rgba(91,140,255,0.14)',
+    border: 'rgba(91,140,255,0.32)',
     title: '高度コード',
     desc: '6th / 借用和音 / セカンダリードミナント / オンコード',
-  },
-  {
-    glyph: '♫',
-    color: '#f0918f',
-    bg: 'rgba(239,68,68,0.13)',
-    border: 'rgba(239,68,68,0.3)',
-    title: '追加音色',
-    desc: 'アコギ / エレキギター / ストリングス',
+    included: true,
   },
   {
     glyph: '★',
-    color: '#b9a6ff',
-    bg: 'rgba(139,92,246,0.15)',
-    border: 'rgba(139,92,246,0.35)',
+    color: colors.purpleText,
+    bg: 'rgba(124,92,255,0.15)',
+    border: 'rgba(124,92,255,0.35)',
     title: '追加プリセット',
     desc: '丸サ / Just The Two of Us / Pop Punk / 小室 / City Pop',
+    included: true,
+  },
+  {
+    glyph: '♫',
+    color: colors.textDim,
+    bg: 'rgba(255,255,255,0.05)',
+    border: colors.borderSubtle,
+    title: '追加音色',
+    desc: 'アコギ / エレキ / ストリングス（今後のアップデートで追加）',
+    included: false,
   },
 ];
 
+type Status = 'idle' | 'purchasing' | 'restoring' | 'success' | 'error';
+
 export default function PaywallScreen() {
   const router = useRouter();
+  const [product, setProduct] = useState<BillingProduct | null>(null);
+  const [status, setStatus] = useState<Status>('idle');
+  const [errorMsg, setErrorMsg] = useState('');
+
+  // Load the localized subscription price from the provider (never hardcoded).
+  useEffect(() => {
+    let active = true;
+    billingService
+      .getOfferings()
+      .then((products) => {
+        if (active && products.length > 0) setProduct(products[0]);
+      })
+      .catch((e) => logger.error('Failed to load offerings', { error: String(e) }));
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const busy = status === 'purchasing' || status === 'restoring';
+  const priceString = product?.priceString ?? FALLBACK_PRICE;
+
+  const closeSoon = () => {
+    setStatus('success');
+    setTimeout(() => {
+      if (router.canGoBack()) router.back();
+      else router.replace('/');
+    }, 650);
+  };
+
+  const handlePurchase = async () => {
+    if (busy) return;
+    setErrorMsg('');
+    setStatus('purchasing');
+    try {
+      const result = await billingService.purchasePro();
+      if (result.status === 'purchased' || result.status === 'restored') {
+        closeSoon();
+      } else if (result.status === 'cancelled') {
+        setStatus('idle');
+      } else {
+        setErrorMsg(result.message);
+        setStatus('error');
+      }
+    } catch (e) {
+      setErrorMsg('予期しないエラーが発生しました。');
+      logger.error('Purchase failed', { error: String(e) });
+      setStatus('error');
+    }
+  };
+
+  const handleRestore = async () => {
+    if (busy) return;
+    setErrorMsg('');
+    setStatus('restoring');
+    try {
+      const result = await billingService.restore();
+      if (result.status === 'restored' || result.status === 'purchased') {
+        closeSoon();
+      } else if (result.status === 'cancelled') {
+        setStatus('idle');
+      } else {
+        setErrorMsg(result.message);
+        setStatus('error');
+      }
+    } catch (e) {
+      setErrorMsg('予期しないエラーが発生しました。');
+      logger.error('Restore failed', { error: String(e) });
+      setStatus('error');
+    }
+  };
 
   return (
     <ScreenScaffold variant="paywall" padH={22}>
@@ -70,46 +151,93 @@ export default function PaywallScreen() {
           </LinearGradient>
           <View style={{ flex: 1 }}>
             <View style={styles.priceLine}>
-              <Text style={styles.priceKind}>買い切り</Text>
-              <Text style={styles.priceValue}>¥490</Text>
+              <Text style={styles.priceKind}>月額サブスク</Text>
+              <Text style={styles.priceValue}>{priceString}</Text>
+              <Text style={styles.pricePeriod}>{PERIOD_SUFFIX}</Text>
             </View>
-            <Text style={styles.priceNote}>一度の購入でずっと使える</Text>
+            <Text style={styles.priceNote}>自動更新・いつでも解約可能</Text>
           </View>
-          <Icon name="chevronRight" size={17} color={colors.textDim} strokeWidth={2.4} />
         </View>
       </LinearGradient>
 
       {/* perks */}
       <View style={{ gap: 11, marginTop: 14, marginBottom: 22 }}>
         {PERKS.map((p) => (
-          <View key={p.title} style={styles.perkRow}>
+          <View key={p.title} style={[styles.perkRow, !p.included && styles.perkRowSoon]}>
             <View style={[styles.perkIcon, { backgroundColor: p.bg, borderColor: p.border }]}>
               <Text style={[styles.perkGlyph, { color: p.color }]}>{p.glyph}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={styles.perkTitle}>{p.title}</Text>
+              <Text style={[styles.perkTitle, !p.included && styles.perkTitleSoon]}>{p.title}</Text>
               <Text style={styles.perkDesc}>{p.desc}</Text>
             </View>
-            <Icon name="chevronRight" size={15} color="#556" strokeWidth={2.4} />
+            {p.included ? (
+              <View style={styles.perkCheck}>
+                <Icon name="check" size={13} color={colors.success} strokeWidth={2.8} />
+              </View>
+            ) : (
+              <View style={styles.perkSoonPill}>
+                <Text style={styles.perkSoonText}>予定</Text>
+              </View>
+            )}
           </View>
         ))}
       </View>
 
       {/* purchase */}
-      <Pressable>
+      <Pressable onPress={handlePurchase} disabled={busy || status === 'success'}>
         <LinearGradient
-          colors={['#8b5cf6', '#5b8cff', '#22c55e', '#eab308', '#f97316', '#ef4444']}
+          colors={
+            status === 'success'
+              ? [colors.success, colors.success]
+              : ['#8b5cf6', '#5b8cff', '#22c55e', '#eab308', '#f97316', '#ef4444']
+          }
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0.3 }}
-          style={styles.purchaseBtn}>
-          <Text style={styles.purchaseText}>Palette Proを購入</Text>
+          style={[
+            styles.purchaseBtn,
+            status === 'success' && styles.purchaseBtnSuccess,
+            busy && styles.purchaseBtnBusy,
+          ]}>
+          {status === 'purchasing' ? (
+            <View style={styles.btnRow}>
+              <ActivityIndicator color="#fff" size="small" />
+              <Text style={styles.purchaseText}>登録処理中…</Text>
+            </View>
+          ) : status === 'success' ? (
+            <View style={styles.btnRow}>
+              <Icon name="check" size={18} color="#fff" strokeWidth={2.8} />
+              <Text style={styles.purchaseText}>登録が完了しました</Text>
+            </View>
+          ) : (
+            <Text style={styles.purchaseText}>Palette Pro に登録する（{priceString} {PERIOD_SUFFIX}）</Text>
+          )}
         </LinearGradient>
       </Pressable>
-      <Pressable style={styles.restore}>
-        <Text style={styles.restoreText}>購入を復元する</Text>
+
+      {status === 'error' && errorMsg !== '' && (
+        <View style={styles.errorBox}>
+          <View style={styles.errorBadge}>
+            <Icon name="close" size={11} color={colors.white} strokeWidth={3} />
+          </View>
+          <Text style={styles.errorText}>{errorMsg}</Text>
+        </View>
+      )}
+
+      <Pressable style={styles.restore} onPress={handleRestore} disabled={busy || status === 'success'}>
+        {status === 'restoring' ? (
+          <View style={styles.btnRow}>
+            <ActivityIndicator color={colors.textMuted} size="small" />
+            <Text style={styles.restoreText}>復元中…</Text>
+          </View>
+        ) : (
+          <Text style={styles.restoreText}>購入を復元する</Text>
+        )}
       </Pressable>
+
       <Text style={styles.footer}>
-        サブスクリプションではありません。{'\n'}買い切りで、追加課金なしでずっと使えます。
+        月額 {priceString} の自動更新サブスクリプションです。{'\n'}
+        いつでも解約でき、解約後は現在の請求期間の終了時にPro機能が無効になります。
       </Text>
     </ScreenScaffold>
   );
@@ -152,9 +280,10 @@ const styles = StyleSheet.create({
     paddingHorizontal: 18,
   },
   priceIcon: { width: 48, height: 48, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center' },
-  priceLine: { flexDirection: 'row', alignItems: 'baseline', gap: 8 },
+  priceLine: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   priceKind: { fontSize: 13, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
   priceValue: { fontSize: 24, fontFamily: font.black, fontWeight: '900', color: colors.textPrimary },
+  pricePeriod: { fontSize: 13, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
   priceNote: { fontSize: 11.5, color: colors.textDim, marginTop: 3 },
 
   perkRow: {
@@ -168,10 +297,29 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 16,
   },
+  perkRowSoon: { backgroundColor: colors.surfaceLocked, borderColor: colors.borderFaint },
   perkIcon: { width: 46, height: 46, borderRadius: radius.lg, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   perkGlyph: { fontSize: 20 },
   perkTitle: { fontSize: 15, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
+  perkTitleSoon: { color: colors.textMuted },
   perkDesc: { fontSize: 11, color: colors.textDim, marginTop: 3, lineHeight: 16 },
+  perkCheck: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    backgroundColor: 'rgba(34,197,94,0.14)',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  perkSoonPill: {
+    backgroundColor: colors.surfaceInput,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+    borderRadius: radius.sm,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+  },
+  perkSoonText: { fontSize: 10, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
 
   purchaseBtn: {
     borderRadius: radius['2xl'],
@@ -183,6 +331,30 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 12 },
   },
+  purchaseBtnBusy: { opacity: 0.8 },
+  purchaseBtnSuccess: { shadowColor: colors.success, shadowOpacity: 0.55 },
+  btnRow: { flexDirection: 'row', alignItems: 'center', gap: 9 },
+  errorBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 9,
+    backgroundColor: 'rgba(239,68,68,0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.32)',
+    borderRadius: radius.lg,
+    paddingVertical: 11,
+    paddingHorizontal: 13,
+    marginTop: 12,
+  },
+  errorBadge: {
+    width: 18,
+    height: 18,
+    borderRadius: 9,
+    backgroundColor: colors.danger,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  errorText: { flex: 1, fontSize: 12.5, color: colors.dangerSoft, fontFamily: font.semibold, fontWeight: '600', lineHeight: 17 },
   purchaseText: {
     fontSize: 16.5,
     fontFamily: font.extrabold,
@@ -192,7 +364,7 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 0, height: 1 },
     textShadowRadius: 2,
   },
-  restore: { alignItems: 'center', marginTop: 16 },
-  restoreText: { fontSize: 13.5, color: '#8fa0c4', fontFamily: font.semibold, fontWeight: '600' },
-  footer: { textAlign: 'center', fontSize: 10.5, color: '#5a6478', marginTop: 14, lineHeight: 17 },
+  restore: { alignItems: 'center', marginTop: 18, paddingVertical: 6 },
+  restoreText: { fontSize: 13.5, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
+  footer: { textAlign: 'center', fontSize: 10.5, color: colors.textFaint, marginTop: 14, lineHeight: 17 },
 });

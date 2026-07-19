@@ -17,9 +17,9 @@ function toEvents(presetId: string, key: MajorKey): ChordEvent[] {
 
 describe('rebaseProgression (key change WITHOUT moving chords)', () => {
   it('keeps displayed chord names when the reference key changes', () => {
-    const inC = toEvents('jpop-royal', 'C'); // C G Am F
+    const inC = toEvents('jpop-royal', 'C'); // F G Em Am (王道進行 4536)
     const rebased = rebaseProgression(inC, 'C', 'D');
-    expect(rebased.map((e) => e.displayName)).toEqual(['C', 'G', 'Am', 'F']);
+    expect(rebased.map((e) => e.displayName)).toEqual(['F', 'G', 'Em', 'Am']);
   });
 
   it('preserves absolute pitch (voicing is identical before/after)', () => {
@@ -38,11 +38,11 @@ describe('rebaseProgression (key change WITHOUT moving chords)', () => {
 });
 
 describe('transposeProgression (requirements §5.2)', () => {
-  it('transposes the royal progression C → G (I V vi IV)', () => {
+  it('transposes the royal progression C → G (IV V iii vi)', () => {
     const inC = toEvents('jpop-royal', 'C');
-    expect(inC.map((e) => e.displayName)).toEqual(['C', 'G', 'Am', 'F']);
+    expect(inC.map((e) => e.displayName)).toEqual(['F', 'G', 'Em', 'Am']);
     const inG = transposeProgression(inC, 'G');
-    expect(inG.map((e) => e.displayName)).toEqual(['G', 'D', 'Em', 'C']);
+    expect(inG.map((e) => e.displayName)).toEqual(['C', 'D', 'Bm', 'Em']);
   });
 
   it('preserves degree labels and functions across transposition', () => {
@@ -62,10 +62,10 @@ describe('transposeProgression (requirements §5.2)', () => {
   it('is idempotent when the key is unchanged', () => {
     const inC = toEvents('jpop-royal', 'C');
     expect(transposeProgression(inC, 'C').map((e) => e.displayName)).toEqual([
-      'C',
-      'G',
-      'Am',
       'F',
+      'G',
+      'Em',
+      'Am',
     ]);
   });
 });

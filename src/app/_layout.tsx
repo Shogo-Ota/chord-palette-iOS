@@ -15,6 +15,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { logger } from '@/lib/logger';
+import { billingService } from '@/services/billing';
 import { colors } from '@/theme/tokens';
 
 SplashScreen.preventAutoHideAsync();
@@ -32,6 +34,14 @@ export default function RootLayout() {
   useEffect(() => {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
+
+  // Initialize billing once at startup so entitlements are resolved before the
+  // first Pro-gated interaction (init logic stays in the service, not screens).
+  useEffect(() => {
+    billingService
+      .initBilling()
+      .catch((e) => logger.error('Billing init failed', { error: String(e) }));
+  }, []);
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>

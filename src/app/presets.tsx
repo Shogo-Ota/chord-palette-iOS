@@ -70,7 +70,7 @@ export default function PresetsScreen() {
           {tab === 'pro' ? (
             <LinearGradient colors={primaryGradient} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.tabActive}>
               <Text style={styles.tabTextActive}>Palette Pro</Text>
-              <Icon name="lock" size={12} color="#fff" strokeWidth={2.4} />
+              <Icon name={ent.palettePro ? 'check' : 'lock'} size={12} color="#fff" strokeWidth={2.4} />
             </LinearGradient>
           ) : (
             <View style={styles.tabInactiveRow}>
@@ -89,11 +89,18 @@ export default function PresetsScreen() {
       {/* Pro section */}
       <View style={styles.proHeader}>
         <Text style={styles.proHeaderText}>Palette Pro</Text>
-        <Icon name="lock" size={12} color={colors.purpleText} strokeWidth={2.4} />
+        {ent.palettePro ? (
+          <>
+            <Icon name="check" size={12} color={colors.success} strokeWidth={2.6} />
+            <Text style={styles.unlockedTag}>解放済み</Text>
+          </>
+        ) : (
+          <Icon name="lock" size={12} color={colors.purpleText} strokeWidth={2.4} />
+        )}
       </View>
       <View style={{ gap: 11 }}>
         {pro.map((p) => (
-          <ProPresetCard key={p.id} preset={p} onPress={() => openProPreset(p)} />
+          <ProPresetCard key={p.id} preset={p} unlocked={ent.palettePro} onPress={() => openProPreset(p)} />
         ))}
       </View>
 
@@ -120,14 +127,19 @@ function FreePresetCard({ preset, onPress }: { preset: Preset; onPress: () => vo
   );
 }
 
-function ProPresetCard({ preset, onPress }: { preset: Preset; onPress: () => void }) {
+function ProPresetCard({ preset, unlocked, onPress }: { preset: Preset; unlocked: boolean; onPress: () => void }) {
   const tc = tagColors(preset.accent);
   return (
     <Pressable onPress={onPress} style={styles.proCard}>
       <View style={[styles.stripe, { backgroundColor: preset.accent }]} />
       <View style={styles.proTopRow}>
         <Text style={styles.proName}>{preset.name}</Text>
-        <Icon name="lock" size={15} color={colors.gold} strokeWidth={2.2} />
+        <Icon
+          name={unlocked ? 'check' : 'lock'}
+          size={15}
+          color={unlocked ? colors.success : colors.gold}
+          strokeWidth={2.2}
+        />
       </View>
       <Text style={styles.proChords}>{preset.chordsDisplay}</Text>
       <View style={{ flexDirection: 'row', gap: 6 }}>
@@ -190,6 +202,7 @@ const styles = StyleSheet.create({
 
   proHeader: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10, marginHorizontal: 2 },
   proHeaderText: { fontSize: 12, fontFamily: font.bold, fontWeight: '700', color: colors.purpleText },
+  unlockedTag: { fontSize: 10.5, fontFamily: font.bold, fontWeight: '700', color: colors.successText, letterSpacing: 0.3 },
   proCard: {
     position: 'relative',
     backgroundColor: colors.surface,

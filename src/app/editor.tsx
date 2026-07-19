@@ -464,7 +464,7 @@ export default function EditorScreen() {
               />
               <View style={styles.grid}>
                 {diatonicGrid.map((c) => (
-                  <LibraryCard key={c.id} chord={c} width={wDia} onPress={() => addChord(c)} />
+                  <LibraryCard key={c.id} chord={c} width={wDia} unlocked={ent.palettePro} onPress={() => addChord(c)} />
                 ))}
               </View>
 
@@ -500,7 +500,7 @@ export default function EditorScreen() {
                     return (
                       <Pressable
                         key={id}
-                        style={[styles.varPill, v.isPro && styles.varPillPro]}
+                        style={[styles.varPill, v.isPro && !ent.palettePro && styles.varPillPro]}
                         onPress={() => addChord(preview)}>
                         <View style={styles.varPillInner}>
                           <Text style={styles.varPillText}>{v.label}</Text>
@@ -508,7 +508,7 @@ export default function EditorScreen() {
                             {preview.displayName}
                           </Text>
                         </View>
-                        {v.isPro && <Icon name="lock" size={10} color={colors.gold} strokeWidth={2.4} />}
+                        {v.isPro && !ent.palettePro && <Icon name="lock" size={10} color={colors.gold} strokeWidth={2.4} />}
                       </Pressable>
                     );
                   })}
@@ -522,13 +522,13 @@ export default function EditorScreen() {
               <Text style={styles.groupTitle}>SECONDARY DOMINANT</Text>
               <View style={styles.grid}>
                 {secDoms.map((c) => (
-                  <LibraryCard key={c.id} chord={c} width={wAdv} onPress={() => addChord(c)} />
+                  <LibraryCard key={c.id} chord={c} width={wAdv} unlocked={ent.palettePro} onPress={() => addChord(c)} />
                 ))}
               </View>
               <Text style={[styles.groupTitle, { marginTop: 8 }]}>MODAL INTERCHANGE</Text>
               <View style={styles.grid}>
                 {modals.map((c) => (
-                  <LibraryCard key={c.id} chord={c} width={wAdv} onPress={() => addChord(c)} />
+                  <LibraryCard key={c.id} chord={c} width={wAdv} unlocked={ent.palettePro} onPress={() => addChord(c)} />
                 ))}
               </View>
             </View>
@@ -761,13 +761,15 @@ function LibraryCard({
   chord,
   width,
   onPress,
+  unlocked,
 }: {
   chord: LibraryChord;
   width: number;
   onPress: () => void;
+  unlocked: boolean;
 }) {
   const accent = functionColor[chord.function];
-  const locked = !!chord.isPro;
+  const locked = !!chord.isPro && !unlocked;
   return (
     <Pressable
       onPress={onPress}

@@ -9,14 +9,14 @@ function preset(id: string): Preset {
 }
 
 describe('buildPresetProgression', () => {
-  it('renders the royal progression in C', () => {
+  it('renders the royal progression (4536: IV-V-iii-vi) in C', () => {
     const chords = buildPresetProgression(preset('jpop-royal'), 'C');
-    expect(chords.map((c) => c.displayName)).toEqual(['C', 'G', 'Am', 'F']);
+    expect(chords.map((c) => c.displayName)).toEqual(['F', 'G', 'Em', 'Am']);
   });
 
   it('auto-transposes the royal progression to G', () => {
     const chords = buildPresetProgression(preset('jpop-royal'), 'G');
-    expect(chords.map((c) => c.displayName)).toEqual(['G', 'D', 'Em', 'C']);
+    expect(chords.map((c) => c.displayName)).toEqual(['C', 'D', 'Bm', 'Em']);
   });
 
   it('renders City Pop sevenths in C', () => {
