@@ -1,4 +1,3 @@
-import { LinearGradient } from 'expo-linear-gradient';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
@@ -12,10 +11,11 @@ import {
 } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
+import { CPSessionCapsule, CPTransportBar } from '@/components/cp';
 import { SegTrack, Toggle } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
-import { GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
+import { ACCOMPANIMENT_LABELS, GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
 import {
   availableVariations,
   CHORD_VARIATIONS,
@@ -37,7 +37,7 @@ import { MAX_BARS, durationLabel, totalBars as calcTotalBars } from '@/lib/progr
 import { useEntitlements } from '@/services/billing';
 import { audioService } from '@/services/audio';
 import type { PlaybackState } from '@/services/audio/types';
-import { colors, font, functionColor, primaryGradient, radius } from '@/theme/tokens';
+import { colors, font, functionColor, radius } from '@/theme/tokens';
 import type { ChordDuration, ChordFunction, LibraryChord, MajorKey } from '@/types';
 
 const H_PAD = 16;
@@ -138,6 +138,7 @@ export default function EditorScreen() {
   const [keyPickerOpen, setKeyPickerOpen] = useState(false);
   const [keyMode, setKeyMode] = useState<'change' | 'transpose'>('change');
   const [bpmPickerOpen, setBpmPickerOpen] = useState(false);
+  const [sessionSheetOpen, setSessionSheetOpen] = useState(false);
   const [libOpen, setLibOpen] = useState(true);
   const [tab, setTab] = useState<LibraryTab>('diatonic');
   const [chordSize, setChordSize] = useState<'triad' | 'seventh'>('triad');
@@ -184,6 +185,15 @@ export default function EditorScreen() {
       .play(sessionToPlaybackRequest(cur, loopRef.current))
       .catch((e) => logger.error('Audio re-apply failed', { error: String(e) }));
   }, [s.instrumentId, s.grooveId, s.accompanimentPattern]);
+
+  /* ---- Auto-save (sprint-7 Phase C: Remove Save button) ---------- */
+  useEffect(() => {
+    if (!s.dirty) return;
+    const t = setTimeout(() => {
+      session.save().catch((e) => logger.error('Auto-save failed', { error: String(e) }));
+    }, 700);
+    return () => clearTimeout(t);
+  }, [s.dirty, s.progression, s.key, s.tempoBpm, s.title, s.grooveId, s.instrumentId, s.accompanimentPattern]);
 
   /* ---- derived library ------------------------------------------ */
   const diatonic = useMemo(() => diatonicLibrary(key), [key]);
@@ -247,13 +257,19 @@ export default function EditorScreen() {
     session.setDuration(beats);
   }
 
-  function save() {
-    session.save().catch((e) => logger.error('Failed to save project', { error: String(e) }));
-  }
-
   function close() {
-    if (router.canGoBack()) router.back();
-    else router.replace('/');
+    const finish = () => {
+      if (router.canGoBack()) router.back();
+      else router.replace('/');
+    };
+    if (s.dirty) {
+      session
+        .save()
+        .catch((e) => logger.error('Failed to save project', { error: String(e) }))
+        .finally(finish);
+    } else {
+      finish();
+    }
   }
 
   function changeKey(k: MajorKey) {
@@ -285,17 +301,7 @@ export default function EditorScreen() {
       <View style={styles.header}>
         <Wordmark size={14} withIcon iconSize={26} />
         <View style={styles.headerActions}>
-          <Pressable style={styles.keyChip} onPress={() => setKeyPickerOpen(true)} hitSlop={4}>
-            <Text style={styles.keyChipLabel}>KEY</Text>
-            <Text style={styles.keyChipValue}>{key}</Text>
-            <Icon name="chevronDown" size={12} color={colors.textMuted} strokeWidth={2.4} />
-          </Pressable>
-          <IconBtn icon="rewind" onPress={undo} disabled={history.length === 0} />
-          <IconBtn
-            icon={saved ? 'check' : 'download'}
-            onPress={save}
-            tint={saved ? colors.success : colors.textMuted}
-          />
+          <IconBtn icon="video" onPress={() => router.push('/export')} />
           <IconBtn icon="close" onPress={close} />
         </View>
       </View>
@@ -304,61 +310,34 @@ export default function EditorScreen() {
           {title}
         </Text>
         <Text style={[styles.savedText, { color: saved ? colors.success : colors.textFaint }]}>
-          {saved ? '保存済み' : '未保存'}
+          {saved ? '保存済み' : '保存中…'}
         </Text>
       </View>
 
-      {/* ── Transport & settings bar ───────────────────── */}
-      <View style={styles.transportBar}>
-        <View style={styles.bpmBox}>
-          <Pressable style={styles.bpmStep} onPress={() => changeTempo(bpm - 1)} hitSlop={6}>
-            <Text style={styles.bpmStepText}>−</Text>
-          </Pressable>
-          <Pressable style={styles.bpmValueBtn} onPress={() => setBpmPickerOpen(true)} hitSlop={4}>
-            <Text style={styles.bpmValue}>{bpm}</Text>
-            <Text style={styles.bpmUnit}>BPM</Text>
-          </Pressable>
-          <Pressable style={styles.bpmStep} onPress={() => changeTempo(bpm + 1)} hitSlop={6}>
-            <Text style={styles.bpmStepText}>+</Text>
-          </Pressable>
-          <Pressable style={styles.tapBtn} onPress={tapTempo} hitSlop={4}>
-            <Text style={styles.tapBtnText}>TAP</Text>
-          </Pressable>
-        </View>
-        <View style={styles.transportToggles}>
-          <ToggleField label="ﾒﾄﾛﾉｰﾑ" value={metronome} onValueChange={setMetronome} />
-          <ToggleField label="ループ" value={loop} onValueChange={setLoop} />
-        </View>
-        <Pressable onPress={togglePlayback} disabled={progression.length === 0}>
-          <LinearGradient
-            colors={primaryGradient}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={[
-              styles.playBtn,
-              isPlaying && styles.playBtnActive,
-              progression.length === 0 && styles.playBtnDisabled,
-            ]}>
-            <Icon name={isPlaying ? 'pause' : 'play'} size={22} color="#fff" />
-          </LinearGradient>
-        </Pressable>
+      {/* ── Session Capsule (Key/BPM/Style/Sound → one control) ─ */}
+      <View style={styles.capsuleRow}>
+        <CPSessionCapsule
+          keyLabel={`${key} Major`}
+          bpm={bpm}
+          styleLabel={`${GROOVE_LABELS[s.grooveId]} / ${ACCOMPANIMENT_LABELS[s.accompanimentPattern] ?? s.accompanimentPattern}`}
+          soundLabel={INSTRUMENT_LABELS[s.instrumentId]}
+          onPress={() => setSessionSheetOpen(true)}
+        />
       </View>
 
-      {/* tone / drum summary → /groove */}
-      <View style={styles.summaryRow}>
-        <SummaryChip
-          icon="dots"
-          label="音色"
-          value={INSTRUMENT_LABELS[s.instrumentId]}
-          onPress={() => router.push('/groove')}
-        />
-        <SummaryChip
-          icon="dots"
-          label="ドラム"
-          value={GROOVE_LABELS[s.grooveId]}
-          onPress={() => router.push('/groove')}
-        />
-      </View>
+      {/* ── Transport (Undo · Play · Loop) ──────────────── */}
+      <CPTransportBar
+        playing={isPlaying}
+        showUndo={history.length > 0}
+        showLoop={progression.length >= 2}
+        loopOn={loop}
+        onPlayPause={togglePlayback}
+        onUndo={undo}
+        onLoop={() => setLoop((v) => !v)}
+      />
+      {progression.length === 0 ? (
+        <Text style={styles.transportHint}>コードを追加すると再生できます</Text>
+      ) : null}
 
       {/* ── Progression strip ──────────────────────────── */}
       <View style={styles.stripHeader}>
@@ -581,11 +560,54 @@ export default function EditorScreen() {
         </>
       )}
 
-      {/* ── Export CTA ─────────────────────────────────── */}
-      <Pressable onPress={() => router.push('/export')} style={styles.exportCta}>
-        <Icon name="video" size={18} color={colors.purpleSoft} strokeWidth={2} />
-        <Text style={styles.exportCtaText}>動画を書き出す</Text>
-      </Pressable>
+      {/* ── Session Sheet (Key / Tempo / Style / Sound) ─── */}
+      <Modal
+        visible={sessionSheetOpen}
+        transparent
+        animationType="slide"
+        onRequestClose={() => setSessionSheetOpen(false)}>
+        <Pressable style={styles.modalBackdrop} onPress={() => setSessionSheetOpen(false)}>
+          <Pressable style={styles.sessionSheet} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.keyPickerTitle}>セッション</Text>
+            <Pressable
+              style={styles.sessionRow}
+              onPress={() => {
+                setSessionSheetOpen(false);
+                setKeyPickerOpen(true);
+              }}>
+              <Text style={styles.sessionRowLabel}>Key</Text>
+              <Text style={styles.sessionRowValue}>{key} Major</Text>
+            </Pressable>
+            <Pressable
+              style={styles.sessionRow}
+              onPress={() => {
+                setSessionSheetOpen(false);
+                setBpmPickerOpen(true);
+              }}>
+              <Text style={styles.sessionRowLabel}>Tempo</Text>
+              <Text style={styles.sessionRowValue}>{bpm} BPM</Text>
+            </Pressable>
+            <Pressable
+              style={styles.sessionRow}
+              onPress={() => {
+                setSessionSheetOpen(false);
+                router.push('/groove');
+              }}>
+              <Text style={styles.sessionRowLabel}>Style / Sound</Text>
+              <Text style={styles.sessionRowValue} numberOfLines={1}>
+                {GROOVE_LABELS[s.grooveId]} · {INSTRUMENT_LABELS[s.instrumentId]}
+              </Text>
+            </Pressable>
+            <View style={styles.sessionRow}>
+              <Text style={styles.sessionRowLabel}>Metronome</Text>
+              <Toggle value={metronome} onValueChange={setMetronome} />
+            </View>
+            <Pressable style={styles.sessionTap} onPress={tapTempo}>
+              <Text style={styles.sessionTapText}>TAP TEMPO</Text>
+            </Pressable>
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       {/* ── BPM picker modal ───────────────────────────── */}
       <Modal
@@ -692,46 +714,6 @@ function IconBtn({
         color={disabled ? colors.textFaintest : tint ?? colors.textMuted}
         strokeWidth={2.2}
       />
-    </Pressable>
-  );
-}
-
-function ToggleField({
-  label,
-  value,
-  onValueChange,
-}: {
-  label: string;
-  value: boolean;
-  onValueChange: (v: boolean) => void;
-}) {
-  return (
-    <View style={styles.toggleField}>
-      <Text style={styles.toggleLabel}>{label}</Text>
-      <Toggle value={value} onValueChange={onValueChange} width={38} height={22} />
-    </View>
-  );
-}
-
-function SummaryChip({
-  icon,
-  label,
-  value,
-  onPress,
-}: {
-  icon: IconName;
-  label: string;
-  value: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={styles.summaryChip} onPress={onPress}>
-      <Icon name={icon} size={13} color={colors.textFaint} />
-      <Text style={styles.summaryLabel}>{label}</Text>
-      <Text style={styles.summaryValue} numberOfLines={1}>
-        {value}
-      </Text>
-      <Icon name="chevronRight" size={12} color={colors.textFaint} strokeWidth={2.4} />
     </Pressable>
   );
 }
@@ -862,6 +844,60 @@ const styles = StyleSheet.create({
     color: colors.textSecondary,
   },
   savedText: { fontSize: 11, fontFamily: font.semibold, fontWeight: '600' },
+
+  capsuleRow: { paddingBottom: 4 },
+  transportHint: {
+    textAlign: 'center',
+    color: colors.textFaint,
+    fontSize: 11,
+    fontFamily: font.medium,
+    marginBottom: 8,
+  },
+  sessionSheet: {
+    backgroundColor: colors.surfacePanel,
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    paddingHorizontal: 18,
+    paddingTop: 18,
+    paddingBottom: 28,
+    borderWidth: 1,
+    borderColor: colors.border,
+    gap: 4,
+  },
+  sessionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 14,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.border,
+  },
+  sessionRowLabel: {
+    fontSize: 14,
+    fontFamily: font.semibold,
+    color: colors.textMuted,
+  },
+  sessionRowValue: {
+    flex: 1,
+    textAlign: 'right',
+    marginLeft: 12,
+    fontSize: 14,
+    fontFamily: font.bold,
+    color: colors.textPrimary,
+  },
+  sessionTap: {
+    marginTop: 12,
+    alignItems: 'center',
+    paddingVertical: 12,
+    borderRadius: radius.lg,
+    backgroundColor: colors.surfaceRaised,
+  },
+  sessionTapText: {
+    fontSize: 13,
+    fontFamily: font.bold,
+    color: colors.primaryBlue,
+    letterSpacing: 0.5,
+  },
 
   /* transport */
   transportBar: {
