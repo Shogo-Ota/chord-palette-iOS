@@ -273,6 +273,10 @@ export interface PerformanceRenderer {
 - [ ] エッジケース（空進行 / 16小節上限 / 全ドラム×全伴奏の組合せ）で破綻しない
 
 ### 評価履歴
+- **2026-07-19 @generator / Step 3（Renderer 接続＋音色チューニング）: 実装完了（静的検証通過・実機未）**
+  - PE → `playback` / videoExport 配線。`accompaniment: 'performance'` で 1:1 発音（二重ヒューマナイズ回避）。PE ドラムは送らず native groove 維持。
+  - P0-2: `voicing.ts` の C1 サブベース重ねを廃止（C2 のみ）。P1-1/P1-2: `DrumProvider` キッククリック＋スネア整形。P1-4: eightBeat sparkle を強拍のみ。
+  - 静的検証: `tsc` 0 / `jest` 17 suites・178 tests / `expo lint` 0。**Swift 反映には EAS 再ビルド必須**。
 - **2026-07-19 @evaluator / Step 2（NoteEvent 契約＋Performance Engine）: 合格（静的検証＋契約レビュー）**
   - 静的検証: `tsc --noEmit` 0 / `expo lint` 0 / `jest` 16 suites・**174 tests 全パス**（Step 1 の 129→174、回帰ゼロ）。
   - 受入基準（純ロジック範囲）を確認: 同一 velocity 5連打禁止（`avoidFiveInARow`＋全プリセット×全 style×3 キーで検証）／bar 境界 drift=0（step0 offset=0・絶対位置基準、downbeat が厳密整数）／gate∈[0.72,0.95]（BPM 70/110/160）＋同音再打鍵ギャップ（RESTRIKE_GAP=20ms、テスト ≥15ms）／Round Robin ≥3種・連続同 index 回避／決定論（同 seed→byte 一致、別 seed→pitch 多重集合保存）／microtiming は kick 基準の相関（bar ごと共有 feel＋トラック別 jitter、Bass は kick の ±4ms 以内）／`Math.random` 直呼びゼロ（seed 由来 PRNG のみ）。
