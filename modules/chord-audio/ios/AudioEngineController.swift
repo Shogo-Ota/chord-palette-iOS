@@ -70,18 +70,23 @@ final class AudioEngineController {
   /// Active chord voice. Starts as the synth and is swapped for a sampled
   /// (SoundFont) provider once an instrument is loaded. Read/written under the lock.
   private var chordProvider: InstrumentProvider = SynthInstrumentProvider()
-  private let drumProvider: DrumProvider = SynthDrumProvider()
+  /// Active drum voice. Starts as the synth and is swapped for the sampled (SoundFont
+  /// GM percussion) provider once loaded in `prepare()`. Read under the lock on the
+  /// audio thread (like `chordProvider`) so the swap is race-free.
+  private var drumProvider: DrumProvider = SynthDrumProvider()
   /// Cache of loaded sampled instruments, keyed by instrument id (avoids re-render).
   private var sampledCache: [String: SampledInstrumentProvider] = [:]
   /// The most recent SampledInstrumentProvider we tried to load — retained even on
   /// failure so `audioDiagnostics()` can surface its `lastLoadError` to JS.
   private var lastSampledAttempt: SampledInstrumentProvider?
+  /// Dedicated clean EP voice (no SoundFont chorus / tine hiss).
+  private let electricPianoProvider = ElectricPianoInstrumentProvider()
   private var currentInstrument: String = ""
 
   /// Instrument id → General MIDI program number.
   private static let programForInstrument: [String: UInt8] = [
     "piano": 0, // Acoustic Grand Piano
-    "ePiano": 4, // Electric Piano 1
+    // ePiano uses ElectricPianoInstrumentProvider (not SoundFont program 4).
     "acousticGuitar": 25, // Acoustic Guitar (steel)
     "electricGuitar": 27, // Electric Guitar (clean)
     "strings": 48, // String Ensemble 1
@@ -109,6 +114,12 @@ final class AudioEngineController {
   private var prepared = false
   private var positionTimer: DispatchSourceTimer?
 
+  /// Last volumes pushed from JS (also applied as a render-time gain so 0 = mute
+  /// even if the AVAudioMixerNode path misbehaves). Read under `unfairLock`.
+  private var masterVolume: Float = 0.9
+  private var chordVolume: Float = 0.85
+  private var drumVolume: Float = 0.8
+
   var onStateChange: ((String) -> Void)?
   var onPosition: ((Int, Double, Int) -> Void)?
 
@@ -124,6 +135,14 @@ final class AudioEngineController {
 
   func prepare() throws {
     if prepared {
+      // Already built. A screen remount calls prepare() again while the engine may
+      // have been stopped meanwhile (interruption / config change) — re-activate the
+      // session and re-arm the engine so the next play()/preview is audible, then
+      // report ready. Nodes stay attached/connected, so a plain start() suffices.
+      if !engine.isRunning {
+        try? AVAudioSession.sharedInstance().setActive(true)
+        try? engine.start()
+      }
       state = .ready
       return
     }
@@ -137,6 +156,8 @@ final class AudioEngineController {
       // Load the default instrument (piano). Falls back to the synth on failure,
       // so playback is never silent even if the SoundFont is missing.
       setInstrument("piano")
+      // Load sampled GM percussion for the drums (synth fallback on failure).
+      loadDrumVoice()
       state = .ready
     } catch {
       state = .failed
@@ -238,26 +259,50 @@ final class AudioEngineController {
   /// Swap the chord voice to `instrumentId`, loading + caching the sampled
   /// SoundFont program on first use. Heavy work (offline render) runs on the
   /// calling (non-audio) thread; the pointer swap is done under the lock.
+  /// Safe to call while playing — only the provider pointer changes; transport
+  /// position / plan are preserved (hot-swap).
   func setInstrument(_ instrumentId: String) {
     guard prepared, instrumentId != currentInstrument else { return }
-    let program = Self.programForInstrument[instrumentId] ?? 0
-    var provider: InstrumentProvider = synthProvider
+    let provider = resolveInstrumentProvider(instrumentId)
+    os_unfair_lock_lock(&unfairLock)
+    chordProvider = provider
+    currentInstrument = instrumentId
+    os_unfair_lock_unlock(&unfairLock)
+  }
 
+  /// Resolve (and cache) the provider for `instrumentId`. Does not change the
+  /// active voice — callers decide whether to install it.
+  private func resolveInstrumentProvider(_ instrumentId: String) -> InstrumentProvider {
+    // Free E.Piano: synthesized (FluidR3 EP chorus/tine reads as hiss on device).
+    if instrumentId == "ePiano" {
+      return electricPianoProvider
+    }
     if let cached = sampledCache[instrumentId], cached.isLoaded {
-      provider = cached
-    } else if let url = Self.soundFontURL() {
+      return cached
+    }
+    let program = Self.programForInstrument[instrumentId] ?? 0
+    if let url = Self.soundFontURL() {
       let sampled = SampledInstrumentProvider(sampleRate: sampleRate)
       // Retain before load so a failed attempt's lastLoadError stays observable.
       lastSampledAttempt = sampled
       if sampled.load(soundFontURL: url, program: program) {
         sampledCache[instrumentId] = sampled
-        provider = sampled
+        return sampled
       }
     }
+    return synthProvider
+  }
 
+  /// Swap the drum voice to the sampled GM percussion kit once, with a synth fallback
+  /// (mirrors the chord path). The offline pre-render runs on the calling (prepare)
+  /// thread; the pointer swap is done under the lock so a concurrent audio-thread read
+  /// is safe. No-op (keeps the synth) if the SoundFont is missing or fails to load.
+  private func loadDrumVoice() {
+    guard let url = Self.soundFontURL() else { return }
+    let sampled = SampledDrumProvider(sampleRate: sampleRate)
+    guard sampled.load(soundFontURL: url) else { return }
     os_unfair_lock_lock(&unfairLock)
-    chordProvider = provider
-    currentInstrument = instrumentId
+    drumProvider = sampled
     os_unfair_lock_unlock(&unfairLock)
   }
 
@@ -308,9 +353,16 @@ final class AudioEngineController {
     engine.connect(drum, to: mix.drumMixer, format: fmt)
     mix.connect(engine: engine, format: fmt)
 
-    mix.setMasterVolume(0.9)
-    mix.setChordVolume(0.85)
-    mix.setDrumVolume(0.8)
+    // Re-apply the last JS volumes (never hard-reset to defaults — that made
+    // a 0% chord slider audible again after engine rebuild).
+    os_unfair_lock_lock(&unfairLock)
+    let m = masterVolume
+    let c = chordVolume
+    let d = drumVolume
+    os_unfair_lock_unlock(&unfairLock)
+    mix.setMasterVolume(m)
+    mix.setChordVolume(c)
+    mix.setDrumVolume(d)
 
     engine.prepare()
   }
@@ -324,14 +376,24 @@ final class AudioEngineController {
     events: [NoteEventValue],
     drumPattern: String,
     accompaniment: String,
-    instrument: String
+    instrument: String,
+    startBeat: Double = 0
   ) {
-    // §3.1: play() is a fresh-from-top playback, never a resume. It is only valid
-    // once the engine is prepared and from ready/playing/paused/stopped. From
-    // idle/preparing/failed it is a no-op (no state change, no onStateChange).
-    // Gate BEFORE taking the lock or building a snapshot.
+    // §3.1: play() starts transport. `startBeat > 0` seeks into the loop so a
+    // live re-apply (timbre/groove) can keep the playhead instead of rewinding.
+    // Valid once prepared from ready/playing/paused/stopped.
     guard prepared, state == .ready || state == .playing || state == .paused || state == .stopped else {
       return
+    }
+    // Re-arm the session + engine defensively before starting transport. The engine
+    // can be left stopped (or the session deactivated) by an interruption, a route /
+    // configuration change, or a prepared-but-idle screen remount. Unlike resume(),
+    // play() previously assumed a running engine, so in those cases it scheduled a
+    // valid plan that produced NO audio (silent transport). Mirror resume() /
+    // handleInterruption here. On the caller (main) thread, never under the lock.
+    if !engine.isRunning {
+      try? AVAudioSession.sharedInstance().setActive(true)
+      try? engine.start()
     }
     // Ensure the requested voice is loaded before playback (no-op if unchanged).
     setInstrument(instrument)
@@ -343,16 +405,33 @@ final class AudioEngineController {
       bpm: bpm, totalBeats: totalBeats, loop: loop, events: events,
       drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
     )
+    let fpb = Scheduler.framesPerBeat(bpm: bpm, sampleRate: sampleRate)
+    let clampedBeat = max(0, startBeat)
+    let startFrames = clampedBeat * fpb
     os_unfair_lock_lock(&unfairLock)
     plan = snapshot
     isPlaying = true
     baseSampleTime = nil
-    pausedFrames = 0
-    currentFrame = 0
+    pausedFrames = startFrames
+    currentFrame = startFrames
     finished = false
     os_unfair_lock_unlock(&unfairLock)
     state = .playing
     startPositionTimer()
+  }
+
+  /// Current playhead in beats (0 when idle). Used by JS for position-preserving
+  /// re-apply when hot-swapping voices.
+  func currentBeat() -> Double {
+    os_unfair_lock_lock(&unfairLock)
+    let snap = plan
+    let frame = currentFrame
+    let sr = sampleRate
+    os_unfair_lock_unlock(&unfairLock)
+    guard let snap = snap else { return 0 }
+    let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
+    let folded = Scheduler.fold(absoluteFrame: frame, loopLengthFrames: loopFrames, loop: snap.loop)
+    return Scheduler.beat(forFrameInLoop: folded.frameInLoop, bpm: snap.bpm, sampleRate: sr)
   }
 
   func pause() {
@@ -414,9 +493,29 @@ final class AudioEngineController {
 
   // MARK: - Volume
 
-  func setMasterVolume(_ v: Float) { mixer?.setMasterVolume(v) }
-  func setChordVolume(_ v: Float) { mixer?.setChordVolume(v) }
-  func setDrumVolume(_ v: Float) { mixer?.setDrumVolume(v) }
+  func setMasterVolume(_ v: Float) {
+    let clamped = max(0, min(1, v))
+    os_unfair_lock_lock(&unfairLock)
+    masterVolume = clamped
+    os_unfair_lock_unlock(&unfairLock)
+    mixer?.setMasterVolume(clamped)
+  }
+
+  func setChordVolume(_ v: Float) {
+    let clamped = max(0, min(1, v))
+    os_unfair_lock_lock(&unfairLock)
+    chordVolume = clamped
+    os_unfair_lock_unlock(&unfairLock)
+    mixer?.setChordVolume(clamped)
+  }
+
+  func setDrumVolume(_ v: Float) {
+    let clamped = max(0, min(1, v))
+    os_unfair_lock_lock(&unfairLock)
+    drumVolume = clamped
+    os_unfair_lock_unlock(&unfairLock)
+    mixer?.setDrumVolume(clamped)
+  }
 
   // MARK: - Render (audio thread)
 
@@ -434,6 +533,8 @@ final class AudioEngineController {
     let playing = isPlaying
     let sr = sampleRate
     let provider = chordProvider
+    // Channel gain only — master stays on the mixer (avoid double attenuation).
+    let chordGain = chordVolume
     if playing && baseSampleTime == nil { baseSampleTime = sampleTime - pausedFrames }
     let base = baseSampleTime ?? sampleTime
     // preview base
@@ -444,6 +545,16 @@ final class AudioEngineController {
     let pvDur = previewDurationSec
     let pvVel = previewVelocity
     os_unfair_lock_unlock(&unfairLock)
+
+    // Idle fast-path: nothing playing and no preview → emit silence without the
+    // per-frame synthesis loop. The engine runs continuously (so the next play /
+    // preview is instant), but while the editor merely sits open this keeps the
+    // render callback near-free instead of iterating every frame.
+    if !playing && !pvActive {
+      for buffer in buffers { if let d = buffer.mData { memset(d, 0, Int(buffer.mDataByteSize)) } }
+      isSilence.pointee = ObjCBool(true)
+      return noErr
+    }
 
     var producedSound = false
 
@@ -467,6 +578,7 @@ final class AudioEngineController {
         }
       }
 
+      value *= chordGain
       if value != 0 { producedSound = true }
       writeToAllChannels(buffers, frame: frame, value: value)
     }
@@ -501,6 +613,8 @@ final class AudioEngineController {
     let snap = plan
     let playing = isPlaying
     let sr = sampleRate
+    let drumGain = drumVolume
+    let provider = drumProvider
     // Establish the shared base here too, using the SAME formula as renderChord,
     // so whichever render callback runs first on a fresh start/resume pins the
     // base; the other simply reads it. Prevents a one-buffer skew (§4.2).
@@ -508,14 +622,22 @@ final class AudioEngineController {
     let base = baseSampleTime ?? sampleTime
     os_unfair_lock_unlock(&unfairLock)
 
+    // Idle fast-path (mirrors renderChord): no transport → silence, no per-frame work.
+    if !playing {
+      for buffer in buffers { if let d = buffer.mData { memset(d, 0, Int(buffer.mDataByteSize)) } }
+      isSilence.pointee = ObjCBool(true)
+      return noErr
+    }
+
     var producedSound = false
 
     for frame in 0..<Int(frameCount) {
       var value: Float = 0
       if playing, let snap = snap {
         let absFrame = (sampleTime + Double(frame)) - base
-        value = drumSampleValue(snap: snap, absFrame: absFrame, sr: sr)
+        value = drumSampleValue(snap: snap, absFrame: absFrame, sr: sr, provider: provider)
       }
+      value *= drumGain
       if value != 0 { producedSound = true }
       writeToAllChannels(buffers, frame: frame, value: value)
     }
@@ -674,7 +796,8 @@ final class AudioEngineController {
         if start < 0 || start >= loopFrames { continue }
         let dur = min(durF, loopFrames - start)
         if dur <= 0 { continue }
-        let vv: Float = (sparkle && note == top12) ? baseVel * 0.5 : baseVel
+        // Audit P1-4: keep sparkle soft (0.28) so the octave copy reads as air, not a synth bell.
+        let vv: Float = (sparkle && note == top12) ? baseVel * 0.28 : baseVel
         let gain = Self.humanize(vv, seed: onsetBeat + Double(note), amount: velAmount) * vGain
         out.append(NoteStrike(start: start, dur: dur, note: note, gain: gain))
       }
@@ -827,12 +950,13 @@ final class AudioEngineController {
 
     default: // "block" (and unknown ids)
       // Chord-locked block hits on each chord start only — no syncopation, no
-      // timing sway, nearly flat velocity. Soft roll + sparkle for piano feel.
-      // `"performance"` is handled above (1:1 passthrough of PE events).
+      // timing sway, nearly flat velocity. Soft roll for piano feel; sparkle off
+      // (audit P1-4) — PE owns the musical block path, and a top-octave copy here
+      // reads as synthetic on the legacy fallback.
       for e in events {
         emitGroup(
           onsetBeat: e.startBeat, look: 0, baseVel: 0.92, nominalRing: e.lengthBeats,
-          strumSec: 0.012, sparkle: true, select: isAll,
+          strumSec: 0.012, sparkle: false, select: isAll,
           timingAmount: 0, velAmount: 0.02)
       }
     }
@@ -840,7 +964,7 @@ final class AudioEngineController {
     return out
   }
 
-  private func drumSampleValue(snap: PlanSnapshot, absFrame: Double, sr: Double) -> Float {
+  private func drumSampleValue(snap: PlanSnapshot, absFrame: Double, sr: Double, provider: DrumProvider) -> Float {
     let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
     if !snap.loop && absFrame >= loopFrames { return 0 }
     let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: snap.loop)
@@ -848,7 +972,7 @@ final class AudioEngineController {
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
     var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
     if beatInBar < 0 { beatInBar += 4.0 }
-    return drumProvider.sample(
+    return provider.sample(
       groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
     )
   }
@@ -1012,13 +1136,20 @@ final class AudioEngineController {
     durationSec: Double
   ) throws -> (url: URL, sampleRate: Double) {
     let sr = 44_100.0
-    let program = Self.programForInstrument[instrument] ?? 0
     var chordProv: InstrumentProvider = synthProvider
-    if let url = Self.soundFontURL() {
+    if instrument == "ePiano" {
+      chordProv = ElectricPianoInstrumentProvider()
+    } else if let url = Self.soundFontURL() {
+      let program = Self.programForInstrument[instrument] ?? 0
       let sampled = SampledInstrumentProvider(sampleRate: sr)
       if sampled.load(soundFontURL: url, program: program) { chordProv = sampled }
     }
-    let drumProv: DrumProvider = SynthDrumProvider()
+    // Match playback: sampled GM percussion when available, synth otherwise.
+    var drumProv: DrumProvider = SynthDrumProvider()
+    if let url = Self.soundFontURL() {
+      let sampledDrums = SampledDrumProvider(sampleRate: sr)
+      if sampledDrums.load(soundFontURL: url) { drumProv = sampledDrums }
+    }
     let strikes = buildChordStrikes(
       bpm: bpm, totalBeats: max(1, totalBeats), events: events,
       accompaniment: accompaniment, sr: sr)

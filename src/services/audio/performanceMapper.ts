@@ -48,8 +48,10 @@ export function performanceSeedFromSession(session: PlaybackSessionSnapshot): nu
 }
 
 /**
- * Convert Perf notes → PlaybackRequest. Only chord/bass tracks are mapped;
- * accompaniment is forced to `'performance'` (1:1 native passthrough).
+ * Convert Perf notes → PlaybackRequest. Only the pitched voices (chord + optional
+ * role-separation `top` + bass) are mapped; PE drum tracks are dropped (native
+ * groove is authoritative) and accompaniment is forced to `'performance'` (1:1
+ * native passthrough).
  */
 export function mapPerfNotesToPlaybackRequest(
   notes: PerfNote[],
@@ -62,7 +64,7 @@ export function mapPerfNotesToPlaybackRequest(
   },
 ): PlaybackRequest {
   const chordEvents: NoteEvent[] = notes
-    .filter((n) => n.trackId === 'chord' || n.trackId === 'bass')
+    .filter((n) => n.trackId === 'chord' || n.trackId === 'top' || n.trackId === 'bass')
     .map((n) => ({
       midiNotes: [n.pitch],
       startBeat: n.timeBeat,

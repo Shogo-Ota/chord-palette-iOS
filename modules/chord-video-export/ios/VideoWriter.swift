@@ -87,13 +87,18 @@ enum VideoWriter {
       let audioQueue = DispatchQueue(label: "app.chord-palette.audio")
       let group = DispatchGroup()
 
-      // Video track.
+      // Video track. `requestMediaDataWhenReady` re-invokes the block whenever the
+      // input is ready again, so guard against re-entry after we finish — a second
+      // `markAsFinished()` / `group.leave()` would raise an ObjC exception / crash.
       group.enter()
       var frameIndex = 0
+      var videoFinished = false
       videoInput.requestMediaDataWhenReady(on: videoQueue) {
+        if videoFinished { return }
         while videoInput.isReadyForMoreMediaData {
           if frameIndex >= totalFrames {
             videoInput.markAsFinished()
+            videoFinished = true
             group.leave()
             break
           }
@@ -112,18 +117,25 @@ enum VideoWriter {
         }
       }
 
-      // Audio track (if present).
-      if let audioInput = audioInput, let readerOutput = readerOutput {
+      // Audio track (if present). Same re-entry guard, plus a reader-status check:
+      // `copyNextSampleBuffer()` throws an (uncatchable) ObjC exception when the
+      // reader is not `.reading` (e.g. already completed, or `startReading` failed),
+      // so we must never call it once reading has stopped.
+      if let audioInput = audioInput, let readerOutput = readerOutput, let reader = reader {
         group.enter()
+        var audioFinished = false
         audioInput.requestMediaDataWhenReady(on: audioQueue) {
+          if audioFinished { return }
           while audioInput.isReadyForMoreMediaData {
-            if let sample = readerOutput.copyNextSampleBuffer() {
-              audioInput.append(sample)
-            } else {
+            guard reader.status == .reading,
+              let sample = readerOutput.copyNextSampleBuffer()
+            else {
               audioInput.markAsFinished()
+              audioFinished = true
               group.leave()
               break
             }
+            audioInput.append(sample)
           }
         }
       }
@@ -170,9 +182,9 @@ enum VideoWriter {
         data: CVPixelBufferGetBaseAddress(pb), width: w, height: h, bitsPerComponent: 8,
         bytesPerRow: CVPixelBufferGetBytesPerRow(pb), space: space, bitmapInfo: bitmapInfo)
     else { return }
-    // The UIGraphicsImageRenderer image is top-left oriented; flip so row 0 stays on top.
-    ctx.translateBy(x: 0, y: CGFloat(h))
-    ctx.scaleBy(x: 1, y: -1)
+    // `CGContext.draw` already maps the CGImage upright into a 32BGRA CVPixelBuffer
+    // (row 0 = top). Adding a translate/scale flip here inverts the frame, so we draw
+    // straight without any coordinate transform.
     ctx.draw(image, in: CGRect(x: 0, y: 0, width: w, height: h))
   }
 }

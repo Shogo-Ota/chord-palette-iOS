@@ -4,14 +4,16 @@ import React, { useEffect, useState } from 'react';
 import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { ChordKeyboard } from '@/components/ChordKeyboard';
+import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
-import { Toggle } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { useEditorSession } from '@/features/editor/session';
 import { VideoExportError } from '@/lib/errors';
 import { chordMidiNotes } from '@/lib/voicing';
+import { track } from '@/services/analytics';
+import { getTier } from '@/services/billing';
 import { videoExportService } from '@/services/videoExport';
-import { colors, font, functionColor, primaryGradient, radius } from '@/theme/tokens';
+import { colors, font, functionColor, primaryGradient, radius, rainbow } from '@/theme/tokens';
 import type { ChordEvent } from '@/types';
 
 const ICON = require('../../assets/icon/icon.png');
@@ -19,6 +21,11 @@ const ICON = require('../../assets/icon/icon.png');
 const PREVIEW_W = 214;
 const PREVIEW_PAD = 14;
 const KEYBOARD_W = PREVIEW_W - PREVIEW_PAD * 2;
+
+/** Preview dot sizing (mirrors the native encoder's fit-to-width behavior). */
+const DOT_MAX = 8;
+const DOT_MIN = 3.5;
+const DOT_GAP_RATIO = 0.8; // gap = size * ratio
 
 /**
  * Cycle through the progression for the in-app preview, honoring each chord's beat
@@ -50,8 +57,10 @@ function usePreviewIndex(progression: ChordEvent[], bpm: number): number {
 export default function ExportScreen() {
   const router = useRouter();
   const s = useEditorSession();
-  const [duration, setDuration] = useState('30');
-  const [watermark, setWatermark] = useState(false);
+  // Every exported clip is branded with the Chord Palette watermark (always on, no
+  // opt-out) so shared videos always carry the mark. Kept as a const so the render
+  // plan/preview paths stay explicit and unchanged.
+  const watermark = true;
   const [busy, setBusy] = useState<'idle' | 'save' | 'share'>('idle');
   const [progress, setProgress] = useState(0);
   const saving = busy !== 'idle';
@@ -65,6 +74,9 @@ export default function ExportScreen() {
       grooveId: s.grooveId,
       accompaniment: s.accompanimentPattern,
       instrumentId: s.instrumentId,
+      releaseCut: s.releaseCut,
+      octaveShift: s.octaveShift,
+      tier: getTier(),
     };
   }
 
@@ -76,18 +88,29 @@ export default function ExportScreen() {
     }
     setBusy(kind);
     setProgress(0);
-    const opts = { durationSec: Number(duration), watermark, onProgress: setProgress };
+    // Length follows the project: one full pass of the progression at its tempo.
+    const beats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
+    // Ceil (not round) so the clip always covers the full final chord — otherwise a
+    // short trailing chord (e.g. a ¼-bar at high tempo) can be dropped, leaving one
+    // fewer dot than chords in the encoded video.
+    const durationSec = Math.max(1, Math.ceil((beats * 60) / Math.max(1, s.tempoBpm)));
+    // Duration is auto-derived (no selector), so report the effective length here.
+    track('export_duration_selected', { durationSec });
+    track('video_export_started', { kind, durationSec });
+    const opts = { durationSec, watermark, onProgress: setProgress };
     const work =
       kind === 'save'
         ? videoExportService.exportAndSave(exportInput(), opts)
         : videoExportService.exportAndShare(exportInput(), opts);
     work
       .then(() => {
+        track('video_export_completed', { kind, durationSec });
         if (kind === 'save') {
           Alert.alert('保存しました', '写真アプリに動画を保存しました。');
         }
       })
       .catch((e) => {
+        track('video_export_failed', { kind });
         const msg = e instanceof VideoExportError ? e.userMessage : '動画の書き出しに失敗しました。';
         Alert.alert('書き出しに失敗', msg, [
           { text: '再試行', onPress: () => runExport(kind) },
@@ -100,9 +123,10 @@ export default function ExportScreen() {
   const idx = usePreviewIndex(s.progression, s.tempoBpm);
   const current = s.progression[idx];
   const accent = current ? functionColor[current.function] : colors.primary;
-  const notes = current ? chordMidiNotes(current, s.key) : [];
+  const notes = current ? chordMidiNotes(current, s.key, s.octaveShift) : [];
   const totalBeats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
   const bars = Math.max(1, Math.ceil(totalBeats / 4));
+  const autoDurationSec = Math.max(1, Math.ceil((totalBeats * 60) / Math.max(1, s.tempoBpm)));
 
   return (
     <ScreenScaffold>
@@ -120,10 +144,6 @@ export default function ExportScreen() {
           locations={[0, 0.55, 1]}
           style={StyleSheet.absoluteFill}
         />
-        <View style={styles.badge916}>
-          <Text style={styles.badge916Text}>9:16</Text>
-        </View>
-
         <View style={styles.pvTop}>
           <Text style={styles.pvTitle} numberOfLines={1}>
             {s.title}
@@ -148,83 +168,67 @@ export default function ExportScreen() {
 
         {s.progression.length > 0 && (
           <View style={styles.pvStrip}>
-            {s.progression.slice(0, 8).map((c, i) => {
-              const on = i === idx;
-              const col = functionColor[c.function];
-              return (
-                <View
-                  key={c.id}
-                  style={[
-                    styles.stripDot,
-                    { borderColor: col },
-                    on && { backgroundColor: col, width: 14 },
-                  ]}
-                />
-              );
-            })}
+            {(() => {
+              // Mirror the native encoder: one dot per chord, sized to fit the strip
+              // width for any count (up to the 16-bar max). The active dot stays
+              // circular and is emphasized by full-color fill + a soft glow — never
+              // stretched into a pill.
+              const count = s.progression.length;
+              const denom = count + DOT_GAP_RATIO * Math.max(0, count - 1);
+              const size = Math.max(DOT_MIN, Math.min(DOT_MAX, KEYBOARD_W / denom));
+              const gap = size * DOT_GAP_RATIO;
+              return s.progression.map((c, i) => {
+                const on = i === idx;
+                const col = functionColor[c.function];
+                return (
+                  <View
+                    key={c.id}
+                    style={[
+                      {
+                        width: size,
+                        height: size,
+                        borderRadius: size / 2,
+                        borderWidth: 1.2,
+                        marginHorizontal: gap / 2,
+                        borderColor: col,
+                      },
+                      on
+                        ? {
+                            backgroundColor: col,
+                            shadowColor: col,
+                            shadowOpacity: 0.9,
+                            shadowRadius: size * 0.9,
+                            shadowOffset: { width: 0, height: 0 },
+                          }
+                        : { opacity: 0.4 },
+                    ]}
+                  />
+                );
+              });
+            })()}
           </View>
         )}
 
-        <View style={styles.pvKeyboard}>
+        <View style={[styles.pvKeyboard, styles.pvKeyboardWithWatermark]}>
           <ChordKeyboard notes={notes} musicKey={s.key} color={accent} width={KEYBOARD_W} />
         </View>
 
-        {watermark && (
-          <View style={styles.watermarkRow}>
-            <Image source={ICON} style={styles.wmIcon} />
-            <Text style={styles.wmText}>
-              Chord <Text style={{ color: colors.purpleText }}>Palette</Text>
-            </Text>
-          </View>
-        )}
+        <View style={styles.watermarkRow}>
+          <Image source={ICON} style={styles.wmIcon} />
+          <Text style={styles.wmText}>Chord </Text>
+          <GradientText colors={rainbow} style={styles.wmText}>
+            Palette
+          </GradientText>
+        </View>
       </View>
 
-      {/* 長さ */}
+      {/* 長さ（BPM・小節数から自動算出） */}
       <View style={styles.optRow}>
         <Text style={styles.optLabel}>長さ</Text>
-        <View style={styles.durTrack}>
-          {[
-            { key: '15', label: '15秒' },
-            { key: '30', label: '30秒' },
-            { key: '60', label: '60秒' },
-          ].map((o) => {
-            const active = o.key === duration;
-            return (
-              <Pressable key={o.key} onPress={() => setDuration(o.key)}>
-                {active ? (
-                  <LinearGradient
-                    colors={primaryGradient}
-                    start={{ x: 0, y: 0 }}
-                    end={{ x: 1, y: 1 }}
-                    style={styles.durActive}>
-                    <Text style={styles.durTextActive}>{o.label}</Text>
-                  </LinearGradient>
-                ) : (
-                  <Text style={styles.durText}>{o.label}</Text>
-                )}
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-
-      {/* フォーマット */}
-      <View style={styles.optRowTall}>
-        <Text style={styles.optLabel}>フォーマット</Text>
         <View style={styles.formatVal}>
-          <Text style={styles.formatMain}>縦動画 (9:16)</Text>
-          <Text style={styles.formatSub}>1080×1920</Text>
-          <Icon name="chevronRight" size={14} color="#7f8aa0" strokeWidth={2.4} />
+          <Text style={styles.formatMain}>約{autoDurationSec}秒</Text>
+          <Text style={styles.formatSub}>自動（{bars}小節 · BPM {s.tempoBpm}）</Text>
         </View>
-      </View>
-
-      {/* ウォーターマーク */}
-      <View style={styles.optRowTall}>
-        <View>
-          <Text style={styles.optLabel2}>ウォーターマーク</Text>
-          <Text style={styles.optSub}>アプリアイコンを表示</Text>
-        </View>
-        <Toggle value={watermark} onValueChange={setWatermark} width={46} height={28} />
       </View>
 
       {/* actions — save is primary; share opens the system sheet (Phase 4B) */}
@@ -280,17 +284,6 @@ const styles = StyleSheet.create({
     paddingTop: 22,
     paddingBottom: 16,
   },
-  badge916: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    borderRadius: 5,
-    paddingHorizontal: 6,
-    paddingVertical: 3,
-  },
-  badge916Text: { fontSize: 8, fontFamily: font.bold, fontWeight: '700', color: colors.textSecondary },
-
   pvTop: { alignItems: 'center' },
   pvTitle: { fontSize: 15, fontFamily: font.extrabold, fontWeight: '800', color: colors.textPrimary, letterSpacing: 0.3 },
   pvMeta: { fontSize: 10, color: colors.textMuted, marginTop: 3, fontFamily: font.semibold, fontWeight: '600' },
@@ -300,10 +293,10 @@ const styles = StyleSheet.create({
   degree: { fontSize: 15, color: colors.textSecondary, marginTop: 4, fontFamily: font.bold, fontWeight: '700', letterSpacing: 0.5 },
   emptyChord: { fontSize: 13, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
 
-  pvStrip: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 5, marginBottom: 12 },
-  stripDot: { width: 7, height: 7, borderRadius: 4, borderWidth: 1.2 },
+  pvStrip: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
 
   pvKeyboard: { alignItems: 'center' },
+  pvKeyboardWithWatermark: { marginBottom: 26 },
 
   watermarkRow: {
     position: 'absolute',
@@ -331,25 +324,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 11,
   },
-  optRowTall: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.xl,
-    padding: 14,
-    marginBottom: 11,
-  },
   optLabel: { fontSize: 13.5, fontFamily: font.semibold, fontWeight: '600', color: colors.textSecondary },
-  optLabel2: { fontSize: 13.5, fontFamily: font.semibold, fontWeight: '600', color: colors.textSecondary },
-  optSub: { fontSize: 11, color: colors.textFaint, marginTop: 3 },
-
-  durTrack: { flexDirection: 'row', gap: 5, backgroundColor: colors.surfaceInput, borderRadius: radius.md, padding: 3 },
-  durActive: { borderRadius: radius.sm, paddingHorizontal: 12, paddingVertical: 6 },
-  durText: { fontSize: 12, fontFamily: font.semibold, fontWeight: '600', color: colors.textDim, paddingHorizontal: 12, paddingVertical: 6 },
-  durTextActive: { fontSize: 12, fontFamily: font.bold, fontWeight: '700', color: '#fff' },
 
   formatVal: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   formatMain: { fontSize: 13, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },

@@ -4,6 +4,9 @@ import { ChordVideoExportNative } from '@modules/chord-video-export';
 import { buildExportPlan } from '@/lib/exportPlan';
 import { generatePerformance } from '@/lib/performance/PerformanceEngine';
 import { progressionToPerfChords } from '@/lib/performance/progressionInput';
+import { applyReleaseCut } from '@/lib/performance/releaseCut';
+import { tierProfile, type Tier } from '@/lib/performance/tier';
+import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
@@ -23,6 +26,12 @@ export type VideoExportInput = {
   /** Accompaniment rhythm id — kept in sync with playback so audio matches. */
   accompaniment: string;
   instrumentId: string;
+  /** Piano release-cut preference — mirrors playback so export matches audition. */
+  releaseCut?: boolean;
+  /** Whole-arrangement octave offset — mirrors playback so export matches audition. */
+  octaveShift?: number;
+  /** Monetization tier — mirrors playback humanize/strum strength (default free). */
+  tier?: Tier;
 };
 
 export type VideoExportOptions = {
@@ -50,7 +59,13 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     );
   }
 
-  const chords = progressionToPerfChords(input.progression, input.key);
+  const octaveShift = input.octaveShift ?? 0;
+  const chords = progressionToPerfChords(
+    input.progression,
+    input.key,
+    octaveShift,
+    voicingAestheticFor(input.accompaniment, input.tier ?? 'free'),
+  );
   const totalBeats = chords.reduce(
     (max, c) => Math.max(max, c.startBeat + c.durationBeats),
     0,
@@ -66,10 +81,20 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     instrumentId: input.instrumentId,
     progression: input.progression,
   });
-  const notes = generatePerformance(
+  const strength = tierProfile(input.tier ?? 'free');
+  const raw = generatePerformance(
     { chords, bpm: input.bpm, seed },
-    { styleId: input.accompaniment, drums: false },
+    // Keep in sync with playback: same Feel resolution context (grooveId) so the
+    // exported audio matches what the user auditioned.
+    {
+      styleId: input.accompaniment,
+      grooveId: input.grooveId,
+      drums: false,
+      humanizeBoost: strength.humanizeBoost,
+      strumScale: strength.strumScale,
+    },
   );
+  const notes = applyReleaseCut(raw, input.releaseCut !== false);
   const playback = mapPerfNotesToPlaybackRequest(notes, {
     bpm: input.bpm,
     totalBeats,
@@ -98,6 +123,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     durationSec: opts.durationSec,
     audioUri: audio.uri,
     watermark: opts.watermark,
+    octaveShift,
   });
 
   let sub: EventSubscription | null = null;

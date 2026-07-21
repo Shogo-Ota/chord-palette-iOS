@@ -73,15 +73,17 @@ describe('chordMidiNotes — transposition follows the key', () => {
 });
 
 describe('progressionToChordSpecs', () => {
-  it('maps each event to notes + its beat length (voice-led body, anchored bass)', () => {
+  it('maps each event to notes + its beat length (rootless voice-led body, anchored bass)', () => {
     const prog = [
       ev({ rootOffset: 0, suffix: 'maj7', durationBeats: 4 }),
       ev({ rootOffset: 7, suffix: '7', durationBeats: 2 }),
     ];
     const specs = progressionToChordSpecs(prog, 'C');
+    // Playback path is voiced rootless (the C2/G2 bass owns the root), so each body
+    // keeps only 3rd/5th/7th: Cmaj7 → E G B, G7 → D F B (voice-led to stay smooth).
     expect(specs).toEqual([
-      { midiNotes: [36, 48, 52, 55, 59], lengthBeats: 4 },
-      { midiNotes: [43, 50, 53, 55, 59], lengthBeats: 2 },
+      { midiNotes: [36, 52, 55, 59], lengthBeats: 4 },
+      { midiNotes: [43, 50, 53, 59], lengthBeats: 2 },
     ]);
   });
 

@@ -36,7 +36,8 @@ export function computeVelocity(p: VelocityParams): number {
   if (p.ghost) {
     return clampVelocity(p.rng.range(v.ghostMin, v.ghostMax));
   }
-  const center = v.center[p.track];
+  // The optional `top` voice has no center of its own — it inherits `chord`'s.
+  const center = p.track === 'top' ? v.center.chord : v.center[p.track];
   const accentTerm = (p.accent - 0.6) * v.accentDepth;
   const phraseTerm = phraseCurve(p.bar) * v.phraseDepth;
   const humanizeMag = p.rng.range(v.humanizeMin, v.humanizeMax);

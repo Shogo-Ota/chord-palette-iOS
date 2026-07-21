@@ -15,9 +15,18 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import * as session from '@/features/editor/session';
 import { logger } from '@/lib/logger';
+import { getOctaveShift, getReleaseCut } from '@/repositories/sessionPrefsRepository';
+import { track, initAnalytics } from '@/services/analytics';
 import { billingService } from '@/services/billing';
+import { initMonitoring } from '@/services/monitoring';
 import { colors } from '@/theme/tokens';
+
+// Initialize crash/error monitoring and anonymous analytics before the first render
+// (both no-op in dev/tests and when unconfigured).
+initMonitoring();
+initAnalytics();
 
 SplashScreen.preventAutoHideAsync();
 
@@ -35,12 +44,30 @@ export default function RootLayout() {
     if (loaded) SplashScreen.hideAsync();
   }, [loaded]);
 
+  // Anonymous app-open event (once per launch).
+  useEffect(() => {
+    track('app_opened');
+  }, []);
+
   // Initialize billing once at startup so entitlements are resolved before the
   // first Pro-gated interaction (init logic stays in the service, not screens).
   useEffect(() => {
     billingService
       .initBilling()
       .catch((e) => logger.error('Billing init failed', { error: String(e) }));
+  }, []);
+
+  // Restore the device-level release-cut preference at boot so the FIRST
+  // playback (from the editor, before /groove is ever opened) honors it.
+  // Previously this only loaded on the Groove screen, so a saved OFF played as
+  // the default ON until the user visited /groove.
+  useEffect(() => {
+    getReleaseCut()
+      .then((enabled) => session.setReleaseCut(enabled))
+      .catch((e) => logger.error('Release-cut restore failed', { error: String(e) }));
+    getOctaveShift()
+      .then((octaves) => session.setOctaveShift(octaves))
+      .catch((e) => logger.error('Octave-shift restore failed', { error: String(e) }));
   }, []);
 
   return (

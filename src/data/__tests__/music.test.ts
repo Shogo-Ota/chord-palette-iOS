@@ -2,6 +2,7 @@ import {
   availableVariations,
   CHORD_VARIATIONS,
   MAJOR_KEYS,
+  degreeLabelFromOffset,
   diatonicLibrary,
   diatonicSevenths,
   diatonicTriads,
@@ -123,6 +124,27 @@ describe('Pro-only chord categories (requirements §7)', () => {
     const target = diatonicLibrary('C')[0];
     const slash = slashChord('C', target, 'E');
     expect(slash).toMatchObject({ displayName: 'C/E', bassNote: 'E', isPro: true });
+  });
+
+  it('labels the on-chord bass as a DEGREE, not a note name', () => {
+    // C/E in C: bass E is the 3rd degree → "I/III". Name stays alphabetic ("C/E").
+    const cOverE = slashChord('C', diatonicLibrary('C')[0], 'E');
+    expect(cOverE.degreeLabel).toBe('I/III');
+    // Chromatic bass keeps ♭/# degree spelling: G/A♭ → bass ♭VI.
+    const gOverAb = slashChord('C', diatonicLibrary('C')[4], 'A♭'); // G is diatonic[4]
+    expect(gOverAb.displayName).toBe('G/A♭');
+    expect(gOverAb.degreeLabel).toBe('V/♭VI');
+  });
+});
+
+describe('degreeLabelFromOffset', () => {
+  it('maps semitone offsets to key-invariant Roman degrees', () => {
+    expect(degreeLabelFromOffset(0)).toBe('I');
+    expect(degreeLabelFromOffset(4)).toBe('III');
+    expect(degreeLabelFromOffset(6)).toBe('#IV');
+    expect(degreeLabelFromOffset(8)).toBe('♭VI');
+    expect(degreeLabelFromOffset(10)).toBe('♭VII');
+    expect(degreeLabelFromOffset(12)).toBe('I'); // wraps
   });
 });
 

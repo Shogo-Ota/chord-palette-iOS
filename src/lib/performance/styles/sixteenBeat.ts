@@ -14,10 +14,11 @@ export const SIXTEEN_BEAT: StylePreset = {
   displayName: '16 Beat',
   beatsPerBar: 4,
   stepsPerBar: 16, // 16th-note grid
-  // Syncopated comp: strong on beats, plus the "e/a" pushes into 2 and 4.
+  // Tidied 16th comp: each beat head plus its "a" (4th 16th) push — tight and even,
+  // deliberately not over-packed. Beat heads carry the weight; the "a"s add drive.
   chord: {
-    hits: [H, B, B, H, H, B, B, H, H, B, B, H, H, B, B, B],
-    accent: [1.0, 0.4, 0.4, 0.55, 0.7, 0.4, 0.4, 0.55, 0.85, 0.4, 0.4, 0.55, 0.7, 0.4, 0.4, 0.5],
+    hits: [H, B, B, H, H, B, B, H, H, B, B, H, H, B, B, H],
+    accent: [1.0, 0.4, 0.4, 0.55, 0.7, 0.4, 0.4, 0.55, 0.85, 0.4, 0.4, 0.55, 0.7, 0.4, 0.4, 0.55],
   },
   bass: {
     hits: [H, B, B, B, B, B, H, B, H, B, B, B, B, B, H, B],
@@ -56,4 +57,6 @@ export const SIXTEEN_BEAT: StylePreset = {
   },
   gate: { min: 0.72, max: 0.92, sustain: 'normal' },
   roundRobin: 4,
+  // The "a" pushes lean into the following chord a 16th–8th early.
+  anticipation: { maxLeadBeats: 0.5 },
 };

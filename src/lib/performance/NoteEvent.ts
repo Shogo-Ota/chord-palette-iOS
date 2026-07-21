@@ -14,10 +14,21 @@
 export type Articulation = 'normal' | 'legato' | 'staccato' | 'tie' | 'pedal' | 'ghost';
 
 /**
- * Which voice/instrument a note belongs to. Kept as a small closed union so the
- * engine and tests are type-safe, while remaining trivially extensible.
+ * The five core voices every style preset always defines patterns/velocity/
+ * microtiming for. Kept as its own closed union so a `StylePreset`'s
+ * `Record<CoreTrackId, …>` maps stay exhaustive without being forced to spell out
+ * the optional `top` voice (which falls back to the `chord` settings).
  */
-export type TrackId = 'chord' | 'bass' | 'kick' | 'snare' | 'hat';
+export type CoreTrackId = 'chord' | 'bass' | 'kick' | 'snare' | 'hat';
+
+/**
+ * Which voice/instrument a note belongs to. Extends the core voices with the
+ * optional `top` (最上声部) voice used for role separation (design §4): when a
+ * style defines a `top` pattern, the highest chord tone is re-articulated on its
+ * own rhythm so bass / mid body / top voice never share one identical rhythm. The
+ * `top` voice has no dedicated velocity/microtiming spec — it inherits `chord`'s.
+ */
+export type TrackId = CoreTrackId | 'top';
 
 /**
  * The minimal performance contract. Every field is resolved by the engine — a

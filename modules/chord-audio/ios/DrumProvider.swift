@@ -10,25 +10,23 @@ protocol DrumProvider: AnyObject {
   func sample(groove: String, beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float
 }
 
-/// Synth (808-style) drum voices arranged into the 7 MVP grooves (requirements
-/// §5.6): pop8 / pop16 / rock8 / rock16 / soul16 / jazzSwing / bossaNova.
-/// Not sampled, but each groove uses distinct voices, velocities and (for jazz)
-/// triplet swing so the character is clearly audible and stays in sync.
+/// Synth (808-style) drum voices arranged into the 6 MVP grooves (requirements
+/// §5.6): pop8 / pop16 / rock8 / rock16 / soul16 / bossaNova.
+/// Not sampled, but each groove uses distinct voices and velocities so the character
+/// is clearly audible and stays in sync. The rhythm (which voice, when) comes from the
+/// shared `DrumKit`; this class only owns how a voice SOUNDS (oscillator/noise
+/// synthesis in `voiceSample`).
 final class SynthDrumProvider: DrumProvider {
-  private enum Voice { case kick, snare, hatClosed, hatOpen, ride, rim }
-  private struct Hit { let beat: Double; let voice: Voice; let vel: Float }
-
   /// Groove id → pre-resolved hit list. Built ONCE at init so the real-time
   /// `sample(...)` never allocates (rebuilding the pattern per sample was starving
   /// the audio render callback). Read-only after init ⇒ safe to read on the audio
   /// thread without a lock.
-  private let patterns: [String: [Hit]]
-  private let fallback: [Hit]
+  private let patterns: [String: [DrumHit]]
+  private let fallback: [DrumHit]
 
   init() {
-    let keys = ["pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "jazzSwing", "bossaNova"]
-    var p = [String: [Hit]]()
-    for k in keys { p[k] = Self.pattern(for: k) }
+    var p = [String: [DrumHit]]()
+    for k in DrumKit.grooveIds { p[k] = DrumKit.hits(for: k) }
     patterns = p
     fallback = p["pop8"] ?? []
   }
@@ -46,87 +44,9 @@ final class SynthDrumProvider: DrumProvider {
     return out * 0.6
   }
 
-  // MARK: - Groove patterns (1 bar / 4 beats)
-
-  /// Straight hats every `step` beats, accented on the downbeats.
-  private static func hats(_ voice: Voice, step: Double, vel: Float, accent: Float) -> [Hit] {
-    var out = [Hit]()
-    var b = 0.0
-    while b < 4.0 - 1e-9 {
-      let onDownbeat = abs(b.rounded() - b) < 1e-9
-      out.append(Hit(beat: b, voice: voice, vel: onDownbeat ? accent : vel))
-      b += step
-    }
-    return out
-  }
-
-  private static func pattern(for groove: String) -> [Hit] {
-    switch groove {
-    case "pop8", "pop8-min":
-      return [
-        Hit(beat: 0, voice: .kick, vel: 0.9), Hit(beat: 2, voice: .kick, vel: 0.85),
-        Hit(beat: 1, voice: .snare, vel: 0.9), Hit(beat: 3, voice: .snare, vel: 0.9),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.45, accent: 0.6)
-
-    case "pop16":
-      return [
-        Hit(beat: 0, voice: .kick, vel: 0.9), Hit(beat: 2, voice: .kick, vel: 0.85),
-        Hit(beat: 2.5, voice: .kick, vel: 0.5),
-        Hit(beat: 1, voice: .snare, vel: 0.9), Hit(beat: 3, voice: .snare, vel: 0.9),
-      ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.58)
-
-    case "rock8":
-      return [
-        Hit(beat: 0, voice: .kick, vel: 1.0), Hit(beat: 2, voice: .kick, vel: 0.95),
-        Hit(beat: 1, voice: .snare, vel: 0.98), Hit(beat: 3, voice: .snare, vel: 0.98),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.6, accent: 0.72)
-
-    case "rock16":
-      return [
-        Hit(beat: 0, voice: .kick, vel: 1.0), Hit(beat: 1.5, voice: .kick, vel: 0.7),
-        Hit(beat: 2, voice: .kick, vel: 0.95),
-        Hit(beat: 1, voice: .snare, vel: 0.98), Hit(beat: 3, voice: .snare, vel: 0.98),
-      ] + hats(.hatClosed, step: 0.25, vel: 0.52, accent: 0.66)
-
-    case "soul16":
-      // Backbeat + syncopated kick + ghost-note snares for a soulful pocket.
-      return [
-        Hit(beat: 0, voice: .kick, vel: 0.9), Hit(beat: 2.5, voice: .kick, vel: 0.72),
-        Hit(beat: 1, voice: .snare, vel: 0.95), Hit(beat: 3, voice: .snare, vel: 0.95),
-        Hit(beat: 1.75, voice: .snare, vel: 0.3), Hit(beat: 3.75, voice: .snare, vel: 0.3),
-      ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.55)
-
-    case "jazzSwing":
-      // Classic swing ride (triplet feel: off-beats at 2/3), hi-hat on 2 & 4,
-      // feathered kick. Ride is the character voice.
-      return [
-        Hit(beat: 0, voice: .ride, vel: 0.7),
-        Hit(beat: 1, voice: .ride, vel: 0.66), Hit(beat: 1.0 + 2.0 / 3.0, voice: .ride, vel: 0.5),
-        Hit(beat: 2, voice: .ride, vel: 0.7),
-        Hit(beat: 3, voice: .ride, vel: 0.66), Hit(beat: 3.0 + 2.0 / 3.0, voice: .ride, vel: 0.5),
-        Hit(beat: 1, voice: .hatOpen, vel: 0.4), Hit(beat: 3, voice: .hatOpen, vel: 0.4),
-        Hit(beat: 0, voice: .kick, vel: 0.22), Hit(beat: 1, voice: .kick, vel: 0.2),
-        Hit(beat: 2, voice: .kick, vel: 0.22), Hit(beat: 3, voice: .kick, vel: 0.2),
-      ]
-
-    case "bossaNova":
-      // Surdo-style kick, cross-stick (rim) clave, straight 8th hats.
-      return [
-        Hit(beat: 0, voice: .kick, vel: 0.72), Hit(beat: 1.5, voice: .kick, vel: 0.6),
-        Hit(beat: 2, voice: .kick, vel: 0.72), Hit(beat: 3.5, voice: .kick, vel: 0.6),
-        Hit(beat: 0, voice: .rim, vel: 0.72), Hit(beat: 1.5, voice: .rim, vel: 0.62),
-        Hit(beat: 2.5, voice: .rim, vel: 0.66), Hit(beat: 3, voice: .rim, vel: 0.6),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.32, accent: 0.42)
-
-    default:
-      // Unknown id → safe default (Pop 8beat).
-      return pattern(for: "pop8")
-    }
-  }
-
   // MARK: - Voice synthesis
 
-  private func voiceSample(_ voice: Voice, t: Double, frame: Int64) -> Float {
+  private func voiceSample(_ voice: DrumVoice, t: Double, frame: Int64) -> Float {
     switch voice {
     case .kick:
       // Body: pitched sine drop. Attack click (audit P1-1) restores presence on

@@ -27,8 +27,8 @@ import type { ChordDuration } from '@/types';
 export type ActionState = 'hidden' | 'ready' | 'loading';
 
 /**
- * How the single Play/Pause CTA should behave/appear:
- *   - `'empty'`  → progression is empty; transform to "最初のコードを選ぶ" (no dead-end).
+ * How the single Play/Pause CTA should behave:
+ *   - `'empty'`  → progression is empty; Play is a no-op (hint lives near the library).
  *   - `'pause'`  → currently playing; the CTA pauses.
  *   - `'play'`   → stopped/paused; the CTA starts/resumes.
  */
@@ -112,20 +112,14 @@ export function computeChordContext(input: ChordContextInput): ChordContextActio
 export type UseEditorActionsOptions = {
   /** Current transport state (owned by the screen's audio listeners). */
   playbackState: PlaybackState;
-  /**
-   * Called when Play is pressed on an EMPTY progression. The View wires this to
-   * "open the chord picker" so the empty-Play button transforms instead of
-   * dead-ending (§5 UNAVAILABLE = TRANSFORM).
-   */
-  onRequestFirstChord?: () => void;
-  /** Called when Play should actually toggle playback (non-empty progression). */
+  /** Called when Play should toggle playback (non-empty progression). */
   onTogglePlayback?: () => void;
 };
 
 export type EditorActions = {
   visibleActions: VisibleActions;
   chordContext: ChordContextActions;
-  /** Play handler honoring the empty→transform contract. */
+  /** Play handler; no-ops when the progression is empty. */
   onPlayPause: () => void;
   /* Chord-context handlers — thin delegates to the shared session (no new logic). */
   duplicateSelected: () => void;
@@ -142,7 +136,7 @@ export type EditorActions = {
  */
 export function useEditorActions(options: UseEditorActionsOptions): EditorActions {
   const s = useEditorSession();
-  const { playbackState, onRequestFirstChord, onTogglePlayback } = options;
+  const { playbackState, onTogglePlayback } = options;
 
   const visibleActions = useMemo(
     () => computeVisibleActions(s, playbackState),
@@ -152,9 +146,9 @@ export function useEditorActions(options: UseEditorActionsOptions): EditorAction
   const chordContext = useMemo(() => computeChordContext(s), [s]);
 
   const onPlayPause = useCallback(() => {
-    if (visibleActions.play.mode === 'empty') onRequestFirstChord?.();
-    else onTogglePlayback?.();
-  }, [visibleActions.play.mode, onRequestFirstChord, onTogglePlayback]);
+    if (visibleActions.play.mode === 'empty') return;
+    onTogglePlayback?.();
+  }, [visibleActions.play.mode, onTogglePlayback]);
 
   const moveSelectedLeft = useCallback(() => session.moveSelected(-1), []);
   const moveSelectedRight = useCallback(() => session.moveSelected(1), []);

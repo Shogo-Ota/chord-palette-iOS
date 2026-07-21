@@ -7,8 +7,6 @@ import { colors, radius, spacing } from '@/theme/tokens';
 export type CPTransportBarProps = {
   playing: boolean;
   loading?: boolean;
-  /** Empty progression → Play transforms into "最初のコードを選ぶ" (no dead-end). */
-  emptyMode?: boolean;
   /** Hide when no undo history (UNAVAILABLE=HIDE). */
   showUndo?: boolean;
   /** Hide when fewer than 2 chords (future Loop). */
@@ -23,7 +21,6 @@ export type CPTransportBarProps = {
 export function CPTransportBar({
   playing,
   loading,
-  emptyMode,
   showUndo,
   showLoop,
   loopOn,
@@ -38,10 +35,10 @@ export function CPTransportBar({
           <Pressable
             onPress={onUndo}
             accessibilityRole="button"
-            accessibilityLabel="元に戻す"
+            accessibilityLabel="ひとつ戻す"
             hitSlop={8}
             style={styles.glyph}>
-            <Icon name="rewind" size={20} color={colors.textMuted} />
+            <Icon name="undo" size={20} color={colors.textMuted} />
           </Pressable>
         ) : (
           <View style={styles.glyphSpacer} />
@@ -50,7 +47,6 @@ export function CPTransportBar({
       <CPPlayPauseButton
         playing={playing}
         loading={loading}
-        emptyMode={emptyMode}
         onPress={onPlayPause}
       />
       <View style={styles.side}>
@@ -61,7 +57,7 @@ export function CPTransportBar({
             accessibilityLabel={loopOn ? 'ループ解除' : 'ループ'}
             hitSlop={8}
             style={[styles.glyph, loopOn && styles.glyphOn]}>
-            <Icon name="skipForward" size={20} color={loopOn ? colors.primaryBlue : colors.textMuted} />
+            <Icon name="loop" size={20} color={loopOn ? colors.primaryBlue : colors.textMuted} />
           </Pressable>
         ) : (
           <View style={styles.glyphSpacer} />
@@ -79,7 +75,8 @@ const styles = StyleSheet.create({
     gap: spacing.s24,
     paddingVertical: spacing.s8,
   },
-  side: { width: 44, alignItems: 'center' },
+  /** Fixed side slots keep Undo left of Play and Loop right, even when hidden. */
+  side: { width: 44, alignItems: 'center', justifyContent: 'center' },
   glyph: {
     width: 44,
     height: 44,

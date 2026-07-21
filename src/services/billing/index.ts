@@ -1,10 +1,15 @@
 import { useSyncExternalStore } from 'react';
 
 import { ADMIN_UNLOCK } from '@/config/admin';
+import { isAdminMode, subscribeAdminMode } from '@/features/admin/adminMode';
+import { env } from '@/lib/env';
 import { NO_ENTITLEMENTS, type Entitlements } from '@/lib/entitlements';
 import { logger } from '@/lib/logger';
+import type { Tier } from '@/lib/performance/tier';
+import { track as trackEvent, type AnalyticsEvent, type AnalyticsProps } from '@/services/analytics';
 
 import type { BillingProduct, BillingProvider, BillingResult } from './BillingProvider';
+import { DisabledBillingProvider } from './DisabledBillingProvider';
 import { MockBillingProvider } from './MockBillingProvider';
 
 /**
@@ -37,8 +42,18 @@ function subscribe(cb: () => void) {
   };
 }
 
+/**
+ * Entitlements as seen by the app. Admin/owner mode (entered via a hidden gesture
+ * on the home screen) unlocks every Pro feature in ALL builds — the owner wants
+ * full access without a purchase. `ALL_ENTITLEMENTS` is a stable constant so
+ * `useSyncExternalStore` never sees a new reference (no render loop).
+ */
+function effectiveEntitlements(): Entitlements {
+  return isAdminMode() ? ALL_ENTITLEMENTS : current;
+}
+
 function getSnapshot(): Entitlements {
-  return current;
+  return effectiveEntitlements();
 }
 
 /**
@@ -58,7 +73,21 @@ export function useEntitlements(): Entitlements {
 
 /** Non-reactive read for imperative code paths. */
 export function getEntitlements(): Entitlements {
-  return current;
+  return effectiveEntitlements();
+}
+
+/**
+ * Monetization tier derived from the current entitlements: Palette Pro → `pro`,
+ * otherwise `free`. Used by playback / export to pick the humanize/strum strength
+ * (see `lib/performance/tier.ts`). Non-reactive read for imperative code paths.
+ */
+export function getTier(): Tier {
+  return effectiveEntitlements().palettePro ? 'pro' : 'free';
+}
+
+/** Reactive tier for components (mirrors {@link getTier}). */
+export function useTier(): Tier {
+  return useEntitlements().palettePro ? 'pro' : 'free';
 }
 
 /* ------------------------------------------------------------------ */
@@ -80,8 +109,48 @@ function wireProvider(next: BillingProvider): void {
   emit();
 }
 
-// Default provider = Mock (Phase 5A). Seeded with the admin-aware initial state.
-wireProvider(new MockBillingProvider({ initial: current }));
+/**
+ * Choose the concrete provider for this build:
+ * - Real RevenueCat billing in store builds (production/preview) when an iOS API key
+ *   is present. `react-native-purchases` is loaded via `require` *inside* this branch
+ *   so it never enters the dev/Metro or jest module graph (keeps unit tests pure and
+ *   dev builds independent of the native SDK).
+ * - Mock everywhere else (dev/test, or any build missing the key) so the paywall stays
+ *   exercisable without the store.
+ */
+function createDefaultProvider(): BillingProvider {
+  if (!__DEV__ && env.revenueCatIosKey) {
+    try {
+      // Lazy load: keeps react-native-purchases out of the dev/Metro and jest graph.
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const mod = require('./RevenueCatBillingProvider') as typeof import('./RevenueCatBillingProvider');
+      return new mod.RevenueCatBillingProvider(env.revenueCatIosKey);
+    } catch (e) {
+      logger.error('RevenueCat provider unavailable; falling back to Mock', {
+        error: String(e),
+      });
+    }
+  }
+  // Misconfiguration guard: a store build (non-dev) MUST ship with the RevenueCat key.
+  // If it is missing we must NOT fall back to the Mock (which would "unlock" Pro for
+  // free and ship a non-functional IAP). Degrade safely to a provider that grants
+  // nothing and fails purchases, and surface it loudly so QA catches it pre-submission.
+  if (!__DEV__ && !env.revenueCatIosKey) {
+    logger.error(
+      'Production build is missing EXPO_PUBLIC_REVENUECAT_IOS_KEY — billing disabled (no free unlock)',
+    );
+    return new DisabledBillingProvider();
+  }
+  // Dev / test (or any Metro build): Mock so the paywall stays exercisable without the store.
+  return new MockBillingProvider({ initial: current });
+}
+
+// Default provider (admin-aware initial state seeds the Mock fallback).
+wireProvider(createDefaultProvider());
+
+// Mirror admin-mode toggles into the entitlement store: when the owner enters or
+// leaves admin mode, re-notify subscribers so Pro-gated UI unlocks/re-locks live.
+subscribeAdminMode(() => emit());
 
 /**
  * TEST ONLY: swap the billing provider (e.g. inject a preconfigured Mock).
@@ -92,15 +161,17 @@ export function __setBillingProviderForTests(next: BillingProvider): void {
 }
 
 /* ------------------------------------------------------------------ */
-/* Analytics (stub — forwarded to PostHog in M4)                       */
+/* Analytics (purchase funnel → PostHog)                               */
 /* ------------------------------------------------------------------ */
 
 /**
- * Analytics stub. Purchase-funnel events are logged only (no PostHog yet, M4).
- * Never sends project titles, notes, chord progressions, or video content (§5.12).
+ * Forward a purchase-funnel event to analytics (and a local log). Never sends project
+ * titles, notes, chord progressions, or video content (§5.12) — only the safe metadata
+ * passed by the callers below (productId / reason).
  */
-function track(event: string, props?: Record<string, unknown>): void {
+function track(event: AnalyticsEvent, props?: AnalyticsProps): void {
   logger.info(`analytics:${event}`, props);
+  trackEvent(event, props);
 }
 
 /* ------------------------------------------------------------------ */

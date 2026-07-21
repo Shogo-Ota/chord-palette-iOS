@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-native';
 
 import { Chip, ChipRow, SectionTitle, VolumeSlider } from '@/components/controls';
@@ -10,16 +10,28 @@ import {
   ACCOMPANIMENT_IDS,
   ACCOMPANIMENT_LABELS,
   ENABLED_INSTRUMENTS,
-  GROOVE_IDS,
-  GROOVE_LABELS,
   INSTRUMENT_LABELS,
 } from '@/data/labels';
+import {
+  GROOVE_MENU,
+  GROOVE_VARIANTS,
+  GROOVE_VARIANT_LABELS,
+  grooveForItem,
+  menuItem,
+  menuStateForGroove,
+  type GrooveVariant,
+} from '@/data/grooveMenu';
 import { sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
+import { useLiveSoundReapply } from '@/features/editor/useLiveSoundReapply';
+import { useStyleDraft } from '@/features/editor/useStyleDraft';
 import { logger } from '@/lib/logger';
 import { percentToVolume, volumeToPercent } from '@/lib/volume';
+import { track } from '@/services/analytics';
 import { audioService } from '@/services/audio';
+import { getTier } from '@/services/billing';
+import { setOctaveShiftPref, setReleaseCutPref } from '@/repositories/sessionPrefsRepository';
 import {
   VOLUME_DEFAULTS,
   type PlaybackState,
@@ -45,8 +57,15 @@ function rgba(hex: string, a: number) {
 export default function GrooveScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const chipW = (width - 40 - 16) / 3; // 3-col grid, 20 padH, 8 gap
+  const grooveChipW = (width - 40 - 8) / 2; // 2-col grid, 20 padH, 8 gap
   const s = useEditorSession();
+  const styleDraft = useStyleDraft();
+  // Audition source: committed session overlaid with the local style draft, so
+  // previewing never mutates the session until the user confirms.
+  const sound = useMemo(
+    () => ({ ...s, ...styleDraft.draft }),
+    [s, styleDraft.draft],
+  );
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const playing = playbackState === 'playing';
 
@@ -61,6 +80,8 @@ export default function GrooveScreen() {
   // NOT tear down here — that stays with the editor which owns the lifecycle.
   useEffect(() => {
     audioService.prepare().catch((e) => logger.error('Audio prepare failed', { error: String(e) }));
+    // Sync transport that may already be running under the editor stack.
+    setPlaybackState(audioService.getState());
     const sub = audioService.addStateListener((e) => setPlaybackState(e.state));
     return () => sub?.remove();
   }, []);
@@ -94,14 +115,24 @@ export default function GrooveScreen() {
 
   useEffect(
     () => () => {
-      Object.values(volThrottle.current).forEach((t) => {
-        if (t?.timer) clearTimeout(t.timer);
+      // Flush any pending persist so the last drag position (incl. 0%) is saved.
+      (['master', 'chord', 'drum'] as VolumeChannel[]).forEach((ch) => {
+        const t = volThrottle.current[ch];
+        if (t?.timer) {
+          clearTimeout(t.timer);
+          t.timer = null;
+        }
       });
+      const cached = audioService.getVolumes();
+      if (cached) {
+        void audioService.setVolume('chord', cached.chord).catch(() => undefined);
+        void audioService.setVolume('drum', cached.drum).catch(() => undefined);
+      }
     },
     [],
   );
 
-  function commitVolume(channel: VolumeChannel, value: number) {
+  function persistVolume(channel: VolumeChannel, value: number) {
     audioService
       .setVolume(channel, value)
       .catch((e) => logger.error('Volume set failed', { channel, error: String(e) }));
@@ -110,6 +141,8 @@ export default function GrooveScreen() {
   function handleVolumeChange(channel: VolumeChannel, percent: number) {
     const value = percentToVolume(percent);
     setVolumes((prev) => ({ ...prev, [channel]: value }));
+    // Mute/unmute must hit the engine immediately (0% = silent). Persist is throttled.
+    audioService.setVolumeLive(channel, value);
 
     const THROTTLE_MS = 60;
     const now = Date.now();
@@ -120,20 +153,37 @@ export default function GrooveScreen() {
       entry.timer = null;
     }
     const elapsed = now - entry.last;
-    if (elapsed >= THROTTLE_MS) {
+    if (elapsed >= THROTTLE_MS || value === 0 || value === 1) {
       entry.last = now;
-      commitVolume(channel, value);
+      persistVolume(channel, value);
     } else {
       entry.timer = setTimeout(() => {
         entry.last = Date.now();
         entry.timer = null;
-        commitVolume(channel, value);
+        persistVolume(channel, value);
       }, THROTTLE_MS - elapsed);
     }
   }
 
+  function handleReleaseCutChange(enabled: boolean) {
+    session.setReleaseCut(enabled);
+    setReleaseCutPref(enabled).catch((e) =>
+      logger.error('Release-cut persist failed', { error: String(e) }),
+    );
+  }
+
+  // Whole-arrangement register: 0 = original (bass floor C2), 1 = raised one
+  // octave (bass floor C3). Device preference (mirrors release-cut) — applied
+  // live via useLiveSoundReapply and to preview/export through the session.
+  function handleOctaveChange(octaves: number) {
+    session.setOctaveShift(octaves);
+    setOctaveShiftPref(octaves).catch((e) =>
+      logger.error('Octave-shift persist failed', { error: String(e) }),
+    );
+  }
+
+  // Audition the current draft (never touches the session).
   function togglePlayback() {
-    const cur = getSession();
     if (playing) {
       audioService.pause().catch((e) => logger.error('Audio pause failed', { error: String(e) }));
       return;
@@ -142,23 +192,50 @@ export default function GrooveScreen() {
       audioService.resume().catch((e) => logger.error('Audio resume failed', { error: String(e) }));
       return;
     }
-    if (cur.progression.length === 0) return;
+    if (sound.progression.length === 0) return;
     audioService
-      .play(sessionToPlaybackRequest(cur, true))
+      .play(sessionToPlaybackRequest(sound, true, getTier()))
       .catch((e) => logger.error('Audio play failed', { error: String(e) }));
   }
 
-  // NOTE: live re-apply of instrument/groove/accompaniment is owned by the editor
-  // screen (which stays mounted underneath this one), so changing a setting here
-  // rebuilds playback exactly once. Duplicating it here would double-trigger play().
+  // Confirm: reflect the draft into the session (drives the editor's play
+  // button), then return. Audition audio already matches the draft.
+  const handleConfirm = useCallback(() => {
+    styleDraft.commit();
+    router.back();
+  }, [styleDraft, router]);
+
+  // Discard (header back): if audio is auditioning an unconfirmed draft, rebuild
+  // from the committed session so the editor doesn't keep playing a stale style.
+  const handleBack = useCallback(() => {
+    if (styleDraft.isDirty && audioService.getState() === 'playing') {
+      const cur = getSession();
+      if (cur.progression.length > 0) {
+        const startBeat = audioService.getCurrentBeat();
+        audioService
+          .play({ ...sessionToPlaybackRequest(cur, true, getTier()), startBeat })
+          .catch((e) => logger.error('Audio restore failed', { error: String(e) }));
+      }
+    }
+    router.back();
+  }, [styleDraft.isDirty, router]);
+
+  // Rebuild (or audition) when the draft instrument / groove / accompaniment
+  // (or the device-level release-cut) changes.
+  useLiveSoundReapply(playbackState, true, sound);
+
+  // Map the draft groove onto the two-level selector (primary family + Pop/Rock).
+  const grooveMenuState = menuStateForGroove(styleDraft.draft.grooveId);
+  const grooveVariant: GrooveVariant = grooveMenuState.variant ?? 'pop';
+  const selectedGrooveItem = menuItem(grooveMenuState.itemKey);
 
   return (
     <ScreenScaffold>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
+        <Pressable style={styles.backBtn} onPress={handleBack} hitSlop={8}>
           <Icon name="chevronLeft" size={17} color={colors.textSecondary} strokeWidth={2.4} />
         </Pressable>
-        <Text style={styles.title}>再生 & グルーヴ</Text>
+        <Text style={styles.title}>スタイル（試聴）</Text>
       </View>
 
       {/* current progression */}
@@ -189,9 +266,9 @@ export default function GrooveScreen() {
         )}
       </View>
 
-      {/* big play */}
+      {/* audition (does not change the editor until 確定) */}
       <View style={styles.playPanel}>
-        <Icon name="skipBack" size={22} color={colors.textMuted} strokeWidth={2.2} />
+        <Text style={styles.auditionLabel}>試聴</Text>
         <Pressable onPress={togglePlayback} disabled={s.progression.length === 0}>
           <LinearGradient
             colors={primaryGradient}
@@ -205,40 +282,113 @@ export default function GrooveScreen() {
             <Icon name={playing ? 'pause' : 'play'} size={27} color="#fff" />
           </LinearGradient>
         </Pressable>
-        <Icon name="skipForward" size={22} color={colors.textMuted} strokeWidth={2.2} />
+        <Text style={styles.auditionHint}>
+          {s.progression.length === 0
+            ? 'コードを追加すると試聴できます'
+            : 'この画面で音を試せます（まだ反映されません）'}
+        </Text>
       </View>
+
+      {/* confirm: reflect the auditioned style to the editor's play button */}
+      <Pressable
+        onPress={handleConfirm}
+        accessibilityRole="button"
+        accessibilityLabel="この音色を確定してコード進行画面に反映"
+        style={styles.confirmWrap}>
+        <LinearGradient
+          colors={primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.confirmBtn, !styleDraft.isDirty && styles.confirmBtnIdle]}>
+          <Icon name="check" size={18} color="#fff" strokeWidth={2.6} />
+          <Text style={styles.confirmText}>この音色で確定</Text>
+        </LinearGradient>
+      </Pressable>
+      <Text style={styles.confirmNote}>
+        {styleDraft.isDirty ? '未確定の変更があります' : '現在の設定が反映済みです'}
+      </Text>
 
       {/* 音色（現在は Piano / E.Piano のみ有効。追加は labels.ts の ENABLED_INSTRUMENTS） */}
       <SectionTitle>音色</SectionTitle>
       <ChipRow
         options={ENABLED_INSTRUMENTS.map((id) => ({ key: id, label: INSTRUMENT_LABELS[id] }))}
-        value={s.instrumentId}
-        onChange={(k) => session.setInstrument(k as InstrumentId)}
-        style={{ marginBottom: 20 }}
+        value={styleDraft.draft.instrumentId}
+        onChange={(k) => {
+          styleDraft.setInstrument(k as InstrumentId);
+          track('instrument_selected', { instrument: k });
+        }}
+        style={{ marginBottom: 12 }}
         chipStyle={{ paddingVertical: 12 }}
       />
 
-      {/* ドラムグルーヴ */}
+      {/* サステイン: ON=音を伸ばす（内部 releaseCut=false）/ OFF=短く切る（releaseCut=true）。
+          リリースカットと同じ軸なので、UI はサステインに統一して表示だけ反転する。 */}
+      <SectionTitle>サステイン</SectionTitle>
+      <ChipRow
+        options={[
+          { key: 'on', label: 'ON' },
+          { key: 'off', label: 'OFF' },
+        ]}
+        value={s.releaseCut ? 'off' : 'on'}
+        onChange={(k) => handleReleaseCutChange(k === 'off')}
+        style={{ marginBottom: 20 }}
+      />
+
+      {/* 音域（オクターブ）: 標準=元の低め（最低音C2）/ +1oct=1オクターブ上げ（最低音C3）。
+          全体を平行移動するだけなので低音は常に本体の下に保たれる。 */}
+      <SectionTitle>音域（オクターブ）</SectionTitle>
+      <ChipRow
+        options={[
+          { key: '0', label: '標準' },
+          { key: '1', label: '+1 オクターブ' },
+        ]}
+        value={s.octaveShift >= 1 ? '1' : '0'}
+        onChange={(k) => handleOctaveChange(Number(k))}
+        style={{ marginBottom: 20 }}
+      />
+
+      {/* ドラムグルーヴ（8/16 Beat は Pop / Rock の強弱を下段で切替） */}
       <SectionTitle>ドラムグルーヴ</SectionTitle>
-      <View style={styles.grid}>
-        {GROOVE_IDS.map((id) => (
-          <Chip
-            key={id}
-            label={GROOVE_LABELS[id]}
-            active={id === s.grooveId}
-            onPress={() => session.setGroove(id)}
-            style={{ width: chipW }}
-            textStyle={{ fontSize: 12 }}
+      <View style={styles.grooveSection}>
+        <View style={styles.grid}>
+          {GROOVE_MENU.map((item) => (
+            <Chip
+              key={item.key}
+              label={item.label}
+              active={item.key === grooveMenuState.itemKey}
+              onPress={() => {
+                const g = grooveForItem(item, grooveVariant);
+                styleDraft.setGroove(g);
+                track('groove_selected', { groove: g });
+              }}
+              style={{ width: grooveChipW }}
+              textStyle={{ fontSize: 13 }}
+            />
+          ))}
+        </View>
+        {selectedGrooveItem?.variants && (
+          <ChipRow
+            options={GROOVE_VARIANTS.map((v) => ({ key: v, label: GROOVE_VARIANT_LABELS[v] }))}
+            value={grooveVariant}
+            onChange={(k) => {
+              const variants = selectedGrooveItem.variants;
+              if (variants) {
+                const g = variants[k as GrooveVariant];
+                styleDraft.setGroove(g);
+                track('groove_selected', { groove: g });
+              }
+            }}
+            style={{ marginTop: 8 }}
           />
-        ))}
+        )}
       </View>
 
       {/* 伴奏パターン */}
       <SectionTitle>伴奏パターン</SectionTitle>
       <ChipRow
         options={ACCOMPANIMENT_IDS.map((id) => ({ key: id, label: ACCOMPANIMENT_LABELS[id] }))}
-        value={s.accompanimentPattern}
-        onChange={(k) => session.setAccompaniment(k as AccompanimentPattern)}
+        value={styleDraft.draft.accompanimentPattern}
+        onChange={(k) => styleDraft.setAccompaniment(k as AccompanimentPattern)}
         style={{ marginBottom: 20 }}
       />
 
@@ -290,15 +440,51 @@ const styles = StyleSheet.create({
   progArrow: { color: colors.textFaintest },
 
   playPanel: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 22,
+    gap: 10,
     backgroundColor: colors.surfacePanel,
     borderWidth: 1,
     borderColor: colors.borderSubtle,
     borderRadius: radius['2xl'],
     paddingVertical: 16,
+    marginBottom: 12,
+  },
+  auditionLabel: {
+    fontSize: 11,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.textMuted,
+    letterSpacing: 1.5,
+  },
+  auditionHint: { fontSize: 11.5, color: colors.textFaint, fontFamily: font.medium },
+  confirmWrap: { borderRadius: radius.pill, marginBottom: 6 },
+  confirmBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 15,
+    borderRadius: radius.pill,
+    shadowColor: colors.primary,
+    shadowOpacity: 0.65,
+    shadowRadius: 16,
+    shadowOffset: { width: 0, height: 8 },
+  },
+  confirmBtnIdle: { shadowOpacity: 0.25 },
+  confirmText: {
+    fontSize: 15,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.white,
+    letterSpacing: 0.4,
+  },
+  confirmNote: {
+    fontSize: 11,
+    color: colors.textFaint,
+    fontFamily: font.medium,
+    textAlign: 'center',
     marginBottom: 20,
   },
   bigPlay: {
@@ -315,7 +501,8 @@ const styles = StyleSheet.create({
   bigPlayActive: { opacity: 0.85 },
   bigPlayDisabled: { opacity: 0.4 },
 
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 20 },
+  grooveSection: { marginBottom: 20 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 
   volPanel: {
     backgroundColor: colors.surfacePanel,

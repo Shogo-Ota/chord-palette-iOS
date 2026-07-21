@@ -11,6 +11,12 @@ export type ExportSegment = {
   degreeLabel: string;
   /** Highlight / chord-name color (chord-function color), "#rrggbb". */
   colorHex: string;
+  /**
+   * Small key-context indicator color ("#rrggbb"), shown near the chord name only
+   * when the progression spans multiple keys (modulation). Omitted for single-key
+   * progressions so the visual stays clean.
+   */
+  keyTintHex?: string;
   /** MIDI notes highlighted on the keyboard. */
   midiNotes: number[];
   /** Segment start / length in seconds on the (looped) export timeline. */
@@ -30,6 +36,8 @@ export type ExportPlan = {
   keyLabel: string;
   bpm: number;
   bars: number;
+  /** Number of chords in one progression pass, so the encoder shows one dot per chord. */
+  chordsPerCycle: number;
   watermark: boolean;
   /** Lowest / highest MIDI key drawn on the keyboard. */
   keyboardLow: number;

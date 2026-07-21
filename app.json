@@ -41,6 +41,8 @@
       "expo-font",
       "expo-web-browser",
       "expo-sqlite",
+      "expo-localization",
+      "@sentry/react-native",
       [
         "expo-media-library",
         {

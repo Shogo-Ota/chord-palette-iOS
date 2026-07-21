@@ -1,19 +1,27 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
+import * as WebBrowser from 'expo-web-browser';
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Image, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@/config/legal';
 import { logger } from '@/lib/logger';
+import { track } from '@/services/analytics';
 import { billingService, type BillingProduct } from '@/services/billing';
 import { colors, font, radius, rainbow } from '@/theme/tokens';
 
 const APP_ICON = require('../../assets/icon/app-icon.png');
 
-/** Fallback price shown until the provider's localized offering resolves. */
-const FALLBACK_PRICE = '¥490';
+/**
+ * Fallback price shown until the provider's localized offering resolves. Kept in
+ * sync with the App Store price point (¥500 — Apple has no ¥490 JPY tier). The
+ * live price always comes from the store (`product.priceString`); this only shows
+ * briefly before offerings load or if they fail to resolve.
+ */
+const FALLBACK_PRICE = '¥500';
 const PERIOD_SUFFIX = '/ 月';
 
 type Perk = { glyph: string; color: string; bg: string; border: string; title: string; desc: string; included: boolean };
@@ -33,18 +41,12 @@ const PERKS: Perk[] = [
     bg: 'rgba(124,92,255,0.15)',
     border: 'rgba(124,92,255,0.35)',
     title: '追加プリセット',
-    desc: '丸サ / Just The Two of Us / Pop Punk / 小室 / City Pop',
+    desc: 'ジャンル別の本格コード進行プリセットを多数追加',
     included: true,
   },
-  {
-    glyph: '♫',
-    color: colors.textDim,
-    bg: 'rgba(255,255,255,0.05)',
-    border: colors.borderSubtle,
-    title: '追加音色',
-    desc: 'アコギ / エレキ / ストリングス（今後のアップデートで追加）',
-    included: false,
-  },
+  // NOTE: Do not advertise not-yet-available features on the paywall (App Store
+  // Guideline 2.3.x). The "追加音色（予定）" perk is intentionally omitted until it
+  // ships; re-add it here with `included: true` when the feature is live.
 ];
 
 type Status = 'idle' | 'purchasing' | 'restoring' | 'success' | 'error';
@@ -54,6 +56,11 @@ export default function PaywallScreen() {
   const [product, setProduct] = useState<BillingProduct | null>(null);
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Anonymous paywall-view event (once per screen mount).
+  useEffect(() => {
+    track('paywall_viewed');
+  }, []);
 
   // Load the localized subscription price from the provider (never hardcoded).
   useEffect(() => {
@@ -71,6 +78,12 @@ export default function PaywallScreen() {
 
   const busy = status === 'purchasing' || status === 'restoring';
   const priceString = product?.priceString ?? FALLBACK_PRICE;
+
+  const openLegal = (url: string) => {
+    WebBrowser.openBrowserAsync(url).catch((e) =>
+      logger.error('Failed to open legal link', { error: String(e) }),
+    );
+  };
 
   const closeSoon = () => {
     setStatus('success');
@@ -236,9 +249,22 @@ export default function PaywallScreen() {
       </Pressable>
 
       <Text style={styles.footer}>
-        月額 {priceString} の自動更新サブスクリプションです。{'\n'}
-        いつでも解約でき、解約後は現在の請求期間の終了時にPro機能が無効になります。
+        Palette Pro は月額 {priceString} の自動更新サブスクリプションです。料金は購入確定時に
+        Apple ID に請求されます。現在の期間終了の24時間前までに自動更新をオフにしない限り自動的に
+        更新され、更新料金（{priceString} / 月）は期間終了前の24時間以内に請求されます。{'\n'}
+        購入後は App Store のアカウント設定からいつでも管理・解約でき、解約すると現在の請求期間の
+        終了時に Pro 機能が無効になります。
       </Text>
+
+      <View style={styles.legalRow}>
+        <Pressable hitSlop={8} onPress={() => openLegal(TERMS_OF_USE_URL)}>
+          <Text style={styles.legalLink}>利用規約</Text>
+        </Pressable>
+        <Text style={styles.legalDot}>・</Text>
+        <Pressable hitSlop={8} onPress={() => openLegal(PRIVACY_POLICY_URL)}>
+          <Text style={styles.legalLink}>プライバシーポリシー</Text>
+        </Pressable>
+      </View>
     </ScreenScaffold>
   );
 }
@@ -367,4 +393,20 @@ const styles = StyleSheet.create({
   restore: { alignItems: 'center', marginTop: 18, paddingVertical: 6 },
   restoreText: { fontSize: 13.5, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
   footer: { textAlign: 'center', fontSize: 10.5, color: colors.textFaint, marginTop: 14, lineHeight: 17 },
+  legalRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginTop: 10,
+    paddingBottom: 4,
+  },
+  legalLink: {
+    fontSize: 11.5,
+    color: colors.textMuted,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    textDecorationLine: 'underline',
+  },
+  legalDot: { fontSize: 11.5, color: colors.textFaint },
 });

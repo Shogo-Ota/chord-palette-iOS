@@ -1,6 +1,7 @@
-import { barKickFeelMs, msToBeat, trackOffsetMs } from '@/lib/performance/microtiming';
+import { barKickFeelMs, msToBeat, swingDelayBeats, trackOffsetMs } from '@/lib/performance/microtiming';
 import { EIGHT_BEAT } from '@/lib/performance/styles/eightBeat';
-import type { TrackId } from '@/lib/performance/NoteEvent';
+import type { CoreTrackId, TrackId } from '@/lib/performance/NoteEvent';
+import type { StylePreset } from '@/lib/performance/styles/types';
 
 const style = EIGHT_BEAT;
 const SEED = 4242;
@@ -10,6 +11,30 @@ describe('microtiming — ms↔beat conversion', () => {
     // 120 bpm ⇒ 500ms per beat, so 250ms = 0.5 beat.
     expect(msToBeat(250, 120)).toBeCloseTo(0.5, 9);
     expect(msToBeat(0, 120)).toBe(0);
+  });
+});
+
+describe('microtiming — swing delay (directed, not jitter)', () => {
+  // EIGHT_BEAT is an 8th grid: even steps are on-beats, odd steps are the "&" off-beats.
+  const swung: StylePreset = { ...EIGHT_BEAT, swing: { offbeatRatio: 2 / 3 } };
+
+  it('returns 0 for every step when the style does not swing', () => {
+    for (let step = 0; step < EIGHT_BEAT.stepsPerBar; step++) {
+      expect(swingDelayBeats(EIGHT_BEAT, step)).toBe(0);
+    }
+  });
+
+  it('pushes only the off-beat 8ths (the &) late by (offbeatRatio − 0.5) beats', () => {
+    // Odd steps (1,3,5,7) = the &s at beat .5 → delayed; even steps stay on the grid.
+    for (let step = 0; step < swung.stepsPerBar; step++) {
+      const expected = step % 2 === 1 ? 2 / 3 - 0.5 : 0;
+      expect(swingDelayBeats(swung, step)).toBeCloseTo(expected, 9);
+    }
+  });
+
+  it('scales with the swing ratio (straight = no delay)', () => {
+    const straight: StylePreset = { ...EIGHT_BEAT, swing: { offbeatRatio: 0.5 } };
+    expect(swingDelayBeats(straight, 1)).toBeCloseTo(0, 9);
   });
 });
 
@@ -29,7 +54,7 @@ describe('microtiming — kick-referenced correlation (not independent)', () => 
     for (let bar = 0; bar < 8; bar++) {
       const feel = barKickFeelMs(SEED, bar, style);
       for (let step = 1; step < style.stepsPerBar; step++) {
-        (['kick', 'bass', 'hat', 'snare', 'chord'] as TrackId[]).forEach((track) => {
+        (['kick', 'bass', 'hat', 'snare', 'chord'] as CoreTrackId[]).forEach((track) => {
           const jitter = trackOffsetMs(SEED, bar, step, track, style) - feel;
           const range = style.microtiming[track];
           expect(jitter).toBeGreaterThanOrEqual(range.min - 1e-9);

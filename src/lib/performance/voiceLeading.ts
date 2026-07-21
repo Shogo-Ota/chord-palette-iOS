@@ -16,6 +16,8 @@
  * yields the same output (design §4.3 "seed-derived only, never bare Math.random").
  */
 
+import type { Tier } from './tier';
+
 /** Tuning knobs for the voice-leading search. All have musical defaults. */
 export interface VoiceLeadingOptions {
   /**
@@ -50,6 +52,79 @@ export const DEFAULT_VOICE_LEADING_OPTIONS: VoiceLeadingOptions = {
   topWeight: 0.3,
   stepPenalty: 100,
 };
+
+/** Named inversion/octave aesthetics (design "aesthetic: voicing"). */
+export type VoicingAestheticId = 'balanced' | 'warmLow' | 'brightOpen' | 'proOpen';
+
+/**
+ * Named voicing aesthetics — the "inversion + octave placement" axis made explicit.
+ * Each is a variant of {@link VoiceLeadingOptions} the caller can opt into per feel.
+ *
+ *  - `balanced`   : the current default (register centered on the first chord, smooth
+ *                   motion). Referential identity to {@link DEFAULT_VOICE_LEADING_OPTIONS}
+ *                   so the default path is a guaranteed no-op / no regression.
+ *  - `warmLow`    : pulls the body toward a lower centre with a stronger register pull
+ *                   — a close, warm comp that sits under a vocal (fits calmer feels).
+ *  - `brightOpen` : lifts the centre and weights the top-line motion more — an open,
+ *                   singing upper voice (fits busier/driving feels).
+ *
+ * Ranges are conservative (still inside the mid-piano band) so no aesthetic pushes the
+ * comp into an unmusical register.
+ */
+export const VOICING_AESTHETICS: Record<VoicingAestheticId, VoiceLeadingOptions> = {
+  balanced: DEFAULT_VOICE_LEADING_OPTIONS,
+  warmLow: {
+    ...DEFAULT_VOICE_LEADING_OPTIONS,
+    // Floor kept at the default (45) so the bass/body split threshold (MIDI 48 in
+    // progressionToPerfChords) is not disturbed; the "low" character comes from the
+    // lower target centre + stronger register pull + lower ceiling, not a lower floor.
+    ceilMidi: 66,
+    targetCenterMidi: 52,
+    registerWeight: 0.5,
+  },
+  brightOpen: {
+    ...DEFAULT_VOICE_LEADING_OPTIONS,
+    floorMidi: 48,
+    ceilMidi: 76,
+    targetCenterMidi: 64,
+    topWeight: 0.5,
+  },
+  // Pro-quality "open, singing top" color (monetization tier — blueprint S2). A higher
+  // centre + ceiling and a strong top-line weight lift the upper voice so it sings, for
+  // the "oh, that sounds pro" one-tap upgrade. Floor stays at 48 so the bass/body split
+  // (MIDI 48 in progressionToPerfChords) is never disturbed. Pro tier only; free is
+  // unchanged.
+  proOpen: {
+    ...DEFAULT_VOICE_LEADING_OPTIONS,
+    floorMidi: 48,
+    ceilMidi: 79,
+    targetCenterMidi: 62,
+    topWeight: 0.55,
+  },
+};
+
+/**
+ * Feel + tier → voicing aesthetic.
+ *
+ * `pro` tier gets the pro-quality `proOpen` color uniformly (the monetization upgrade —
+ * blueprint S2/S8): one tap, an audibly more open/singing voicing. `free` keeps the
+ * conservative feel map — calmer `relaxed` → warm low, busy `driving` → bright open,
+ * everything else (incl. default `natural`) → `balanced` = the current output. Pure;
+ * returns a shared `VOICING_AESTHETICS` object so the free/`balanced` path is
+ * referentially the engine default (a guaranteed no-op for existing playback/export).
+ * Default `tier = 'free'` keeps every existing single-arg caller unchanged.
+ */
+export function voicingAestheticFor(accompaniment: string, tier: Tier = 'free'): VoiceLeadingOptions {
+  if (tier === 'pro') return VOICING_AESTHETICS.proOpen;
+  switch (accompaniment) {
+    case 'relaxed':
+      return VOICING_AESTHETICS.warmLow;
+    case 'driving':
+      return VOICING_AESTHETICS.brightOpen;
+    default:
+      return VOICING_AESTHETICS.balanced;
+  }
+}
 
 /** Floating-point comparison tolerance for deterministic tie-breaking. */
 const EPSILON = 1e-9;

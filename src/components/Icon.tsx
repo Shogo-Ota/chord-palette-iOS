@@ -21,7 +21,12 @@ export type IconName =
   | 'download'
   | 'share'
   | 'close'
-  | 'crown';
+  | 'crown'
+  | 'save'
+  | 'pencil'
+  | 'undo'
+  | 'loop'
+  | 'bookmark';
 
 type Props = {
   name: IconName;
@@ -176,6 +181,50 @@ export function Icon({ name, size = 20, color = '#9aa3b5', strokeWidth = 2, ...r
         <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
           <Path d="M3 8l4 3 5-6 5 6 4-3-1.6 11H4.6z" fill={color} />
           <Rect x={4} y={19.5} width={16} height={2.2} rx={1} fill={color} />
+        </Svg>
+      );
+    case 'save':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Path
+            d="M5 3h11l3 3v15a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"
+            {...stroke}
+            strokeLinecap="butt"
+          />
+          <Path d="M8 3v6h8V3M8 21v-7h8v7" {...stroke} strokeLinecap="butt" />
+        </Svg>
+      );
+    case 'pencil':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Path d="M12 20h9" {...stroke} />
+          <Path
+            d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"
+            {...stroke}
+            strokeLinecap="butt"
+          />
+        </Svg>
+      );
+    case 'undo':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Path d="M9 14L4 9l5-5" {...stroke} />
+          <Path d="M4 9h10a5 5 0 1 1 0 10h-3" {...stroke} />
+        </Svg>
+      );
+    case 'loop':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Path d="M17 1l4 4-4 4" {...stroke} />
+          <Path d="M3 11V9a4 4 0 0 1 4-4h14" {...stroke} />
+          <Path d="M7 23l-4-4 4-4" {...stroke} />
+          <Path d="M21 13v2a4 4 0 0 1-4 4H3" {...stroke} />
+        </Svg>
+      );
+    case 'bookmark':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" {...stroke} strokeLinecap="butt" />
         </Svg>
       );
     default:

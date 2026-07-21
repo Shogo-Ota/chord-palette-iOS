@@ -7,21 +7,40 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true"
+      },
       "ios": {
         "simulator": false
       }
     },
     "preview": {
       "distribution": "internal",
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_pvtOeoypbsxyNISsAmVzpTUxCvy",
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_uMw5t8USktRgC889pQRYxiT4anAiujzmfBeBZ8dbPLJM",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://us.i.posthog.com"
+      },
       "ios": {
         "simulator": false
       }
     },
     "production": {
-      "autoIncrement": true
+      "autoIncrement": true,
+      "env": {
+        "SENTRY_DISABLE_AUTO_UPLOAD": "true",
+        "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_pvtOeoypbsxyNISsAmVzpTUxCvy",
+        "EXPO_PUBLIC_POSTHOG_KEY": "phc_uMw5t8USktRgC889pQRYxiT4anAiujzmfBeBZ8dbPLJM",
+        "EXPO_PUBLIC_POSTHOG_HOST": "https://us.i.posthog.com"
+      }
     }
   },
   "submit": {
-    "production": {}
+    "production": {
+      "ios": {
+        "appleTeamId": "VC4Y4AWS2K"
+      }
+    }
   }
 }

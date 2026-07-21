@@ -51,6 +51,11 @@ export const audioService = {
     return (ChordAudioNative?.getState() as PlaybackState | undefined) ?? 'idle';
   },
 
+  /** Current playhead in beats. 0 when idle or when the binary lacks the API. */
+  getCurrentBeat(): number {
+    return ChordAudioNative?.getCurrentBeat?.() ?? 0;
+  },
+
   async prepare(): Promise<void> {
     if (!ChordAudioNative) return;
     await ChordAudioNative.prepare();
@@ -100,6 +105,17 @@ export const audioService = {
   },
 
   /**
+   * Hot-swap the chord voice without restarting transport. Returns true when the
+   * native binary supports the call; false means the caller should rebuild via
+   * `play({ …, startBeat })` instead.
+   */
+  async setInstrument(instrumentId: string): Promise<boolean> {
+    if (!ChordAudioNative?.setInstrument) return false;
+    await ChordAudioNative.setInstrument(instrumentId);
+    return true;
+  },
+
+  /**
    * Offline-render the looped progression to a temp audio file for video export.
    * Returns null when the native module is unavailable (JS export / Expo Go).
    */
@@ -133,11 +149,20 @@ export const audioService = {
     return cachedVolumes;
   },
 
-  /** Set a channel volume: apply to native immediately, then persist to SQLite. */
-  async setVolume(channel: VolumeChannel, value: number): Promise<void> {
+  /**
+   * Apply a channel volume to the native mixer immediately (no SQLite write).
+   * Use while dragging a slider so 0% mutes without waiting on persistence.
+   */
+  setVolumeLive(channel: VolumeChannel, value: number): void {
     const v = clampVolume(value);
     cachedVolumes = { ...(cachedVolumes ?? { master: 1, chord: 1, drum: 1 }), [channel]: v };
     applyVolumeToNative(channel, v);
+  },
+
+  /** Set a channel volume: apply to native immediately, then persist to SQLite. */
+  async setVolume(channel: VolumeChannel, value: number): Promise<void> {
+    const v = clampVolume(value);
+    this.setVolumeLive(channel, v);
     await setVolumeLevel(channel, v);
   },
 

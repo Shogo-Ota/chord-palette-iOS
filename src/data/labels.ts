@@ -32,38 +32,43 @@ export const PRO_INSTRUMENTS: InstrumentId[] = ['acousticGuitar', 'electricGuita
  */
 export const ENABLED_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
 
-/** Drum grooves (all free — requirements §6). */
+/**
+ * Drum grooves (all free — requirements §6). "8/16 Beat" collapse Pop & Rock into a
+ * single family with a Pop(soft)/Rock(strong) intensity switch in the UI (see
+ * `src/data/grooveMenu.ts`); these labels carry the variant in parentheses so the
+ * editor's STYLE chip reads the same as the selector.
+ */
 export const GROOVE_LABELS: Record<GrooveId, string> = {
-  pop8: 'Pop 8beat',
-  pop16: 'Pop 16beat',
-  rock8: 'Rock 8beat',
-  rock16: 'Rock 16beat',
-  soul16: 'Soul 16beat',
-  jazzSwing: 'Jazz Swing',
+  pop8: '8 Beat (Pop)',
+  rock8: '8 Beat (Rock)',
+  pop16: '16 Beat (Pop)',
+  rock16: '16 Beat (Rock)',
+  soul16: 'Soul',
   bossaNova: 'Bossa Nova',
 };
 
 export const GROOVE_IDS: GrooveId[] = [
   'pop8',
-  'pop16',
   'rock8',
+  'pop16',
   'rock16',
   'soul16',
-  'jazzSwing',
   'bossaNova',
 ];
 
 /** Accompaniment patterns (all free — requirements §6). */
 export const ACCOMPANIMENT_LABELS: Record<AccompanimentPattern, string> = {
   block: 'Block',
-  eightBeat: '8beat',
-  sixteenthBeat: '16beat',
   arpeggio: 'Arpeggio',
+  natural: 'Natural',
+  driving: 'Driving',
+  relaxed: 'Relaxed',
 };
 
 export const ACCOMPANIMENT_IDS: AccompanimentPattern[] = [
   'block',
-  'eightBeat',
-  'sixteenthBeat',
   'arpeggio',
+  'natural',
+  'driving',
+  'relaxed',
 ];

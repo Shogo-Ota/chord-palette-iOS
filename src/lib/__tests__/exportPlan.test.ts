@@ -60,6 +60,93 @@ describe('buildSegments (tile progression across the clip)', () => {
   });
 });
 
+describe('buildSegments — multi-key indicator (keyTintHex)', () => {
+  it('omits keyTintHex for a single-key progression', () => {
+    const segs = buildSegments(PROG, 'C', 120, 4);
+    expect(segs.every((s) => s.keyTintHex === undefined)).toBe(true);
+  });
+
+  it('tints each segment by its key context when the progression modulates', () => {
+    const prog = [
+      ev({ rootOffset: 0, suffix: '', displayName: 'C', durationBeats: 4, keyContext: 'C' }),
+      ev({ rootOffset: 7, suffix: '', displayName: 'G', durationBeats: 4, keyContext: 'G' }),
+    ];
+    const segs = buildSegments(prog, 'C', 120, 4);
+    // Base key (first-seen 'C') = neutral; modulated 'G' = a distinct solid color.
+    expect(segs[0].keyTintHex).toBeDefined();
+    expect(segs[1].keyTintHex).toBeDefined();
+    expect(segs[1].keyTintHex).not.toBe(segs[0].keyTintHex);
+  });
+});
+
+describe('buildSegments — short (½ / ¼ bar) chords stay in sync', () => {
+  // 120 BPM → 0.5 s/beat. Bar = 4 beats = 2 s, ½ bar = 2 beats = 1 s, ¼ bar = 1 beat = 0.5 s.
+  it('lays half-bar chords at 1 s each', () => {
+    const prog = [
+      ev({ rootOffset: 0, suffix: '', displayName: 'C', durationBeats: 2 }),
+      ev({ rootOffset: 7, suffix: '', displayName: 'G', durationBeats: 2 }),
+    ];
+    const segs = buildSegments(prog, 'C', 120, 2);
+    expect(segs).toHaveLength(2);
+    expect(segs[0]).toMatchObject({ displayName: 'C', startSec: 0, durationSec: 1 });
+    expect(segs[1]).toMatchObject({ displayName: 'G', startSec: 1, durationSec: 1 });
+  });
+
+  it('lays quarter-bar chords at 0.5 s each', () => {
+    const prog = [
+      ev({ rootOffset: 0, suffix: '', displayName: 'C', durationBeats: 1 }),
+      ev({ rootOffset: 5, suffix: '', displayName: 'F', durationBeats: 1 }),
+      ev({ rootOffset: 7, suffix: '', displayName: 'G', durationBeats: 1 }),
+      ev({ rootOffset: 9, suffix: 'm', displayName: 'Am', durationBeats: 1 }),
+    ];
+    const segs = buildSegments(prog, 'C', 120, 2);
+    expect(segs).toHaveLength(4);
+    expect(segs.map((s) => s.startSec)).toEqual([0, 0.5, 1, 1.5]);
+    expect(segs.every((s) => Math.abs(s.durationSec - 0.5) < 1e-9)).toBe(true);
+  });
+
+  it('keeps mixed durations contiguous and non-overlapping', () => {
+    const prog = [
+      ev({ rootOffset: 0, suffix: '', displayName: 'C', durationBeats: 4 }),
+      ev({ rootOffset: 9, suffix: 'm', displayName: 'Am', durationBeats: 2 }),
+      ev({ rootOffset: 5, suffix: '', displayName: 'F', durationBeats: 1 }),
+      ev({ rootOffset: 7, suffix: '', displayName: 'G', durationBeats: 1 }),
+    ];
+    // totalBeats = 8 → 4 s at 120 BPM.
+    const segs = buildSegments(prog, 'C', 120, 4);
+    expect(segs).toHaveLength(4);
+    // Each segment starts exactly where the previous one ended (no gaps/overlaps).
+    for (let i = 1; i < segs.length; i += 1) {
+      expect(segs[i].startSec).toBeCloseTo(segs[i - 1].startSec + segs[i - 1].durationSec, 9);
+    }
+    expect(segs.map((s) => s.startSec)).toEqual([0, 2, 3, 3.5]);
+  });
+});
+
+describe('buildExportPlan — one dot per chord regardless of chord length', () => {
+  it('sets chordsPerCycle to the chord count for short/mixed progressions', () => {
+    const prog = [
+      ev({ rootOffset: 0, suffix: '', displayName: 'C', durationBeats: 1 }),
+      ev({ rootOffset: 5, suffix: '', displayName: 'F', durationBeats: 2 }),
+      ev({ rootOffset: 7, suffix: '', displayName: 'G', durationBeats: 1 }),
+    ];
+    const totalBeats = prog.reduce((s, e) => s + e.durationBeats, 0);
+    const plan = buildExportPlan({
+      progression: prog,
+      key: 'C',
+      bpm: 120,
+      title: 'Short',
+      durationSec: (totalBeats * 60) / 120,
+      audioUri: 'file:///a.m4a',
+      watermark: false,
+    });
+    // One dot per chord even though chords are ¼ / ½ bar.
+    expect(plan.chordsPerCycle).toBe(prog.length);
+    // The dot-cycle segments match the chord count exactly (one pass, no clipping loss).
+    expect(plan.segments).toHaveLength(prog.length);
+  });
+});
+
 describe('buildExportPlan', () => {
   it('fills plan metadata and defaults', () => {
     const plan = buildExportPlan({

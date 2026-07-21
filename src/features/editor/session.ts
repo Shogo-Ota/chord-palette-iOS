@@ -1,15 +1,19 @@
 import { useSyncExternalStore } from 'react';
 
-import { PRESETS } from '@/data/presets';
+import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
 import { buildPresetProgression } from '@/lib/presets';
-import { canAdd, canSetDuration } from '@/lib/progression';
-import { rebaseProgression, transposeProgression } from '@/lib/transpose';
+import { appendWithinCap, canAdd, canSetDuration } from '@/lib/progression';
+import { rebaseProgression, relabelDegreesForKey, transposeProgression } from '@/lib/transpose';
 import {
   createProject,
   getProject,
   saveProject,
 } from '@/repositories/projectRepository';
-import { setLastProjectId } from '@/repositories/sessionPrefsRepository';
+import {
+  DEFAULT_OCTAVE_SHIFT,
+  DEFAULT_RELEASE_CUT,
+  setLastProjectId,
+} from '@/repositories/sessionPrefsRepository';
 import type {
   AccompanimentPattern,
   ChordDuration,
@@ -36,6 +40,19 @@ export type EditorSession = {
   instrumentId: InstrumentId;
   grooveId: GrooveId;
   accompanimentPattern: AccompanimentPattern;
+  /**
+   * When true (default), chord-voice notes end at the gate (tight cut).
+   * When false, chord/bass/top durations are extended so the piano rings.
+   * Device preference — not part of the Project document.
+   */
+  releaseCut: boolean;
+  /**
+   * Whole-arrangement register offset in octaves (device preference, not part of
+   * the Project). 0 = original (bass floor C2); 1 = raised one octave (bass floor
+   * C3, body in the middle-C comping band). Applied uniformly to playback,
+   * preview and export so the bass always stays an octave below the body.
+   */
+  octaveShift: number;
   progression: ChordEvent[];
   history: ChordEvent[][];
   selected: number;
@@ -49,10 +66,12 @@ function initialState(): EditorSession {
     projectId: null,
     title: '新しい進行',
     key: 'C',
-    tempoBpm: 120,
+    tempoBpm: 100,
     instrumentId: 'piano',
     grooveId: 'pop8',
-    accompanimentPattern: 'block',
+    accompanimentPattern: DEFAULT_ACCOMPANIMENT,
+    releaseCut: DEFAULT_RELEASE_CUT,
+    octaveShift: DEFAULT_OCTAVE_SHIFT,
     progression: [],
     history: [],
     selected: -1,
@@ -102,45 +121,46 @@ export function getSession(): EditorSession {
 
 /* ---- lifecycle ---------------------------------------------------- */
 
-/** Free starter progression so new sessions aren't a blank canvas (Phase D). */
-function starterProgression(key: MajorKey = 'C'): ChordEvent[] {
-  const royal = PRESETS.find((p) => p.id === 'jpop-royal');
-  if (!royal) return [];
-  return buildPresetProgression(royal, key).map((e, i) => ({
-    ...e,
-    id: `starter-${i}`,
-  }));
-}
-
 /**
- * Reset to a new composition with a playable Starter Progression (J-POP 王道).
- * Blank canvas is intentionally avoided (UI refinement §6 retention).
+ * Reset to a new, EMPTY composition (blank canvas). The user builds the progression
+ * from scratch — no auto-filled starter chords.
  */
 export function startNew(): void {
-  const progression = starterProgression('C');
+  const { releaseCut, octaveShift } = state;
   state = {
     ...initialState(),
+    releaseCut,
+    octaveShift,
     title: 'はじめての進行',
-    tempoBpm: 104,
-    accompanimentPattern: 'eightBeat',
-    progression,
-    selected: progression.length > 0 ? 0 : -1,
+    tempoBpm: 100,
+    accompanimentPattern: DEFAULT_ACCOMPANIMENT,
+    progression: [],
+    selected: -1,
     dirty: true,
   };
   emit();
 }
 
 function applyProject(p: Project): void {
+  const { releaseCut, octaveShift } = state;
   state = {
     ...initialState(),
+    releaseCut,
+    octaveShift,
     projectId: p.id,
     title: p.title,
     key: p.key,
     tempoBpm: p.tempoBpm,
     instrumentId: p.instrumentId,
     grooveId: p.grooveId,
-    accompanimentPattern: p.accompanimentPattern,
-    progression: p.chordEvents,
+    // Migrate any legacy persisted id (eightBeat/sixteenthBeat) on read.
+    accompanimentPattern: normalizeAccompaniment(p.accompanimentPattern),
+    // Respell for the project's own key — a no-op for names, but canonicalizes any
+    // legacy slash-chord degree labels ("I/E") to the degree denominator ("I/III").
+    // Preserve any saved per-chord keyContext; legacy events fall back to the key.
+    progression: transposeProgression(p.chordEvents, p.key).map((e) =>
+      e.keyContext ? e : { ...e, keyContext: p.key },
+    ),
     selected: p.chordEvents.length > 0 ? 0 : -1,
     createdAt: p.createdAt,
   };
@@ -174,13 +194,17 @@ function toProject(id: string): Project {
 
 /** Persist the session (create on first save, update thereafter). */
 export async function save(): Promise<void> {
+  // Empty title → keep a readable default on the home list.
+  if (state.title.trim().length === 0) {
+    set({ title: 'はじめての進行' });
+  }
   if (state.projectId) {
     const saved = await saveProject(toProject(state.projectId));
     set({ projectId: saved.id, createdAt: saved.createdAt, dirty: false });
     await setLastProjectId(saved.id);
   } else {
     const created = await createProject({
-      title: state.title,
+      title: state.title.trim() || 'はじめての進行',
       key: state.key,
       tempoBpm: state.tempoBpm,
       instrumentId: state.instrumentId,
@@ -208,11 +232,38 @@ export function setSelected(index: number): void {
   set({ selected: index });
 }
 
-/** Append a chord (built from a library pick). Respects the 16-bar cap. */
+/**
+ * Append a chord (built from a library pick). Respects the 16-bar cap.
+ * Leaves selection cleared so consecutive library taps keep appending
+ * (explicit strip tap is required to enter replace mode).
+ */
 export function addChord(chord: Omit<ChordEvent, 'id'>): void {
   if (!canAdd(state.progression, chord.durationBeats)) return;
-  const next = [...state.progression, { ...chord, id: nextEventId() }];
-  commit(next, next.length - 1);
+  const next = [...state.progression, { ...chord, id: nextEventId(), keyContext: state.key }];
+  commit(next, -1);
+}
+
+/**
+ * Replace the selected progression chord in place (duration & id kept).
+ * Used for live edit: diatonic swap, variation decoration, slash bass, etc.
+ */
+export function replaceSelected(
+  chord: Omit<ChordEvent, 'id' | 'durationBeats'> & { durationBeats?: ChordDuration },
+): void {
+  if (state.selected < 0) return;
+  const cur = state.progression[state.selected];
+  if (!cur) return;
+  const next = state.progression.map((e, i) =>
+    i === state.selected
+      ? {
+          ...chord,
+          id: cur.id,
+          durationBeats: chord.durationBeats ?? cur.durationBeats,
+          keyContext: state.key,
+        }
+      : e,
+  );
+  commit(next, state.selected);
 }
 
 export function setDuration(beats: ChordDuration): void {
@@ -248,6 +299,12 @@ export function deleteSelected(): void {
   commit(next, Math.min(state.selected, next.length - 1));
 }
 
+/** Clear every chord (history-aware so Undo can restore). */
+export function clearProgression(): void {
+  if (state.progression.length === 0) return;
+  commit([], -1);
+}
+
 export function undo(): void {
   if (state.history.length === 0) return;
   const prev = state.history[state.history.length - 1];
@@ -261,6 +318,13 @@ export function undo(): void {
 
 /* ---- settings ----------------------------------------------------- */
 
+/** Rename the current project / session (shown on the home list after save). */
+export function setTitle(title: string): void {
+  const next = title.slice(0, 60);
+  if (next === state.title) return;
+  set({ title: next, dirty: true });
+}
+
 /**
  * Change the reference key WITHOUT moving placed chords: each chord keeps its
  * absolute pitch and name; only the diatonic library/scale reference changes.
@@ -273,7 +337,13 @@ export function setKey(key: MajorKey): void {
 /** Transpose the whole song to `key` (moves every placed chord). */
 export function transposeTo(key: MajorKey): void {
   if (key === state.key) return;
-  set({ key, progression: transposeProgression(state.progression, key), dirty: true });
+  // Moving the whole song lands every chord in one key — collapse any prior
+  // multi-key contexts so the arrangement reads as a single key again.
+  const progression = transposeProgression(state.progression, key).map((e) => ({
+    ...e,
+    keyContext: key,
+  }));
+  set({ key, progression, dirty: true });
 }
 
 export function setTempo(bpm: number): void {
@@ -292,6 +362,23 @@ export function setAccompaniment(accompanimentPattern: AccompanimentPattern): vo
   set({ accompanimentPattern, dirty: true });
 }
 
+/**
+ * Toggle piano release cut. Device preference — does not mark the project dirty.
+ */
+export function setReleaseCut(releaseCut: boolean): void {
+  if (releaseCut === state.releaseCut) return;
+  set({ releaseCut });
+}
+
+/**
+ * Set the whole-arrangement octave offset. Device preference — does not mark the
+ * project dirty (mirrors {@link setReleaseCut}).
+ */
+export function setOctaveShift(octaveShift: number): void {
+  if (octaveShift === state.octaveShift) return;
+  set({ octaveShift });
+}
+
 /* ---- presets ------------------------------------------------------ */
 
 /**
@@ -303,14 +390,56 @@ export function startFromPreset(preset: Preset, targetKey: MajorKey = state.key)
   const events = buildPresetProgression(preset, targetKey).map((e) => ({
     ...e,
     id: nextEventId(),
+    keyContext: targetKey,
   }));
+  const { releaseCut, octaveShift } = state;
   state = {
     ...initialState(),
+    releaseCut,
+    octaveShift,
     title: preset.name,
     key: targetKey,
+    tempoBpm: 100,
+    accompanimentPattern: DEFAULT_ACCOMPANIMENT,
     progression: events,
     selected: events.length > 0 ? 0 : -1,
     dirty: true,
   };
   emit();
+}
+
+/* ---- append (recall a stored progression onto the tail) ----------- */
+
+/** Result of an append: how many chords landed vs were dropped at the 16-bar cap. */
+export type AppendOutcome = { appended: number; dropped: number };
+
+/** Assign fresh ids, clip to the 16-bar cap, and commit (history-aware / undoable). */
+function appendPrepared(incoming: Omit<ChordEvent, 'id'>[]): AppendOutcome {
+  // Appended chords are rendered/rebased into the current session key, so they
+  // belong to it (appendProject relabels, appendPreset renders in `state.key`).
+  const withIds = incoming.map((e) => ({ ...e, id: nextEventId(), keyContext: state.key }));
+  const { events, appended, dropped } = appendWithinCap(state.progression, withIds);
+  if (appended > 0) commit(events, state.selected < 0 ? state.progression.length : state.selected);
+  return { appended, dropped };
+}
+
+/**
+ * Append a saved project's progression onto the tail at ABSOLUTE pitch: the chords
+ * keep their original sound (rebased from the project's key into the current key so
+ * voicing stays correct), with degree labels re-read in the current key's context.
+ * Respects the 16-bar cap (extra chords are dropped and reported).
+ */
+export function appendProject(project: Project): AppendOutcome {
+  const rebased = rebaseProgression(project.chordEvents, project.key, state.key).map(
+    relabelDegreesForKey,
+  );
+  return appendPrepared(rebased);
+}
+
+/**
+ * Append a degree-based preset onto the tail, rendered in the current session key
+ * (a preset has no absolute pitch of its own). Respects the 16-bar cap.
+ */
+export function appendPreset(preset: Preset): AppendOutcome {
+  return appendPrepared(buildPresetProgression(preset, state.key));
 }

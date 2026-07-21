@@ -18,6 +18,8 @@ struct PlaybackRequestRecord: Record {
   @Field var drumPatternId: String = "pop8-min"
   @Field var accompaniment: String = "block"
   @Field var instrument: String = "piano"
+  /// Seek into the loop on start (0 = from the top). Used for live re-apply.
+  @Field var startBeat: Double = 0
 }
 
 /// JS-facing single-chord audition request.
@@ -82,6 +84,10 @@ public class ChordAudioModule: Module {
       return self.controller.state.rawValue
     }
 
+    Function("getCurrentBeat") { () -> Double in
+      return self.controller.currentBeat()
+    }
+
     AsyncFunction("prepare") {
       try self.controller.prepare()
     }
@@ -118,7 +124,8 @@ public class ChordAudioModule: Module {
         events: events,
         drumPattern: req.drumPatternId,
         accompaniment: req.accompaniment,
-        instrument: req.instrument
+        instrument: req.instrument,
+        startBeat: req.startBeat
       )
     }
 
@@ -160,6 +167,11 @@ public class ChordAudioModule: Module {
 
     AsyncFunction("stop") {
       self.controller.stop()
+    }
+
+    /// Hot-swap the chord voice without restarting transport (position preserved).
+    AsyncFunction("setInstrument") { (instrumentId: String) in
+      self.controller.setInstrument(instrumentId)
     }
 
     Function("setMasterVolume") { (value: Double) in

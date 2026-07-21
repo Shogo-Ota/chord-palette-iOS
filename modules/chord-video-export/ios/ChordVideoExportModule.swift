@@ -6,6 +6,8 @@ struct ExportSegmentRecord: Record {
   @Field var displayName: String = ""
   @Field var degreeLabel: String = ""
   @Field var colorHex: String = "#ffffff"
+  /// Small key-context indicator color; empty when the progression is single-key.
+  @Field var keyTintHex: String = ""
   @Field var midiNotes: [Int] = []
   @Field var startSec: Double = 0
   @Field var durationSec: Double = 0
@@ -22,6 +24,7 @@ struct ExportPlanRecord: Record {
   @Field var keyLabel: String = ""
   @Field var bpm: Int = 120
   @Field var bars: Int = 1
+  @Field var chordsPerCycle: Int = 0
   @Field var watermark: Bool = false
   @Field var keyboardLow: Int = 36
   @Field var keyboardHigh: Int = 60
@@ -52,6 +55,7 @@ public class ChordVideoExportModule: Module {
           displayName: s.displayName,
           degreeLabel: s.degreeLabel,
           color: Self.color(fromHex: s.colorHex),
+          keyTint: s.keyTintHex.isEmpty ? nil : Self.color(fromHex: s.keyTintHex),
           midiNotes: s.midiNotes,
           startSec: s.startSec,
           durationSec: s.durationSec
@@ -64,6 +68,7 @@ public class ChordVideoExportModule: Module {
         keyLabel: planRecord.keyLabel,
         bpm: planRecord.bpm,
         bars: planRecord.bars,
+        chordsPerCycle: planRecord.chordsPerCycle,
         watermark: planRecord.watermark,
         keyboardLow: planRecord.keyboardLow,
         keyboardHigh: planRecord.keyboardHigh,

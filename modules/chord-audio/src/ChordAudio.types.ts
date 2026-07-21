@@ -26,6 +26,8 @@ export interface ChordAudioNativeModule {
   isAvailable(): boolean;
   getVersion(): string;
   getState(): PlaybackState;
+  /** Current playhead in beats (0 when idle). Older binaries may omit this. */
+  getCurrentBeat?(): number;
 
   prepare(): Promise<void>;
   teardown(): Promise<void>;
@@ -42,6 +44,9 @@ export interface ChordAudioNativeModule {
   pause(): Promise<void>;
   resume(): Promise<void>;
   stop(): Promise<void>;
+
+  /** Hot-swap chord voice without restarting playback (position preserved). */
+  setInstrument?(instrumentId: string): Promise<void>;
 
   setMasterVolume(value: number): void;
   setChordVolume(value: number): void;

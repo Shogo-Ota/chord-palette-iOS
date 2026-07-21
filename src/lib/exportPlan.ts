@@ -6,10 +6,11 @@
  */
 
 import { midiNoteName } from '@/data/music';
+import { eventKey, isMultiKey, keyColorSlots } from '@/lib/keyColor';
 import { chordMidiNotes } from '@/lib/voicing';
 import { secondsPerBeat } from '@/services/audio/schedule';
 import type { ExportPlan, ExportSegment } from '@/services/videoExport/types';
-import { functionColor } from '@/theme/tokens';
+import { colors, functionColor, keyTintSolids } from '@/theme/tokens';
 import type { ChordEvent, MajorKey } from '@/types';
 
 export type BuildExportPlanParams = {
@@ -20,6 +21,8 @@ export type BuildExportPlanParams = {
   durationSec: number;
   audioUri: string;
   watermark: boolean;
+  /** Whole-arrangement register offset in octaves (mirrors playback/preview). */
+  octaveShift?: number;
   width?: number;
   height?: number;
   fps?: number;
@@ -41,10 +44,17 @@ export function buildSegments(
   key: MajorKey,
   bpm: number,
   durationSec: number,
+  octaveShift = 0,
 ): ExportSegment[] {
   if (progression.length === 0 || durationSec <= 0) return [];
   const spb = secondsPerBeat(bpm);
   const segments: ExportSegment[] = [];
+  // Multi-key indicator: color each segment by its key-context slot (0 = base key
+  // → neutral). Only emitted when the progression actually modulates.
+  const multi = isMultiKey(progression, key);
+  const slots = keyColorSlots(progression, key);
+  const slotHex = (slot: number): string =>
+    slot <= 0 ? colors.textFaint : keyTintSolids[(slot - 1) % keyTintSolids.length];
   let t = 0;
   let i = 0;
   // Guard against pathological zero-length events causing an infinite loop.
@@ -57,7 +67,8 @@ export function buildSegments(
       displayName: ev.displayName,
       degreeLabel: ev.degreeLabel,
       colorHex: functionColor[ev.function],
-      midiNotes: chordMidiNotes(ev, key),
+      keyTintHex: multi ? slotHex(slots.get(eventKey(ev, key)) ?? 0) : undefined,
+      midiNotes: chordMidiNotes(ev, key, octaveShift),
       startSec: t,
       durationSec: clipped,
     });
@@ -76,6 +87,7 @@ export function buildExportPlan(params: BuildExportPlanParams): ExportPlan {
     durationSec,
     audioUri,
     watermark,
+    octaveShift = 0,
     width = 1080,
     height = 1920,
     fps = 30,
@@ -85,6 +97,9 @@ export function buildExportPlan(params: BuildExportPlanParams): ExportPlan {
 
   const totalBeats = progression.reduce((sum, e) => sum + e.durationBeats, 0);
   const bars = Math.max(1, Math.ceil(totalBeats / 4));
+  // Shift the visible keyboard window in lock-step with the notes so the drawn
+  // range still frames the (now raised) voicing rather than empty low keys.
+  const kbShift = 12 * octaveShift;
 
   return {
     width,
@@ -96,10 +111,11 @@ export function buildExportPlan(params: BuildExportPlanParams): ExportPlan {
     keyLabel: key,
     bpm,
     bars,
+    chordsPerCycle: progression.length,
     watermark,
-    keyboardLow,
-    keyboardHigh,
+    keyboardLow: keyboardLow + kbShift,
+    keyboardHigh: keyboardHigh + kbShift,
     pitchClassNames: pitchClassNamesFor(key),
-    segments: buildSegments(progression, key, bpm, durationSec),
+    segments: buildSegments(progression, key, bpm, durationSec, octaveShift),
   };
 }

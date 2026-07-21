@@ -1,12 +1,12 @@
 import { diatonicLibrary, secondaryDominants, slashChord, variationChord } from '@/data/music';
-import { PRESETS } from '@/data/presets';
 import { buildPresetProgression } from '@/lib/presets';
+import { SAMPLE_PRESETS } from '@/lib/testFixtures/samplePresets';
 import { rebaseProgression, transposeEvent, transposeProgression } from '@/lib/transpose';
 import { chordMidiNotes } from '@/lib/voicing';
 import type { ChordEvent, MajorKey } from '@/types';
 
 function preset(id: string) {
-  const p = PRESETS.find((x) => x.id === id);
+  const p = SAMPLE_PRESETS.find((x) => x.id === id);
   if (!p) throw new Error(`missing preset ${id}`);
   return p;
 }
@@ -112,10 +112,12 @@ describe('transposeEvent — library-built chords', () => {
   it('transposes a slash chord and respells its bass: C/E → G becomes G/B', () => {
     const cOverE = slashChord('C', diatonicLibrary('C')[0], 'E'); // C/E
     expect(cOverE.displayName).toBe('C/E');
+    // The bass denominator is a DEGREE (key-invariant), not a note name.
+    expect(cOverE.degreeLabel).toBe('I/III');
     const moved = transposeEvent(eventFromLibrary(cOverE), 'G');
-    expect(moved.displayName).toBe('G/B');
+    expect(moved.displayName).toBe('G/B'); // name respelled for the new key
     expect(moved.bassNote).toBe('B');
-    expect(moved.degreeLabel).toBe('I/B');
+    expect(moved.degreeLabel).toBe('I/III'); // degree stays the same across keys
   });
 
   it('leaves legacy events without degree data unchanged', () => {

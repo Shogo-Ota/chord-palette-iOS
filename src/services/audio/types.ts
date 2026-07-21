@@ -71,8 +71,13 @@ export type PlaybackRequest = {
    * chord event 1:1 (Performance Engine output; no re-humanize).
    */
   accompaniment: string;
-  /** Instrument id → native maps to a General MIDI program (SoundFont). */
+  /** Instrument id → native maps to a voice (SoundFont or dedicated EP synth). */
   instrument: string;
+  /**
+   * Optional seek into the loop on start (beats from head). Omit / 0 = from the
+   * top. Used when live-reapplying timbre so the playhead does not rewind.
+   */
+  startBeat?: number;
 };
 
 /** Single-chord audition (chord-card tap). */
@@ -81,7 +86,7 @@ export type PreviewRequest = {
   velocity: number;
   lengthBeats?: number;
   bpm?: number;
-  /** Instrument id → native maps to a General MIDI program (SoundFont). */
+  /** Instrument id → native maps to a voice (SoundFont or dedicated EP synth). */
   instrument: string;
 };
 

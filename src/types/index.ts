@@ -17,7 +17,14 @@ export type MajorKey =
   | 'B♭'
   | 'B';
 
-export type AccompanimentPattern = 'block' | 'eightBeat' | 'sixteenthBeat' | 'arpeggio';
+/**
+ * User-facing accompaniment choice (design §3 3-layer redesign). The two "beat"
+ * ids (8beat/16beat) were retired from the UI in favour of the three data-driven
+ * *feels* (natural/driving/relaxed) resolved by the Feel layer; `block`/`arpeggio`
+ * still map 1:1 to their concrete styles. Legacy persisted values are migrated on
+ * read via `normalizeAccompaniment` (src/lib/accompaniment.ts) — never here.
+ */
+export type AccompanimentPattern = 'block' | 'arpeggio' | 'natural' | 'driving' | 'relaxed';
 export type InstrumentId = 'piano' | 'ePiano' | 'acousticGuitar' | 'electricGuitar' | 'strings';
 export type GrooveId =
   | 'pop8'
@@ -25,7 +32,6 @@ export type GrooveId =
   | 'rock8'
   | 'rock16'
   | 'soul16'
-  | 'jazzSwing'
   | 'bossaNova';
 
 /** A diatonic chord candidate offered for the currently selected key. */
@@ -109,6 +115,14 @@ export type ChordEvent = {
   variation?: string;
   /** Source category (diatonic / variation / secondaryDominant / …). */
   category?: ChordCategory;
+  /**
+   * Key in which this chord was entered — the key its `degreeLabel` is meaningful
+   * in. Stamped on insert/preset/append and updated on transpose; a change-mode
+   * key switch leaves existing events' `keyContext` intact, which is how a single
+   * progression can span multiple keys (modulation). Optional for backward
+   * compatibility: legacy events without it fall back to the project/session key.
+   */
+  keyContext?: MajorKey;
 };
 
 export type PresetCategory = 'free' | 'pro';
@@ -124,6 +138,12 @@ export type PresetChord = {
   function: ChordFunction;
   degreeLabel: string;
   durationBeats: ChordDuration;
+  /** Semitones of the bass above the tonic, for slash/on-chords (optional). */
+  bassOffset?: number;
+  /** Spelled bass note captured at authoring time (optional, recomputed on transpose). */
+  bassNote?: string;
+  /** Variation id when the source chord was a decorated variation (optional). */
+  variation?: string;
 };
 
 export type Preset = {

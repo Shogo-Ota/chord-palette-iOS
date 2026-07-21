@@ -1,5 +1,5 @@
 import { useFocusEffect, useRouter } from 'expo-router';
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { EmptyState } from '@/components/EmptyState';
@@ -8,18 +8,61 @@ import { MetaPill } from '@/components/controls';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
+import { loadAdminMode, setAdminMode, toggleAdminMode, useAdminMode } from '@/features/admin/adminMode';
 import { startNew } from '@/features/editor/session';
 import { logger } from '@/lib/logger';
 import { toSummary } from '@/lib/projectSummary';
-import { deleteProject, duplicateProject, getProject, listProjects } from '@/repositories/projectRepository';
-import { clearLastProjectId, getLastProjectId } from '@/repositories/sessionPrefsRepository';
+import { deleteProject, duplicateProject, listProjects } from '@/repositories/projectRepository';
+import { track } from '@/services/analytics';
 import { colors, font, radius } from '@/theme/tokens';
 import type { Project, ProjectSummary } from '@/types';
 
 export default function ProjectListScreen() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[] | null>(null);
-  const [lastId, setLastId] = useState<string | null>(null);
+  const isAdmin = useAdminMode();
+  const [adminToast, setAdminToast] = useState<string | null>(null);
+
+  useEffect(() => {
+    loadAdminMode();
+  }, []);
+
+  const flashToast = (msg: string) => {
+    setAdminToast(msg);
+    setTimeout(() => setAdminToast(null), 1800);
+  };
+
+  // Hidden owner entry: tap the wordmark 7× in quick succession (each tap must
+  // land within 1.2s of the previous) to toggle admin mode. No visible control,
+  // so casual users won't discover it; the owner just knows the gesture.
+  const secretTap = useRef<{ count: number; timer: ReturnType<typeof setTimeout> | null }>({
+    count: 0,
+    timer: null,
+  });
+  const onSecretTap = () => {
+    const s = secretTap.current;
+    s.count += 1;
+    if (s.timer) clearTimeout(s.timer);
+    s.timer = setTimeout(() => {
+      s.count = 0;
+      s.timer = null;
+    }, 1200);
+    if (s.count >= 7) {
+      s.count = 0;
+      if (s.timer) clearTimeout(s.timer);
+      s.timer = null;
+      toggleAdminMode()
+        .then((now) => flashToast(now ? '管理者モード ON' : '管理者モード OFF'))
+        .catch((e) => logger.error('Admin toggle failed', { error: String(e) }));
+    }
+  };
+
+  // Visible only while admin is ON — a one-tap exit (entry stays hidden).
+  const leaveAdmin = () => {
+    setAdminMode(false)
+      .then(() => flashToast('管理者モード OFF'))
+      .catch((e) => logger.error('Admin off failed', { error: String(e) }));
+  };
 
   const refresh = useCallback(() => {
     listProjects()
@@ -28,20 +71,6 @@ export default function ProjectListScreen() {
         logger.error('Failed to load projects', { error: String(e) });
         setProjects([]);
       });
-    getLastProjectId()
-      .then(async (id) => {
-        if (!id) {
-          setLastId(null);
-          return;
-        }
-        const p = await getProject(id);
-        if (p) setLastId(id);
-        else {
-          await clearLastProjectId();
-          setLastId(null);
-        }
-      })
-      .catch(() => setLastId(null));
   }, []);
 
   useFocusEffect(
@@ -51,13 +80,9 @@ export default function ProjectListScreen() {
   );
 
   const createNew = () => {
+    track('project_created');
     startNew();
     router.push('/editor');
-  };
-
-  const resumeLast = () => {
-    if (!lastId) return;
-    router.push(`/editor?id=${lastId}`);
   };
 
   const confirmDelete = (project: Project) => {
@@ -97,22 +122,30 @@ export default function ProjectListScreen() {
   return (
     <ScreenScaffold>
       <View style={styles.header}>
-        <Wordmark size={22} withIcon iconSize={38} />
-        <Pressable
-          style={styles.iconBtn}
-          hitSlop={8}
-          onPress={() => {
-            // DEV-only shortcut to the Phase 2A audio verification screen.
-            if (__DEV__) router.push('/dev-audio');
-          }}>
-          <Icon name="gear" size={19} color={colors.textMuted} strokeWidth={1.9} />
+        <Pressable onPress={onSecretTap} hitSlop={6} accessibilityRole="image">
+          <Wordmark size={22} withIcon iconSize={38} />
         </Pressable>
+        {isAdmin ? (
+          <Pressable
+            style={[styles.iconBtn, styles.iconBtnAdmin]}
+            hitSlop={8}
+            accessibilityRole="button"
+            accessibilityLabel="管理者モードを解除"
+            onPress={leaveAdmin}>
+            <Icon name="gear" size={19} color={colors.purpleText} strokeWidth={1.9} />
+            <View style={styles.adminDot} />
+          </Pressable>
+        ) : null}
       </View>
 
-      <Text style={styles.heroHint}>コードを並べて、すぐに鳴らす</Text>
-      {lastId ? (
-        <PrimaryButton label="続きから編集" icon="play" onPress={resumeLast} />
+      {adminToast ? (
+        <View style={styles.adminToast} accessibilityLiveRegion="polite">
+          <Icon name="check" size={13} color={colors.successText} strokeWidth={2.6} />
+          <Text style={styles.adminToastText}>{adminToast}</Text>
+        </View>
       ) : null}
+
+      <Text style={styles.heroHint}>コードを並べて、すぐに鳴らす</Text>
       <PrimaryButton label="新しい進行を作る" icon="plus" onPress={createNew} />
 
       <Pressable onPress={() => router.push('/presets')} style={styles.presetLink} hitSlop={6}>
@@ -121,13 +154,13 @@ export default function ProjectListScreen() {
       </Pressable>
 
       <View style={styles.listHeader}>
-        <Text style={styles.listHeaderTitle}>最近のプロジェクト</Text>
+        <Text style={styles.listHeaderTitle}>メモリー</Text>
         <Text style={styles.listHeaderCount}>{summaries.length}件</Text>
       </View>
 
       {projects === null ? null : summaries.length === 0 ? (
         <EmptyState
-          title="まだプロジェクトがありません"
+          title="まだメモリーがありません"
           hint="上のボタンから曲を始め、下のコードをタップして再生まで30秒で体験できます"
         />
       ) : (
@@ -149,6 +182,7 @@ export default function ProjectListScreen() {
           ))}
         </View>
       )}
+
     </ScreenScaffold>
   );
 }
@@ -172,26 +206,32 @@ function ProjectCard({
       style={({ pressed }) => [styles.card, pressed && styles.pressed]}>
       <View style={[styles.stripe, { backgroundColor: project.accent }]} />
       <View style={styles.cardTopRow}>
-        <Text style={styles.cardTitle} numberOfLines={1}>
-          {project.title}
-        </Text>
-        <Text style={styles.cardTime}>{project.updatedLabel}</Text>
+        <View style={styles.cardTitleBlock}>
+          <Text style={styles.cardTitle} numberOfLines={1} ellipsizeMode="tail">
+            {project.title}
+          </Text>
+          <Text style={styles.cardTime} numberOfLines={1}>
+            {project.updatedLabel}
+          </Text>
+        </View>
+        <Pressable
+          onPress={onDelete}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel="削除"
+          accessibilityHint={`${project.title} を削除`}
+          style={({ pressed }) => [styles.deleteBtn, pressed && styles.deleteBtnPressed]}>
+          <Icon name="trash" size={17} color={colors.textMuted} strokeWidth={2} />
+        </Pressable>
       </View>
       <View style={styles.metaRow}>
         <MetaPill label={project.keyLabel} />
         <MetaPill label={`${project.tempoBpm} BPM`} />
         <MetaPill label={`${project.bars}小節`} />
       </View>
-      <Text style={styles.cardChords}>{project.chordsDisplay}</Text>
-      <Pressable
-        onPress={onDelete}
-        hitSlop={8}
-        accessibilityRole="button"
-        accessibilityLabel="削除"
-        accessibilityHint={`${project.title} を削除`}
-        style={({ pressed }) => [styles.deleteBtn, pressed && styles.deleteBtnPressed]}>
-        <Icon name="trash" size={17} color={colors.textMuted} strokeWidth={2} />
-      </Pressable>
+      <Text style={styles.cardChords} numberOfLines={2} ellipsizeMode="tail">
+        {project.chordsDisplay}
+      </Text>
     </Pressable>
   );
 }
@@ -214,6 +254,29 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  iconBtnAdmin: { borderColor: colors.purpleText, backgroundColor: 'rgba(124,92,255,0.14)' },
+  adminDot: {
+    position: 'absolute',
+    top: 5,
+    right: 5,
+    width: 7,
+    height: 7,
+    borderRadius: 3.5,
+    backgroundColor: colors.purpleText,
+  },
+  adminToast: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: 'rgba(34,197,94,0.14)',
+    borderRadius: radius.md,
+    paddingVertical: 7,
+    paddingHorizontal: 11,
+    marginBottom: 12,
+  },
+  adminToastText: { fontSize: 12.5, fontFamily: font.bold, fontWeight: '700', color: colors.successText },
+
   heroHint: {
     fontSize: 13.5,
     color: colors.textMuted,
@@ -236,14 +299,21 @@ const styles = StyleSheet.create({
 
   listHeader: {
     flexDirection: 'row',
-    alignItems: 'baseline',
+    alignItems: 'center',
     justifyContent: 'space-between',
     marginTop: 16,
     marginBottom: 12,
     paddingHorizontal: 2,
   },
-  listHeaderTitle: { fontSize: 15, fontFamily: font.bold, fontWeight: '700', color: colors.textHeading },
-  listHeaderCount: { fontSize: 12.5, color: colors.textFaint },
+  listHeaderTitle: {
+    flexShrink: 1,
+    fontSize: 15,
+    lineHeight: 22,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.textHeading,
+  },
+  listHeaderCount: { fontSize: 12.5, lineHeight: 18, color: colors.textFaint },
 
   card: {
     position: 'relative',
@@ -252,35 +322,45 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: radius['3xl'],
     paddingVertical: 16,
-    paddingRight: 16,
+    paddingRight: 14,
     paddingLeft: 20,
     overflow: 'hidden',
   },
   stripe: { position: 'absolute', left: 0, top: 0, bottom: 0, width: 4 },
   cardTopRow: {
     flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
     gap: 8,
-    paddingRight: 40,
   },
-  cardTitle: { flex: 1, fontSize: 16.5, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
+  cardTitleBlock: { flex: 1, minWidth: 0, gap: 3 },
+  cardTitle: {
+    fontSize: 16.5,
+    lineHeight: 22,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
   deleteBtn: {
-    position: 'absolute',
-    top: 6,
-    right: 6,
     width: 44,
     height: 44,
+    marginTop: -4,
+    marginRight: -4,
     borderRadius: radius.lg,
     alignItems: 'center',
     justifyContent: 'center',
+    flexShrink: 0,
   },
   deleteBtnPressed: {
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
     borderColor: colors.borderSubtle,
   },
-  cardTime: { fontSize: 11.5, color: colors.textFaint },
-  metaRow: { flexDirection: 'row', gap: 7, marginTop: 10, marginBottom: 12 },
-  cardChords: { fontSize: 13, color: colors.textMuted, letterSpacing: 0.4 },
+  cardTime: { fontSize: 11.5, lineHeight: 16, color: colors.textFaint },
+  metaRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginTop: 10, marginBottom: 12 },
+  cardChords: {
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.textMuted,
+    letterSpacing: 0.4,
+  },
 });

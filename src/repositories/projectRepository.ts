@@ -1,7 +1,9 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
 
-import { PRESETS } from '@/data/presets';
+import { STARTER_PRESET } from '@/data/presets';
+import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
 import { getDb } from '@/lib/db';
+import { normalizeGroove } from '@/lib/groove';
 import { buildPresetProgression } from '@/lib/presets';
 import type { NewProjectInput, Project } from '@/types';
 
@@ -23,11 +25,11 @@ type ProjectRow = {
 const DEFAULTS: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
   title: '新しい進行',
   key: 'C',
-  tempoBpm: 120,
+  tempoBpm: 100,
   timeSignature: '4/4',
   instrumentId: 'piano',
   grooveId: 'pop8',
-  accompanimentPattern: 'block',
+  accompanimentPattern: DEFAULT_ACCOMPANIMENT,
   chordEvents: [],
 };
 
@@ -43,8 +45,10 @@ function rowToProject(row: ProjectRow): Project {
     tempoBpm: row.tempo_bpm,
     timeSignature: row.time_signature as Project['timeSignature'],
     instrumentId: row.instrument_id as Project['instrumentId'],
-    grooveId: row.groove_id as Project['grooveId'],
-    accompanimentPattern: row.accompaniment_pattern as Project['accompanimentPattern'],
+    // Migrate any legacy persisted groove (e.g. retired jazzSwing) on read.
+    grooveId: normalizeGroove(row.groove_id),
+    // Migrate any legacy persisted id (eightBeat/sixteenthBeat) on read.
+    accompanimentPattern: normalizeAccompaniment(row.accompaniment_pattern),
     chordEvents: JSON.parse(row.chord_events) as Project['chordEvents'],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -90,23 +94,20 @@ async function ensureSeeded(db: SQLiteDatabase): Promise<void> {
   );
   if (seeded) return;
 
-  const royal = PRESETS.find((p) => p.id === 'jpop-royal');
-  if (royal) {
-    const now = Date.now();
-    const chordEvents = buildPresetProgression(royal, 'C').map((e, i) => ({
-      ...e,
-      id: `seed-${i}`,
-    }));
-    await upsert(db, {
-      ...DEFAULTS,
-      id: genId(),
-      title: royal.name,
-      key: 'C',
-      chordEvents,
-      createdAt: now,
-      updatedAt: now,
-    });
-  }
+  const now = Date.now();
+  const chordEvents = buildPresetProgression(STARTER_PRESET, 'C').map((e, i) => ({
+    ...e,
+    id: `seed-${i}`,
+  }));
+  await upsert(db, {
+    ...DEFAULTS,
+    id: genId(),
+    title: STARTER_PRESET.name,
+    key: 'C',
+    chordEvents,
+    createdAt: now,
+    updatedAt: now,
+  });
   await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES ('seeded', '1');`);
 }
 

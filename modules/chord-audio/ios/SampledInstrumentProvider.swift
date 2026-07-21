@@ -17,7 +17,10 @@ final class SampledInstrumentProvider: InstrumentProvider {
   /// How long each note is captured. Long enough to include the natural decay.
   private let captureSeconds = 3.0
   /// Output headroom so 4-note polyphony stays under clipping before the mixer.
-  private let gain: Float = 0.6
+  /// EP (Rhodes/tine) is brighter; a slightly lower gain avoids harsh sum noise.
+  private var gain: Float = 0.6
+  /// GM program used for this load (drives EP-specific cleanup).
+  private var program: UInt8 = 0
 
   /// Peak amplitude below which a captured note buffer is treated as "silent"
   /// (i.e. the sampler failed to page the region in before we captured it). A
@@ -29,7 +32,20 @@ final class SampledInstrumentProvider: InstrumentProvider {
   private let maxCaptureAttempts = 3
 
   private let sampleRate: Double
+  /// Load-time staging store (built off the audio thread during `load`). NOT read on
+  /// the audio thread — see `flat`/`noteStart`/`noteLen` below.
   private var buffers: [Int: [Float]] = [:]
+
+  /// Real-time sample store: every captured note buffer concatenated into ONE flat
+  /// `[Float]`, indexed by `noteStart` / `noteLen` (keyed by `note - lowNote`). The
+  /// audio-thread `sample()` reads a single element of this stored array — no
+  /// dictionary hashing and no `[Float]` copy-on-write retain/release per sample.
+  /// That per-sample ARC + hash (44.1 kHz × polyphony) was the sustained-CPU hog
+  /// flagged by the `cpu_resource` report; reading a flat array element is ~free.
+  private var flat: [Float] = []
+  private var noteStart: [Int] = []
+  private var noteLen: [Int] = []
+  private var loadedNoteCountValue = 0
   private let log = OSLog(subsystem: "app.chord-palette.audio", category: "Sampler")
 
   private(set) var isLoaded = false
@@ -55,17 +71,28 @@ final class SampledInstrumentProvider: InstrumentProvider {
   /// caller can fall back to the synth provider. Runs off the audio thread.
   func load(soundFontURL: URL, program: UInt8) -> Bool {
     buffers.removeAll()
+    flat.removeAll(keepingCapacity: false)
+    noteStart.removeAll(keepingCapacity: false)
+    noteLen.removeAll(keepingCapacity: false)
+    loadedNoteCountValue = 0
     silentNotes.removeAll()
     peakByNote.removeAll()
     isLoaded = false
     lastLoadError = nil
+    self.program = program
+    // Electric pianos are brighter / more chorused in FluidR3 — leave more
+    // headroom so polyphony doesn't turn into harsh hash.
+    self.gain = Self.isElectricPiano(program) ? 0.48 : 0.6
 
     let engine = AVAudioEngine()
     let sampler = AVAudioUnitSampler()
     engine.attach(sampler)
 
-    guard let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 1) else {
-      lastLoadError = "Could not create mono AVAudioFormat at \(sampleRate) Hz"
+    // Capture STEREO then downmix. FluidR3 EP presets bake chorus into the
+    // stereo field; forcing mono at the node can phase-cancel into a hissy
+    // "noise" bed. Stereo → (L+R)/2 keeps the body and softens that artifact.
+    guard let fmt = AVAudioFormat(standardFormatWithSampleRate: sampleRate, channels: 2) else {
+      lastLoadError = "Could not create stereo AVAudioFormat at \(sampleRate) Hz"
       return false
     }
     engine.connect(sampler, to: engine.mainMixerNode, format: fmt)
@@ -108,9 +135,15 @@ final class SampledInstrumentProvider: InstrumentProvider {
     renderSilence(engine: engine, scratch: scratch, seconds: 1.0)
     warmUpRegisters(engine: engine, sampler: sampler, scratch: scratch)
 
+    // EP bells ring longer — drain more between notes so the next capture does
+    // not inherit a hissy release tail.
+    let interNoteDrain = Self.isElectricPiano(program) ? 0.45 : 0.2
+
     for note in lowNote...highNote {
       var collected = captureNote(
-        note, engine: engine, sampler: sampler, scratch: scratch, totalFrames: totalFrames)
+        note, engine: engine, sampler: sampler, scratch: scratch,
+        totalFrames: totalFrames, drainSeconds: interNoteDrain)
+      collected = cleanBuffer(collected, program: program)
       var peak = bufferPeak(collected)
 
       // Retry silent captures: an inaudible buffer means the region was still
@@ -120,7 +153,9 @@ final class SampledInstrumentProvider: InstrumentProvider {
       while peak < silenceThreshold && attempt < maxCaptureAttempts {
         renderSilence(engine: engine, scratch: scratch, seconds: 0.5)
         collected = captureNote(
-          note, engine: engine, sampler: sampler, scratch: scratch, totalFrames: totalFrames)
+          note, engine: engine, sampler: sampler, scratch: scratch,
+          totalFrames: totalFrames, drainSeconds: interNoteDrain)
+        collected = cleanBuffer(collected, program: program)
         peak = bufferPeak(collected)
         attempt += 1
       }
@@ -137,9 +172,15 @@ final class SampledInstrumentProvider: InstrumentProvider {
 
     engine.stop()
     isLoaded = !buffers.isEmpty
-    if !isLoaded {
+    if isLoaded {
+      // Flatten the captured buffers into the real-time store, then drop the
+      // dictionary so we don't keep two copies of the (large) sample data.
+      buildFlatStore()
+      buffers.removeAll(keepingCapacity: false)
+    } else {
       lastLoadError = "SoundFont loaded but no note buffers were rendered"
-    } else if !silentNotes.isEmpty {
+    }
+    if isLoaded && !silentNotes.isEmpty {
       // Non-fatal: the sampled voice still loads (low notes are audible), but we
       // record the dead register so the JS diagnostics make the regression
       // obvious instead of it surfacing only as "mid/high chords are silent".
@@ -147,6 +188,36 @@ final class SampledInstrumentProvider: InstrumentProvider {
         "Sampled but \(silentNotes.count) note(s) rendered silent: \(silentNotes)"
     }
     return isLoaded
+  }
+
+  /// Concatenate the per-note capture buffers into one flat `[Float]` with an
+  /// index table, so the audio thread can read a sample without a dictionary
+  /// lookup or per-call array retain. Runs off the audio thread (end of `load`).
+  private func buildFlatStore() {
+    let range = highNote - lowNote + 1
+    var starts = [Int](repeating: 0, count: range)
+    var lens = [Int](repeating: 0, count: range)
+    var total = 0
+    for n in lowNote...highNote {
+      let len = buffers[n]?.count ?? 0
+      starts[n - lowNote] = total
+      lens[n - lowNote] = len
+      total += len
+    }
+    var f = [Float]()
+    f.reserveCapacity(total)
+    for n in lowNote...highNote {
+      if let b = buffers[n] { f.append(contentsOf: b) }
+    }
+    flat = f
+    noteStart = starts
+    noteLen = lens
+    loadedNoteCountValue = buffers.count
+  }
+
+  private static func isElectricPiano(_ program: UInt8) -> Bool {
+    // GM: 4 = Electric Piano 1, 5 = Electric Piano 2
+    return program == 4 || program == 5
   }
 
   /// Advance the offline engine by `seconds` of render time with no note
@@ -181,15 +252,13 @@ final class SampledInstrumentProvider: InstrumentProvider {
     }
     renderSilence(engine: engine, scratch: scratch, seconds: 0.5)
     for note in struck { sampler.stopNote(note, onChannel: 0) }
-    renderSilence(engine: engine, scratch: scratch, seconds: 0.3)
+    renderSilence(engine: engine, scratch: scratch, seconds: 0.5)
   }
 
-  /// Capture a single note's decay into a mono float buffer. Decrements by the
-  /// frames actually rendered (not the requested count) and bails on a stalled
-  /// render so a short read can never spin forever.
+  /// Capture a single note's decay into a mono float buffer (stereo downmix).
   private func captureNote(
     _ note: Int, engine: AVAudioEngine, sampler: AVAudioUnitSampler,
-    scratch: AVAudioPCMBuffer, totalFrames: AVAudioFrameCount
+    scratch: AVAudioPCMBuffer, totalFrames: AVAudioFrameCount, drainSeconds: Double
   ) -> [Float] {
     sampler.startNote(UInt8(note), withVelocity: 100, onChannel: 0)
     var collected = [Float]()
@@ -202,9 +271,12 @@ final class SampledInstrumentProvider: InstrumentProvider {
       if status != .success { break }
       let rendered = Int(scratch.frameLength)
       if rendered == 0 { break }
-      if let channel = scratch.floatChannelData {
-        let ptr = channel[0]
-        for i in 0..<rendered { collected.append(ptr[i]) }
+      if let channels = scratch.floatChannelData {
+        let left = channels[0]
+        let right = scratch.format.channelCount > 1 ? channels[1] : left
+        for i in 0..<rendered {
+          collected.append((left[i] + right[i]) * 0.5)
+        }
       }
       remaining =
         remaining > AVAudioFrameCount(rendered) ? remaining - AVAudioFrameCount(rendered) : 0
@@ -212,8 +284,48 @@ final class SampledInstrumentProvider: InstrumentProvider {
 
     sampler.stopNote(UInt8(note), onChannel: 0)
     // Flush the release tail so the next note starts clean.
-    renderSilence(engine: engine, scratch: scratch, seconds: 0.15)
+    renderSilence(engine: engine, scratch: scratch, seconds: drainSeconds)
     return collected
+  }
+
+  /// Remove capture artifacts that read as "noise" on bright/chorused voices:
+  /// DC offset, onset clicks, and (for EP) excess airy tine hiss above ~7 kHz.
+  private func cleanBuffer(_ input: [Float], program: UInt8) -> [Float] {
+    guard !input.isEmpty else { return input }
+    var buf = input
+
+    // DC block: subtract mean so a biased capture doesn't thump every onset.
+    var sum: Double = 0
+    for v in buf { sum += Double(v) }
+    let mean = Float(sum / Double(buf.count))
+    if abs(mean) > 1e-6 {
+      for i in buf.indices { buf[i] -= mean }
+    }
+
+    // Short attack fade (~8 ms) kills sampler page-in clicks.
+    let fadeIn = max(1, Int(0.008 * sampleRate))
+    let fadeCount = min(fadeIn, buf.count)
+    if fadeCount > 1 {
+      for i in 0..<fadeCount {
+        buf[i] *= Float(i) / Float(fadeCount - 1)
+      }
+    }
+
+    if Self.isElectricPiano(program) {
+      // One-pole low-pass (~7 kHz @ 44.1k) tames the metallic tine/chorus hash
+      // that FluidR3 EP bakes in, without dulling the body of the Rhodes tone.
+      let cutoffHz = 7_000.0
+      let rc = 1.0 / (2.0 * Double.pi * cutoffHz)
+      let dt = 1.0 / sampleRate
+      let alpha = Float(dt / (rc + dt))
+      var prev: Float = 0
+      for i in buf.indices {
+        prev += alpha * (buf[i] - prev)
+        buf[i] = prev
+      }
+    }
+
+    return buf
   }
 
   /// Peak absolute amplitude of a captured buffer — the silence discriminator.
@@ -230,11 +342,15 @@ final class SampledInstrumentProvider: InstrumentProvider {
     if tSeconds < 0 || tSeconds >= durationSeconds { return 0 }
     // Reuse the nearest pre-rendered note if outside the captured range.
     let clamped = min(max(note, lowNote), highNote)
-    guard let buf = buffers[clamped], !buf.isEmpty else { return 0 }
+    let ni = clamped - lowNote
+    // Flat-store read: no dictionary lookup / no array retain on the audio thread.
+    if ni < 0 || ni >= noteLen.count { return 0 }
+    let len = noteLen[ni]
+    if len == 0 { return 0 }
 
     let idx = Int(tSeconds * sampleRate)
-    if idx >= buf.count { return 0 }
-    var value = buf[idx] * gain
+    if idx >= len { return 0 }
+    var value = flat[noteStart[ni] + idx] * gain
 
     // Short release fade so cutting a held sample at the chord boundary doesn't click.
     let fade = 0.03
@@ -251,7 +367,7 @@ final class SampledInstrumentProvider: InstrumentProvider {
   // MARK: - Diagnostics
 
   /// Number of MIDI notes that have a pre-rendered PCM buffer.
-  var loadedNoteCount: Int { buffers.count }
+  var loadedNoteCount: Int { loadedNoteCountValue }
 
   /// Peak amplitude bucketed by octave ("oct2"…"oct7", where the key is the MIDI
   /// octave = note / 12). A healthy load has a non-trivial peak in every bucket;

@@ -5,8 +5,13 @@
  * project's accompaniment setting when it is wired up in Step 3.
  */
 
+import { ARPEGGIO } from './arpeggio';
 import { BALLAD } from './ballad';
+import { BLOCK } from './block';
 import { EIGHT_BEAT } from './eightBeat';
+import { NATURAL_COMP } from './naturalComp';
+import { NATURAL_COMP_DENSE } from './naturalCompDense';
+import { NATURAL_COMP_SPARSE } from './naturalCompSparse';
 import { SIXTEEN_BEAT } from './sixteenBeat';
 import type { StyleId, StylePreset } from './types';
 
@@ -14,22 +19,38 @@ export * from './types';
 
 /** All built-in style presets, keyed by id. */
 export const STYLES: Record<StyleId, StylePreset> = {
+  block: BLOCK,
   eightBeat: EIGHT_BEAT,
   sixteenBeat: SIXTEEN_BEAT,
+  arpeggio: ARPEGGIO,
   ballad: BALLAD,
+  naturalComp: NATURAL_COMP,
+  naturalCompSparse: NATURAL_COMP_SPARSE,
+  naturalCompDense: NATURAL_COMP_DENSE,
 };
 
-export const STYLE_IDS: StyleId[] = ['eightBeat', 'sixteenBeat', 'ballad'];
+export const STYLE_IDS: StyleId[] = [
+  'block',
+  'eightBeat',
+  'sixteenBeat',
+  'arpeggio',
+  'ballad',
+  'naturalComp',
+  'naturalCompSparse',
+  'naturalCompDense',
+];
 
 /**
- * Map an existing accompaniment id to a style. `block`/`arpeggio` fall back to the
- * sustained Ballad feel; unknown ids default to 8-Beat.
+ * Map an accompaniment id to a style — now 1:1 so every pattern sounds distinct
+ * (previously `block` and `arpeggio` both fell back to Ballad). `ballad` stays
+ * available as a style but is no longer referenced from an accompaniment id.
+ * Unknown ids default to 8-Beat.
  */
 const ACCOMPANIMENT_TO_STYLE: Record<string, StyleId> = {
-  block: 'ballad',
+  block: 'block',
   eightBeat: 'eightBeat',
   sixteenthBeat: 'sixteenBeat',
-  arpeggio: 'ballad',
+  arpeggio: 'arpeggio',
 };
 
 /** Resolve a `StyleId` (or a legacy accompaniment id) to a concrete preset. */

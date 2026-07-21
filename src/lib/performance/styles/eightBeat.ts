@@ -1,7 +1,10 @@
 /**
  * 8-Beat groove (pairs with the existing `eightBeat` accompaniment / `pop8` drum
- * feel). Straight 8ths: chord comps on the quarters, kick on 1 & 3, snare backbeat
- * on 2 & 4, hats on every 8th with ghosted off-beats.
+ * feel). Modern-pop syncopated comp — NOT straight quarters (that flavour now lives
+ * in the `block` style). The chord hits the classic "1 · &of2 · 3 · &of4" pattern so
+ * the harmony breathes and pushes forward; kick on 1 & 3, snare backbeat on 2 & 4,
+ * hats on every 8th with ghosted off-beats. Anticipation lets the &of4 stab pull the
+ * next chord in early (the "食い" that makes the groove feel good).
  */
 
 import type { StylePreset } from './types';
@@ -11,15 +14,16 @@ export const EIGHT_BEAT: StylePreset = {
   displayName: '8 Beat',
   beatsPerBar: 4,
   stepsPerBar: 8, // 8th-note grid
-  // Comp on the four quarter notes; downbeat strongest, beat 3 next.
+  // Syncopated pop comp: 1 (step0), &of2 (step3), 3 (step4), &of4 (step7).
+  // Down-beats (1 & 3) are strongest; the two off-beat pushes sit just under them.
   chord: {
-    hits: [true, false, true, false, true, false, true, false],
-    accent: [1.0, 0.5, 0.7, 0.5, 0.85, 0.5, 0.7, 0.5],
+    hits: [true, false, false, true, true, false, false, true],
+    accent: [1.0, 0.5, 0.5, 0.7, 0.85, 0.5, 0.5, 0.72],
   },
-  // Bass roots track the kick (1 & 3) with a passing 8th before beat 3.
+  // Bass keeps its root feel on 1 & 3 and adds a light &of4 push into the next chord.
   bass: {
-    hits: [true, false, false, true, true, false, false, false],
-    accent: [1.0, 0.5, 0.5, 0.6, 0.85, 0.5, 0.5, 0.5],
+    hits: [true, false, false, false, true, false, false, true],
+    accent: [1.0, 0.5, 0.5, 0.5, 0.85, 0.5, 0.5, 0.6],
   },
   kick: {
     hits: [true, false, false, false, true, false, false, false],
@@ -54,4 +58,6 @@ export const EIGHT_BEAT: StylePreset = {
   },
   gate: { min: 0.72, max: 0.95, sustain: 'normal' },
   roundRobin: 4,
+  // The off-beat stabs (&of2 / &of4) pull the next chord in a half-beat early.
+  anticipation: { maxLeadBeats: 0.5 },
 };

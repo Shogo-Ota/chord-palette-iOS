@@ -1,6 +1,8 @@
+import { captureError } from '@/services/monitoring';
+
 /**
- * Minimal structured logger. In later phases `error()` also forwards to Sentry
- * (wired via the monitoring service, not here). Feature/UI code should log
+ * Minimal structured logger. `error()` forwards to the monitoring service (Sentry),
+ * which is a no-op in dev/tests and when unconfigured. Feature/UI code should log
  * through this module instead of calling `console` directly.
  */
 type LogContext = Record<string, unknown>;
@@ -23,7 +25,7 @@ function emit(
       break;
     case 'error':
       console.error(line, context ?? '');
-      // TODO(phase 4): forward to Sentry via monitoring service.
+      captureError(message, context);
       break;
   }
 }

@@ -42,7 +42,7 @@ describe('computeVisibleActions', () => {
   });
 
   describe('play', () => {
-    it('transforms to empty mode when the progression is empty', () => {
+    it('is empty mode when the progression is empty (Play no-ops; hint near library)', () => {
       const play = computeVisibleActions(base([]), 'idle').play;
       expect(play.state).toBe('ready');
       expect(play.mode).toBe('empty');

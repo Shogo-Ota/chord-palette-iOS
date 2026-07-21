@@ -39,7 +39,13 @@ export const MAJOR_KEYS: MajorKey[] = [
 const DEGREE_LABELS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'] as const;
 
 /** Semitones above the tonic for each major-scale degree (I..vii). */
-const MAJOR_SCALE_OFFSETS = [0, 2, 4, 5, 7, 9, 11] as const;
+export const MAJOR_SCALE_OFFSETS = [0, 2, 4, 5, 7, 9, 11] as const;
+
+/** Diatonic degree index (0 = I … 6 = vii°) for a root offset, or -1 if non-diatonic. */
+export function degreeIndexFromRootOffset(rootOffset: number): number {
+  const pc = ((rootOffset % 12) + 12) % 12;
+  return (MAJOR_SCALE_OFFSETS as readonly number[]).indexOf(pc);
+}
 
 /** Fixed harmonic function per scale degree in a major key. */
 const DEGREE_FUNCTIONS: ChordFunction[] = [
@@ -55,7 +61,7 @@ const DEGREE_FUNCTIONS: ChordFunction[] = [
 /** Suffixes for diatonic seventh chords per degree. */
 const SEVENTH_SUFFIXES = ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7♭5'] as const;
 /** Suffixes for diatonic triads per degree. */
-const TRIAD_SUFFIXES = ['', 'm', 'm', '', '', 'm', 'dim'] as const;
+export const TRIAD_SUFFIXES = ['', 'm', 'm', '', '', 'm', 'dim'] as const;
 
 function build(key: MajorKey, suffixes: readonly string[]): DiatonicChord[] {
   const scale = MAJOR_SCALES[key];
@@ -154,6 +160,47 @@ export function offsetFromTonic(key: MajorKey, note: string): number {
   return (((NOTE_PC[note] ?? 0) - tonicPc(key)) % 12 + 12) % 12;
 }
 
+/**
+ * Roman-numeral degree name for each semitone offset above the tonic (0..11).
+ * Uppercase because a *bass degree* denotes a scale-degree position, not a chord
+ * quality. Chromatic degrees use ♭/# to match the app's existing degree labels
+ * (e.g. modal interchange already uses ♭III / ♭VI / ♭VII). Key-invariant.
+ */
+const CHROMATIC_DEGREE_LABELS = [
+  'I',
+  '♭II',
+  'II',
+  '♭III',
+  'III',
+  'IV',
+  '#IV',
+  'V',
+  '♭VI',
+  'VI',
+  '♭VII',
+  'VII',
+] as const;
+
+/**
+ * Roman-numeral degree label for a semitone offset above the tonic (0..11).
+ * Used for slash/on-chord bass denominators so they read as degrees (e.g. C/E in
+ * C → "I/III") rather than absolute note names, and stay correct across keys.
+ */
+export function degreeLabelFromOffset(offset: number): string {
+  return CHROMATIC_DEGREE_LABELS[(((offset ?? 0) % 12) + 12) % 12];
+}
+
+/**
+ * Degree label for a chord ROOT `offset` semitones above the tonic. Diatonic roots
+ * get the quality-aware label (I, ii, iii, IV, V, vi, vii°); chromatic roots fall
+ * back to the plain Roman degree (♭III, #IV, …). Used when re-labelling a recalled
+ * progression relative to the current key (append feature).
+ */
+export function rootDegreeLabel(offset: number): string {
+  const idx = degreeIndexFromRootOffset(offset);
+  return idx >= 0 ? DEGREE_LABELS[idx] : degreeLabelFromOffset(offset);
+}
+
 /* ------------------------------------------------------------------ */
 /* Library: diatonic (triad main + 7th pill)                           */
 /* ------------------------------------------------------------------ */
@@ -235,7 +282,7 @@ export type VariationId = (typeof CHORD_VARIATIONS)[number]['id'];
  *  V  (Mixolydian): ♮11(C) is the avoid note → no 11; 9/13 are dominant 9/13.
  *  vi (Aeolian):    ♮6(F#) is out of key → no 6/13; minor-quality forms.
  */
-const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
+export const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
   0: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
   1: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '6': 'm6', '9': 'm9', '11': 'm11', '13': 'm13' },
   2: { sus4: 'sus4', '11': 'm(add11)' },
@@ -366,10 +413,14 @@ export function chromaticBassNotes(key: MajorKey): string[] {
 
 /** Combine a target chord with a bass note → slash chord (e.g. C + E → C/E). */
 export function slashChord(key: MajorKey, target: LibraryChord, bass: string): LibraryChord {
+  const bassOffset = offsetFromTonic(key, bass);
   return {
     id: `slash-${key}-${target.id}-${bass}`,
+    // Name stays alphabetic (e.g. "C/E"); the degree label puts the bass as a
+    // *degree* in the denominator (e.g. "I/III") so it reads harmonically and is
+    // key-invariant.
     displayName: `${target.displayName}/${bass}`,
-    degreeLabel: `${target.degreeLabel}/${bass}`,
+    degreeLabel: `${target.degreeLabel}/${degreeLabelFromOffset(bassOffset)}`,
     function: target.function,
     subLabel: `bass ${bass}`,
     category: 'slash',
@@ -377,6 +428,6 @@ export function slashChord(key: MajorKey, target: LibraryChord, bass: string): L
     isPro: true, // slash / on-chords are Palette Pro (requirements §7)
     rootOffset: target.rootOffset,
     suffix: target.suffix,
-    bassOffset: offsetFromTonic(key, bass),
+    bassOffset,
   };
 }

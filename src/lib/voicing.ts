@@ -7,7 +7,8 @@
  */
 
 import { keyTonicPc } from '@/data/music';
-import { voiceLeadProgression } from '@/lib/performance/voiceLeading';
+import { voiceLeadProgression, type VoiceLeadingOptions } from '@/lib/performance/voiceLeading';
+import { refineBodyVoicing } from '@/lib/voicingColor';
 import type { ChordSpec } from '@/services/audio/schedule';
 import type { ChordEvent, MajorKey } from '@/types';
 
@@ -86,6 +87,25 @@ function chordVoicingParts(
 }
 
 /**
+ * Root-position chord tones for arpeggiation, ascending from the chord root
+ * (root, 3rd, 5th, 7th, then any tensions 9/11/13). Unlike the voice-led,
+ * rootless {@link progressionToChordSpecs} body, this KEEPS the root and the full
+ * stack so an arpeggio can spell 1-3-5-7 (and 1-3-5-7-9-13 with tensions)
+ * predictably — the shape stays the same whether or not tensions are present.
+ * Fixed C3-band register; deliberately ignores voice leading and the slash bass
+ * (the arpeggio spells the chord from its own root; the bass track keeps the slash
+ * note). Pure and context-free.
+ */
+export function chordArpeggioNotes(
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix'>,
+  key: MajorKey,
+): number[] {
+  const tonic = keyTonicPc(key);
+  const rootMidi = CHORD_ROOT_MIDI + pitchClass(tonic + (chord.rootOffset ?? 0));
+  return intervalsFor(chord.suffix ?? '').map((iv) => rootMidi + iv);
+}
+
+/**
  * Concrete MIDI notes for a chord in the given key. Every chord is anchored by a
  * C2-band bass fundamental (chord root, or slash bass when present). The former
  * always-on C1 sub-bass doubling was removed (music-supervisor audit P0-2). The
@@ -94,13 +114,20 @@ function chordVoicingParts(
  * Context-free by design (no previous chord) so it stays correct for single-chord
  * previews and the keyboard visual. Progression-level voice leading is applied in
  * {@link progressionToChordSpecs}.
+ *
+ * `octaveShift` (in octaves, default 0) transposes the WHOLE result up/down so the
+ * user's device-level register preference (bass floor C2 vs C3) applies uniformly
+ * to preview, keyboard visual and export — the bass stays an octave below the body
+ * either way, so slash-chord bass ordering is preserved.
  */
 export function chordMidiNotes(
   chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
   key: MajorKey,
+  octaveShift = 0,
 ): number[] {
   const { bass, body } = chordVoicingParts(chord, key);
-  return [...bass, ...body];
+  const semis = 12 * octaveShift;
+  return [...bass, ...body].map((n) => n + semis);
 }
 
 /**
@@ -112,10 +139,31 @@ export function chordMidiNotes(
  * (bass first, then body) is unchanged, so downstream consumers (scheduler, video
  * export) are unaffected. Voice leading is delegated to the pure
  * `performance/voiceLeading` module (RN/Expo-independent, unit-tested).
+ *
+ * Chord quality is exactly the user's chosen suffix — no automatic add9 / 7th /
+ * sus / tension. Arrangement color (add9, sus4, …) stays a deliberate UX choice.
+ * Playback polish here is layout only: {@link refineBodyVoicing} (rootless/open
+ * within the chosen tones, since the bass already owns the root). Groove/feel
+ * lives in the Performance Engine rhythm layer, not in extra chord tones.
+ *
+ * `options` selects the voicing aesthetic (inversion/octave placement). Omitted =
+ * the engine default (`balanced`), which reproduces the current output exactly — so
+ * every existing caller is unaffected. See `VOICING_AESTHETICS`.
  */
-export function progressionToChordSpecs(progression: ChordEvent[], key: MajorKey): ChordSpec[] {
-  const parts = progression.map((e) => chordVoicingParts(e, key));
-  const ledBodies = voiceLeadProgression(parts.map((p) => p.body));
+export function progressionToChordSpecs(
+  progression: ChordEvent[],
+  key: MajorKey,
+  options?: VoiceLeadingOptions,
+): ChordSpec[] {
+  const tonic = keyTonicPc(key);
+  const parts = progression.map((e) => {
+    const { bass, body } = chordVoicingParts(e, key);
+    const rootPc = pitchClass(tonic + (e.rootOffset ?? 0));
+    return { bass, body: refineBodyVoicing(body, rootPc) };
+  });
+  const ledBodies = options
+    ? voiceLeadProgression(parts.map((p) => p.body), options)
+    : voiceLeadProgression(parts.map((p) => p.body));
   return progression.map((e, i) => ({
     midiNotes: [...parts[i].bass, ...ledBodies[i]],
     lengthBeats: e.durationBeats,

@@ -11,3 +11,4 @@ export { CPSettingChip } from './CPSettingChip';
 export { CPPlayPauseButton } from './CPPlayPauseButton';
 export { CPTransportBar } from './CPTransportBar';
 export { CPAddSlot } from './CPAddSlot';
+export { CPSuggestionBar } from './CPSuggestionBar';

@@ -7,8 +7,8 @@ import {
   voiceLeadNext,
   voiceLeadProgression,
 } from '@/lib/performance/voiceLeading';
-import { PRESETS } from '@/data/presets';
 import { buildPresetProgression } from '@/lib/presets';
+import { SAMPLE_PRESETS } from '@/lib/testFixtures/samplePresets';
 import { progressionToChordSpecs } from '@/lib/voicing';
 import type { MajorKey } from '@/types';
 
@@ -158,7 +158,7 @@ describe('progressionToChordSpecs — acceptance criteria across presets & keys'
     return spec.midiNotes.filter((n) => n >= 48);
   }
 
-  for (const preset of PRESETS) {
+  for (const preset of SAMPLE_PRESETS) {
     it(`${preset.id}: average body movement ≤ 4 semitones in every key`, () => {
       for (const key of KEYS) {
         const progression = buildPresetProgression(preset, key).map((e, i) => ({
@@ -177,7 +177,7 @@ describe('progressionToChordSpecs — acceptance criteria across presets & keys'
   }
 
   it('keeps the bass anchored on the chord root (voice leading is body-only)', () => {
-    const progression = buildPresetProgression(PRESETS[0], 'C').map((e, i) => ({
+    const progression = buildPresetProgression(SAMPLE_PRESETS[0], 'C').map((e, i) => ({
       ...e,
       id: `e-${i}`,
     }));
@@ -186,7 +186,9 @@ describe('progressionToChordSpecs — acceptance criteria across presets & keys'
       const bass = spec.midiNotes.filter((n) => n < 48);
       const body = spec.midiNotes.filter((n) => n >= 48);
       expect(bass).toHaveLength(1);
-      expect(body.length).toBeGreaterThanOrEqual(3);
+      // The playback body is voiced rootless (the bass owns the root), so a plain
+      // triad reduces to a 2-note shell; colored/7th chords keep ≥3 body tones.
+      expect(body.length).toBeGreaterThanOrEqual(2);
     }
   });
 });

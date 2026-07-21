@@ -1,14 +1,24 @@
-import { keyTonicPc, noteAt } from '@/data/music';
+import { degreeLabelFromOffset, keyTonicPc, noteAt, rootDegreeLabel } from '@/data/music';
 import type { ChordEvent, MajorKey } from '@/types';
 
 function mod12(n: number): number {
   return ((n % 12) + 12) % 12;
 }
 
+/** Numerator (the chord's own degree) of a slash degree label — everything before
+ * the LAST '/'. Preserves compound numerators like "V7/ii"; falls back to the whole
+ * label when there is no slash. */
+function degreeNumerator(degreeLabel: string): string {
+  const i = degreeLabel.lastIndexOf('/');
+  return i >= 0 ? degreeLabel.slice(0, i) : degreeLabel;
+}
+
 /**
  * Recompute a single event's spelling for `key` from its stored degree data
- * (`rootOffset` / `suffix` / `bassOffset`). Degree labels are key-invariant for
- * every chord except slash/on-chords, whose bass note is respelled here.
+ * (`rootOffset` / `suffix` / `bassOffset`). The `displayName` (and slash bass note)
+ * are absolute pitches so they are respelled per key; the `degreeLabel` is
+ * key-invariant — for slash/on-chords the bass denominator is rendered as a DEGREE
+ * (e.g. "I/III"), which also canonicalizes any legacy note-name denominators.
  * Events that predate degree data (legacy JSON) are returned unchanged.
  */
 export function transposeEvent(event: ChordEvent, key: MajorKey): ChordEvent {
@@ -23,7 +33,7 @@ export function transposeEvent(event: ChordEvent, key: MajorKey): ChordEvent {
     const bass = noteAt(key, event.bassOffset);
     displayName = `${displayName}/${bass}`;
     bassNote = bass;
-    degreeLabel = `${event.degreeLabel.split('/')[0]}/${bass}`;
+    degreeLabel = `${degreeNumerator(event.degreeLabel)}/${degreeLabelFromOffset(event.bassOffset)}`;
   }
 
   return { ...event, displayName, degreeLabel, bassNote };
@@ -32,6 +42,21 @@ export function transposeEvent(event: ChordEvent, key: MajorKey): ChordEvent {
 /** Transpose a whole progression to `key` (the "移調" action — moves the song). */
 export function transposeProgression(progression: ChordEvent[], key: MajorKey): ChordEvent[] {
   return progression.map((e) => transposeEvent(e, key));
+}
+
+/**
+ * Recompute an event's degree label relative to its CURRENT `rootOffset`/`bassOffset`
+ * (i.e. relative to whatever key the offsets are now referenced to). Used after
+ * {@link rebaseProgression} when recalling a stored progression at absolute pitch:
+ * the sound is preserved, but the label should read in the current key's context
+ * (e.g. a source "I" landing on the 5th degree becomes "V"). Name/suffix untouched.
+ */
+export function relabelDegreesForKey(event: ChordEvent): ChordEvent {
+  if (event.rootOffset == null) return event;
+  const base = rootDegreeLabel(event.rootOffset);
+  const degreeLabel =
+    event.bassOffset != null ? `${base}/${degreeLabelFromOffset(event.bassOffset)}` : base;
+  return { ...event, degreeLabel };
 }
 
 /**

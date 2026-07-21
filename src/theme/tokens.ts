@@ -70,6 +70,11 @@ export const colors = {
   subdominantText: '#ecc94b',
   dominantText: '#f0918f',
 
+  /** Fluorescent playhead accents (currently-sounding chord card). */
+  playNeonTonic: '#39FF6E',
+  playNeonSubdominant: '#FFE600',
+  playNeonDominant: '#FF3D7A',
+
   // Semantic
   success: '#22c55e',
   successText: '#7fd99b',
@@ -84,6 +89,31 @@ export const colors = {
 /** Rainbow palette used for the wordmark, Pro gradients and the export visualizer. */
 export const rainbow = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6'] as const;
 export const rainbowFull = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6', '#d6409f'] as const;
+
+/**
+ * Multi-key (modulation) visualization. Chords are grouped into "color slots"
+ * by their key context (see `src/lib/keyColor.ts`). Slot 0 = the base key and
+ * renders with NO tint; slots 1+ index into these arrays (wrapping) so each
+ * additional key reads distinctly against the dark strip.
+ */
+export const keyTints = [
+  'rgba(91,140,255,0.16)', // blue
+  'rgba(34,197,94,0.16)', // green
+  'rgba(234,179,8,0.16)', // amber
+  'rgba(214,64,159,0.16)', // pink
+  'rgba(124,92,255,0.16)', // purple
+  'rgba(249,115,22,0.16)', // orange
+] as const;
+export const keyTintBorders = [
+  'rgba(91,140,255,0.42)',
+  'rgba(34,197,94,0.42)',
+  'rgba(234,179,8,0.42)',
+  'rgba(214,64,159,0.42)',
+  'rgba(124,92,255,0.42)',
+  'rgba(249,115,22,0.42)',
+] as const;
+/** Solid legend swatch colors matching {@link keyTints} (slot 1+). */
+export const keyTintSolids = ['#5b8cff', '#22c55e', '#eab308', '#d6409f', '#7c5cff', '#f97316'] as const;
 
 /** Primary CTA / selection gradient (135deg #7c5cff → #5b8cff). */
 export const primaryGradient = ['#7c5cff', '#5b8cff'] as const;
@@ -161,4 +191,11 @@ export const functionColor: Record<ChordFunction, string> = {
   tonic: colors.tonic,
   subdominant: colors.subdominant,
   dominant: colors.dominant,
+};
+
+/** Fluorescent highlight for the currently playing progression card. */
+export const playNeonColor: Record<ChordFunction, string> = {
+  tonic: colors.playNeonTonic,
+  subdominant: colors.playNeonSubdominant,
+  dominant: colors.playNeonDominant,
 };
