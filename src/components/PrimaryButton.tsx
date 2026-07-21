@@ -45,6 +45,7 @@ const styles = StyleSheet.create({
     shadowRadius: 18,
     shadowOffset: { width: 0, height: 12 },
   },
-  label: { color: '#fff', fontSize: 16, fontFamily: font.bold, fontWeight: '700' },
+  // NotoSansJP needs an explicit, generous lineHeight or iOS clips the glyph tops.
+  label: { color: '#fff', fontSize: 16, lineHeight: 22, fontFamily: font.bold, fontWeight: '700' },
   dim: { opacity: 0.55 },
 });

@@ -279,6 +279,7 @@ const styles = StyleSheet.create({
 
   heroHint: {
     fontSize: 13.5,
+    lineHeight: 20,
     color: colors.textMuted,
     fontFamily: font.semibold,
     fontWeight: '600',
@@ -295,7 +296,13 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     marginTop: 10,
   },
-  presetLinkText: { fontSize: 13.5, fontFamily: font.semibold, fontWeight: '600', color: colors.purpleSoft },
+  presetLinkText: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    color: colors.purpleSoft,
+  },
 
   listHeader: {
     flexDirection: 'row',

@@ -1,4 +1,5 @@
 import AVFoundation
+import AudioToolbox
 import os
 
 /// Immutable snapshot of what to play. Swapped atomically under the lock so the
@@ -93,6 +94,20 @@ final class AudioEngineController {
   ]
   private var chordSource: AVAudioSourceNode?
   private var drumSource: AVAudioSourceNode?
+  /// Master brick-wall limiter (Apple AUPeakLimiter) inserted between the mix bus
+  /// and the output. Chord + drum transients could otherwise sum past 0 dBFS and
+  /// HARD-CLIP the output, which pumped the sustained E.Piano tone on every
+  /// drum/clap hit (heard as the voice "wavering"). The limiter catches those
+  /// peaks smoothly so the timbre stays stable under drums.
+  private let masterLimiter = AVAudioUnitEffect(
+    audioComponentDescription: AudioComponentDescription(
+      componentType: kAudioUnitType_Effect,
+      componentSubType: kAudioUnitSubType_PeakLimiter,
+      componentManufacturer: kAudioUnitManufacturer_Apple,
+      componentFlags: 0,
+      componentFlagsMask: 0
+    )
+  )
   private var format: AVAudioFormat?
   private var sampleRate: Double = 44_100
 
@@ -352,6 +367,13 @@ final class AudioEngineController {
     engine.connect(chord, to: mix.chordMixer, format: fmt)
     engine.connect(drum, to: mix.drumMixer, format: fmt)
     mix.connect(engine: engine, format: fmt)
+
+    // Re-route the master through the peak limiter: mainMixerNode → limiter → output.
+    // (Mixer.connect wired chord/drum → mainMixerNode; accessing mainMixerNode also
+    // auto-connected it to the output, which this reconnection supersedes.)
+    engine.attach(masterLimiter)
+    engine.connect(engine.mainMixerNode, to: masterLimiter, format: fmt)
+    engine.connect(masterLimiter, to: engine.outputNode, format: fmt)
 
     // Re-apply the last JS volumes (never hard-reset to defaults — that made
     // a 0% chord slider audible again after engine rebuild).
@@ -1201,8 +1223,9 @@ final class AudioEngineController {
         let absFrame = Double(frame + i)
         let c = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr, provider: chordProv)
         let d = offlineDrumSample(snap: snap, absFrame: absFrame, sr: sr, provider: drumProv)
-        var v = (c * chordGain + d * drumGain) * masterGain
-        if v > 1 { v = 1 } else if v < -1 { v = -1 }
+        // Soft-clip the summed mix (mirrors the real-time master limiter) so drum
+        // transients over a sustained E.Piano don't hard-clip into "wavering".
+        let v = tanh((c * chordGain + d * drumGain) * masterGain)
         ch[0][i] = v
         ch[1][i] = v
       }

@@ -3,11 +3,12 @@ import type { GrooveId } from '@/types';
 import { GROOVE_LABELS } from './labels';
 
 /**
- * UI grouping layer over {@link GrooveId} (design: groove selector). "8 Beat" and
- * "16 Beat" are presented as a single primary choice each, with a Pop(soft) / Rock(strong)
- * intensity sub-switch that picks the concrete groove id. Soul / Bossa Nova are single
- * grooves with no sub-switch. Pure data — no giant switch, so a new beat family or a new
- * single groove is one array entry, keeping the screen and the domain decoupled.
+ * UI grouping layer over {@link GrooveId} (design: groove selector). Every current
+ * choice is a single primary button (no sub-switch): "8 Beat" (Pop & Rock read the
+ * same, so they collapse to `pop8`), "16 Beat" (`soul16`), "Clap", "Bossa Nova".
+ * The Pop/Rock variant machinery below is retained so a future beat family can opt
+ * back into an intensity sub-switch without reworking the selector. Pure data — no
+ * giant switch, so a new groove is one array entry, keeping UI and domain decoupled.
  */
 export type GrooveVariant = 'pop' | 'rock';
 
@@ -32,13 +33,14 @@ export const GROOVE_VARIANTS: readonly GrooveVariant[] = ['pop', 'rock'];
 /**
  * Primary groove choices, in selector order.
  *
- * "16 Beat" and "Soul" were consolidated: their pockets sounded nearly identical,
- * so "16 Beat" now maps directly to the Soul groove (`soul16`) as a single choice
- * (no Pop/Rock sub-switch), and the standalone "Soul" entry is gone. "Clap" is a
- * new single groove (kick + backbeat with a hand-clap accent on the 3rd beat).
+ * "8 Beat" collapsed its Pop/Rock split into `pop8` — the two intensities read the
+ * same in practice, so it is now a single choice. "16 Beat" and "Soul" were likewise
+ * consolidated: "16 Beat" maps to the Soul groove (`soul16`) and the standalone
+ * "Soul" entry is gone. "Clap" is a single groove (kick + backbeat with a hand-clap
+ * accent on the 3rd beat). No item carries a sub-switch anymore.
  */
 export const GROOVE_MENU: readonly GrooveMenuItem[] = [
-  { key: 'beat8', label: '8 Beat', variants: { pop: 'pop8', rock: 'rock8' } },
+  { key: 'beat8', label: '8 Beat', grooveId: 'pop8' },
   { key: 'beat16', label: '16 Beat', grooveId: 'soul16' },
   { key: 'clap', label: GROOVE_LABELS.clap, grooveId: 'clap' },
   { key: 'bossaNova', label: GROOVE_LABELS.bossaNova, grooveId: 'bossaNova' },

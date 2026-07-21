@@ -33,17 +33,15 @@ export const PRO_INSTRUMENTS: InstrumentId[] = ['acousticGuitar', 'electricGuita
 export const ENABLED_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
 
 /**
- * Drum grooves (all free — requirements §6). "8/16 Beat" collapse Pop & Rock into a
- * single family with a Pop(soft)/Rock(strong) intensity switch in the UI (see
- * `src/data/grooveMenu.ts`); these labels carry the variant in parentheses so the
- * editor's STYLE chip reads the same as the selector.
+ * Drum grooves (all free — requirements §6). The selector now shows single choices
+ * (see `src/data/grooveMenu.ts`): "8 Beat" (`pop8`), "16 Beat" (`soul16`), "Clap",
+ * "Bossa Nova". `rock8` / `pop16` / `rock16` are retired from the selector — their
+ * pockets read almost identical to the kept grooves — but their labels stay for
+ * saved projects that still reference the legacy ids.
  */
 export const GROOVE_LABELS: Record<GrooveId, string> = {
-  pop8: '8 Beat (Pop)',
+  pop8: '8 Beat',
   rock8: '8 Beat (Rock)',
-  // pop16/rock16 are retired from the selector (their 16-beat pocket read almost
-  // identical to Soul). The "16 Beat" button now plays the Soul groove (`soul16`),
-  // so its label reads "16 Beat". The legacy ids stay for saved projects.
   pop16: '16 Beat (Pop)',
   rock16: '16 Beat (Rock)',
   soul16: '16 Beat',
