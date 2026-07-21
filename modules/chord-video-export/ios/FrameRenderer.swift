@@ -105,7 +105,8 @@ enum FrameRenderer {
     drawCentered(
       plan.title, font: .systemFont(ofSize: H * 0.026, weight: .heavy), color: textPrimary,
       centerX: W / 2, y: H * 0.06, maxWidth: W * 0.9)
-    let meta = "\(plan.keyLabel) · BPM \(plan.bpm) · \(plan.bars)小節"
+    // Only BPM under the title (key + bar count intentionally omitted).
+    let meta = "BPM \(plan.bpm)"
     drawCentered(
       meta, font: .systemFont(ofSize: H * 0.016, weight: .semibold), color: textMuted,
       centerX: W / 2, y: H * 0.10, maxWidth: W * 0.9)

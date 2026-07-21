@@ -77,14 +77,12 @@ enum DrumKit {
       ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.55)
 
     case "clap":
-      // Straight kick on 1 & 3 with a light backbeat, and a HAND-CLAP accent on
-      // the 3rd beat (beat index 2). The clap is the groove's signature — louder
-      // than the backbeat so it clearly "pops" on 3.
+      // Hand-claps ONLY, on the backbeat (beats 2 & 4). No kick / snare / hats —
+      // a pure clap track, as requested.
       return [
-        DrumHit(beat: 0, voice: .kick, vel: 0.95), DrumHit(beat: 2, voice: .kick, vel: 0.82),
-        DrumHit(beat: 1, voice: .snare, vel: 0.7), DrumHit(beat: 3, voice: .snare, vel: 0.7),
-        DrumHit(beat: 2, voice: .clap, vel: 1.0),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.4, accent: 0.55)
+        DrumHit(beat: 1, voice: .clap, vel: 1.0),
+        DrumHit(beat: 3, voice: .clap, vel: 1.0),
+      ]
 
     case "bossaNova":
       // Surdo-style kick, cross-stick (rim) clave, straight 8th hats.
