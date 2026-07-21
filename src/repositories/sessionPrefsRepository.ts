@@ -9,6 +9,7 @@ const LAST_PROJECT_KEY = 'last_project_id';
 const RELEASE_CUT_KEY = 'release_cut';
 const ADMIN_MODE_KEY = 'admin_mode';
 const OCTAVE_SHIFT_KEY = 'octave_shift';
+const EDITOR_TUTORIAL_KEY = 'editor_tutorial_seen';
 
 /** Default: cut piano release for tight accompaniment. */
 export const DEFAULT_RELEASE_CUT = true;
@@ -96,5 +97,26 @@ export async function setAdminModePref(enabled: boolean): Promise<void> {
   await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);`, [
     ADMIN_MODE_KEY,
     enabled ? '1' : '0',
+  ]);
+}
+
+/**
+ * First-run editor coach marks: true once the user has seen (and dismissed) the
+ * one-time "how to play a chord" tutorial. Device-level, shown only on first open.
+ */
+export async function getEditorTutorialSeen(): Promise<boolean> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM app_meta WHERE key = ?;`,
+    [EDITOR_TUTORIAL_KEY],
+  );
+  return row?.value === '1' || row?.value === 'true';
+}
+
+export async function setEditorTutorialSeen(): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);`, [
+    EDITOR_TUTORIAL_KEY,
+    '1',
   ]);
 }

@@ -572,12 +572,22 @@ final class AudioEngineController {
         let t = (absoluteSample - pvBase) / sr
         if t >= 0 && t < pvDur {
           let velGain = Float(pvVel) / 127.0
+          var pv: Float = 0
           for note in pvNotes {
-            value += provider.sample(note: note, tSeconds: t, durationSeconds: pvDur) * velGain
+            pv += provider.sample(note: note, tSeconds: t, durationSeconds: pvDur) * velGain
           }
+          // Soft-limit the summed preview polyphony. A tapped chord (4–5 sampled
+          // notes × gain × velocity) easily exceeds 1.0; adding it un-limited made
+          // the output hard-clip and read as a machine-like buzz ("ジー") on every
+          // chord tap. tanh keeps the body while taming the peak.
+          value += tanh(pv)
         }
       }
 
+      // Unified soft clip on the chord bus so a preview overlapping the running
+      // progression (both already ≤1 individually) can never sum past 1.0 into a
+      // clip. Bounds the combined signal before the channel gain.
+      value = tanh(value)
       value *= chordGain
       if value != 0 { producedSound = true }
       writeToAllChannels(buffers, frame: frame, value: value)

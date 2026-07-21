@@ -60,10 +60,11 @@ describe('buildSegments (tile progression across the clip)', () => {
   });
 });
 
-describe('buildSegments — multi-key indicator (keyTintHex)', () => {
-  it('omits keyTintHex for a single-key progression', () => {
+describe('buildSegments — multi-key indicator (keyTintHex / keyName)', () => {
+  it('omits keyTintHex and keyName for a single-key progression', () => {
     const segs = buildSegments(PROG, 'C', 120, 4);
     expect(segs.every((s) => s.keyTintHex === undefined)).toBe(true);
+    expect(segs.every((s) => s.keyName === undefined)).toBe(true);
   });
 
   it('tints each segment by its key context when the progression modulates', () => {
@@ -76,6 +77,16 @@ describe('buildSegments — multi-key indicator (keyTintHex)', () => {
     expect(segs[0].keyTintHex).toBeDefined();
     expect(segs[1].keyTintHex).toBeDefined();
     expect(segs[1].keyTintHex).not.toBe(segs[0].keyTintHex);
+  });
+
+  it('spells each segment key next to the degree when the progression modulates', () => {
+    const prog = [
+      ev({ rootOffset: 0, suffix: '', displayName: 'C', durationBeats: 4, keyContext: 'C' }),
+      ev({ rootOffset: 7, suffix: '', displayName: 'G', durationBeats: 4, keyContext: 'G' }),
+    ];
+    const segs = buildSegments(prog, 'C', 120, 4);
+    expect(segs[0].keyName).toBe('C');
+    expect(segs[1].keyName).toBe('G');
   });
 });
 

@@ -8,6 +8,8 @@ struct RenderSegment {
   let color: UIColor
   /// Small key-context indicator color; nil for single-key progressions.
   let keyTint: UIColor?
+  /// Key name spelled next to the degree (e.g. "G"); nil for single-key progressions.
+  let keyName: String?
   let midiNotes: [Int]
   let startSec: Double
   let durationSec: Double
@@ -119,15 +121,19 @@ enum FrameRenderer {
         glowRadius: H * 0.02 * (0.5 + pulse), alpha: ease)
       let degFont = UIFont.systemFont(ofSize: H * 0.030, weight: .bold)
       let degY = H * 0.40 + slide * 0.5
+      // On a modulating video, spell the key next to the degree — "Ⅴ (G)" — so the
+      // viewer always knows which key each degree is read in. Single-key videos
+      // keep just the degree (no ambiguity, stays clean).
+      let degreeDisplay = seg.keyName.map { "\(seg.degreeLabel) (\($0))" } ?? seg.degreeLabel
       drawCentered(
-        seg.degreeLabel, font: degFont,
+        degreeDisplay, font: degFont,
         color: textPrimary.withAlphaComponent(ease),
         centerX: W / 2, y: degY, maxWidth: W * 0.9)
 
       // Small key-context dot just left of the degree label — only present when the
       // progression modulates (multi-key), so single-key videos stay clean.
       if let tint = seg.keyTint {
-        let degW = min(W * 0.9, (seg.degreeLabel as NSString).size(withAttributes: [.font: degFont]).width)
+        let degW = min(W * 0.9, (degreeDisplay as NSString).size(withAttributes: [.font: degFont]).width)
         let dotR = H * 0.009
         let dotCenterX = W / 2 - degW / 2 - dotR * 2.2
         let dotCenterY = degY + degFont.lineHeight * 0.5

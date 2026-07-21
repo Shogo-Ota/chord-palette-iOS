@@ -32,6 +32,7 @@ export type GrooveId =
   | 'rock8'
   | 'rock16'
   | 'soul16'
+  | 'clap'
   | 'bossaNova';
 
 /** A diatonic chord candidate offered for the currently selected key. */

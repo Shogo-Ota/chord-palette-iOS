@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { CPChordContextMenu, CPSettingChip, CPSuggestionBar, CPTransportBar } from '@/components/cp';
+import { CPChordContextMenu, CPCoachMarks, CPSettingChip, CPSuggestionBar, CPTransportBar } from '@/components/cp';
 import { SegTrack } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
@@ -52,6 +52,7 @@ import {
   totalBars as calcTotalBars,
 } from '@/lib/progression';
 import type { ProgressionSuggestion } from '@/lib/theory/progression/suggestNext';
+import { getEditorTutorialSeen, setEditorTutorialSeen } from '@/repositories/sessionPrefsRepository';
 import { track } from '@/services/analytics';
 import { audioService } from '@/services/audio';
 import type { PlaybackState } from '@/services/audio/types';
@@ -110,6 +111,27 @@ export default function EditorScreen() {
   const s = useEditorSession();
   const upsell = useUpsellToast();
   const chordSuggestions = useChordSuggestions();
+
+  // First-run coach marks: shown once, persisted in app_meta. Kept UI-only here;
+  // the overlay component is presentational and self-dismissing.
+  const [showTutorial, setShowTutorial] = useState(false);
+  useEffect(() => {
+    let active = true;
+    getEditorTutorialSeen()
+      .then((seen) => {
+        if (active && !seen) setShowTutorial(true);
+      })
+      .catch((e) => logger.error('Tutorial flag read failed', { error: String(e) }));
+    return () => {
+      active = false;
+    };
+  }, []);
+  const dismissTutorial = useCallback(() => {
+    setShowTutorial(false);
+    setEditorTutorialSeen().catch((e) =>
+      logger.error('Tutorial flag write failed', { error: String(e) }),
+    );
+  }, []);
 
   useEffect(() => {
     if (id) {
@@ -1068,6 +1090,7 @@ export default function EditorScreen() {
       </Modal>
     </ScreenScaffold>
       <UpsellToast message={upsell.message} onPress={() => router.push('/paywall')} />
+      <CPCoachMarks visible={showTutorial} onDismiss={dismissTutorial} />
     </View>
   );
 }

@@ -29,11 +29,18 @@ export const GROOVE_VARIANT_LABELS: Readonly<Record<GrooveVariant, string>> = {
 
 export const GROOVE_VARIANTS: readonly GrooveVariant[] = ['pop', 'rock'];
 
-/** Primary groove choices, in selector order. */
+/**
+ * Primary groove choices, in selector order.
+ *
+ * "16 Beat" and "Soul" were consolidated: their pockets sounded nearly identical,
+ * so "16 Beat" now maps directly to the Soul groove (`soul16`) as a single choice
+ * (no Pop/Rock sub-switch), and the standalone "Soul" entry is gone. "Clap" is a
+ * new single groove (kick + backbeat with a hand-clap accent on the 3rd beat).
+ */
 export const GROOVE_MENU: readonly GrooveMenuItem[] = [
   { key: 'beat8', label: '8 Beat', variants: { pop: 'pop8', rock: 'rock8' } },
-  { key: 'beat16', label: '16 Beat', variants: { pop: 'pop16', rock: 'rock16' } },
-  { key: 'soul', label: GROOVE_LABELS.soul16, grooveId: 'soul16' },
+  { key: 'beat16', label: '16 Beat', grooveId: 'soul16' },
+  { key: 'clap', label: GROOVE_LABELS.clap, grooveId: 'clap' },
   { key: 'bossaNova', label: GROOVE_LABELS.bossaNova, grooveId: 'bossaNova' },
 ];
 

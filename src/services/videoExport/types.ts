@@ -17,6 +17,12 @@ export type ExportSegment = {
    * progressions so the visual stays clean.
    */
   keyTintHex?: string;
+  /**
+   * Key name for this chord's key context (e.g. "G"), rendered in parentheses after
+   * the degree label — "Ⅴ (G)" — so a modulating video shows which key each degree
+   * is read in. Omitted for single-key progressions (no ambiguity, keep it clean).
+   */
+  keyName?: string;
   /** MIDI notes highlighted on the keyboard. */
   midiNotes: number[];
   /** Segment start / length in seconds on the (looped) export timeline. */

@@ -48,6 +48,10 @@ const PROFILES: Record<string, DrumProfile> = {
     ghostBeats: [1.75, 3.75],
     swing: false,
   },
+  // Clap: straight kick on 1 & 3 with a backbeat, plus a hand-clap accent on the
+  // 3rd beat (beat index 2). Only kick/snare anchors drive the comp lock; the clap
+  // is decorative and modelled natively (DrumKit.hits "clap").
+  clap: { grooveId: 'clap', family: 'eight', kickBeats: [0, 2], snareBeats: [1, 3], swing: false },
   bossaNova: { grooveId: 'bossaNova', family: 'swing', kickBeats: [0, 1.5, 2, 3.5], snareBeats: [], swing: false },
 };
 

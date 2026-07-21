@@ -3,7 +3,7 @@ import Foundation
 /// The drum voices used across the 7 MVP grooves (requirements §5.6). Shared by every
 /// `DrumProvider`: the synth turns a voice into oscillator math, the sampled provider
 /// maps it to a General MIDI percussion note. Plain enum ⇒ Hashable (usable as a key).
-enum DrumVoice { case kick, snare, hatClosed, hatOpen, ride, rim }
+enum DrumVoice { case kick, snare, hatClosed, hatOpen, ride, rim, clap }
 
 /// One drum onset within a 4/4 bar. `beat` is its position (0..4), `vel` a 0..1 level.
 struct DrumHit { let beat: Double; let voice: DrumVoice; let vel: Float }
@@ -16,7 +16,7 @@ struct DrumHit { let beat: Double; let voice: DrumVoice; let vel: Float }
 /// that drives the piano groove-lock — keep the two in sync.
 enum DrumKit {
   /// All groove ids the providers pre-resolve at init. `pop8-min` is a pop8 alias.
-  static let grooveIds = ["pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "bossaNova"]
+  static let grooveIds = ["pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "clap", "bossaNova"]
 
   /// Straight hats every `step` beats, with heel-toe dynamics (audit P2-1):
   /// integer beats get `accent`; 8th offbeats are softer; 16th e/a softer still.
@@ -76,6 +76,16 @@ enum DrumKit {
         DrumHit(beat: 1.75, voice: .snare, vel: 0.3), DrumHit(beat: 3.75, voice: .snare, vel: 0.3),
       ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.55)
 
+    case "clap":
+      // Straight kick on 1 & 3 with a light backbeat, and a HAND-CLAP accent on
+      // the 3rd beat (beat index 2). The clap is the groove's signature — louder
+      // than the backbeat so it clearly "pops" on 3.
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.95), DrumHit(beat: 2, voice: .kick, vel: 0.82),
+        DrumHit(beat: 1, voice: .snare, vel: 0.7), DrumHit(beat: 3, voice: .snare, vel: 0.7),
+        DrumHit(beat: 2, voice: .clap, vel: 1.0),
+      ] + hats(.hatClosed, step: 0.5, vel: 0.4, accent: 0.55)
+
     case "bossaNova":
       // Surdo-style kick, cross-stick (rim) clave, straight 8th hats.
       return [
@@ -101,6 +111,7 @@ enum DrumKit {
     case .hatOpen: return 46 // Open Hi-Hat
     case .ride: return 51 // Ride Cymbal 1
     case .rim: return 37 // Side Stick / cross-stick
+    case .clap: return 39 // Hand Clap
     }
   }
 }

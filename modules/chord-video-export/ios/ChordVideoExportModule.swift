@@ -8,6 +8,8 @@ struct ExportSegmentRecord: Record {
   @Field var colorHex: String = "#ffffff"
   /// Small key-context indicator color; empty when the progression is single-key.
   @Field var keyTintHex: String = ""
+  /// Key name spelled next to the degree (e.g. "G"); empty when single-key.
+  @Field var keyName: String = ""
   @Field var midiNotes: [Int] = []
   @Field var startSec: Double = 0
   @Field var durationSec: Double = 0
@@ -56,6 +58,7 @@ public class ChordVideoExportModule: Module {
           degreeLabel: s.degreeLabel,
           color: Self.color(fromHex: s.colorHex),
           keyTint: s.keyTintHex.isEmpty ? nil : Self.color(fromHex: s.keyTintHex),
+          keyName: s.keyName.isEmpty ? nil : s.keyName,
           midiNotes: s.midiNotes,
           startSec: s.startSec,
           durationSec: s.durationSec

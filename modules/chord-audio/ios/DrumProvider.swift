@@ -99,6 +99,26 @@ final class SynthDrumProvider: DrumProvider {
       let env = exp(-t / 0.006)
       let tone = sin(2.0 * Double.pi * 1700.0 * t)
       return Float(tone * env) * 0.5
+    case .clap:
+      // Hand clap: a few band-passed noise bursts a couple ms apart (the classic
+      // 808-style multi-tap) followed by a short diffuse tail. Mid-forward so it
+      // reads clearly on small speakers without the harsh full-band hash.
+      let decay = 0.2
+      if t >= decay { return 0 }
+      // Three quick taps then a body tail — spacing gives the characteristic "clap".
+      let taps = [0.0, 0.009, 0.018]
+      var bursts: Double = 0
+      for (i, tap) in taps.enumerated() {
+        let dt = t - tap
+        if dt < 0 { continue }
+        let env = exp(-dt / 0.0045)
+        bursts += Double(SynthDrumProvider.noise(frame &+ Int64(i * 7919))) * env
+      }
+      let tailEnv = exp(-t / 0.055)
+      let tail = Double(SynthDrumProvider.noise(frame)) * tailEnv * 0.5
+      // Gentle mid tone shapes the noise toward a hand-clap timbre (~1.1 kHz).
+      let shape = 0.6 + 0.4 * sin(2.0 * Double.pi * 1100.0 * t)
+      return Float((bursts + tail) * shape) * 0.42
     }
   }
 

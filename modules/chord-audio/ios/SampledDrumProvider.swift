@@ -31,7 +31,7 @@ final class SampledDrumProvider: DrumProvider {
   private(set) var lastLoadError: String?
 
   /// The distinct voices any groove can use — the set we pre-render.
-  private static let voices: [DrumVoice] = [.kick, .snare, .hatClosed, .hatOpen, .ride, .rim]
+  private static let voices: [DrumVoice] = [.kick, .snare, .hatClosed, .hatOpen, .ride, .rim, .clap]
 
   init(sampleRate: Double) {
     self.sampleRate = sampleRate

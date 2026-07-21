@@ -16,6 +16,12 @@ describe('drumProfiles — mirror of DrumProvider.swift', () => {
       snareBeats: [1, 3],
       ghostBeats: [1.75, 3.75],
     });
+    expect(profileFor('clap')).toMatchObject({
+      family: 'eight',
+      kickBeats: [0, 2],
+      snareBeats: [1, 3],
+      swing: false,
+    });
     expect(profileFor('bossaNova')).toMatchObject({
       family: 'swing',
       kickBeats: [0, 1.5, 2, 3.5],
@@ -25,7 +31,7 @@ describe('drumProfiles — mirror of DrumProvider.swift', () => {
   });
 
   it('no groove carries the triplet swing flag (Swing groove retired)', () => {
-    const swung = ['pop8', 'pop16', 'rock8', 'rock16', 'soul16', 'bossaNova'].filter(
+    const swung = ['pop8', 'pop16', 'rock8', 'rock16', 'soul16', 'clap', 'bossaNova'].filter(
       (id) => profileFor(id).swing,
     );
     expect(swung).toEqual([]);
@@ -44,6 +50,7 @@ describe('familyOf', () => {
     expect(familyOf('pop16')).toBe('sixteen');
     expect(familyOf('rock16')).toBe('sixteen');
     expect(familyOf('soul16')).toBe('sixteen');
+    expect(familyOf('clap')).toBe('eight');
     expect(familyOf('bossaNova')).toBe('swing');
   });
 });

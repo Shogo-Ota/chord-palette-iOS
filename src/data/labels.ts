@@ -41,9 +41,13 @@ export const ENABLED_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
 export const GROOVE_LABELS: Record<GrooveId, string> = {
   pop8: '8 Beat (Pop)',
   rock8: '8 Beat (Rock)',
+  // pop16/rock16 are retired from the selector (their 16-beat pocket read almost
+  // identical to Soul). The "16 Beat" button now plays the Soul groove (`soul16`),
+  // so its label reads "16 Beat". The legacy ids stay for saved projects.
   pop16: '16 Beat (Pop)',
   rock16: '16 Beat (Rock)',
-  soul16: 'Soul',
+  soul16: '16 Beat',
+  clap: 'Clap',
   bossaNova: 'Bossa Nova',
 };
 
@@ -53,6 +57,7 @@ export const GROOVE_IDS: GrooveId[] = [
   'pop16',
   'rock16',
   'soul16',
+  'clap',
   'bossaNova',
 ];
 

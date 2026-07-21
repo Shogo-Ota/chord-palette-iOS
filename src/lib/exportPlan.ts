@@ -68,6 +68,8 @@ export function buildSegments(
       degreeLabel: ev.degreeLabel,
       colorHex: functionColor[ev.function],
       keyTintHex: multi ? slotHex(slots.get(eventKey(ev, key)) ?? 0) : undefined,
+      // Only spell the key next to the degree when the progression modulates.
+      keyName: multi ? eventKey(ev, key) : undefined,
       midiNotes: chordMidiNotes(ev, key, octaveShift),
       startSec: t,
       durationSec: clipped,
