@@ -81,6 +81,8 @@ export type LibraryChord = {
   rootOffset: number;
   /** Chord-quality suffix appended to the transposed root (e.g. '', 'm7', '7'). */
   suffix: string;
+  /** Catalog definition id when resolved from {@link ChordDefinition}. */
+  definitionId?: string;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
 };
@@ -101,6 +103,8 @@ export type ChordEvent = {
    */
   rootOffset: number;
   suffix: string;
+  /** Catalog definition id when resolved from {@link ChordDefinition}. */
+  definitionId?: string;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
   /** Bass note when this event is a slash/on-chord. */
