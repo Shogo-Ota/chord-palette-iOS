@@ -13,5 +13,6 @@
 | [design/GrooveEngineDesign.md](./design/GrooveEngineDesign.md) | 6 | Groove Engine |
 | [design/ChordDataModelDesign.md](./design/ChordDataModelDesign.md) | 7 | データ構造 |
 | [design/TestArchitectureDesign.md](./design/TestArchitectureDesign.md) | 8 | テスト構成 |
+| [DeviceTesting.md](./DeviceTesting.md) | 運用 | 実機確認（Dev Client + Metro・低コスト） |
 
 既存の `docs/sprints/` / `docs/design-tokens.md` は UI スプリント用。音楽仕様は `project/docs/music/` を優先する。
