@@ -1,3 +1,4 @@
+import { getDefinitionBySymbol } from '@/lib/music/definitions/catalog';
 import {
   CHORD_VARIATIONS,
   availableVariations,
@@ -236,6 +237,7 @@ export function variationChord(
     isPro: v.isPro,
     rootOffset: MAJOR_SCALE_OFFSETS[degreeIndex],
     suffix,
+    definitionId: getDefinitionBySymbol(suffix)?.id,
   };
 }
 
