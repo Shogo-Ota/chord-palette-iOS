@@ -1,0 +1,24 @@
+---
+description: 伴奏・グルーヴ・Humanize ゲート
+globs:
+  - modules/chord-audio/**/*
+  - src/app/groove.tsx
+  - src/lib/groove/**/*
+  - src/services/audio/**/*
+  - project/docs/music/Groove.md
+  - project/docs/music/Velocity.md
+  - project/docs/music/Timing.md
+  - project/docs/music/PianoPatterns.md
+  - project/docs/music/DrumPatterns.md
+  - project/docs/music/Humanize.md
+  - project/docs/design/GrooveEngineDesign.md
+alwaysApply: false
+---
+
+# Groove Gates
+
+- 原曲の MIDI フレーズや伴奏パターンを製品に直置きしない。
+- 蓄積してよいのはスタイル / Humanize / Swing / Accent / Voicing などの抽象特徴のみ。
+- Preview と Export で決定論的に同じ結果になること（シード戦略を明示）。
+- Piano と Drum の swing を将来共有できるパラメータ設計を優先する。
+- 変更時は `groove-reviewer` 相当の観点で自己レビューする。
