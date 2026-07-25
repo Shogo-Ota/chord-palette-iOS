@@ -3,6 +3,7 @@ export type {
   ChordTimelineEvent,
   CompStroke,
   DrumHit,
+  DrumHitPayload,
   DrumPatternDoc,
   DrumVoice,
   GrooveFeatures,
@@ -31,4 +32,4 @@ export {
   PRODUCT_GROOVE_IDS,
   PRODUCT_ACCOMPANIMENT_IDS,
 } from '@/lib/groove/profiles';
-export { buildChordStrikesPayload } from '@/lib/groove/attachStrikes';
+export { buildChordStrikesPayload, buildDrumHitsPayload } from '@/lib/groove/attachStrikes';

@@ -43,6 +43,29 @@ describe('sessionToPlaybackRequest — groove bridge', () => {
     expect(req.chordStrikes![0]).not.toHaveProperty('startFrame');
   });
 
+  it('attaches beat-level drumHits resolved from the groove id', () => {
+    const session = {
+      tempoBpm: 120,
+      key: 'C',
+      grooveId: 'rock8',
+      accompanimentPattern: 'eightBeat',
+      instrumentId: 'piano',
+      progression: [ev({ rootOffset: 0, suffix: '', durationBeats: 4 })],
+    } as EditorSession;
+
+    const req = sessionToPlaybackRequest(session, true);
+    expect(req.drumHits?.length).toBeGreaterThan(0);
+    expect(req.drumHits![0]).toEqual(
+      expect.objectContaining({
+        beat: expect.any(Number),
+        voice: expect.any(String),
+        vel: expect.any(Number),
+      }),
+    );
+    // rock8: kick on beats 1 & 3 (0-indexed 0 & 2).
+    expect(req.drumHits!.filter((h) => h.voice === 'kick').map((h) => h.beat)).toEqual([0, 2]);
+  });
+
   it('block strikes start at chord boundaries (beat 0 and 4)', () => {
     const session = {
       tempoBpm: 120,

@@ -28,6 +28,10 @@ final class PlanSnapshot {
   /// Precomputed chord/accompaniment note strikes for ONE loop, sorted by start.
   /// Built once (off the audio thread) from the accompaniment pattern.
   let chordStrikes: [NoteStrike]
+  /// Precompiled TS Groove Engine drum hits for ONE 4/4 bar (voice already
+  /// resolved off the audio thread). Empty → the DrumProvider resolves the
+  /// concrete pattern from `drumPattern` (older Dev Client fallback).
+  let drumHits: [DrumVoiceHit]
 
   init(
     bpm: Double,
@@ -36,7 +40,8 @@ final class PlanSnapshot {
     events: [NoteEventValue],
     drumPattern: String = "pop8",
     accompaniment: String = "block",
-    chordStrikes: [NoteStrike] = []
+    chordStrikes: [NoteStrike] = [],
+    drumHits: [DrumVoiceHit] = []
   ) {
     self.bpm = bpm
     self.totalBeats = totalBeats
@@ -45,6 +50,7 @@ final class PlanSnapshot {
     self.drumPattern = drumPattern
     self.accompaniment = accompaniment
     self.chordStrikes = chordStrikes
+    self.drumHits = drumHits
   }
 }
 
@@ -61,6 +67,14 @@ struct BeatStrikeValue {
   let durationBeats: Double
   let note: Int
   let gain: Float
+}
+
+/// Beat-level drum hit from the TS Groove Engine (voice as string on the wire).
+/// Resolved to a `DrumVoiceHit` off the audio thread before it enters the snapshot.
+struct DrumHitValue {
+  let beat: Double
+  let voice: String
+  let vel: Float
 }
 
 enum PlaybackState: String {
@@ -322,7 +336,8 @@ final class AudioEngineController {
     drumPattern: String,
     accompaniment: String,
     instrument: String,
-    precompiledStrikes: [BeatStrikeValue] = []
+    precompiledStrikes: [BeatStrikeValue] = [],
+    precompiledDrumHits: [DrumHitValue] = []
   ) {
     // §3.1: play() is a fresh-from-top playback, never a resume. It is only valid
     // once the engine is prepared and from ready/playing/paused/stopped. From
@@ -337,9 +352,13 @@ final class AudioEngineController {
     let strikes = resolveChordStrikes(
       precompiled: precompiledStrikes, bpm: bpm, totalBeats: totalBeats, events: events,
       accompaniment: accompaniment, sr: sampleRate)
+    // Resolve drum hits off the audio thread (string voice → enum). Empty → the
+    // DrumProvider expands the concrete pattern from the groove id at render time.
+    let drumHits = Self.resolveDrumHits(precompiledDrumHits)
     let snapshot = PlanSnapshot(
       bpm: bpm, totalBeats: totalBeats, loop: loop, events: events,
-      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
+      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes,
+      drumHits: drumHits
     )
     os_unfair_lock_lock(&unfairLock)
     plan = snapshot
@@ -628,6 +647,20 @@ final class AudioEngineController {
     return max(0.05, min(nominal, look + until + 0.06))
   }
 
+  /// Resolve wire drum hits (voice string) into synthesizable `DrumVoiceHit`s.
+  /// Unknown voice strings are dropped. Runs OFF the audio thread so the render
+  /// callback iterates a ready list with no allocation or string comparison.
+  private static func resolveDrumHits(_ hits: [DrumHitValue]) -> [DrumVoiceHit] {
+    guard !hits.isEmpty else { return [] }
+    var out: [DrumVoiceHit] = []
+    out.reserveCapacity(hits.count)
+    for h in hits {
+      guard let voice = DrumVoiceKind(rawValue: h.voice) else { continue }
+      out.append(DrumVoiceHit(beat: h.beat, voice: voice, vel: h.vel))
+    }
+    return out
+  }
+
   /// Prefer precompiled TS strikes (beat → frames at `sr`); fall back to native expand.
   private func resolveChordStrikes(
     precompiled: [BeatStrikeValue],
@@ -859,6 +892,12 @@ final class AudioEngineController {
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
     var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
     if beatInBar < 0 { beatInBar += 4.0 }
+    // Prefer precompiled TS drum hits; otherwise expand the groove-id pattern.
+    if !snap.drumHits.isEmpty {
+      return drumProvider.sample(
+        hits: snap.drumHits, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
+      )
+    }
     return drumProvider.sample(
       groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
     )
@@ -1021,7 +1060,8 @@ final class AudioEngineController {
     accompaniment: String,
     instrument: String,
     durationSec: Double,
-    precompiledStrikes: [BeatStrikeValue] = []
+    precompiledStrikes: [BeatStrikeValue] = [],
+    precompiledDrumHits: [DrumHitValue] = []
   ) throws -> (url: URL, sampleRate: Double) {
     let sr = 44_100.0
     let program = Self.programForInstrument[instrument] ?? 0
@@ -1035,9 +1075,11 @@ final class AudioEngineController {
     let strikes = resolveChordStrikes(
       precompiled: precompiledStrikes, bpm: bpm, totalBeats: beats, events: events,
       accompaniment: accompaniment, sr: sr)
+    let drumHits = Self.resolveDrumHits(precompiledDrumHits)
     let snap = PlanSnapshot(
       bpm: bpm, totalBeats: beats, loop: true, events: events,
-      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
+      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes,
+      drumHits: drumHits
     )
 
     let outURL = FileManager.default.temporaryDirectory
@@ -1096,6 +1138,12 @@ final class AudioEngineController {
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
     var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
     if beatInBar < 0 { beatInBar += 4.0 }
+    // Export must match playback: prefer precompiled TS hits, else groove-id expand.
+    if !snap.drumHits.isEmpty {
+      return provider.sample(
+        hits: snap.drumHits, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
+      )
+    }
     return provider.sample(
       groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
     )

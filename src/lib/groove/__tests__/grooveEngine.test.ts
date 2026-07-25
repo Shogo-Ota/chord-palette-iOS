@@ -1,4 +1,5 @@
 import {
+  buildDrumHitsPayload,
   compilePianoBeatStrikes,
   compilePianoStrikes,
   getDrumPattern,
@@ -49,6 +50,48 @@ describe('drum patterns (data-driven, mirrors DrumProvider)', () => {
     const rides = getDrumPattern('jazzSwing').hits.filter((h) => h.voice === 'ride');
     expect(rides.some((h) => Math.abs(h.beat - (1 + 2 / 3)) < 1e-9)).toBe(true);
     expect(rides.some((h) => Math.abs(h.beat - (3 + 2 / 3)) < 1e-9)).toBe(true);
+  });
+});
+
+describe('buildDrumHitsPayload (TS→Native drum bridge)', () => {
+  it('emits beat/voice/vel from the groove pattern and drops tags', () => {
+    const hits = buildDrumHitsPayload({ grooveId: 'pop8' });
+    const src = getDrumPattern('pop8').hits;
+    expect(hits).toHaveLength(src.length);
+    expect(hits[0]).toEqual(
+      expect.objectContaining({
+        beat: expect.any(Number),
+        voice: expect.any(String),
+        vel: expect.any(Number),
+      }),
+    );
+    // Copy-guard for the wire: no tags, no frame fields.
+    expect(hits.every((h) => !('tags' in h))).toBe(true);
+    expect(hits.every((h) => !('startFrame' in h))).toBe(true);
+  });
+
+  it('mirrors DrumProvider: pop8 kick on 1/3, snare on 2/4', () => {
+    const hits = buildDrumHitsPayload({ grooveId: 'pop8' });
+    expect(hits.filter((h) => h.voice === 'kick').map((h) => h.beat)).toEqual([0, 2]);
+    expect(hits.filter((h) => h.voice === 'snare').map((h) => h.beat)).toEqual([1, 3]);
+  });
+
+  it('carries soul16 ghost-snare velocity even though tags are dropped', () => {
+    const hits = buildDrumHitsPayload({ grooveId: 'soul16' });
+    const ghostBeats = hits.filter((h) => h.voice === 'snare' && h.vel === 0.3).map((h) => h.beat);
+    expect(ghostBeats).toEqual([1.75, 3.75]);
+  });
+
+  it('falls back to pop8 for an unknown groove id (never empty)', () => {
+    expect(buildDrumHitsPayload({ grooveId: 'does-not-exist' })).toEqual(
+      buildDrumHitsPayload({ grooveId: 'pop8' }),
+    );
+  });
+
+  it('covers every product groove with a non-empty bar of hits', () => {
+    for (const g of PRODUCT_GROOVE_IDS) {
+      expect(buildDrumHitsPayload({ grooveId: g }).length).toBeGreaterThan(0);
+    }
   });
 });
 

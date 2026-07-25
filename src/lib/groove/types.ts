@@ -79,6 +79,18 @@ export type DrumPatternDoc = {
 };
 
 /**
+ * Beat-level drum hit for the Native bridge (sample-rate independent).
+ * `beat` is the position within a 4/4 bar (0..4); Native folds playback frames
+ * into a bar and synthesizes the voice itself. Only the schedule crosses the wire.
+ * @see project/docs/design/NativeGrooveBridge.md
+ */
+export type DrumHitPayload = {
+  beat: number;
+  voice: DrumVoice;
+  vel: number;
+};
+
+/**
  * Beat-level accompaniment strike (sample-rate independent).
  * Bridge contract: project/docs/design/NativeGrooveBridge.md
  */
