@@ -21,13 +21,16 @@
 
 ---
 
-## 3. Hit 記述目標
+## 3. Hit 記述（実装）
 
-```json
-{ "beat": 1.75, "voice": "snare", "vel": 0.3, "tags": ["ghost"] }
+正本（TS）: `src/lib/groove/drumPatterns.ts`  
+例（soul16 ghost）:
+
+```ts
+{ beat: 1.75, voice: 'snare', vel: 0.3, tags: ['ghost'] }
 ```
 
-Accent / Ghost は vel と tags で表現。Humanize は別プロファイルでオンセットと vel を微小変調。
+Accent / Ghost は vel と tags で表現。プロファイルは `grooveProfileFor()`（`src/lib/groove/profiles.ts`）。
 
 ---
 

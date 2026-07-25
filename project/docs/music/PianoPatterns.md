@@ -13,22 +13,16 @@
 
 ---
 
-## 2. パターン記述の目標形
+## 2. パターン記述（実装）
 
-データ駆動の stroke 列:
+正本（TS）: `src/lib/groove/pianoPatterns.ts` + `compilePiano.ts`  
+Native（`AudioEngineController.buildChordStrikes`）は移行完了まで並行。次段で renderer のみに縮小する。
 
-```json
-{
-  "id": "eightBeat",
-  "strokes": [
-    { "part": "bass", "beat": 0, "dur": 1, "vel": 0.85 },
-    { "part": "body", "beat": 0, "dur": 0.5, "vel": 0.8, "strumMs": 5 },
-    { "part": "body", "beat": 0.5, "dur": 0.45, "vel": 0.7, "look": -0.02 }
-  ]
-}
+```ts
+// eightBeat のレイヤ例（抜粋）
+{ part: 'bass', strokes: [{ beat: 0, vel: 1 }, …], nominalRingBeats: 0.95 }
+{ part: 'body', strokes: [{ beat: 0.5, vel: 0.58, look: 0.04 }, …], strumSec: 0.005, sparkle: true }
 ```
-
-Swift の `switch` 直書きから、この JSON/TS 定義の消費へ移行する（設計書参照）。
 
 ---
 
