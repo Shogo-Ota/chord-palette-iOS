@@ -78,7 +78,18 @@ export type DrumPatternDoc = {
   hits: DrumHit[];
 };
 
-/** Frame-level strike ready for a native renderer (mirrors Swift NoteStrike). */
+/**
+ * Beat-level accompaniment strike (sample-rate independent).
+ * Bridge contract: project/docs/design/NativeGrooveBridge.md
+ */
+export type BeatStrike = {
+  startBeat: number;
+  durationBeats: number;
+  note: number;
+  gain: number;
+};
+
+/** Frame-level strike (tests / offline helpers). Native converts from BeatStrike. */
 export type NoteStrike = {
   startFrame: number;
   durationFrames: number;

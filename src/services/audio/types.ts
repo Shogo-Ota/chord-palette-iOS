@@ -55,6 +55,18 @@ export type NoteEvent = {
   velocity: number;
 };
 
+/**
+ * Beat-level accompaniment strike from the TS Groove Engine.
+ * Native converts to frames using its device sample rate.
+ * @see project/docs/design/NativeGrooveBridge.md
+ */
+export type BeatStrikePayload = {
+  startBeat: number;
+  durationBeats: number;
+  note: number;
+  gain: number;
+};
+
 /** A fully-specified request handed to the native engine in a single call. */
 export type PlaybackRequest = {
   bpm: number;
@@ -66,12 +78,16 @@ export type PlaybackRequest = {
   drumPatternId: string;
   /**
    * Accompaniment rhythm id ('block' | 'eightBeat' | 'sixteenthBeat' | 'arpeggio').
-   * Native re-triggers/arpeggiates each chord's body notes on this grid while the
-   * low bass sustains; chord events stay 1:1 with the timeline (highlight-safe).
+   * When {@link chordStrikes} is present, Native skips its internal pattern expand.
    */
   accompaniment: string;
   /** Instrument id → native maps to a General MIDI program (SoundFont). */
   instrument: string;
+  /**
+   * Optional precompiled piano accompaniment (TS Groove Engine).
+   * Empty/omitted → Native falls back to `buildChordStrikes`.
+   */
+  chordStrikes?: BeatStrikePayload[];
 };
 
 /** Single-chord audition (chord-card tap). */
@@ -94,6 +110,8 @@ export type RenderAudioRequest = {
   accompaniment: string;
   instrument: string;
   durationSec: number;
+  /** Optional precompiled piano accompaniment (same contract as PlaybackRequest). */
+  chordStrikes?: BeatStrikePayload[];
 };
 
 /** Result of an offline audio render: a temp file URI + its sample rate. */

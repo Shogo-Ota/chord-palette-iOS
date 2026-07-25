@@ -14,5 +14,6 @@
 | [design/ChordDataModelDesign.md](./design/ChordDataModelDesign.md) | 7 | データ構造 |
 | [design/TestArchitectureDesign.md](./design/TestArchitectureDesign.md) | 8 | テスト構成 |
 | [DeviceTesting.md](./DeviceTesting.md) | 運用 | 実機確認（Dev Client + Metro・低コスト） |
+| [design/NativeGrooveBridge.md](./design/NativeGrooveBridge.md) | 実装中 | TS→Native strikes 契約 |
 
 既存の `docs/sprints/` / `docs/design-tokens.md` は UI スプリント用。音楽仕様は `project/docs/music/` を優先する。

@@ -2,6 +2,7 @@ import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordVideoExportNative } from '@modules/chord-video-export';
 import { buildExportPlan } from '@/lib/exportPlan';
+import { buildChordStrikesPayload } from '@/lib/groove/attachStrikes';
 import { progressionToChordSpecs } from '@/lib/voicing';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
@@ -51,6 +52,12 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   if (totalBeats <= 0) {
     throw new VideoExportError('コードがありません。動画を書き出す前に進行を作成してください。');
   }
+  const chordStrikes = buildChordStrikesPayload({
+    bpm: input.bpm,
+    totalBeats,
+    chordEvents,
+    accompaniment: input.accompaniment,
+  });
   const audio = await audioService.renderAudioFile({
     bpm: input.bpm,
     totalBeats,
@@ -59,6 +66,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     accompaniment: input.accompaniment,
     instrument: input.instrumentId,
     durationSec: opts.durationSec,
+    chordStrikes,
   });
   if (!audio) {
     throw new VideoExportError('音声のレンダリングに失敗しました。');

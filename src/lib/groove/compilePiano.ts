@@ -1,6 +1,7 @@
 import { humanizeGain, timingSway } from '@/lib/groove/humanize';
 import { getPianoPattern } from '@/lib/groove/pianoPatterns';
 import type {
+  BeatStrike,
   ChordTimelineEvent,
   CompStroke,
   NoteStrike,
@@ -8,10 +9,11 @@ import type {
   PianoGridLayer,
   PianoPart,
 } from '@/lib/groove/types';
+import type { AccompanimentPattern } from '@/types';
 
 const BASS_MIDI_THRESHOLD = 48;
 
-function framesPerBeat(bpm: number, sampleRate: number): number {
+export function framesPerBeat(bpm: number, sampleRate: number): number {
   return (sampleRate * 60) / bpm;
 }
 
@@ -71,21 +73,25 @@ function selectNotes(notes: number[], part: PianoPart): number[] {
   return notes;
 }
 
-/**
- * Compile one loop of piano accompaniment strikes (pure, deterministic).
- * Mirrors `AudioEngineController.buildChordStrikes` for migration parity.
- */
-export function compilePianoStrikes(input: PianoCompileInput): NoteStrike[] {
-  const { bpm, sampleRate, totalBeats, events, patternId } = input;
-  if (totalBeats <= 0 || events.length === 0 || sampleRate <= 0 || bpm <= 0) return [];
+export type PianoBeatCompileInput = {
+  totalBeats: number;
+  events: ChordTimelineEvent[];
+  patternId: AccompanimentPattern;
+  /** Used only for strum offsets (seconds → beats via bpm). */
+  bpm: number;
+};
 
-  const fpb = framesPerBeat(bpm, sampleRate);
-  if (fpb <= 0) return [];
-  const loopFrames = Math.round(totalBeats * fpb);
-  if (loopFrames <= 0) return [];
+/**
+ * Compile one loop of piano accompaniment as beat-level strikes (SR-independent).
+ * This is what JS sends to Native over the bridge.
+ */
+export function compilePianoBeatStrikes(input: PianoBeatCompileInput): BeatStrike[] {
+  const { totalBeats, events, patternId, bpm } = input;
+  if (totalBeats <= 0 || events.length === 0 || bpm <= 0) return [];
 
   const pattern = getPianoPattern(patternId);
-  const out: NoteStrike[] = [];
+  const out: BeatStrike[] = [];
+  const secondsPerBeat = 60 / bpm;
 
   const emitGroup = (opts: {
     onsetBeat: number;
@@ -105,11 +111,10 @@ export function compilePianoStrikes(input: PianoCompileInput): NoteStrike[] {
     if (notes.length === 0) return;
 
     const ringB = ringCap(events, totalBeats, opts.onsetBeat, opts.look, opts.nominalRing);
-    const durF = Math.max(1, Math.round(ringB * fpb));
     const vGain = velAt(events, totalBeats, opts.onsetBeat + opts.look);
     const sway = timingSway(opts.onsetBeat + opts.look, opts.timingAmount);
-    const onsetFrame = Math.round((opts.onsetBeat + sway) * fpb);
-    const strumF = Math.round(opts.strumSec * sampleRate);
+    const startBeat0 = opts.onsetBeat + sway;
+    const strumBeats = opts.strumSec / secondsPerBeat;
 
     let voiced = notes;
     const top12 = (notes[notes.length - 1] ?? 0) + 12;
@@ -117,13 +122,13 @@ export function compilePianoStrikes(input: PianoCompileInput): NoteStrike[] {
 
     for (let i = 0; i < voiced.length; i++) {
       const note = voiced[i];
-      const start = onsetFrame + i * strumF;
-      if (start < 0 || start >= loopFrames) continue;
-      const dur = Math.min(durF, loopFrames - start);
-      if (dur <= 0) continue;
+      const startBeat = startBeat0 + i * strumBeats;
+      if (startBeat < -1e-9 || startBeat >= totalBeats - 1e-9) continue;
+      const durationBeats = Math.min(ringB, totalBeats - Math.max(0, startBeat));
+      if (durationBeats <= 0) continue;
       const vv = opts.sparkle && note === top12 ? opts.baseVel * 0.5 : opts.baseVel;
       const gain = humanizeGain(vv, opts.onsetBeat + note, opts.velAmount) * vGain;
-      out.push({ startFrame: start, durationFrames: dur, note, gain });
+      out.push({ startBeat: Math.max(0, startBeat), durationBeats, note, gain });
     }
   };
 
@@ -188,18 +193,16 @@ export function compilePianoStrikes(input: PianoCompileInput): NoteStrike[] {
       const body = selectNotes(notesAt(events, totalBeats, onsetBeat), 'body').sort((a, b) => a - b);
       if (body.length > 0) {
         const ringB = ringCap(events, totalBeats, onsetBeat, 0, 1.3);
-        const durF = Math.max(1, Math.round(ringB * fpb));
         const pick = order[((stepIndex % order.length) + order.length) % order.length];
         const note = body[pick % body.length];
         const onQuarter = stepIndex % 4 === 0;
         const onEighth = stepIndex % 2 === 0;
         const baseVel = onQuarter ? 0.85 : onEighth ? 0.66 : 0.74;
-        const start = Math.round(onsetBeat * fpb);
-        const dur = Math.min(durF, loopFrames - start);
-        if (start >= 0 && start < loopFrames && dur > 0) {
+        const durationBeats = Math.min(ringB, totalBeats - onsetBeat);
+        if (durationBeats > 0) {
           const gain =
             humanizeGain(baseVel, onsetBeat + note) * velAt(events, totalBeats, onsetBeat);
-          out.push({ startFrame: start, durationFrames: dur, note, gain });
+          out.push({ startBeat: onsetBeat, durationBeats, note, gain });
         }
       }
       stepIndex += 1;
@@ -209,6 +212,42 @@ export function compilePianoStrikes(input: PianoCompileInput): NoteStrike[] {
 
   for (const layer of pattern.grids ?? []) emitGrid(layer);
   return out;
+}
+
+/** Convert beat strikes → frame strikes (tests / offline helpers). */
+export function beatStrikesToFrames(
+  strikes: BeatStrike[],
+  bpm: number,
+  sampleRate: number,
+  totalBeats: number,
+): NoteStrike[] {
+  const fpb = framesPerBeat(bpm, sampleRate);
+  const loopFrames = Math.round(totalBeats * fpb);
+  const out: NoteStrike[] = [];
+  for (const s of strikes) {
+    const start = Math.round(s.startBeat * fpb);
+    if (start < 0 || start >= loopFrames) continue;
+    const dur = Math.min(Math.max(1, Math.round(s.durationBeats * fpb)), loopFrames - start);
+    if (dur <= 0) continue;
+    out.push({
+      startFrame: start,
+      durationFrames: dur,
+      note: s.note,
+      gain: s.gain,
+    });
+  }
+  return out;
+}
+
+/** Frame-level compile (convenience wrapper for tests). */
+export function compilePianoStrikes(input: PianoCompileInput): NoteStrike[] {
+  const beats = compilePianoBeatStrikes({
+    totalBeats: input.totalBeats,
+    events: input.events,
+    patternId: input.patternId,
+    bpm: input.bpm,
+  });
+  return beatStrikesToFrames(beats, input.bpm, input.sampleRate, input.totalBeats);
 }
 
 /** Beat onsets (pre-sway) for a grid pattern — useful for structural tests. */

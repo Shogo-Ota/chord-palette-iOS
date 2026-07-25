@@ -9,6 +9,14 @@ struct NoteEventRecord: Record {
   @Field var velocity: Int = 100
 }
 
+/// Beat-level accompaniment strike from the TS Groove Engine (sample-rate independent).
+struct BeatStrikeRecord: Record {
+  @Field var startBeat: Double = 0
+  @Field var durationBeats: Double = 0
+  @Field var note: Int = 0
+  @Field var gain: Double = 1
+}
+
 /// JS-facing generic playback request (no hard-coded progression — §3).
 struct PlaybackRequestRecord: Record {
   @Field var bpm: Double = 120
@@ -18,6 +26,8 @@ struct PlaybackRequestRecord: Record {
   @Field var drumPatternId: String = "pop8-min"
   @Field var accompaniment: String = "block"
   @Field var instrument: String = "piano"
+  /// Optional precompiled piano strikes. Empty → native expands accompaniment.
+  @Field var chordStrikes: [BeatStrikeRecord] = []
 }
 
 /// JS-facing single-chord audition request.
@@ -39,6 +49,7 @@ struct RenderAudioRequestRecord: Record {
   @Field var accompaniment: String = "block"
   @Field var instrument: String = "piano"
   @Field var durationSec: Double = 15
+  @Field var chordStrikes: [BeatStrikeRecord] = []
 }
 
 /// Expo Custom Native Module bridging JS ↔ `AudioEngineController` (Phase 2A).
@@ -111,6 +122,11 @@ public class ChordAudioModule: Module {
           velocity: event.velocity
         )
       }
+      let precompiled = req.chordStrikes.map { s in
+        BeatStrikeValue(
+          startBeat: s.startBeat, durationBeats: s.durationBeats, note: s.note, gain: Float(s.gain)
+        )
+      }
       self.controller.play(
         bpm: req.bpm,
         totalBeats: req.totalBeats,
@@ -118,7 +134,8 @@ public class ChordAudioModule: Module {
         events: events,
         drumPattern: req.drumPatternId,
         accompaniment: req.accompaniment,
-        instrument: req.instrument
+        instrument: req.instrument,
+        precompiledStrikes: precompiled
       )
     }
 
@@ -131,6 +148,11 @@ public class ChordAudioModule: Module {
           velocity: event.velocity
         )
       }
+      let precompiled = req.chordStrikes.map { s in
+        BeatStrikeValue(
+          startBeat: s.startBeat, durationBeats: s.durationBeats, note: s.note, gain: Float(s.gain)
+        )
+      }
       let result = try self.controller.renderToFile(
         bpm: req.bpm,
         totalBeats: req.totalBeats,
@@ -138,7 +160,8 @@ public class ChordAudioModule: Module {
         drumPattern: req.drumPatternId,
         accompaniment: req.accompaniment,
         instrument: req.instrument,
-        durationSec: req.durationSec
+        durationSec: req.durationSec,
+        precompiledStrikes: precompiled
       )
       return ["uri": result.url.absoluteString, "sampleRate": result.sampleRate]
     }

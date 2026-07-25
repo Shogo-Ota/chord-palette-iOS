@@ -1,4 +1,5 @@
 import {
+  compilePianoBeatStrikes,
   compilePianoStrikes,
   getDrumPattern,
   gridOnsetBeats,
@@ -108,6 +109,30 @@ describe('compilePianoStrikes', () => {
     for (const s of body) byFrame.set(s.startFrame, (byFrame.get(s.startFrame) ?? 0) + 1);
     const multi = [...byFrame.values()].filter((n) => n > 1);
     expect(multi.length).toBe(0);
+  });
+
+  it('beat-level compile is deterministic and SR-independent', () => {
+    const a = compilePianoBeatStrikes({
+      bpm: 120,
+      totalBeats: 8,
+      events: sampleEvents,
+      patternId: 'eightBeat',
+    });
+    const b = compilePianoBeatStrikes({
+      bpm: 120,
+      totalBeats: 8,
+      events: sampleEvents,
+      patternId: 'eightBeat',
+    });
+    expect(a).toEqual(b);
+    expect(a[0]).toEqual(
+      expect.objectContaining({
+        startBeat: expect.any(Number),
+        durationBeats: expect.any(Number),
+        note: expect.any(Number),
+        gain: expect.any(Number),
+      }),
+    );
   });
 });
 
