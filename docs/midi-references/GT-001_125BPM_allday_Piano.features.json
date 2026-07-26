@@ -1,0 +1,191 @@
+{
+  "id": "GT-001",
+  "file": "125BPM_allday_Piano.mid",
+  "source_hint": "Reo - 日もすがら音楽と / 125BPM_allday_Piano.mid",
+  "bpm_tempo_meta": 125.0,
+  "length_sec": 107.52,
+  "note_count": 1326,
+  "velocity_by_role": {
+    "downbeat": {
+      "n": 470,
+      "min": 41,
+      "p25": 68.0,
+      "median": 75.0,
+      "p75": 83.0,
+      "max": 100,
+      "mean": 73.74
+    },
+    "upbeat": {
+      "n": 266,
+      "min": 37,
+      "p25": 63.0,
+      "median": 71.0,
+      "p75": 77.0,
+      "max": 89,
+      "mean": 69.598
+    },
+    "sixteenth_off": {
+      "n": 590,
+      "min": 37,
+      "p25": 63.0,
+      "median": 70.5,
+      "p75": 77.0,
+      "max": 91,
+      "mean": 69.325
+    }
+  },
+  "velocity_overall": {
+    "n": 1326,
+    "min": 37,
+    "p25": 64.0,
+    "median": 73.0,
+    "p75": 79.0,
+    "max": 100,
+    "mean": 70.945
+  },
+  "timing_offset_ms_by_band": {
+    "bass": {
+      "n": 205,
+      "min": -11.0,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 0.0,
+      "max": 13.0,
+      "mean": 0.063
+    },
+    "mid": {
+      "n": 720,
+      "min": -40.0,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 0.0,
+      "max": 52.0,
+      "mean": 2.011
+    },
+    "mid_low": {
+      "n": 395,
+      "min": -40.0,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 0.0,
+      "max": 49.0,
+      "mean": 0.314
+    },
+    "high": {
+      "n": 6,
+      "min": 0.0,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 0.0,
+      "max": 0.0,
+      "mean": 0.0
+    }
+  },
+  "duration_beats_by_band": {
+    "bass": {
+      "n": 205,
+      "min": 0.185,
+      "p25": 0.292,
+      "median": 0.5,
+      "p75": 0.626,
+      "max": 1.115,
+      "mean": 0.468
+    },
+    "mid": {
+      "n": 720,
+      "min": 0.1,
+      "p25": 0.206,
+      "median": 0.296,
+      "p75": 0.5,
+      "max": 2.277,
+      "mean": 0.393
+    },
+    "mid_low": {
+      "n": 395,
+      "min": 0.042,
+      "p25": 0.217,
+      "median": 0.25,
+      "p75": 0.5,
+      "max": 2.258,
+      "mean": 0.367
+    },
+    "high": {
+      "n": 6,
+      "min": 0.129,
+      "p25": 0.143,
+      "median": 0.856,
+      "p75": 1.0,
+      "max": 1.0,
+      "mean": 0.665
+    }
+  },
+  "cluster_count": 277,
+  "cluster_spread_ms": {
+    "n": 277,
+    "min": 0.0,
+    "p25": 0.0,
+    "median": 0.0,
+    "p75": 6.5,
+    "max": 38.0,
+    "mean": 3.209
+  },
+  "low_note_first_ratio": 0.44,
+  "strum_ms": {
+    "bass_to_mid": {
+      "n": 277,
+      "min": -4.0,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 1.167,
+      "max": 19.667,
+      "mean": 1.112
+    },
+    "mid_to_high": {
+      "n": 277,
+      "min": -8.25,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 0.0,
+      "max": 18.333,
+      "mean": -0.744
+    },
+    "low_to_high": {
+      "n": 277,
+      "min": -8.0,
+      "p25": 0.0,
+      "median": 0.0,
+      "p75": 0.0,
+      "max": 38.0,
+      "mean": 0.368
+    }
+  },
+  "onset_pct": {
+    "on_beat": 35.5,
+    "and": 20.2,
+    "e_a": 44.3
+  },
+  "body_minus_bass_ms": {
+    "n": 87,
+    "min": -0.5,
+    "p25": 0.0,
+    "median": 0.0,
+    "p75": 4.0,
+    "max": 19.667,
+    "mean": 2.037
+  },
+  "pitch": {
+    "min": 34,
+    "max": 91,
+    "bass_pct": 15.5
+  },
+  "gaps_beats": {
+    "n": 737,
+    "min": 0.002,
+    "p25": 0.229,
+    "median": 0.25,
+    "p75": 0.483,
+    "max": 2.25,
+    "mean": 0.301
+  },
+  "long_gap_count_ge_0_5": 171
+}

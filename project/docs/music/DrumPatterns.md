@@ -34,7 +34,24 @@ Accent / Ghost は vel と tags で表現。プロファイルは `grooveProfile
 
 ---
 
-## 4. データソース
+## 4. マイクロタイミング基準（初期値）
 
-- 開発時: Groove MIDI Dataset（CC BY 4.0、帰属表示）
-- 抽出物: スタイル特徴のみ（生 MIDI フレーズの製品同梱はしない）
+| Voice | オフセット目安 | 備考 |
+|---|---|---|
+| Kick | −5 ms | やや前ノリ |
+| Snare | +8 ms | やや後ろ |
+| Hat | ±10 ms | 揺れ幅 |
+
+詳細は `Timing.md`。正解 MIDI 解析で上書きする。
+
+---
+
+## 5. データソース
+
+| 優先 | ソース | 用途 |
+|---|---|---|
+| 1（最終教師） | オーナー正解 MIDI（`GroundTruthMidi.md`） | J-POP / シティポップ方向のノリ |
+| 2（土台） | Groove MIDI Dataset（CC BY 4.0、帰属表示） | 一般的な人間演奏の統計 |
+| 参考 | Magenta 概念 / pretty-midi 等 | 抽出手法 |
+
+抽出物: スタイル特徴のみ（生 MIDI フレーズの製品同梱はしない）

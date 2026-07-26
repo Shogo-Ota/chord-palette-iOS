@@ -1,4 +1,7 @@
-import { intervalsForSuffix } from '@/lib/music/definitions/catalog';
+import {
+  getDefinitionById,
+  intervalsForSuffix,
+} from '@/lib/music/definitions/catalog';
 import type { ChordSuffix } from '@/lib/music/types';
 
 /** Register for chord roots (C3). */
@@ -15,8 +18,18 @@ function pitchClass(n: number): number {
 export type ChordMidiInput = {
   rootOffset: number;
   suffix: ChordSuffix;
+  /** Prefer catalog intervals when present (timeline / library wiring). */
+  definitionId?: string;
   bassOffset?: number;
 };
+
+function bodyIntervals(chord: ChordMidiInput): number[] {
+  if (chord.definitionId) {
+    const fromId = getDefinitionById(chord.definitionId)?.intervals;
+    if (fromId) return fromId;
+  }
+  return intervalsForSuffix(chord.suffix ?? '');
+}
 
 /**
  * Concrete MIDI notes for a chord.
@@ -27,7 +40,7 @@ export function chordMidiNotesFromParts(
   tonicPc: number,
 ): number[] {
   const rootMidi = CHORD_ROOT_MIDI + pitchClass(tonicPc + (chord.rootOffset ?? 0));
-  const body = intervalsForSuffix(chord.suffix ?? '').map((iv) => rootMidi + iv);
+  const body = bodyIntervals(chord).map((iv) => rootMidi + iv);
   const bassPc = pitchClass(tonicPc + (chord.bassOffset ?? chord.rootOffset ?? 0));
   const bass = [SUB_BASS_ROOT_MIDI + bassPc, BASS_ROOT_MIDI + bassPc];
   return [...bass, ...body];

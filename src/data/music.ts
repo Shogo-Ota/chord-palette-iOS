@@ -68,6 +68,10 @@ const SEVENTH_SUFFIXES = ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7♭5'] as co
 /** Suffixes for diatonic triads per degree. */
 const TRIAD_SUFFIXES = ['', 'm', 'm', '', '', 'm', 'dim'] as const;
 
+function definitionIdForSuffix(suffix: string): string | undefined {
+  return getDefinitionBySymbol(suffix)?.id;
+}
+
 function build(key: MajorKey, suffixes: readonly string[]): DiatonicChord[] {
   const scale = MAJOR_SCALES[key];
   return scale.map((root, i) => {
@@ -186,6 +190,7 @@ export function diatonicLibrary(key: MajorKey): LibraryChord[] {
     isPro: false,
     rootOffset: t.rootOffset,
     suffix: t.suffix,
+    definitionId: definitionIdForSuffix(t.suffix),
   }));
 }
 
@@ -207,6 +212,7 @@ export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
     isPro: false,
     rootOffset: s.rootOffset,
     suffix: s.suffix,
+    definitionId: definitionIdForSuffix(s.suffix),
   }));
 }
 
@@ -237,7 +243,7 @@ export function variationChord(
     isPro: v.isPro,
     rootOffset: MAJOR_SCALE_OFFSETS[degreeIndex],
     suffix,
-    definitionId: getDefinitionBySymbol(suffix)?.id,
+    definitionId: definitionIdForSuffix(suffix),
   };
 }
 
@@ -273,6 +279,7 @@ export function secondaryDominants(key: MajorKey): LibraryChord[] {
       isPro: true, // secondary dominants are Palette Pro (requirements §7)
       rootOffset: (MAJOR_SCALE_OFFSETS[t.degreeIndex] + 7) % 12,
       suffix: '7',
+      definitionId: definitionIdForSuffix('7'),
     };
   });
 }
@@ -310,6 +317,7 @@ export function modalInterchange(key: MajorKey): LibraryChord[] {
       isPro: true, // borrowed / modal-interchange chords are Palette Pro (requirements §7)
       rootOffset: m.offset,
       suffix: m.suffix,
+      definitionId: definitionIdForSuffix(m.suffix),
     };
   });
 }
@@ -337,6 +345,7 @@ export function slashChord(key: MajorKey, target: LibraryChord, bass: string): L
     isPro: true, // slash / on-chords are Palette Pro (requirements §7)
     rootOffset: target.rootOffset,
     suffix: target.suffix,
+    definitionId: target.definitionId ?? definitionIdForSuffix(target.suffix),
     bassOffset: offsetFromTonic(key, bass),
   };
 }

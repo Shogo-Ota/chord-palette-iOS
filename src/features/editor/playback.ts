@@ -26,6 +26,7 @@ export function sessionToPlaybackRequest(session: EditorSession, loop: boolean):
     totalBeats,
     chordEvents,
     accompaniment: session.accompanimentPattern,
+    grooveId: session.grooveId,
   });
   const drumHits = buildDrumHitsPayload({ grooveId: session.grooveId });
   return {
@@ -43,7 +44,7 @@ export function sessionToPlaybackRequest(session: EditorSession, loop: boolean):
 
 /** Single-chord audition for a library/timeline tap. */
 export function chordPreviewRequest(
-  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset' | 'definitionId'>,
   key: MajorKey,
   bpm: number,
   instrument: string,

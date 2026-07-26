@@ -1,17 +1,29 @@
 import type { CompStroke, PianoPatternDoc } from '@/lib/groove/types';
 import type { AccompanimentPattern } from '@/types';
 
+/**
+ * GT-001 calibrated 16th body (Accent.md):
+ * downbeat ~0.59, & ~0.56, e/a ~0.55 with softer "e".
+ */
 function body16Strokes(): CompStroke[] {
   const out: CompStroke[] = [];
   for (let sixteenth = 0; sixteenth < 4 - 1e-9; sixteenth += 0.25) {
     const slot = Math.round(sixteenth * 4) % 4; // 0=↓ 1=e 2=& 3=a
-    if (slot === 0) out.push({ beat: sixteenth, vel: 0.94, look: 0 });
-    else if (slot === 2) out.push({ beat: sixteenth, vel: 0.72, look: 0.03 });
-    else if (slot === 3) out.push({ beat: sixteenth, vel: 0.68, look: 0.07 });
-    else out.push({ beat: sixteenth, vel: 0.48, look: 0.02 }); // ghost "e"
+    if (slot === 0) out.push({ beat: sixteenth, vel: 0.6, look: 0 });
+    else if (slot === 2) out.push({ beat: sixteenth, vel: 0.56, look: 0.02 });
+    else if (slot === 3) out.push({ beat: sixteenth, vel: 0.55, look: 0.03 });
+    else out.push({ beat: sixteenth, vel: 0.4, look: 0.015 }); // soft "e"
   }
   return out;
 }
+
+/** Shared with bassPatterns locked-quarters (GT-001). */
+const BASS_LOCKED_QUARTERS: CompStroke[] = [
+  { beat: 0, vel: 0.62 },
+  { beat: 1, vel: 0.56 },
+  { beat: 2, vel: 0.6 },
+  { beat: 3, vel: 0.55 },
+];
 
 export const PIANO_PATTERNS: Record<AccompanimentPattern, PianoPatternDoc> = {
   block: { id: 'block', mode: 'block' },
@@ -21,13 +33,8 @@ export const PIANO_PATTERNS: Record<AccompanimentPattern, PianoPatternDoc> = {
     grids: [
       {
         part: 'bass',
-        strokes: [
-          { beat: 0, vel: 1.0 },
-          { beat: 1, vel: 0.92 },
-          { beat: 2, vel: 0.96 },
-          { beat: 3, vel: 0.9 },
-        ],
-        nominalRingBeats: 0.95,
+        strokes: BASS_LOCKED_QUARTERS,
+        nominalRingBeats: 0.5,
         strumSec: 0,
         sparkle: false,
         timingAmountBeats: 0,
@@ -36,20 +43,20 @@ export const PIANO_PATTERNS: Record<AccompanimentPattern, PianoPatternDoc> = {
       {
         part: 'body',
         strokes: [
-          { beat: 0, vel: 0.96, look: 0 },
-          { beat: 0.5, vel: 0.58, look: 0.04 },
-          { beat: 1, vel: 0.78, look: 0 },
-          { beat: 1.5, vel: 0.66, look: 0.06 },
-          { beat: 2, vel: 0.92, look: 0 },
-          { beat: 2.5, vel: 0.55, look: 0.04 },
-          { beat: 3, vel: 0.8, look: 0 },
-          { beat: 3.5, vel: 0.7, look: 0.08 },
+          { beat: 0, vel: 0.62, look: 0 },
+          { beat: 0.5, vel: 0.52, look: 0.03 },
+          { beat: 1, vel: 0.58, look: 0 },
+          { beat: 1.5, vel: 0.54, look: 0.04 },
+          { beat: 2, vel: 0.6, look: 0 },
+          { beat: 2.5, vel: 0.5, look: 0.03 },
+          { beat: 3, vel: 0.58, look: 0 },
+          { beat: 3.5, vel: 0.55, look: 0.04 },
         ],
         nominalRingBeats: 0.48,
-        strumSec: 0.005,
+        strumSec: 0.004,
         sparkle: true,
-        timingAmountBeats: 0.018,
-        velAmount: 0.11,
+        timingAmountBeats: 0.01,
+        velAmount: 0.08,
       },
     ],
   },
@@ -58,13 +65,8 @@ export const PIANO_PATTERNS: Record<AccompanimentPattern, PianoPatternDoc> = {
     grids: [
       {
         part: 'bass',
-        strokes: [
-          { beat: 0, vel: 1.0 },
-          { beat: 1, vel: 0.9 },
-          { beat: 2, vel: 0.96 },
-          { beat: 3, vel: 0.88 },
-        ],
-        nominalRingBeats: 0.95,
+        strokes: BASS_LOCKED_QUARTERS,
+        nominalRingBeats: 0.5,
         strumSec: 0,
         sparkle: false,
         timingAmountBeats: 0,
@@ -73,11 +75,11 @@ export const PIANO_PATTERNS: Record<AccompanimentPattern, PianoPatternDoc> = {
       {
         part: 'body',
         strokes: body16Strokes(),
-        nominalRingBeats: 0.24,
-        strumSec: 0.002,
+        nominalRingBeats: 0.28,
+        strumSec: 0.003,
         sparkle: false,
-        timingAmountBeats: 0.014,
-        velAmount: 0.12,
+        timingAmountBeats: 0.008,
+        velAmount: 0.08,
       },
     ],
   },

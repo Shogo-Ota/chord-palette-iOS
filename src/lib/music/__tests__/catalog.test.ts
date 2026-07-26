@@ -1,4 +1,12 @@
-import { MAJOR_KEYS, noteAt, variationChord, availableVariations } from '@/data/music';
+import {
+  MAJOR_KEYS,
+  availableVariations,
+  diatonicLibrary,
+  noteAt,
+  secondaryDominants,
+  slashChord,
+  variationChord,
+} from '@/data/music';
 import {
   CHORD_CATALOG,
   getDefinitionBySymbol,
@@ -69,6 +77,36 @@ describe('display / intervals / MIDI consistency across 12 keys', () => {
         );
       }
     }
+  });
+
+  it('covers every catalog symbol × 12 keys via definitionId', () => {
+    for (const key of MAJOR_KEYS) {
+      for (const def of CHORD_CATALOG) {
+        const midiById = chordMidiNotes(
+          { rootOffset: 0, suffix: def.symbol, definitionId: def.id },
+          key,
+        );
+        const midiBySuffix = chordMidiNotes({ rootOffset: 0, suffix: def.symbol }, key);
+        expect(relativeBodyPcs(midiById)).toEqual(pitchClassesFromIntervals(def.intervals));
+        expect(midiById).toEqual(midiBySuffix);
+      }
+    }
+  });
+});
+
+describe('definitionId library wiring', () => {
+  it('attaches catalog ids on diatonic / variation / secondary / slash', () => {
+    const dia = diatonicLibrary('C')[0];
+    expect(dia.definitionId).toBe(getDefinitionBySymbol(dia.suffix)?.id);
+
+    const v = variationChord('C', 0, 'maj11');
+    expect(v.definitionId).toBe(getDefinitionBySymbol('maj11')?.id);
+
+    const sec = secondaryDominants('C')[0];
+    expect(sec.definitionId).toBe(getDefinitionBySymbol('7')?.id);
+
+    const slash = slashChord('C', dia, 'E');
+    expect(slash.definitionId).toBe(dia.definitionId);
   });
 });
 

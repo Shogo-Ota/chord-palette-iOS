@@ -41,6 +41,7 @@ export function resolveDefinition(
     {
       rootOffset: opts.rootOffset,
       suffix: def.symbol,
+      definitionId: def.id,
       bassOffset: opts.bassOffset,
     },
     opts.tonicPc,

@@ -1,7 +1,10 @@
 import {
+  applySwingToBeat,
+  buildChordStrikesPayload,
   buildDrumHitsPayload,
   compilePianoBeatStrikes,
   compilePianoStrikes,
+  getBassPattern,
   getDrumPattern,
   gridOnsetBeats,
   grooveProfileFor,
@@ -104,11 +107,11 @@ describe('piano pattern structure', () => {
     expect(body.filter((s) => (s.look ?? 0) > 0).length).toBeGreaterThan(0);
   });
 
-  it('sixteenthBeat body has 16 slots with ghost e-slots', () => {
+  it('sixteenthBeat body has 16 slots with soft e-slots (GT-001)', () => {
     const body = gridOnsetBeats('sixteenthBeat', 4, 'body');
     expect(body).toHaveLength(16);
-    const ghosts = body.filter((s) => s.vel < 0.5);
-    expect(ghosts.length).toBe(4);
+    const soft = body.filter((s) => s.vel <= 0.42);
+    expect(soft.length).toBe(4);
   });
 });
 
@@ -198,5 +201,121 @@ describe('grooveProfileFor', () => {
   it('marks jazzSwing with swing ratio 2/3', () => {
     expect(grooveProfileFor('jazzSwing', 'block').features.swingRatio).toBeCloseTo(2 / 3);
     expect(grooveProfileFor('pop8', 'block').features.swingRatio).toBe(0.5);
+  });
+});
+
+describe('GrooveProfile.features → compile', () => {
+  it('applySwingToBeat delays off-eighths toward swingRatio', () => {
+    expect(applySwingToBeat(0.5, 0.5)).toBe(0.5);
+    expect(applySwingToBeat(0.5, 2 / 3)).toBeCloseTo(2 / 3);
+    expect(applySwingToBeat(1.5, 2 / 3)).toBeCloseTo(1 + 2 / 3);
+    expect(applySwingToBeat(1, 2 / 3)).toBe(1);
+  });
+
+  it('jazzSwing eightBeat moves offbeat body strikes later than pop8', () => {
+    const base = {
+      bpm: 120,
+      totalBeats: 4,
+      events: sampleEvents.slice(0, 1),
+      patternId: 'eightBeat' as const,
+    };
+    const straight = compilePianoBeatStrikes({
+      ...base,
+      features: grooveProfileFor('pop8', 'eightBeat').features,
+    });
+    const swung = compilePianoBeatStrikes({
+      ...base,
+      features: grooveProfileFor('jazzSwing', 'eightBeat').features,
+    });
+    const maxStraight = Math.max(...straight.map((s) => s.startBeat));
+    const maxSwung = Math.max(...swung.map((s) => s.startBeat));
+    expect(maxSwung).toBeGreaterThan(maxStraight);
+  });
+
+  it('G3: jazzSwing does not flam sixteenthBeat (& vs a stay ≥0.2 apart)', () => {
+    const strikes = compilePianoBeatStrikes({
+      bpm: 120,
+      totalBeats: 4,
+      events: sampleEvents.slice(0, 1),
+      patternId: 'sixteenthBeat',
+      features: grooveProfileFor('jazzSwing', 'sixteenthBeat').features,
+    });
+    const bodyStarts = [
+      ...new Set(
+        strikes.filter((s) => s.note >= 48).map((s) => Math.round(s.startBeat * 1000) / 1000),
+      ),
+    ].sort((a, b) => a - b);
+    // Within first beat, 0.5 and 0.75 must not collapse toward ~0.667.
+    const inBeat0 = bodyStarts.filter((b) => b >= 0.4 && b < 1);
+    expect(inBeat0.some((b) => Math.abs(b - 0.5) < 0.05)).toBe(true);
+    expect(inBeat0.some((b) => Math.abs(b - 0.75) < 0.05)).toBe(true);
+    expect(inBeat0.every((b) => Math.abs(b - 2 / 3) > 0.04)).toBe(true);
+  });
+
+  it('G4: jazzSwing arpeggio moves &-slot onsets toward 2/3', () => {
+    const base = {
+      bpm: 120,
+      totalBeats: 4,
+      events: sampleEvents.slice(0, 1),
+      patternId: 'arpeggio' as const,
+      // Zero humanize so onset positions are readable.
+      features: {
+        ...grooveProfileFor('jazzSwing', 'arpeggio').features,
+        humanize: { velocityAmount: 0, timingAmountBeats: 0 },
+        timingBiasBeats: 0,
+      },
+    };
+    const swung = compilePianoBeatStrikes(base);
+    const starts = swung.map((s) => s.startBeat);
+    expect(starts.some((b) => Math.abs(b - 2 / 3) < 0.02)).toBe(true);
+    expect(starts.some((b) => Math.abs(b - 0.5) < 0.02)).toBe(false);
+  });
+
+  it('G2: without bassPatternId, sixteenthBeat keeps its own bass layer vels', () => {
+    const withId = compilePianoBeatStrikes({
+      bpm: 120,
+      totalBeats: 4,
+      events: sampleEvents.slice(0, 1),
+      patternId: 'sixteenthBeat',
+      bassPatternId: 'locked-quarters',
+    });
+    const withoutId = compilePianoBeatStrikes({
+      bpm: 120,
+      totalBeats: 4,
+      events: sampleEvents.slice(0, 1),
+      patternId: 'sixteenthBeat',
+    });
+    // GT-001 aligned patterns: locked-quarters matches sixteenth bass strokes.
+    expect(withId.filter((s) => s.note < 48).map((s) => s.gain)).toEqual(
+      withoutId.filter((s) => s.note < 48).map((s) => s.gain),
+    );
+  });
+
+  it('buildChordStrikesPayload with grooveId uses profile bass + features', () => {
+    const withProfile = buildChordStrikesPayload({
+      bpm: 120,
+      totalBeats: 4,
+      chordEvents: sampleEvents.slice(0, 1),
+      accompaniment: 'eightBeat',
+      grooveId: 'pop8',
+    });
+    const plain = compilePianoBeatStrikes({
+      bpm: 120,
+      totalBeats: 4,
+      events: sampleEvents.slice(0, 1),
+      patternId: 'eightBeat',
+      features: grooveProfileFor('pop8', 'eightBeat').features,
+      bassPatternId: 'locked-quarters',
+    });
+    expect(withProfile).toEqual(plain);
+    expect(getBassPattern('locked-quarters').strokes).toHaveLength(4);
+  });
+
+  it('GT-001: pop profiles use restrained strum and humanize', () => {
+    const f = grooveProfileFor('pop8', 'sixteenthBeat').features;
+    expect(f.strumMs).toBe(3);
+    expect(f.humanize.velocityAmount).toBeLessThanOrEqual(0.1);
+    expect(f.humanize.timingAmountBeats).toBeLessThanOrEqual(0.012);
+    expect(f.swingRatio).toBe(0.5);
   });
 });

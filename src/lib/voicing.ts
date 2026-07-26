@@ -16,13 +16,14 @@ import type { ChordEvent, MajorKey } from '@/types';
  * present — so the low end carries weight. The chord body sits in the C3 band.
  */
 export function chordMidiNotes(
-  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset' | 'definitionId'>,
   key: MajorKey,
 ): number[] {
   return chordMidiNotesFromParts(
     {
       rootOffset: chord.rootOffset ?? 0,
       suffix: chord.suffix ?? '',
+      definitionId: chord.definitionId,
       bassOffset: chord.bassOffset,
     },
     keyTonicPc(key),

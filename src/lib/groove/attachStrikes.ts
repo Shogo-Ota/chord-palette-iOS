@@ -1,7 +1,8 @@
 import { compilePianoBeatStrikes } from '@/lib/groove/compilePiano';
 import { getDrumPattern } from '@/lib/groove/drumPatterns';
+import { grooveProfileFor } from '@/lib/groove/profiles';
 import type { BeatStrike, ChordTimelineEvent, DrumHitPayload } from '@/lib/groove/types';
-import type { AccompanimentPattern } from '@/types';
+import type { AccompanimentPattern, GrooveId } from '@/types';
 
 /** Build beat-level piano strikes for a playback/export request. */
 export function buildChordStrikesPayload(input: {
@@ -9,12 +10,21 @@ export function buildChordStrikesPayload(input: {
   totalBeats: number;
   chordEvents: ChordTimelineEvent[];
   accompaniment: string;
+  /** When set, GrooveProfile.features + bassPatternId drive compile. */
+  grooveId?: string;
 }): BeatStrike[] {
+  const accompaniment = input.accompaniment as AccompanimentPattern;
+  const profile =
+    input.grooveId != null
+      ? grooveProfileFor(input.grooveId as GrooveId, accompaniment)
+      : undefined;
   return compilePianoBeatStrikes({
     bpm: input.bpm,
     totalBeats: input.totalBeats,
     events: input.chordEvents,
-    patternId: input.accompaniment as AccompanimentPattern,
+    patternId: accompaniment,
+    features: profile?.features,
+    bassPatternId: profile?.bassPatternId,
   });
 }
 

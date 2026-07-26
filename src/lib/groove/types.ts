@@ -2,8 +2,9 @@
  * Groove Engine types — data-driven accompaniment (Phase 6).
  * Spec: project/docs/design/GrooveEngineDesign.md, project/docs/music/Groove.md
  *
- * Runtime native still expands patterns today; this module is the TS source of
- * truth so patterns become testable and (next step) consumable by the renderer.
+ * TS compiles beat-level strikes/hits; Native prefers them when present
+ * (see NativeGrooveBridge.md). Older Dev Clients ignore the fields and expand
+ * patterns themselves.
  */
 
 import type { AccompanimentPattern, GrooveId } from '@/types';
@@ -122,4 +123,6 @@ export type PianoCompileInput = {
   totalBeats: number;
   events: ChordTimelineEvent[];
   patternId: AccompanimentPattern;
+  features?: GrooveFeatures;
+  bassPatternId?: string;
 };

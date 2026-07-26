@@ -76,6 +76,7 @@ function libToEvent(c: LibraryChord, durationBeats: ChordDuration = 4) {
     isPro: !!c.isPro,
     rootOffset: c.rootOffset,
     suffix: c.suffix,
+    definitionId: c.definitionId,
     bassOffset: c.bassOffset,
     bassNote: c.bassNote,
     variation: c.variation,

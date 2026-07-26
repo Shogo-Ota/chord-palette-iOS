@@ -57,6 +57,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     totalBeats,
     chordEvents,
     accompaniment: input.accompaniment,
+    grooveId: input.grooveId,
   });
   const drumHits = buildDrumHitsPayload({ grooveId: input.grooveId });
   const audio = await audioService.renderAudioFile({

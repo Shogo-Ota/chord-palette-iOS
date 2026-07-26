@@ -20,7 +20,10 @@ export type {
 export { humanizeGain, timingSway } from '@/lib/groove/humanize';
 export { DRUM_PATTERNS, getDrumPattern } from '@/lib/groove/drumPatterns';
 export { PIANO_PATTERNS, getPianoPattern } from '@/lib/groove/pianoPatterns';
+export { BASS_PATTERNS, getBassPattern } from '@/lib/groove/bassPatterns';
+export type { BassPatternDoc, BassPatternId } from '@/lib/groove/bassPatterns';
 export {
+  applySwingToBeat,
   beatStrikesToFrames,
   compilePianoBeatStrikes,
   compilePianoStrikes,
