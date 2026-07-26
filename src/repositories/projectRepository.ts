@@ -160,6 +160,25 @@ export async function saveProject(project: Project): Promise<Project> {
   return saved;
 }
 
+/**
+ * How many projects count against the free save limit.
+ *
+ * Rows written before the limit existed carry `cap_exempt = 1` and are skipped —
+ * see the migration in `lib/db.ts`. Everything made since counts, whichever tier
+ * made it, so a lapsed subscriber keeps their work and simply cannot add more
+ * until they are under the cap again.
+ *
+ * Deliberately knows nothing about entitlements; `features/projects/saveLimit`
+ * pairs this with the tier's ceiling.
+ */
+export async function countCappedProjects(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM projects WHERE cap_exempt = 0;`,
+  );
+  return row?.n ?? 0;
+}
+
 export async function deleteProject(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync(`DELETE FROM projects WHERE id = ?;`, [id]);

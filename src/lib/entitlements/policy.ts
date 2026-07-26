@@ -39,12 +39,14 @@ export const FREE_POLICY: TierPolicy = {
     'midi.export': false,
   },
   limits: {
-    // Today every tier saves without limit and exports at 1080. Tightening these
-    // is a separate, grandfathered change — existing work must not become
-    // unreachable because a cap appeared underneath it.
-    projects: UNLIMITED,
+    // Projects that existed before this cap arrived are exempt (`cap_exempt` in
+    // lib/db.ts), so the limit only ever governs what someone makes next. Nobody
+    // loses a project or gets locked out of one they already wrote.
+    projects: 5,
     favourites: UNLIMITED,
-    videoHeight: 1920,
+    // 720p on a 9:16 frame. Fine for a phone timeline, visibly softer than the
+    // 1080p a subscriber gets.
+    videoHeight: 1280,
   },
 };
 
@@ -64,7 +66,7 @@ export const PRO_POLICY: TierPolicy = {
     // policy — see the paywall's `shipped` flag for the other half of this.
     'theory.substitution': false,
     'performance.humanizePlus': true,
-    'export.noWatermark': false,
+    'export.noWatermark': true,
     'midi.export': false,
   },
   limits: {

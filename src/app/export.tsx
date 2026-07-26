@@ -8,10 +8,12 @@ import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { useEditorSession } from '@/features/editor/session';
+import { loadLegacyExportQuality, useExportQuality } from '@/features/export/quality';
 import { VideoExportError } from '@/lib/errors';
+import { frameSizeFor } from '@/lib/exportPlan';
 import { chordMidiNotes } from '@/lib/voicing';
 import { track } from '@/services/analytics';
-import { getTier } from '@/services/billing';
+import { getTier, useEntitlements } from '@/services/billing';
 import { videoExportService } from '@/services/videoExport';
 import { colors, font, functionColor, primaryGradient, radius, rainbow } from '@/theme/tokens';
 import type { ChordEvent } from '@/types';
@@ -57,11 +59,16 @@ function usePreviewIndex(progression: ChordEvent[], bpm: number): number {
 export default function ExportScreen() {
   const router = useRouter();
   const s = useEditorSession();
-  // Every exported clip is branded with the Chord Palette watermark (always on, no
-  // opt-out) so shared videos always carry the mark. Kept as a const so the render
-  // plan/preview paths stay explicit and unchanged.
-  const watermark = true;
+  const ent = useEntitlements();
+  // Free clips carry the Chord Palette mark; a subscriber's do not. The preview
+  // below reads the same values, so what is on screen is what gets encoded.
+  const { watermark, height } = useExportQuality(ent);
+  const frame = frameSizeFor(height);
   const [busy, setBusy] = useState<'idle' | 'save' | 'share'>('idle');
+
+  useEffect(() => {
+    loadLegacyExportQuality().catch(() => undefined);
+  }, []);
   const [progress, setProgress] = useState(0);
   const saving = busy !== 'idle';
 
@@ -98,7 +105,7 @@ export default function ExportScreen() {
     // Duration is auto-derived (no selector), so report the effective length here.
     track('export_duration_selected', { durationSec });
     track('video_export_started', { kind, durationSec });
-    const opts = { durationSec, watermark, onProgress: setProgress };
+    const opts = { durationSec, watermark, height, onProgress: setProgress };
     const work =
       kind === 'save'
         ? videoExportService.exportAndSave(exportInput(), opts)
@@ -210,17 +217,19 @@ export default function ExportScreen() {
           </View>
         )}
 
-        <View style={[styles.pvKeyboard, styles.pvKeyboardWithWatermark]}>
+        <View style={[styles.pvKeyboard, watermark && styles.pvKeyboardWithWatermark]}>
           <ChordKeyboard notes={notes} musicKey={s.key} color={accent} width={KEYBOARD_W} />
         </View>
 
-        <View style={styles.watermarkRow}>
-          <Image source={ICON} style={styles.wmIcon} />
-          <Text style={styles.wmText}>Chord </Text>
-          <GradientText colors={rainbow} style={styles.wmText}>
-            Palette
-          </GradientText>
-        </View>
+        {watermark ? (
+          <View style={styles.watermarkRow}>
+            <Image source={ICON} style={styles.wmIcon} />
+            <Text style={styles.wmText}>Chord </Text>
+            <GradientText colors={rainbow} style={styles.wmText}>
+              Palette
+            </GradientText>
+          </View>
+        ) : null}
       </View>
 
       {/* 長さ（BPM・小節数から自動算出） */}
@@ -229,6 +238,18 @@ export default function ExportScreen() {
         <View style={styles.formatVal}>
           <Text style={styles.formatMain}>約{autoDurationSec}秒</Text>
           <Text style={styles.formatSub}>自動（{bars}小節 · BPM {s.tempoBpm}）</Text>
+        </View>
+      </View>
+
+      <View style={styles.optRow}>
+        <Text style={styles.optLabel}>画質</Text>
+        <View style={styles.formatVal}>
+          <Text style={styles.formatMain}>
+            {frame.width}×{frame.height}
+          </Text>
+          <Text style={styles.formatSub}>
+            {watermark ? '透かしあり · Palette Pro で 1080p・透かしなし' : '透かしなし'}
+          </Text>
         </View>
       </View>
 

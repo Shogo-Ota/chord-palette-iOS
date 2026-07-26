@@ -7,13 +7,16 @@ import { Icon } from '@/components/Icon';
 import { MetaPill } from '@/components/controls';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
 import { Wordmark } from '@/components/Wordmark';
 import { loadAdminMode, setAdminMode, toggleAdminMode, useAdminMode } from '@/features/admin/adminMode';
 import { startNew } from '@/features/editor/session';
+import { saveAllowance, saveLimitMessage } from '@/features/projects/saveLimit';
 import { logger } from '@/lib/logger';
 import { toSummary } from '@/lib/projectSummary';
 import { deleteProject, duplicateProject, listProjects } from '@/repositories/projectRepository';
 import { track } from '@/services/analytics';
+import { useEntitlements } from '@/services/billing';
 import { colors, font, radius } from '@/theme/tokens';
 import type { Project, ProjectSummary } from '@/types';
 
@@ -22,6 +25,8 @@ export default function ProjectListScreen() {
   const [projects, setProjects] = useState<Project[] | null>(null);
   const isAdmin = useAdminMode();
   const [adminToast, setAdminToast] = useState<string | null>(null);
+  const ent = useEntitlements();
+  const upsell = useUpsellToast();
 
   useEffect(() => {
     loadAdminMode();
@@ -79,10 +84,26 @@ export default function ProjectListScreen() {
     }, [refresh]),
   );
 
+  /**
+   * Checks the free save limit before anything is written. Asking here rather than
+   * at persist time means a player is told they are out of slots while the canvas
+   * is still blank, instead of after they have built something.
+   */
+  const withSaveSlot = async (run: () => void) => {
+    const allowance = await saveAllowance(ent);
+    if (!allowance.canCreate) {
+      upsell.show(saveLimitMessage(allowance.limit));
+      return;
+    }
+    run();
+  };
+
   const createNew = () => {
-    track('project_created');
-    startNew();
-    router.push('/editor');
+    withSaveSlot(() => {
+      track('project_created');
+      startNew();
+      router.push('/editor');
+    }).catch((e) => logger.error('Failed to check the save limit', { error: String(e) }));
   };
 
   const confirmDelete = (project: Project) => {
@@ -104,9 +125,11 @@ export default function ProjectListScreen() {
       {
         text: '複製',
         onPress: () =>
-          duplicateProject(project.id)
-            .then(refresh)
-            .catch((e) => logger.error('Failed to duplicate project', { error: String(e) })),
+          withSaveSlot(() => {
+            duplicateProject(project.id)
+              .then(refresh)
+              .catch((e) => logger.error('Failed to duplicate project', { error: String(e) }));
+          }).catch((e) => logger.error('Failed to check the save limit', { error: String(e) })),
       },
       {
         text: '削除',
@@ -120,6 +143,7 @@ export default function ProjectListScreen() {
   const summaries: ProjectSummary[] = (projects ?? []).map((p) => toSummary(p));
 
   return (
+    <View style={styles.screenRoot}>
     <ScreenScaffold>
       <View style={styles.header}>
         <Pressable onPress={onSecretTap} hitSlop={6} accessibilityRole="image">
@@ -184,6 +208,8 @@ export default function ProjectListScreen() {
       )}
 
     </ScreenScaffold>
+      <UpsellToast message={upsell.message} onPress={() => router.push('/paywall')} />
+    </View>
   );
 }
 
@@ -237,6 +263,7 @@ function ProjectCard({
 }
 
 const styles = StyleSheet.create({
+  screenRoot: { flex: 1 },
   header: {
     flexDirection: 'row',
     alignItems: 'center',

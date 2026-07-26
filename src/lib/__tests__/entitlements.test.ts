@@ -69,7 +69,9 @@ describe('tier policy', () => {
   });
 
   it('reads a quantity as a number rather than a flag', () => {
-    expect(limitFor(NO_ENTITLEMENTS, 'projects')).toBe(UNLIMITED);
-    expect(limitFor(NO_ENTITLEMENTS, 'videoHeight')).toBe(1920);
+    expect(limitFor(NO_ENTITLEMENTS, 'projects')).toBe(5);
+    expect(limitFor(NO_ENTITLEMENTS, 'videoHeight')).toBe(1280);
+    expect(limitFor(PRO, 'projects')).toBe(UNLIMITED);
+    expect(limitFor(PRO, 'videoHeight')).toBe(1920);
   });
 });

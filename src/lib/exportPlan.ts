@@ -36,6 +36,15 @@ export type BuildExportPlanParams = {
   keyboardHigh?: number;
 };
 
+/**
+ * The 9:16 frame for a given long edge, rounded to even pixels because H.264
+ * chroma subsampling needs both dimensions divisible by two. 1920 → 1080×1920
+ * (the subscriber's frame), 1280 → 720×1280 (the free one).
+ */
+export function frameSizeFor(height: number): { width: number; height: number } {
+  return { width: Math.round((height * 9) / 32) * 2, height };
+}
+
 /** Key label spelling for each pitch class 0..11 (♭/♯ per key). */
 export function pitchClassNamesFor(key: MajorKey): string[] {
   return Array.from({ length: 12 }, (_, pc) => midiNoteName(key, pc));

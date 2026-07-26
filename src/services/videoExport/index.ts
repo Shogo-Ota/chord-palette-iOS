@@ -1,7 +1,7 @@
 import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordVideoExportNative } from '@modules/chord-video-export';
-import { buildExportPlan } from '@/lib/exportPlan';
+import { buildExportPlan, frameSizeFor } from '@/lib/exportPlan';
 import { generatePerformance } from '@/lib/performance/PerformanceEngine';
 import { remeterChords } from '@/lib/performance/meter';
 import { progressionToPerfChords } from '@/lib/performance/progressionInput';
@@ -45,6 +45,11 @@ export type VideoExportOptions = {
   /** Clip length in seconds (15 | 30 | 60). */
   durationSec: number;
   watermark: boolean;
+  /**
+   * Long edge of the 9:16 frame. Comes from the tier's `videoHeight` limit; the
+   * width follows from the aspect ratio. Omitted = the full 1080×1920 frame.
+   */
+  height?: number;
   /** Optional 0..1 encode progress. */
   onProgress?: (progress: number) => void;
 };
@@ -139,6 +144,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     watermark: opts.watermark,
     octaveShift,
     beatsPerBar,
+    ...(opts.height ? frameSizeFor(opts.height) : {}),
   });
 
   let sub: EventSubscription | null = null;

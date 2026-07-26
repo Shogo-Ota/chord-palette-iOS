@@ -10,6 +10,7 @@ const RELEASE_CUT_KEY = 'release_cut';
 const ADMIN_MODE_KEY = 'admin_mode';
 const OCTAVE_SHIFT_KEY = 'octave_shift';
 const EDITOR_TUTORIAL_KEY = 'editor_tutorial_seen';
+const LEGACY_EXPORT_QUALITY_KEY = 'legacy_export_quality';
 
 /** Default: cut piano release for tight accompaniment. */
 export const DEFAULT_RELEASE_CUT = true;
@@ -98,6 +99,21 @@ export async function setAdminModePref(enabled: boolean): Promise<void> {
     ADMIN_MODE_KEY,
     enabled ? '1' : '0',
   ]);
+}
+
+/**
+ * True on installs that predate the free-tier export cap. Written once by the
+ * `cap_exempt` migration in `lib/db.ts`; nothing sets it afterwards, so it means
+ * "this device was exporting at 1080p before the cap existed" and lets it keep
+ * doing so. A fresh install never gets the flag.
+ */
+export async function getLegacyExportQuality(): Promise<boolean> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM app_meta WHERE key = ?;`,
+    [LEGACY_EXPORT_QUALITY_KEY],
+  );
+  return row?.value === '1';
 }
 
 /**

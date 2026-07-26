@@ -10,6 +10,7 @@ import { PRESETS } from '@/data/presets';
 import { loadAdminMode, useAdminMode } from '@/features/admin/adminMode';
 import { presetPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
+import { saveAllowance, saveLimitMessage } from '@/features/projects/saveLimit';
 import { presetsToTsSource } from '@/lib/adminPreset';
 import { deleteUserPreset, listUserPresets } from '@/repositories/presetRepository';
 import { track } from '@/services/analytics';
@@ -70,9 +71,19 @@ export default function PresetsScreen() {
   const pro = all.filter((p) => p.category === 'pro');
 
   const applyPreset = (preset: Preset) => {
-    track('preset_selected', { category: preset.category, chords: preset.chords.length });
-    session.startFromPreset(preset);
-    router.replace('/editor');
+    // Loading a preset creates a project, so it answers to the same free save
+    // limit as the "new progression" button.
+    saveAllowance(ent)
+      .then((allowance) => {
+        if (!allowance.canCreate) {
+          upsell.show(saveLimitMessage(allowance.limit));
+          return;
+        }
+        track('preset_selected', { category: preset.category, chords: preset.chords.length });
+        session.startFromPreset(preset);
+        router.replace('/editor');
+      })
+      .catch(() => undefined);
   };
 
   const openProPreset = (preset: Preset) => {

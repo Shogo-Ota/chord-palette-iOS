@@ -13,19 +13,50 @@ let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
  * Each entry must give a DEFAULT so existing rows get a value; the read path is
  * still responsible for turning that value into something the domain accepts.
  */
-const ADDED_COLUMNS: readonly { table: string; column: string; definition: string }[] = [
+const ADDED_COLUMNS: readonly {
+  table: string;
+  column: string;
+  definition: string;
+  /**
+   * Run once, right after the column appears, when the DEFAULT is the right answer
+   * for new rows but the wrong one for rows that already exist. Safe on a fresh
+   * install: the table is empty at that point, so it touches nothing.
+   */
+  backfill?: string;
+}[] = [
   {
     table: 'projects',
     column: 'accompaniment_variant',
     definition: "TEXT NOT NULL DEFAULT ''",
   },
+  {
+    table: 'projects',
+    column: 'cap_exempt',
+    definition: 'INTEGER NOT NULL DEFAULT 0',
+    // Grandfathering. A free tier save limit is arriving, and people already have
+    // projects that predate it — some of them more than the new cap allows. Marking
+    // everything that exists at migration time as exempt means the limit only ever
+    // applies to what someone makes next; nothing they already wrote is taken away
+    // or held hostage.
+    //
+    // Export quality gets the same treatment, but it has no rows to mark, so the
+    // install itself is flagged. `seeded` is only present once the app has run
+    // before, which is exactly the "this person was already here" test.
+    backfill: `
+      UPDATE projects SET cap_exempt = 1;
+      INSERT OR IGNORE INTO app_meta (key, value)
+        SELECT 'legacy_export_quality', '1'
+        WHERE EXISTS (SELECT 1 FROM app_meta WHERE key = 'seeded');
+    `,
+  },
 ];
 
 async function addColumns(db: SQLite.SQLiteDatabase): Promise<void> {
-  for (const { table, column, definition } of ADDED_COLUMNS) {
+  for (const { table, column, definition, backfill } of ADDED_COLUMNS) {
     const existing = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${table});`);
     if (existing.some((c) => c.name === column)) continue;
     await db.execAsync(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+    if (backfill) await db.execAsync(backfill);
   }
 }
 
