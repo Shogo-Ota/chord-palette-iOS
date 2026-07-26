@@ -1,4 +1,4 @@
-import type { Entitlements } from '@/lib/entitlements';
+import { can, type Entitlements } from '@/lib/entitlements';
 import type { MajorKey } from '@/types';
 
 /**
@@ -26,5 +26,5 @@ export function isKeyFree(key: MajorKey): boolean {
 
 /** True when selecting/transposing to `key` requires Palette Pro. */
 export function isKeyLocked(key: MajorKey, entitlements: Entitlements): boolean {
-  return !isKeyFree(key) && !entitlements.palettePro;
+  return !isKeyFree(key) && !can(entitlements, 'key.transpose');
 }
