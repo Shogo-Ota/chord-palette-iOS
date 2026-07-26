@@ -1,10 +1,15 @@
 /**
  * Which variation pills the editor shows for the chord the player has selected.
  *
- * The two tiers exist because the catalog grew past what a first row can hold: the
- * core tier is the short familiar set, the extended tier the richer colours that
- * stay folded away until asked for. Both are filtered the same way — only tensions
- * that keep the degree's quality and stay inside the key ever reach the screen.
+ * The tiers exist because the catalog grew past what a first row can hold, and
+ * because they are not equally safe to reach for:
+ *
+ *  - core     — the short familiar set, always visible.
+ *  - extended — richer colours, still inside the key and clear of every avoid
+ *               note. Folded away until asked for.
+ *  - altered  — the tensions classic theory names for the degree that leave the
+ *               key or rub against a chord tone. Shown last, under the same
+ *               disclosure as the extended tier but its own heading.
  *
  * Pure and UI-independent: the screen decides how a pill looks, this decides which
  * pills exist, what they would produce, and whether the player may place them.
@@ -12,6 +17,7 @@
 
 import {
   ALL_VARIATIONS,
+  alteredVariations,
   availableVariations,
   extendedVariations,
   variationChord,
@@ -33,6 +39,7 @@ export interface VariationPillModel {
 export interface VariationTiers {
   core: VariationPillModel[];
   extended: VariationPillModel[];
+  altered: VariationPillModel[];
 }
 
 export interface VariationPillsInput {
@@ -58,13 +65,14 @@ function toPill(input: VariationPillsInput, id: VariationId): VariationPillModel
 }
 
 /**
- * Both tiers for the selected degree. A non-diatonic selection has no degree to
- * decorate, so both come back empty.
+ * Every tier for the selected degree. A non-diatonic selection has no degree to
+ * decorate, so they all come back empty.
  */
 export function variationTiers(input: VariationPillsInput): VariationTiers {
-  if (input.degree < 0) return { core: [], extended: [] };
+  if (input.degree < 0) return { core: [], extended: [], altered: [] };
   return {
     core: availableVariations(input.degree).map((id) => toPill(input, id)),
     extended: extendedVariations(input.degree).map((id) => toPill(input, id)),
+    altered: alteredVariations(input.degree).map((id) => toPill(input, id)),
   };
 }

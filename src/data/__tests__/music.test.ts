@@ -1,4 +1,6 @@
 import {
+  ALTERED_VARIATIONS,
+  alteredVariations,
   availableVariations,
   CHORD_VARIATIONS,
   MAJOR_KEYS,
@@ -146,6 +148,59 @@ describe('extendedVariations — second tier (C major)', () => {
 
   it('is Pro-gated in full', () => {
     expect(EXTENDED_VARIATIONS.every((v) => v.isPro)).toBe(true);
+  });
+});
+
+/**
+ * Mirrors ダイアトニックコード_テンション一覧 (C major): the altered column that
+ * the in-key tiers must refuse, listed per degree and nothing beyond it.
+ */
+describe('alteredVariations — third tier (C major)', () => {
+  it('offers each degree exactly the altered tones classic theory names', () => {
+    expect(alteredVariations(0).map((id) => variationChord('C', 0, id).displayName)).toEqual([
+      'Cmaj9(#11)',
+      'Cmaj13(#11)',
+    ]);
+    expect(alteredVariations(2).map((id) => variationChord('C', 2, id).displayName)).toEqual([
+      'Em7(♭9)',
+    ]);
+    expect(alteredVariations(4).map((id) => variationChord('C', 4, id).displayName)).toEqual([
+      'G7(♭9)',
+      'G7(#9)',
+      'G7(#11)',
+      'G7(♭13)',
+    ]);
+    expect(alteredVariations(5).map((id) => variationChord('C', 5, id).displayName)).toEqual([
+      'Am7(♭13)',
+    ]);
+    expect(alteredVariations(6).map((id) => variationChord('C', 6, id).displayName)).toEqual([
+      'Bm7♭5(♭9)',
+    ]);
+  });
+
+  it('leaves ii and IV empty — every tension they take is already in key', () => {
+    expect(alteredVariations(1)).toEqual([]);
+    expect(alteredVariations(3)).toEqual([]);
+  });
+
+  it('never leaks into the two in-key tiers', () => {
+    for (let degree = 0; degree < 7; degree += 1) {
+      const altered = alteredVariations(degree);
+      expect(availableVariations(degree).filter((id) => altered.includes(id))).toEqual([]);
+      expect(extendedVariations(degree).filter((id) => altered.includes(id))).toEqual([]);
+    }
+  });
+
+  it('is spelled by the catalog and Pro-gated in full', () => {
+    for (let degree = 0; degree < 7; degree += 1) {
+      for (const id of alteredVariations(degree)) {
+        const chord = variationChord('C', degree, id);
+        expect(chord.definitionId).toBeDefined();
+        expect(chord.isPro).toBe(true);
+        expect(intervalsForChord(chord.suffix, chord.definitionId).length).toBeGreaterThan(0);
+      }
+    }
+    expect(ALTERED_VARIATIONS.every((v) => v.isPro)).toBe(true);
   });
 });
 

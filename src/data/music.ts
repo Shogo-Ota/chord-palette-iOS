@@ -273,10 +273,10 @@ export const CHORD_VARIATIONS = [
  * stays the short familiar one. Same two rules as the core set: the degree keeps
  * its quality and every tone stays inside the key.
  *
- * Deliberately absent: altered dominants (7♭9, 7alt, 13♭9 …) leave the key by
- * definition and belong with the other out-of-key colours on the Advanced tab;
- * `maj11` puts the ♮11 avoid note over a major 3rd; `m9(11)` and `m13(9)` spell
- * exactly the same notes as the `11` and `13` already offered on minor degrees.
+ * Deliberately absent: `maj11` puts the ♮11 avoid note over a major 3rd, and
+ * `m9(11)` / `m13(9)` spell exactly the same notes as the `11` and `13` already
+ * offered on minor degrees. Tones that leave the key or sit a semitone above a
+ * chord tone live one tier further down, in {@link ALTERED_VARIATIONS}.
  */
 export const EXTENDED_VARIATIONS = [
   { id: 'sixNine', label: '6/9', suffix: '6/9', isPro: true },
@@ -288,8 +288,33 @@ export const EXTENDED_VARIATIONS = [
   { id: 'm7b5_b13', label: 'm7♭5(♭13)', suffix: 'm7♭5(♭13)', isPro: true },
 ] as const;
 
+/**
+ * The altered tier — the tensions classic theory lists for each degree that the
+ * other two tiers must refuse. Two kinds live here, and they are kept together
+ * because both ask the player to hear a deliberate clash rather than a colour:
+ *
+ *  - Out of key: I's #11 (the Lydian F# in C) and V's ♭9/#9/#11/♭13.
+ *  - In key but a semitone above a chord tone: iii's ♭9, vi's ♭13, vii°'s ♭9.
+ *
+ * Folded below the extended tier so the first two rows keep their guarantee that
+ * every tone belongs to the key and never fights a chord tone.
+ */
+export const ALTERED_VARIATIONS = [
+  { id: 'dom7b9', label: '♭9', suffix: '7(♭9)', isPro: true },
+  { id: 'dom7sharp9', label: '#9', suffix: '7(#9)', isPro: true },
+  { id: 'dom7sharp11', label: '#11', suffix: '7(#11)', isPro: true },
+  { id: 'dom7b13', label: '♭13', suffix: '7(♭13)', isPro: true },
+  { id: 'm7b9', label: '♭9', suffix: 'm7(♭9)', isPro: true },
+  { id: 'm7b13', label: '♭13', suffix: 'm7(♭13)', isPro: true },
+  { id: 'm7b5_b9', label: '♭9', suffix: 'm7♭5(♭9)', isPro: true },
+] as const;
+
 /** Every variation the editor can build, core tier first. */
-export const ALL_VARIATIONS = [...CHORD_VARIATIONS, ...EXTENDED_VARIATIONS] as const;
+export const ALL_VARIATIONS = [
+  ...CHORD_VARIATIONS,
+  ...EXTENDED_VARIATIONS,
+  ...ALTERED_VARIATIONS,
+] as const;
 
 export type VariationId = (typeof ALL_VARIATIONS)[number]['id'];
 
@@ -339,11 +364,38 @@ const EXTENDED_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>
   6: { m7b5_11: 'm7♭5(11)', m7b5_b13: 'm7♭5(♭13)' },
 };
 
-/** Suffix map covering both tiers — the single lookup `variationChord` resolves against. */
+/**
+ * Altered-tier suffixes per degree. This is the one map that is allowed to break
+ * the in-key rule, so it lists each degree's tensions exactly as classic theory
+ * does and no further:
+ *
+ *  I   → #11 (Lydian). ii and IV need nothing here: every tension they take is
+ *        already in key, and IV's #11 is diatonic so it stays in the extended tier.
+ *  iii → ♭9 (Phrygian). V → the four altered dominant tones. vi → ♭13 (Aeolian).
+ *  vii°→ ♭9 (Locrian).
+ */
+const ALTERED_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
+  0: { maj9sharp11: 'maj9(#11)', maj13sharp11: 'maj13(#11)' },
+  2: { m7b9: 'm7(♭9)' },
+  4: {
+    dom7b9: '7(♭9)',
+    dom7sharp9: '7(#9)',
+    dom7sharp11: '7(#11)',
+    dom7b13: '7(♭13)',
+  },
+  5: { m7b13: 'm7(♭13)' },
+  6: { m7b5_b9: 'm7♭5(♭9)' },
+};
+
+/** Suffix map covering all three tiers — the single lookup `variationChord` resolves against. */
 const ALL_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = Object.fromEntries(
   Array.from({ length: 7 }, (_, degree) => [
     degree,
-    { ...DEGREE_VARIATION_SUFFIX[degree], ...EXTENDED_DEGREE_SUFFIX[degree] },
+    {
+      ...DEGREE_VARIATION_SUFFIX[degree],
+      ...EXTENDED_DEGREE_SUFFIX[degree],
+      ...ALTERED_DEGREE_SUFFIX[degree],
+    },
   ]),
 );
 
@@ -363,6 +415,18 @@ export function availableVariations(degreeIndex: number): VariationId[] {
 export function extendedVariations(degreeIndex: number): VariationId[] {
   const map = EXTENDED_DEGREE_SUFFIX[degreeIndex] ?? {};
   return EXTENDED_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
+}
+
+/**
+ * Altered-tier variations usable on the given degree, in button order. Shares the
+ * second tier's disclosure with {@link extendedVariations} but is listed after it
+ * and under its own heading, because these are the tones that leave the key or
+ * rub against a chord tone. Filtered over {@link ALL_VARIATIONS} rather than
+ * {@link ALTERED_VARIATIONS} because I's #11 reuses the ids IV offers in key.
+ */
+export function alteredVariations(degreeIndex: number): VariationId[] {
+  const map = ALTERED_DEGREE_SUFFIX[degreeIndex] ?? {};
+  return ALL_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
 }
 
 /**

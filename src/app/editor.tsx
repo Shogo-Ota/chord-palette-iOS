@@ -331,11 +331,17 @@ export default function EditorScreen() {
     ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0)
     : -1;
 
-  const { core: corePills, extended: extendedPills } = useMemo(
+  const {
+    core: corePills,
+    extended: extendedPills,
+    altered: alteredPills,
+  } = useMemo(
     () =>
       variationTiers({ key, degree: selectedDegree, selected: selectedEvent, entitlements: ent }),
     [key, selectedDegree, selectedEvent, ent],
   );
+  /** Both folded tiers share one disclosure, so the toggle counts them together. */
+  const moreTensionCount = extendedPills.length + alteredPills.length;
 
   const colW = (cols: number) => Math.floor((width - H_PAD * 2 - 8 * (cols - 1)) / cols);
   const wDia = colW(4);
@@ -851,7 +857,7 @@ export default function EditorScreen() {
                 <Text style={styles.varEmptyHint}>
                   このコードはダイアトニック以外のため、ここでの飾り付けは使えません（差し替えは上のグリッドから）
                 </Text>
-              ) : corePills.length === 0 && extendedPills.length === 0 ? (
+              ) : corePills.length === 0 && moreTensionCount === 0 ? (
                 <Text style={styles.varEmptyHint}>
                   この度数（{selectedEvent.degreeLabel}）に足せるテンションはありません
                 </Text>
@@ -863,7 +869,7 @@ export default function EditorScreen() {
                   {corePills.length > 0 && (
                     <CPVariationPills pills={corePills} onPress={pickVariation} />
                   )}
-                  {extendedPills.length > 0 && (
+                  {moreTensionCount > 0 && (
                     <>
                       <Pressable
                         accessibilityRole="button"
@@ -871,7 +877,7 @@ export default function EditorScreen() {
                         style={styles.varMoreToggle}
                         onPress={() => setShowMoreTensions((v) => !v)}>
                         <Text style={styles.varMoreText}>
-                          {showMoreTensions ? '色づけを閉じる' : `もっと色づけ（${extendedPills.length}）`}
+                          {showMoreTensions ? '色づけを閉じる' : `もっと色づけ（${moreTensionCount}）`}
                         </Text>
                         <View style={showMoreTensions && styles.varMoreChevronOpen}>
                           <Icon
@@ -882,8 +888,17 @@ export default function EditorScreen() {
                           />
                         </View>
                       </Pressable>
-                      {showMoreTensions && (
+                      {showMoreTensions && extendedPills.length > 0 && (
                         <CPVariationPills pills={extendedPills} onPress={pickVariation} />
+                      )}
+                      {showMoreTensions && alteredPills.length > 0 && (
+                        <>
+                          <Text style={styles.varTierTitle}>オルタード</Text>
+                          <Text style={styles.varTierHint}>
+                            スケール外の音や、隣とぶつかる音を含む強い響きです
+                          </Text>
+                          <CPVariationPills pills={alteredPills} onPress={pickVariation} />
+                        </>
                       )}
                     </>
                   )}
@@ -1746,6 +1761,22 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
   varMoreChevronOpen: { transform: [{ rotate: '180deg' }] },
+  varTierTitle: {
+    fontSize: 11.5,
+    color: colors.textSecondary,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    marginHorizontal: 2,
+  },
+  varTierHint: {
+    fontSize: 10.5,
+    color: colors.textFaint,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    marginTop: 2,
+    marginBottom: 8,
+    marginHorizontal: 2,
+  },
   varEmptyHint: {
     fontSize: 11.5,
     color: colors.textFaint,

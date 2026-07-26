@@ -9,13 +9,31 @@ const base = { key: 'C', degree: 0, selected: undefined, entitlements: FREE } as
 
 describe('variationTiers', () => {
   it('has nothing to offer a chord that is not on a degree', () => {
-    expect(variationTiers({ ...base, degree: -1 })).toEqual({ core: [], extended: [] });
+    expect(variationTiers({ ...base, degree: -1 })).toEqual({
+      core: [],
+      extended: [],
+      altered: [],
+    });
   });
 
   it('keeps the familiar row in the core tier and the rest folded away', () => {
-    const { core, extended } = variationTiers(base);
+    const { core, extended, altered } = variationTiers(base);
     expect(core.map((p) => p.id)).toEqual(['sus4', 'add9', '6', 'sus2', '9', '13']);
     expect(extended.map((p) => p.id)).toEqual(['sixNine']);
+    // I's #11 is the Lydian F# in C — out of key, so it lands in the altered tier.
+    expect(altered.map((p) => p.id)).toEqual(['maj9sharp11', 'maj13sharp11']);
+  });
+
+  it('gives V the four altered dominant tones and no in-key colours', () => {
+    const { extended, altered } = variationTiers({ ...base, degree: 4 });
+    expect(extended).toEqual([]);
+    expect(altered.map((p) => p.preview)).toEqual(['G7(♭9)', 'G7(#9)', 'G7(#11)', 'G7(♭13)']);
+  });
+
+  it('separates IV in-key #11 from I out-of-key #11', () => {
+    const four = variationTiers({ ...base, degree: 3 });
+    expect(four.extended.map((p) => p.id)).toContain('maj9sharp11');
+    expect(four.altered).toEqual([]);
   });
 
   it('previews the chord each pill would produce in the current key', () => {
@@ -29,10 +47,12 @@ describe('variationTiers', () => {
     const free = variationTiers(base);
     expect(free.core.filter((p) => !p.locked).map((p) => p.id)).toEqual(['sus4', 'add9']);
     expect(free.extended.every((p) => p.locked)).toBe(true);
+    expect(free.altered.every((p) => p.locked)).toBe(true);
 
     const pro = variationTiers({ ...base, entitlements: PRO });
     expect(pro.core.every((p) => !p.locked)).toBe(true);
     expect(pro.extended.every((p) => !p.locked)).toBe(true);
+    expect(pro.altered.every((p) => !p.locked)).toBe(true);
   });
 
   it('marks the pill the selected chord already carries', () => {
