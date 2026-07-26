@@ -73,6 +73,7 @@ export default function ExportScreen() {
       progression: s.progression,
       grooveId: s.grooveId,
       accompaniment: s.accompanimentPattern,
+      accompanimentVariant: s.accompanimentVariant,
       instrumentId: s.instrumentId,
       releaseCut: s.releaseCut,
       octaveShift: s.octaveShift,

@@ -14,7 +14,6 @@ import { NATURAL_BANK } from '../feel/naturalBank';
 import { NATURAL_COMP } from '../styles/naturalComp';
 import { NATURAL_COMP_DENSE } from '../styles/naturalCompDense';
 import { NATURAL_COMP_SPARSE } from '../styles/naturalCompSparse';
-import { SIXTEEN_BEAT } from '../styles/sixteenBeat';
 import type { StepPattern } from '../styles/types';
 
 import type { AccompanimentVariant } from './types';
@@ -44,6 +43,21 @@ const QUARTERS_ON_8: StepPattern = {
   accent: [0.85, 0.4, 0.6, 0.4, 0.7, 0.4, 0.6, 0.4],
 };
 
+/**
+ * Sparser 16th comps: keep beat heads, drop half the "a" pushes so rests open the
+ * groove (city-pop / R&B breathing room).
+ */
+const BEAT16_SPARSE_CHORD: StepPattern = {
+  hits: [X, o, o, o, X, o, o, X, X, o, o, o, X, o, o, X],
+  accent: [1.0, 0.4, 0.4, 0.4, 0.72, 0.4, 0.4, 0.55, 0.88, 0.4, 0.4, 0.4, 0.7, 0.4, 0.4, 0.55],
+};
+
+/** Funkier 16ths: emphasize the "e" and "a" offs of each beat. */
+const BEAT16_FUNK_CHORD: StepPattern = {
+  hits: [X, o, X, X, o, o, X, X, X, o, X, X, o, o, X, X],
+  accent: [0.9, 0.4, 0.55, 0.75, 0.4, 0.4, 0.55, 0.78, 0.85, 0.4, 0.55, 0.72, 0.4, 0.4, 0.55, 0.75],
+};
+
 /* ------------------------------------------------------------------ */
 /* The catalog                                                         */
 /* ------------------------------------------------------------------ */
@@ -70,8 +84,6 @@ const BLOCK_VARIANTS: readonly AccompanimentVariant[] = [
     id: 'block.stab',
     label: 'Stab',
     hint: 'short に切って余白を作る',
-    // The point of a stab is the silence after it, so the long-tone articulation goes
-    // with the long gate — otherwise the note would still be labelled legato.
     refine: { gate: { min: 0.24, max: 0.42, sustain: 'normal' } },
   },
 ];
@@ -98,8 +110,6 @@ const ARPEGGIO_VARIANTS: readonly AccompanimentVariant[] = [
     id: 'arpeggio.broken',
     label: 'Broken',
     hint: '1-5-3-7 と跳ねる分散',
-    // Explicit cycle rather than a derived shape: the leap is the character, and the
-    // index wraps on the note count so a triad still spells 1 5 3 1.
     refine: { arpeggio: { order: [0, 2, 1, 3] } },
   },
 ];
@@ -140,16 +150,41 @@ const DRIVING_VARIANTS: readonly AccompanimentVariant[] = [
     hint: 'テンポとドラムで 8 / 16 を選ぶ',
   },
   {
-    id: 'driving.sixteen',
-    label: '16 Beat',
-    hint: '16 ビートで固定、細かく前へ',
-    forcedBase: SIXTEEN_BEAT,
-  },
-  {
     id: 'driving.push',
     label: 'Push',
     hint: '食いを 1 拍前まで広げて突っ込む',
     refine: { anticipation: { maxLeadBeats: 1 }, accentDepthDelta: 3 },
+  },
+  {
+    id: 'driving.tight',
+    label: 'Tight',
+    hint: '短く切って前のめりに',
+    refine: { gate: { min: 0.55, max: 0.78 }, accentDepthDelta: 5 },
+  },
+];
+
+const RELAXED_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'relaxed.ballad',
+    label: '標準',
+    hint: '半小節ごとに置いて長く伸ばす',
+  },
+  {
+    id: 'relaxed.sustain',
+    label: 'サステイン',
+    hint: '上声を止めて、和音だけを長く',
+    refine: { top: null, gate: { min: 0.92, max: 0.99 } },
+  },
+  {
+    id: 'relaxed.arp',
+    label: '分散',
+    hint: '4 分でゆっくり分散させる',
+    refine: {
+      chord: QUARTERS_ON_8,
+      top: null,
+      arpeggio: { direction: 'up' },
+      gate: { min: 0.7, max: 0.9, sustain: 'normal' },
+    },
   },
 ];
 
@@ -179,28 +214,120 @@ const BEAT8_VARIANTS: readonly AccompanimentVariant[] = [
   },
 ];
 
-const RELAXED_VARIANTS: readonly AccompanimentVariant[] = [
+const BEAT16_VARIANTS: readonly AccompanimentVariant[] = [
   {
-    id: 'relaxed.ballad',
-    label: 'Ballad',
-    hint: '半小節ごとに置いて長く伸ばす',
+    id: 'beat16.city',
+    label: 'シティ',
+    hint: '表拍と 16 分裏を混ぜた標準の 16 ビート',
   },
   {
-    id: 'relaxed.sustain',
-    label: 'Sustain',
-    hint: '上声を止めて、和音だけを長く',
-    refine: { top: null, gate: { min: 0.92, max: 0.99 } },
+    id: 'beat16.sparse',
+    label: 'スパース',
+    hint: '休符を増やして息をさせる',
+    refine: { chord: BEAT16_SPARSE_CHORD },
   },
   {
-    id: 'relaxed.arp',
-    label: 'Slow Arp',
-    hint: '4 分でゆっくり分散させる',
-    // The top voice would double the arpeggio's own line, so it steps aside.
+    id: 'beat16.funk',
+    label: 'ファンク',
+    hint: '16 分裏を強調して跳ねる',
+    refine: { chord: BEAT16_FUNK_CHORD, accentDepthDelta: 4 },
+  },
+  {
+    id: 'beat16.push',
+    label: 'プッシュ',
+    hint: '食いを広げて前へ',
+    refine: { anticipation: { maxLeadBeats: 0.75 }, accentDepthDelta: 3 },
+  },
+];
+
+const SHUFFLE_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'shuffle.blues',
+    label: 'ブルース',
+    hint: '三連の長短で自然に跳ねる',
+  },
+  {
+    id: 'shuffle.simple',
+    label: 'シンプル',
+    hint: '和音は 1・3 拍だけ',
+    refine: { chord: HALVES },
+  },
+  {
+    id: 'shuffle.hard',
+    label: 'ハード',
+    hint: 'アクセントを強く、短めに切る',
+    refine: { accentDepthDelta: 6, gate: { min: 0.55, max: 0.78 } },
+  },
+];
+
+const SWING_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'swing.soft',
+    label: 'ソフト',
+    hint: '裏拍中心のやわらかい揺れ',
+  },
+  {
+    id: 'swing.walk',
+    label: 'ウォーク',
+    hint: 'ベースの 4 分を目立たせる',
+    refine: { accentDepthDelta: -4, gate: { min: 0.78, max: 0.95 } },
+  },
+  {
+    id: 'swing.comp',
+    label: 'コンプ',
+    hint: '和音を短く切って応答する',
+    refine: { gate: { min: 0.4, max: 0.62, sustain: 'normal' } },
+  },
+];
+
+const BOSSA_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'bossa.light',
+    label: 'ライト',
+    hint: '低音と和音を交互に、軽く落ち着いて',
+  },
+  {
+    id: 'bossa.soft',
+    label: 'ソフト',
+    hint: 'さらに弱く、余韻を残す',
+    refine: { gate: { min: 0.65, max: 0.88 }, accentDepthDelta: -4 },
+  },
+  {
+    id: 'bossa.busy',
+    label: 'ビジー',
+    hint: 'シンコペを少し増やして動かす',
     refine: {
-      chord: QUARTERS_ON_8,
-      top: null,
-      arpeggio: { direction: 'up' },
-      gate: { min: 0.7, max: 0.9, sustain: 'normal' },
+      chord: {
+        hits: [o, X, X, X, o, X, X, o],
+        accent: [0.4, 0.6, 0.75, 0.5, 0.4, 0.58, 0.72, 0.4],
+      },
+    },
+  },
+];
+
+const REGGAE_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'reggae.skank',
+    label: 'スカンク',
+    hint: '2・4 拍の短いスカット',
+  },
+  {
+    id: 'reggae.offbeat',
+    label: 'オフビート',
+    hint: '各拍の裏だけを短く鳴らす',
+    refine: {
+      chord: {
+        hits: [o, X, o, X, o, X, o, X],
+        accent: [0.4, 0.9, 0.4, 0.85, 0.4, 0.9, 0.4, 0.85],
+      },
+    },
+  },
+  {
+    id: 'reggae.deep',
+    label: 'ディープ',
+    hint: '低音を長めに、スカットは短く',
+    refine: {
+      gate: { min: 0.18, max: 0.34, sustain: 'staccato', byTrack: { bass: { min: 0.7, max: 0.92 } } },
     },
   },
 ];
@@ -213,4 +340,9 @@ export const VARIANT_CATALOG = {
   driving: DRIVING_VARIANTS,
   relaxed: RELAXED_VARIANTS,
   beat8: BEAT8_VARIANTS,
+  beat16: BEAT16_VARIANTS,
+  shuffle: SHUFFLE_VARIANTS,
+  swing: SWING_VARIANTS,
+  bossa: BOSSA_VARIANTS,
+  reggae: REGGAE_VARIANTS,
 } as const satisfies Record<AccompanimentPattern, readonly AccompanimentVariant[]>;

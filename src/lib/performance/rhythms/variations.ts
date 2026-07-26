@@ -23,3 +23,33 @@ export const EIGHT_VARIATION: VariationProfile = {
   phraseFill: { sustainFinal: true, extraStabProbability: 0.4 },
   bassOnly: { probability: 0, maxPerPhrase: 0 },
 };
+
+/**
+ * 16-beat: the grid is already busy, so Variation opens holes rather than adding
+ * stabs — a rest in a 16th lattice is what makes the groove, not denser hits.
+ */
+export const SIXTEEN_VARIATION: VariationProfile = {
+  rests: { probability: 0.22, maxPerPhrase: 3 },
+  ties: { probability: 0.18, maxPerPhrase: 2 },
+  twoFourBar: { probability: 0.55, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: false, extraStabProbability: 0.5 },
+  bassOnly: { probability: 0, maxPerPhrase: 0 },
+};
+
+/** Shuffle / swing: keep the long-short pulse intact; change the bar, not the hop. */
+export const SWUNG_VARIATION: VariationProfile = {
+  rests: { probability: 0.16, maxPerPhrase: 2 },
+  ties: { probability: 0.28, maxPerPhrase: 2 },
+  twoFourBar: { probability: 0.4, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: true, extraStabProbability: 0.35 },
+  bassOnly: { probability: 0, maxPerPhrase: 0 },
+};
+
+/** Bossa / reggae: space is the character — rest more, stab less. */
+export const SPACE_VARIATION: VariationProfile = {
+  rests: { probability: 0.2, maxPerPhrase: 2 },
+  ties: { probability: 0.25, maxPerPhrase: 2 },
+  twoFourBar: { probability: 0.35, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: true, extraStabProbability: 0.3 },
+  bassOnly: { probability: 0, maxPerPhrase: 0 },
+};

@@ -1,10 +1,6 @@
 import { ACCOMPANIMENT_IDS } from '@/data/labels';
 import type { NoteEvent } from '@/lib/performance/NoteEvent';
-import {
-  generatePerformance,
-  type PerfChord,
-  type PerformanceOptions,
-} from '@/lib/performance/PerformanceEngine';
+import { generatePerformance, type PerfChord } from '@/lib/performance/PerformanceEngine';
 import { defaultVariantFor, variantsFor } from '@/lib/performance/variants';
 import type { AccompanimentPattern } from '@/types';
 
@@ -22,13 +18,11 @@ function chords(): PerfChord[] {
   }));
 }
 
-function render(
-  pattern: AccompanimentPattern,
-  variantId?: string,
-  bpm = BPM,
-): NoteEvent[] {
-  const options: PerformanceOptions = { styleId: pattern, variantId, drums: false };
-  return generatePerformance({ chords: chords(), bpm, seed: 7 }, options);
+function render(pattern: AccompanimentPattern, variantId?: string, bpm = BPM): NoteEvent[] {
+  return generatePerformance(
+    { chords: chords(), bpm, seed: 7 },
+    { styleId: pattern, variantId, drums: false },
+  );
 }
 
 /** A take's identity: which pitch sounds when, for how long, how hard. */
@@ -150,25 +144,38 @@ describe('what the variants actually change', () => {
     expect(new Set(counts).size).toBe(1);
   });
 
-  it('the 8-beat rhythm holds its bar at any tempo, where Driving picks by tempo', () => {
+  it('named rhythms hold their bar at any tempo, where Driving picks by tempo', () => {
     // A named rhythm is a promise about the bar; Driving's promise is that it will
     // choose for you. The Variation layer reads no tempo, so counts are comparable.
     const chordCount = (pattern: AccompanimentPattern, bpm: number) =>
       render(pattern, undefined, bpm).filter((n) => n.trackId === 'chord').length;
     expect(chordCount('beat8', 160)).toBe(chordCount('beat8', 90));
+    expect(chordCount('beat16', 160)).toBe(chordCount('beat16', 90));
     expect(chordCount('driving', 160)).not.toBe(chordCount('driving', 90));
   });
 
-  it('Driving 16 Beat pins the busier skeleton the tempo would not have chosen', () => {
-    const pinned: PerformanceOptions = {
-      styleId: 'driving',
-      variantId: 'driving.sixteen',
-      drums: false,
-    };
-    const atSlowTempo = generatePerformance({ chords: chords(), bpm: 90, seed: 7 }, pinned);
-    const auto = render('driving', undefined, 90);
-    const chordsOf = (notes: NoteEvent[]) => notes.filter((n) => n.trackId === 'chord').length;
-    expect(chordsOf(atSlowTempo)).toBeGreaterThan(chordsOf(auto));
+  it('16 Beat is denser than 8 Beat, and Shuffle hops where 8 Beat does not', () => {
+    const chordsOf = (pattern: AccompanimentPattern) =>
+      render(pattern).filter((n) => n.trackId === 'chord').length;
+    expect(chordsOf('beat16')).toBeGreaterThan(chordsOf('beat8'));
+    // Shuffle's swing moves the "&"; the attack times must differ from straight 8ths.
+    const times = (pattern: AccompanimentPattern) =>
+      render(pattern)
+        .filter((n) => n.trackId === 'chord')
+        .map((n) => n.timeBeat.toFixed(3))
+        .join('|');
+    expect(times('shuffle')).not.toBe(times('beat8'));
+    expect(times('swing')).not.toBe(times('shuffle'));
+  });
+
+  it('Reggae skanks short where Bossa rings longer', () => {
+    const longest = (pattern: AccompanimentPattern) =>
+      Math.max(
+        ...render(pattern)
+          .filter((n) => n.trackId === 'chord')
+          .map((n) => n.durationBeat),
+      );
+    expect(longest('reggae')).toBeLessThan(longest('bossa'));
   });
 
   it('Relaxed Sustain drops the top voice and rings longer', () => {

@@ -22,7 +22,11 @@ export type StyleId =
   | 'ballad'
   | 'naturalComp'
   | 'naturalCompSparse'
-  | 'naturalCompDense';
+  | 'naturalCompDense'
+  | 'shuffle'
+  | 'swing'
+  | 'bossa'
+  | 'reggae';
 
 /** A per-step on/off pattern over one bar, with accent weights and ghost flags. */
 export interface StepPattern {

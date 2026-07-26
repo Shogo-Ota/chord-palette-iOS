@@ -20,6 +20,7 @@ const VALID: ReadonlySet<GrooveId> = new Set<GrooveId>([
   'rock8',
   'rock16',
   'soul16',
+  'clap',
   'bossaNova',
 ]);
 

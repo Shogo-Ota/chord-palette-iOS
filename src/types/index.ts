@@ -36,7 +36,12 @@ export type AccompanimentPattern =
   | 'natural'
   | 'driving'
   | 'relaxed'
-  | 'beat8';
+  | 'beat8'
+  | 'beat16'
+  | 'shuffle'
+  | 'swing'
+  | 'bossa'
+  | 'reggae';
 export type InstrumentId = 'piano' | 'ePiano' | 'acousticGuitar' | 'electricGuitar' | 'strings';
 export type GrooveId =
   | 'pop8'

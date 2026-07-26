@@ -12,10 +12,20 @@
 
 import { ARPEGGIO } from '../styles/arpeggio';
 import { BLOCK } from '../styles/block';
+import { BOSSA } from '../styles/bossa';
 import { EIGHT_BEAT } from '../styles/eightBeat';
+import { REGGAE } from '../styles/reggae';
+import { SHUFFLE } from '../styles/shuffle';
+import { SIXTEEN_BEAT } from '../styles/sixteenBeat';
+import { SWING } from '../styles/swing';
 
 import type { RhythmDefinition } from './types';
-import { EIGHT_VARIATION } from './variations';
+import {
+  EIGHT_VARIATION,
+  SIXTEEN_VARIATION,
+  SPACE_VARIATION,
+  SWUNG_VARIATION,
+} from './variations';
 
 export const RHYTHMS: readonly RhythmDefinition[] = [
   {
@@ -56,6 +66,61 @@ export const RHYTHMS: readonly RhythmDefinition[] = [
       kind: 'style',
       style: EIGHT_BEAT,
       variation: EIGHT_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'beat16',
+    label: '16 ビート',
+    hint: '16 分で細かく刻み、休符でグルーヴを作る',
+    source: {
+      kind: 'style',
+      style: SIXTEEN_BEAT,
+      variation: SIXTEEN_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'shuffle',
+    label: 'シャッフル',
+    hint: '8 分を長短に跳ねるブルース／ポップロック',
+    source: {
+      kind: 'style',
+      style: SHUFFLE,
+      variation: SWUNG_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'swing',
+    label: 'スウィング',
+    hint: 'シャッフルより柔らかく、ジャズ寄りの揺れ',
+    source: {
+      kind: 'style',
+      style: SWING,
+      variation: SWUNG_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'bossa',
+    label: 'ボサノバ',
+    hint: '低音と和音を交互に、シンコペで軽く落ち着いて',
+    source: {
+      kind: 'style',
+      style: BOSSA,
+      variation: SPACE_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'reggae',
+    label: 'レゲエ',
+    hint: '2・4 拍の短いスカット。低音は表拍',
+    source: {
+      kind: 'style',
+      style: REGGAE,
+      variation: SPACE_VARIATION,
       grooveLock: true,
     },
   },

@@ -8,11 +8,15 @@
 import { ARPEGGIO } from './arpeggio';
 import { BALLAD } from './ballad';
 import { BLOCK } from './block';
+import { BOSSA } from './bossa';
 import { EIGHT_BEAT } from './eightBeat';
 import { NATURAL_COMP } from './naturalComp';
 import { NATURAL_COMP_DENSE } from './naturalCompDense';
 import { NATURAL_COMP_SPARSE } from './naturalCompSparse';
+import { REGGAE } from './reggae';
+import { SHUFFLE } from './shuffle';
 import { SIXTEEN_BEAT } from './sixteenBeat';
+import { SWING } from './swing';
 import type { StyleId, StylePreset } from './types';
 
 export * from './types';
@@ -27,6 +31,10 @@ export const STYLES: Record<StyleId, StylePreset> = {
   naturalComp: NATURAL_COMP,
   naturalCompSparse: NATURAL_COMP_SPARSE,
   naturalCompDense: NATURAL_COMP_DENSE,
+  shuffle: SHUFFLE,
+  swing: SWING,
+  bossa: BOSSA,
+  reggae: REGGAE,
 };
 
 export const STYLE_IDS: StyleId[] = [
@@ -38,6 +46,10 @@ export const STYLE_IDS: StyleId[] = [
   'naturalComp',
   'naturalCompSparse',
   'naturalCompDense',
+  'shuffle',
+  'swing',
+  'bossa',
+  'reggae',
 ];
 
 /**

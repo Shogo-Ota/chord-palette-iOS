@@ -25,6 +25,11 @@ export type VideoExportInput = {
   grooveId: string;
   /** Accompaniment rhythm id — kept in sync with playback so audio matches. */
   accompaniment: string;
+  /**
+   * Sub-variation of the accompaniment. Omitted = the rhythm's default reading, so
+   * callers that predate variants still export the take they auditioned.
+   */
+  accompanimentVariant?: string;
   instrumentId: string;
   /** Piano release-cut preference — mirrors playback so export matches audition. */
   releaseCut?: boolean;
@@ -78,16 +83,18 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     tempoBpm: input.bpm,
     grooveId: input.grooveId,
     accompanimentPattern: input.accompaniment,
+    accompanimentVariant: input.accompanimentVariant,
     instrumentId: input.instrumentId,
     progression: input.progression,
   });
   const strength = tierProfile(input.tier ?? 'free');
   const raw = generatePerformance(
     { chords, bpm: input.bpm, seed },
-    // Keep in sync with playback: same Feel resolution context (grooveId) so the
-    // exported audio matches what the user auditioned.
+    // Keep in sync with playback: same Feel resolution context (grooveId) and the
+    // same sub-variation, so the exported audio matches what the user auditioned.
     {
       styleId: input.accompaniment,
+      variantId: input.accompanimentVariant,
       grooveId: input.grooveId,
       drums: false,
       humanizeBoost: strength.humanizeBoost,
