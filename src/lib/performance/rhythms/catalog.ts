@@ -16,12 +16,15 @@ import { BOSSA } from '../styles/bossa';
 import { EIGHT_BEAT } from '../styles/eightBeat';
 import { REGGAE } from '../styles/reggae';
 import { SHUFFLE } from '../styles/shuffle';
+import { SIX_EIGHT } from '../styles/sixEight';
 import { SIXTEEN_BEAT } from '../styles/sixteenBeat';
 import { SWING } from '../styles/swing';
+import { WALTZ } from '../styles/waltz';
 
 import type { RhythmDefinition } from './types';
 import {
   EIGHT_VARIATION,
+  METERED_VARIATION,
   SIXTEEN_VARIATION,
   SPACE_VARIATION,
   SWUNG_VARIATION,
@@ -121,6 +124,28 @@ export const RHYTHMS: readonly RhythmDefinition[] = [
       kind: 'style',
       style: REGGAE,
       variation: SPACE_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'sixEight',
+    label: '6/8 バラード',
+    hint: '1・2・3、4・5・6。1 と 4 にアクセント',
+    source: {
+      kind: 'style',
+      style: SIX_EIGHT,
+      variation: METERED_VARIATION,
+      grooveLock: true,
+    },
+  },
+  {
+    id: 'waltz',
+    label: 'ワルツ',
+    hint: '3/4 のズン・チャッ・チャッ',
+    source: {
+      kind: 'style',
+      style: WALTZ,
+      variation: METERED_VARIATION,
       grooveLock: true,
     },
   },

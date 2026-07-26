@@ -20,6 +20,8 @@ struct PlaybackRequestRecord: Record {
   @Field var instrument: String = "piano"
   /// Seek into the loop on start (0 = from the top). Used for live re-apply.
   @Field var startBeat: Double = 0
+  /// Beats per bar for drum groove folding (default 4/4).
+  @Field var beatsPerBar: Double = 4
 }
 
 /// JS-facing single-chord audition request.
@@ -41,6 +43,8 @@ struct RenderAudioRequestRecord: Record {
   @Field var accompaniment: String = "block"
   @Field var instrument: String = "piano"
   @Field var durationSec: Double = 15
+  /// Beats per bar for drum groove folding (default 4/4).
+  @Field var beatsPerBar: Double = 4
 }
 
 /// Expo Custom Native Module bridging JS ↔ `AudioEngineController` (Phase 2A).
@@ -125,7 +129,8 @@ public class ChordAudioModule: Module {
         drumPattern: req.drumPatternId,
         accompaniment: req.accompaniment,
         instrument: req.instrument,
-        startBeat: req.startBeat
+        startBeat: req.startBeat,
+        beatsPerBar: req.beatsPerBar
       )
     }
 
@@ -145,7 +150,8 @@ public class ChordAudioModule: Module {
         drumPattern: req.drumPatternId,
         accompaniment: req.accompaniment,
         instrument: req.instrument,
-        durationSec: req.durationSec
+        durationSec: req.durationSec,
+        beatsPerBar: req.beatsPerBar
       )
       return ["uri": result.url.absoluteString, "sampleRate": result.sampleRate]
     }

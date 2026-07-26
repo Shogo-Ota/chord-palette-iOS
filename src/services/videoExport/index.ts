@@ -3,8 +3,10 @@ import type { EventSubscription } from 'expo-modules-core';
 import { ChordVideoExportNative } from '@modules/chord-video-export';
 import { buildExportPlan } from '@/lib/exportPlan';
 import { generatePerformance } from '@/lib/performance/PerformanceEngine';
+import { remeterChords } from '@/lib/performance/meter';
 import { progressionToPerfChords } from '@/lib/performance/progressionInput';
 import { applyReleaseCut } from '@/lib/performance/releaseCut';
+import { beatsPerBarFor, drumPatternFor } from '@/lib/performance/rhythms';
 import { tierProfile, type Tier } from '@/lib/performance/tier';
 import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
 import { VideoExportError } from '@/lib/errors';
@@ -65,12 +67,14 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   }
 
   const octaveShift = input.octaveShift ?? 0;
-  const chords = progressionToPerfChords(
+  const beatsPerBar = beatsPerBarFor(input.accompaniment);
+  const authored = progressionToPerfChords(
     input.progression,
     input.key,
     octaveShift,
     voicingAestheticFor(input.accompaniment, input.tier ?? 'free'),
   );
+  const chords = remeterChords(authored, beatsPerBar);
   const totalBeats = chords.reduce(
     (max, c) => Math.max(max, c.startBeat + c.durationBeats),
     0,
@@ -102,12 +106,14 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     },
   );
   const notes = applyReleaseCut(raw, input.releaseCut !== false);
+  const drumPatternId = drumPatternFor(input.grooveId, input.accompaniment);
   const playback = mapPerfNotesToPlaybackRequest(notes, {
     bpm: input.bpm,
     totalBeats,
     loop: true,
-    drumPatternId: input.grooveId,
+    drumPatternId,
     instrument: input.instrumentId,
+    beatsPerBar,
   });
   const audio = await audioService.renderAudioFile({
     bpm: playback.bpm,
@@ -117,6 +123,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     accompaniment: playback.accompaniment,
     instrument: playback.instrument,
     durationSec: opts.durationSec,
+    beatsPerBar: playback.beatsPerBar,
   });
   if (!audio) {
     throw new VideoExportError('音声のレンダリングに失敗しました。');
@@ -131,6 +138,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     audioUri: audio.uri,
     watermark: opts.watermark,
     octaveShift,
+    beatsPerBar,
   });
 
   let sub: EventSubscription | null = null;

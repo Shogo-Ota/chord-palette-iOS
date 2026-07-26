@@ -23,6 +23,8 @@ struct RenderPlan {
   let keyLabel: String
   let bpm: Int
   let bars: Int
+  /// Beats per bar for progression cycle length (default 4/4).
+  let beatsPerBar: Int
   /// Chords in one progression pass (one dot each). 0 → fall back to time-based.
   let chordsPerCycle: Int
   let watermark: Bool
@@ -354,7 +356,8 @@ enum FrameRenderer {
     if plan.chordsPerCycle > 0 {
       return Array(plan.segments.prefix(plan.chordsPerCycle))
     }
-    let loopSec = Double(plan.bars) * 4.0 * (60.0 / Double(max(1, plan.bpm)))
+    let bpb = Double(max(1, plan.beatsPerBar))
+    let loopSec = Double(plan.bars) * bpb * (60.0 / Double(max(1, plan.bpm)))
     let cycle = plan.segments.filter { $0.startSec < loopSec - 1e-9 }
     return cycle.isEmpty ? Array(plan.segments.prefix(8)) : cycle
   }

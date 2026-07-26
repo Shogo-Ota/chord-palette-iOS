@@ -29,6 +29,10 @@ final class PlanSnapshot {
   /// Precomputed chord/accompaniment note strikes for ONE loop, sorted by start.
   /// Built once (off the audio thread) from the accompaniment pattern.
   let chordStrikes: [NoteStrike]
+  /// Beats per bar for drum groove folding (default 4/4).
+  let beatsPerBar: Double
+  /// Longest chord strike duration (frames); used to bound the audio-thread scan.
+  let maxStrikeDur: Int
 
   init(
     bpm: Double,
@@ -37,7 +41,8 @@ final class PlanSnapshot {
     events: [NoteEventValue],
     drumPattern: String = "pop8",
     accompaniment: String = "block",
-    chordStrikes: [NoteStrike] = []
+    chordStrikes: [NoteStrike] = [],
+    beatsPerBar: Double = 4.0
   ) {
     self.bpm = bpm
     self.totalBeats = totalBeats
@@ -46,6 +51,8 @@ final class PlanSnapshot {
     self.drumPattern = drumPattern
     self.accompaniment = accompaniment
     self.chordStrikes = chordStrikes
+    self.beatsPerBar = beatsPerBar
+    self.maxStrikeDur = chordStrikes.map(\.dur).max() ?? 0
   }
 }
 
@@ -399,7 +406,8 @@ final class AudioEngineController {
     drumPattern: String,
     accompaniment: String,
     instrument: String,
-    startBeat: Double = 0
+    startBeat: Double = 0,
+    beatsPerBar: Double = 4.0
   ) {
     // §3.1: play() starts transport. `startBeat > 0` seeks into the loop so a
     // live re-apply (timbre/groove) can keep the playhead instead of rewinding.
@@ -425,7 +433,8 @@ final class AudioEngineController {
       accompaniment: accompaniment, sr: sampleRate)
     let snapshot = PlanSnapshot(
       bpm: bpm, totalBeats: totalBeats, loop: loop, events: events,
-      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
+      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes,
+      beatsPerBar: beatsPerBar
     )
     let fpb = Scheduler.framesPerBeat(bpm: bpm, sampleRate: sampleRate)
     let clampedBeat = max(0, startBeat)
@@ -696,12 +705,33 @@ final class AudioEngineController {
     let fi = Int(folded.frameInLoop)
 
     var sum: Float = 0
-    for strike in snap.chordStrikes {
-      let rel = fi - strike.start
-      if rel < 0 || rel >= strike.dur { continue }
-      let t = Double(rel) / sr
-      sum += provider.sample(note: strike.note, tSeconds: t, durationSeconds: Double(strike.dur) / sr)
-        * strike.gain
+    let maxDur = snap.maxStrikeDur
+    if maxDur > 0 && !snap.chordStrikes.isEmpty {
+      let lo = fi - maxDur
+      // Lower bound: first strike with start >= fi - maxStrikeDur (strikes sorted by start).
+      var left = 0
+      var right = snap.chordStrikes.count
+      while left < right {
+        let mid = (left + right) / 2
+        if snap.chordStrikes[mid].start < lo {
+          left = mid + 1
+        } else {
+          right = mid
+        }
+      }
+      var i = left
+      while i < snap.chordStrikes.count {
+        let strike = snap.chordStrikes[i]
+        if strike.start > fi { break }
+        let rel = fi - strike.start
+        if rel >= 0 && rel < strike.dur {
+          let t = Double(rel) / sr
+          sum += provider.sample(
+            note: strike.note, tSeconds: t, durationSeconds: Double(strike.dur) / sr
+          ) * strike.gain
+        }
+        i += 1
+      }
     }
     // Soft-clip the summed voices (tanh) — smooth headroom, no hard digital clip.
     return tanh(sum)
@@ -1002,10 +1032,12 @@ final class AudioEngineController {
     let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: snap.loop)
     let beat = Scheduler.beat(forFrameInLoop: folded.frameInLoop, bpm: snap.bpm, sampleRate: sr)
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
-    var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
-    if beatInBar < 0 { beatInBar += 4.0 }
+    let bpb = snap.beatsPerBar > 0 ? snap.beatsPerBar : 4.0
+    var beatInBar = beat.truncatingRemainder(dividingBy: bpb)
+    if beatInBar < 0 { beatInBar += bpb }
     return provider.sample(
-      groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
+      groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, beatsPerBar: bpb,
+      frame: Int64(absFrame)
     )
   }
 
@@ -1165,7 +1197,8 @@ final class AudioEngineController {
     drumPattern: String,
     accompaniment: String,
     instrument: String,
-    durationSec: Double
+    durationSec: Double,
+    beatsPerBar: Double = 4.0
   ) throws -> (url: URL, sampleRate: Double) {
     let sr = 44_100.0
     var chordProv: InstrumentProvider = synthProvider
@@ -1187,7 +1220,8 @@ final class AudioEngineController {
       accompaniment: accompaniment, sr: sr)
     let snap = PlanSnapshot(
       bpm: bpm, totalBeats: max(1, totalBeats), loop: true, events: events,
-      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes
+      drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes,
+      beatsPerBar: beatsPerBar
     )
 
     let outURL = FileManager.default.temporaryDirectory
@@ -1245,10 +1279,12 @@ final class AudioEngineController {
     let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: true)
     let beat = Scheduler.beat(forFrameInLoop: folded.frameInLoop, bpm: snap.bpm, sampleRate: sr)
     let spb = Scheduler.secondsPerBeat(bpm: snap.bpm)
-    var beatInBar = beat.truncatingRemainder(dividingBy: 4.0)
-    if beatInBar < 0 { beatInBar += 4.0 }
+    let bpb = snap.beatsPerBar > 0 ? snap.beatsPerBar : 4.0
+    var beatInBar = beat.truncatingRemainder(dividingBy: bpb)
+    if beatInBar < 0 { beatInBar += bpb }
     return provider.sample(
-      groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, frame: Int64(absFrame)
+      groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, beatsPerBar: bpb,
+      frame: Int64(absFrame)
     )
   }
 }

@@ -1,11 +1,12 @@
 import Foundation
 
-/// The drum voices used across the 7 MVP grooves (requirements §5.6). Shared by every
+/// The drum voices used across the MVP grooves (requirements §5.6). Shared by every
 /// `DrumProvider`: the synth turns a voice into oscillator math, the sampled provider
 /// maps it to a General MIDI percussion note. Plain enum ⇒ Hashable (usable as a key).
 enum DrumVoice { case kick, snare, hatClosed, hatOpen, ride, rim, clap }
 
-/// One drum onset within a 4/4 bar. `beat` is its position (0..4), `vel` a 0..1 level.
+/// One drum onset within a bar. `beat` is its position within [0, barLength); `vel`
+/// is a 0..1 level. Hit beats must stay within [0, barLength).
 struct DrumHit { let beat: Double; let voice: DrumVoice; let vel: Float }
 
 /// Groove id → 1-bar hit list: the SINGLE source of truth for the drum rhythm, shared
@@ -16,15 +17,21 @@ struct DrumHit { let beat: Double; let voice: DrumVoice; let vel: Float }
 /// that drives the piano groove-lock — keep the two in sync.
 enum DrumKit {
   /// All groove ids the providers pre-resolve at init. `pop8-min` is a pop8 alias.
-  static let grooveIds = ["pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "clap", "bossaNova"]
+  static let grooveIds = [
+    "pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "clap", "bossaNova",
+    "shuffle", "swing", "reggae", "sixEight", "waltz",
+  ]
 
   /// Straight hats every `step` beats, with heel-toe dynamics (audit P2-1):
   /// integer beats get `accent`; 8th offbeats are softer; 16th e/a softer still.
-  private static func hats(_ voice: DrumVoice, step: Double, vel: Float, accent: Float) -> [DrumHit] {
+  /// Hit beats must stay within [0, barLength).
+  private static func hats(
+    _ voice: DrumVoice, step: Double, vel: Float, accent: Float, barLength: Double = 4.0
+  ) -> [DrumHit] {
     var out = [DrumHit]()
     var b = 0.0
-    while b < 4.0 - 1e-9 {
-      let slot = Int((b * 4.0).rounded()) % 4 // 0=↓ 1=e 2=& 3=a
+    while b < barLength - 1e-9 {
+      let slot = Int((b * 4.0).rounded()) % 4 // 0=↓ 1=e 2=& 3=a (4/4 grid feel)
       let hitVel: Float
       if slot == 0 {
         hitVel = accent
@@ -39,6 +46,24 @@ enum DrumKit {
     return out
   }
 
+  /// Swung closed-hat (or ride) pattern: each beat head plus a triplet hop at beat + 2/3.
+  /// Hit beats must stay within [0, barLength).
+  private static func swungHats(
+    _ voice: DrumVoice, barLength: Double = 4.0, vel: Float, accent: Float
+  ) -> [DrumHit] {
+    var out = [DrumHit]()
+    var beat = 0.0
+    while beat < barLength - 1e-9 {
+      out.append(DrumHit(beat: beat, voice: voice, vel: accent))
+      let off = beat + (2.0 / 3.0)
+      if off < barLength - 1e-9 {
+        out.append(DrumHit(beat: off, voice: voice, vel: vel))
+      }
+      beat += 1.0
+    }
+    return out
+  }
+
   /// The 1-bar hit list for a groove (identical layout to the legacy synth patterns).
   static func hits(for groove: String) -> [DrumHit] {
     switch groove {
@@ -46,27 +71,27 @@ enum DrumKit {
       return [
         DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 2, voice: .kick, vel: 0.85),
         DrumHit(beat: 1, voice: .snare, vel: 0.9), DrumHit(beat: 3, voice: .snare, vel: 0.9),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.45, accent: 0.6)
+      ] + hats(.hatClosed, step: 0.5, vel: 0.45, accent: 0.6, barLength: 4.0)
 
     case "pop16":
       return [
         DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 2, voice: .kick, vel: 0.85),
         DrumHit(beat: 2.5, voice: .kick, vel: 0.5),
         DrumHit(beat: 1, voice: .snare, vel: 0.9), DrumHit(beat: 3, voice: .snare, vel: 0.9),
-      ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.58)
+      ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.58, barLength: 4.0)
 
     case "rock8":
       return [
         DrumHit(beat: 0, voice: .kick, vel: 1.0), DrumHit(beat: 2, voice: .kick, vel: 0.95),
         DrumHit(beat: 1, voice: .snare, vel: 0.98), DrumHit(beat: 3, voice: .snare, vel: 0.98),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.6, accent: 0.72)
+      ] + hats(.hatClosed, step: 0.5, vel: 0.6, accent: 0.72, barLength: 4.0)
 
     case "rock16":
       return [
         DrumHit(beat: 0, voice: .kick, vel: 1.0), DrumHit(beat: 1.5, voice: .kick, vel: 0.7),
         DrumHit(beat: 2, voice: .kick, vel: 0.95),
         DrumHit(beat: 1, voice: .snare, vel: 0.98), DrumHit(beat: 3, voice: .snare, vel: 0.98),
-      ] + hats(.hatClosed, step: 0.25, vel: 0.52, accent: 0.66)
+      ] + hats(.hatClosed, step: 0.25, vel: 0.52, accent: 0.66, barLength: 4.0)
 
     case "soul16":
       // Backbeat + syncopated kick + ghost-note snares for a soulful pocket.
@@ -74,7 +99,7 @@ enum DrumKit {
         DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 2.5, voice: .kick, vel: 0.72),
         DrumHit(beat: 1, voice: .snare, vel: 0.95), DrumHit(beat: 3, voice: .snare, vel: 0.95),
         DrumHit(beat: 1.75, voice: .snare, vel: 0.3), DrumHit(beat: 3.75, voice: .snare, vel: 0.3),
-      ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.55)
+      ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.55, barLength: 4.0)
 
     case "clap":
       // Hand-claps ONLY, on the backbeat (beats 2 & 4). No kick / snare / hats —
@@ -91,7 +116,45 @@ enum DrumKit {
         DrumHit(beat: 2, voice: .kick, vel: 0.72), DrumHit(beat: 3.5, voice: .kick, vel: 0.6),
         DrumHit(beat: 0, voice: .rim, vel: 0.72), DrumHit(beat: 1.5, voice: .rim, vel: 0.62),
         DrumHit(beat: 2.5, voice: .rim, vel: 0.66), DrumHit(beat: 3, voice: .rim, vel: 0.6),
-      ] + hats(.hatClosed, step: 0.5, vel: 0.32, accent: 0.42)
+      ] + hats(.hatClosed, step: 0.5, vel: 0.32, accent: 0.42, barLength: 4.0)
+
+    case "shuffle":
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 2, voice: .kick, vel: 0.85),
+        DrumHit(beat: 1, voice: .snare, vel: 0.9), DrumHit(beat: 3, voice: .snare, vel: 0.9),
+      ] + swungHats(.hatClosed, barLength: 4.0, vel: 0.42, accent: 0.58)
+
+    case "swing":
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 2, voice: .kick, vel: 0.85),
+        DrumHit(beat: 1, voice: .snare, vel: 0.9), DrumHit(beat: 3, voice: .snare, vel: 0.9),
+      ] + swungHats(.ride, barLength: 4.0, vel: 0.38, accent: 0.52)
+
+    case "reggae":
+      // One-drop kick + rim skank on the offbeats + light hat chatter.
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.82), DrumHit(beat: 2, voice: .kick, vel: 0.78),
+        DrumHit(beat: 1, voice: .rim, vel: 0.88), DrumHit(beat: 3, voice: .rim, vel: 0.88),
+        DrumHit(beat: 0.5, voice: .hatClosed, vel: 0.28),
+        DrumHit(beat: 1.5, voice: .hatClosed, vel: 0.26),
+        DrumHit(beat: 2.5, voice: .hatClosed, vel: 0.28),
+        DrumHit(beat: 3.5, voice: .hatClosed, vel: 0.26),
+      ]
+
+    case "sixEight":
+      // 6/8 bar: kick on 0 & 3, soft snare on 3, straight quarter hats.
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 3, voice: .kick, vel: 0.82),
+        DrumHit(beat: 3, voice: .snare, vel: 0.55),
+      ] + hats(.hatClosed, step: 1.0, vel: 0.38, accent: 0.48, barLength: 6.0)
+
+    case "waltz":
+      // 3/4 bar: kick on 1, soft snare + hat on 2 & 3.
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.88),
+        DrumHit(beat: 1, voice: .snare, vel: 0.52), DrumHit(beat: 2, voice: .snare, vel: 0.48),
+        DrumHit(beat: 1, voice: .hatClosed, vel: 0.36), DrumHit(beat: 2, voice: .hatClosed, vel: 0.32),
+      ]
 
     default:
       // Unknown id → safe default (Pop 8beat).

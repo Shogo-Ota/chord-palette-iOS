@@ -65,6 +65,11 @@ export type PlaybackRequest = {
   /** Native holds the concrete drum-pattern definition for this id. */
   drumPatternId: string;
   /**
+   * Beats in one bar for the drum wrap (`beat % beatsPerBar`). Defaults to 4 when
+   * omitted so older callers and older binaries keep working.
+   */
+  beatsPerBar?: number;
+  /**
    * Accompaniment rhythm id ('block' | 'eightBeat' | 'sixteenthBeat' | 'arpeggio' |
    * 'performance'). Native re-triggers/arpeggiates each chord's body notes on this
    * grid while the low bass sustains — except `'performance'`, which plays each
@@ -100,6 +105,8 @@ export type RenderAudioRequest = {
   accompaniment: string;
   instrument: string;
   durationSec: number;
+  /** Mirrors {@link PlaybackRequest.beatsPerBar}. */
+  beatsPerBar?: number;
 };
 
 /** Result of an offline audio render: a temp file URI + its sample rate. */

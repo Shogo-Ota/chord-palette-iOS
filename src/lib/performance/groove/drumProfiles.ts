@@ -54,6 +54,14 @@ const PROFILES: Record<string, DrumProfile> = {
   // bass a sensible downbeat pulse to lock to (there is no actual kick voice).
   clap: { grooveId: 'clap', family: 'eight', kickBeats: [0, 2], snareBeats: [1, 3], swing: false },
   bossaNova: { grooveId: 'bossaNova', family: 'swing', kickBeats: [0, 1.5, 2, 3.5], snareBeats: [], swing: false },
+  // Meter / hop overrides used when an authored rhythm owns the drum pattern.
+  shuffle: { grooveId: 'shuffle', family: 'swing', kickBeats: [0, 2], snareBeats: [1, 3], swing: true },
+  swing: { grooveId: 'swing', family: 'swing', kickBeats: [0, 2], snareBeats: [1, 3], swing: true },
+  reggae: { grooveId: 'reggae', family: 'eight', kickBeats: [0, 2], snareBeats: [1, 3], swing: false },
+  // 6/8: six eighth-pulses; pillars on 1 and 4 (0-based 0 and 3).
+  sixEight: { grooveId: 'sixEight', family: 'eight', kickBeats: [0, 3], snareBeats: [3], swing: false },
+  // 3/4 waltz: oom on 1, pahs on 2 & 3.
+  waltz: { grooveId: 'waltz', family: 'eight', kickBeats: [0], snareBeats: [1, 2], swing: false },
 };
 
 /** Unknown id → safe default (Pop 8beat), matching the native fallback. */

@@ -30,11 +30,17 @@ describe('drumProfiles — mirror of DrumProvider.swift', () => {
     });
   });
 
-  it('no groove carries the triplet swing flag (Swing groove retired)', () => {
-    const swung = ['pop8', 'pop16', 'rock8', 'rock16', 'soul16', 'clap', 'bossaNova'].filter(
+  it('only the hop overrides carry the triplet swing flag', () => {
+    const swung = ['pop8', 'pop16', 'rock8', 'rock16', 'soul16', 'clap', 'bossaNova', 'shuffle', 'swing'].filter(
       (id) => profileFor(id).swing,
     );
-    expect(swung).toEqual([]);
+    expect(swung).toEqual(['shuffle', 'swing']);
+  });
+
+  it('pins the meter overrides the native kits use', () => {
+    expect(profileFor('sixEight')).toMatchObject({ kickBeats: [0, 3], snareBeats: [3] });
+    expect(profileFor('waltz')).toMatchObject({ kickBeats: [0], snareBeats: [1, 2] });
+    expect(profileFor('reggae')).toMatchObject({ kickBeats: [0, 2], snareBeats: [1, 3] });
   });
 
   it('unknown groove id falls back to pop8 (matches the native default)', () => {

@@ -41,7 +41,9 @@ export type AccompanimentPattern =
   | 'shuffle'
   | 'swing'
   | 'bossa'
-  | 'reggae';
+  | 'reggae'
+  | 'sixEight'
+  | 'waltz';
 export type InstrumentId = 'piano' | 'ePiano' | 'acousticGuitar' | 'electricGuitar' | 'strings';
 export type GrooveId =
   | 'pop8'

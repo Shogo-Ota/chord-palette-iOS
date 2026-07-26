@@ -82,11 +82,11 @@ describe('an authored rhythm carries its own bar', () => {
     }
   });
 
-  it('states a 4/4 bar whose patterns match the declared grid', () => {
+  it('states a bar whose patterns match the declared grid', () => {
     for (const r of authored) {
       if (r.source.kind !== 'style') throw new Error('unreachable');
       const { style } = r.source;
-      expect(style.beatsPerBar).toBe(4);
+      expect(style.beatsPerBar).toBeGreaterThan(0);
       for (const track of ['chord', 'bass', 'kick', 'snare', 'hat'] as const) {
         expect(style[track].hits).toHaveLength(style.stepsPerBar);
         expect(style[track].accent).toHaveLength(style.stepsPerBar);

@@ -124,13 +124,16 @@ final class SampledDrumProvider: DrumProvider {
     return isLoaded
   }
 
-  func sample(groove: String, beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float {
+  func sample(
+    groove: String, beatInBar: Double, secondsPerBeat: Double, beatsPerBar: Double, frame: Int64
+  ) -> Float {
     let hits = patterns[groove] ?? fallback
+    let barLen = max(beatsPerBar, 0.001)
     var out: Float = 0
     for hit in hits {
       guard let buf = buffers[hit.voice], !buf.isEmpty else { continue }
       var dt = beatInBar - hit.beat
-      if dt < 0 { dt += 4.0 } // tail carried from the previous bar
+      if dt < 0 { dt += barLen } // tail carried from the previous bar
       let idx = Int(dt * secondsPerBeat * sampleRate)
       if idx >= 0 && idx < buf.count {
         out += buf[idx] * hit.vel

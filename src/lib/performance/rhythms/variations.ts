@@ -53,3 +53,12 @@ export const SPACE_VARIATION: VariationProfile = {
   phraseFill: { sustainFinal: true, extraStabProbability: 0.3 },
   bassOnly: { probability: 0, maxPerPhrase: 0 },
 };
+
+/** 6/8 and waltz: keep the meter readable — light variation, no dropped bars. */
+export const METERED_VARIATION: VariationProfile = {
+  rests: { probability: 0.1, maxPerPhrase: 1 },
+  ties: { probability: 0.2, maxPerPhrase: 2 },
+  twoFourBar: { probability: 0.3, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: true, extraStabProbability: 0.25 },
+  bassOnly: { probability: 0, maxPerPhrase: 0 },
+};

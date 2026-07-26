@@ -15,6 +15,7 @@ import type { RhythmDefinition } from './types';
 
 export type { RhythmDefinition, RhythmSource } from './types';
 export { RHYTHMS } from './catalog';
+export { drumPatternFor } from './drumPattern';
 
 const BY_ID = new Map<string, RhythmDefinition>(RHYTHMS.map((r) => [r.id, r]));
 
@@ -29,4 +30,11 @@ export function rhythmFor(id: unknown): RhythmDefinition | undefined {
 /** Whether a raw id names a rhythm in the catalog. */
 export function isRhythmId(id: unknown): id is AccompanimentPattern {
   return rhythmFor(id) !== undefined;
+}
+
+/** Beats per bar the chosen accompaniment asks the engine (and the drums) to use. */
+export function beatsPerBarFor(accompanimentId: string): number {
+  const rhythm = rhythmFor(accompanimentId);
+  if (rhythm?.source.kind === 'style') return rhythm.source.style.beatsPerBar;
+  return 4;
 }

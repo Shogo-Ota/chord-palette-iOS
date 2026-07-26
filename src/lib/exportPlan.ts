@@ -7,6 +7,7 @@
 
 import { midiNoteName } from '@/data/music';
 import { eventKey, isMultiKey, keyColorSlots } from '@/lib/keyColor';
+import { remeterScale } from '@/lib/performance/meter';
 import { chordMidiNotes } from '@/lib/voicing';
 import { secondsPerBeat } from '@/services/audio/schedule';
 import type { ExportPlan, ExportSegment } from '@/services/videoExport/types';
@@ -23,6 +24,11 @@ export type BuildExportPlanParams = {
   watermark: boolean;
   /** Whole-arrangement register offset in octaves (mirrors playback/preview). */
   octaveShift?: number;
+  /**
+   * Beats per musical bar for the chosen rhythm. Scales stored 4/4 durations so
+   * segment wall-clock matches the remetered audio. Omitted / 4 = unchanged.
+   */
+  beatsPerBar?: number;
   width?: number;
   height?: number;
   fps?: number;
@@ -45,9 +51,11 @@ export function buildSegments(
   bpm: number,
   durationSec: number,
   octaveShift = 0,
+  beatsPerBar = 4,
 ): ExportSegment[] {
   if (progression.length === 0 || durationSec <= 0) return [];
   const spb = secondsPerBeat(bpm);
+  const meterScale = remeterScale(beatsPerBar);
   const segments: ExportSegment[] = [];
   // Multi-key indicator: color each segment by its key-context slot (0 = base key
   // → neutral). Only emitted when the progression actually modulates.
@@ -61,7 +69,7 @@ export function buildSegments(
   const maxSegments = 10_000;
   while (t < durationSec && segments.length < maxSegments) {
     const ev = progression[i % progression.length];
-    const full = Math.max(0.001, ev.durationBeats * spb);
+    const full = Math.max(0.001, ev.durationBeats * meterScale * spb);
     const clipped = Math.min(full, durationSec - t);
     segments.push({
       displayName: ev.displayName,
@@ -97,8 +105,10 @@ export function buildExportPlan(params: BuildExportPlanParams): ExportPlan {
     keyboardHigh = 60,
   } = params;
 
-  const totalBeats = progression.reduce((sum, e) => sum + e.durationBeats, 0);
-  const bars = Math.max(1, Math.ceil(totalBeats / 4));
+  const beatsPerBar = params.beatsPerBar ?? 4;
+  const totalBeats =
+    progression.reduce((sum, e) => sum + e.durationBeats, 0) * remeterScale(beatsPerBar);
+  const bars = Math.max(1, Math.ceil(totalBeats / beatsPerBar - 1e-9));
   // Shift the visible keyboard window in lock-step with the notes so the drawn
   // range still frames the (now raised) voicing rather than empty low keys.
   const kbShift = 12 * octaveShift;
@@ -113,11 +123,12 @@ export function buildExportPlan(params: BuildExportPlanParams): ExportPlan {
     keyLabel: key,
     bpm,
     bars,
+    beatsPerBar,
     chordsPerCycle: progression.length,
     watermark,
     keyboardLow: keyboardLow + kbShift,
     keyboardHigh: keyboardHigh + kbShift,
     pitchClassNames: pitchClassNamesFor(key),
-    segments: buildSegments(progression, key, bpm, durationSec, octaveShift),
+    segments: buildSegments(progression, key, bpm, durationSec, octaveShift, beatsPerBar),
   };
 }

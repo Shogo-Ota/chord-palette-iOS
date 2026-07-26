@@ -40,7 +40,11 @@ import {
   type VariationId,
 } from '@/data/music';
 import { loadAdminMode, useAdminMode } from '@/features/admin/adminMode';
-import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
+import {
+  beatsPerBarFor,
+  chordPreviewRequest,
+  sessionToPlaybackRequest,
+} from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
 import { useAutosave } from '@/features/editor/useAutosave';
@@ -52,6 +56,7 @@ import { isKeyLocked } from '@/lib/keyAccess';
 import { distinctKeys, eventKey, isMultiKey, keyColorSlots } from '@/lib/keyColor';
 import { hapticError, hapticSelection, hapticSoft, hapticSuccess } from '@/lib/haptics';
 import { logger } from '@/lib/logger';
+import { authoringBeats } from '@/lib/performance/meter';
 import {
   MAX_BARS,
   chordIndexAtBeat,
@@ -226,10 +231,13 @@ export default function EditorScreen() {
       });
   }, []);
 
-  /* Progression ref so the position listener always sees the latest cards
-     without re-subscribing (native chordIndex is a PE note index — unusable). */
+  /* Progression / accompaniment refs so the position listener always sees the
+     latest cards and meter without re-subscribing (native chordIndex is a PE
+     note index — unusable; native beat is in the rhythm's meter). */
   const progressionRef = useRef(progression);
   progressionRef.current = progression;
+  const accompanimentRef = useRef(s.accompanimentPattern);
+  accompanimentRef.current = s.accompanimentPattern;
 
   /* ---- audio engine lifecycle (mount → prepare, unmount → release) */
   useEffect(() => {
@@ -239,7 +247,10 @@ export default function EditorScreen() {
       if (e.state === 'stopped' || e.state === 'idle' || e.state === 'ready') setPlayingIndex(-1);
     });
     const posSub = audioService.addPositionListener((e) => {
-      setPlayingIndex(chordIndexAtBeat(progressionRef.current, e.beat));
+      const meter = beatsPerBarFor(accompanimentRef.current);
+      setPlayingIndex(
+        chordIndexAtBeat(progressionRef.current, authoringBeats(e.beat, meter)),
+      );
     });
     return () => {
       stateSub?.remove();

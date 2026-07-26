@@ -32,6 +32,8 @@ struct ExportPlanRecord: Record {
   @Field var keyboardHigh: Int = 60
   @Field var pitchClassNames: [String] = []
   @Field var segments: [ExportSegmentRecord] = []
+  /// Beats per bar for progression cycle length (default 4/4).
+  @Field var beatsPerBar: Int = 4
 }
 
 /// Expo Custom Native Module bridging JS ↔ `VideoWriter` (Phase 4). Holds no music
@@ -76,7 +78,8 @@ public class ChordVideoExportModule: Module {
         keyboardLow: planRecord.keyboardLow,
         keyboardHigh: planRecord.keyboardHigh,
         pitchClassNames: planRecord.pitchClassNames,
-        segments: segments
+        segments: segments,
+        beatsPerBar: planRecord.beatsPerBar
       )
 
       VideoWriter.write(

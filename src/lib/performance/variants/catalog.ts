@@ -332,6 +332,59 @@ const REGGAE_VARIANTS: readonly AccompanimentVariant[] = [
   },
 ];
 
+const SIX_EIGHT_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'sixEight.flow',
+    label: 'フロー',
+    hint: '1・2・3、4・5・6 で揺れる分散',
+  },
+  {
+    id: 'sixEight.simple',
+    label: 'シンプル',
+    hint: '1 と 4 だけに和音を置く',
+    refine: {
+      chord: {
+        hits: [X, o, o, X, o, o],
+        accent: [1.0, 0.4, 0.4, 0.88, 0.4, 0.4],
+      },
+      arpeggio: null,
+    },
+  },
+  {
+    id: 'sixEight.open',
+    label: 'オープン',
+    hint: '長く伸ばして余韻を残す',
+    refine: { gate: { min: 0.9, max: 0.99 } },
+  },
+];
+
+const WALTZ_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'waltz.oomPah',
+    label: 'ズンチャッ',
+    hint: '1 拍目に低音、2・3 拍に和音',
+  },
+  {
+    id: 'waltz.soft',
+    label: 'ソフト',
+    hint: 'チャッをさらに弱く',
+    refine: { accentDepthDelta: -6, gate: { min: 0.55, max: 0.8 } },
+  },
+  {
+    id: 'waltz.flow',
+    label: 'フロー',
+    hint: '和音を分散させて流す',
+    refine: {
+      chord: {
+        hits: [o, X, X, X, X, X],
+        accent: [0.4, 0.55, 0.7, 0.5, 0.65, 0.5],
+      },
+      arpeggio: { direction: 'up' },
+      gate: { min: 0.65, max: 0.88, sustain: 'normal' },
+    },
+  },
+];
+
 /** Every accompaniment's variants, in chip order. Index 0 is always the default. */
 export const VARIANT_CATALOG = {
   block: BLOCK_VARIANTS,
@@ -345,4 +398,6 @@ export const VARIANT_CATALOG = {
   swing: SWING_VARIANTS,
   bossa: BOSSA_VARIANTS,
   reggae: REGGAE_VARIANTS,
+  sixEight: SIX_EIGHT_VARIANTS,
+  waltz: WALTZ_VARIANTS,
 } as const satisfies Record<AccompanimentPattern, readonly AccompanimentVariant[]>;

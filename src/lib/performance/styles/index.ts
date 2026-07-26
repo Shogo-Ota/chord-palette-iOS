@@ -15,8 +15,10 @@ import { NATURAL_COMP_DENSE } from './naturalCompDense';
 import { NATURAL_COMP_SPARSE } from './naturalCompSparse';
 import { REGGAE } from './reggae';
 import { SHUFFLE } from './shuffle';
+import { SIX_EIGHT } from './sixEight';
 import { SIXTEEN_BEAT } from './sixteenBeat';
 import { SWING } from './swing';
+import { WALTZ } from './waltz';
 import type { StyleId, StylePreset } from './types';
 
 export * from './types';
@@ -35,6 +37,8 @@ export const STYLES: Record<StyleId, StylePreset> = {
   swing: SWING,
   bossa: BOSSA,
   reggae: REGGAE,
+  waltz: WALTZ,
+  sixEight: SIX_EIGHT,
 };
 
 export const STYLE_IDS: StyleId[] = [
@@ -50,6 +54,8 @@ export const STYLE_IDS: StyleId[] = [
   'swing',
   'bossa',
   'reggae',
+  'waltz',
+  'sixEight',
 ];
 
 /**

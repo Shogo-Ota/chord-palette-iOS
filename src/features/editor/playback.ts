@@ -5,12 +5,15 @@
  *
  * Chord/bass rhythm, velocity, microtiming and gate come from `generatePerformance`.
  * Native accompaniment is set to `'performance'` (1:1, no re-humanize). Drums stay
- * on the native groove id so PE drum tracks are not double-played.
+ * on the native groove id so PE drum tracks are not double-played — except when the
+ * chosen rhythm owns the meter or hop, in which case the drum pattern follows it.
  */
 
 import { generatePerformance } from '@/lib/performance/PerformanceEngine';
+import { remeterChords } from '@/lib/performance/meter';
 import { progressionToPerfChords } from '@/lib/performance/progressionInput';
 import { applyReleaseCut } from '@/lib/performance/releaseCut';
+import { beatsPerBarFor, drumPatternFor } from '@/lib/performance/rhythms';
 import { tierProfile, type Tier } from '@/lib/performance/tier';
 import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
 import { buildPresetProgression } from '@/lib/presets';
@@ -22,6 +25,8 @@ import {
 import type { PlaybackRequest, PreviewRequest } from '@/services/audio/types';
 import type { ChordEvent, MajorKey, Preset } from '@/types';
 import type { EditorSession } from './session';
+
+export { beatsPerBarFor } from '@/lib/performance/rhythms';
 
 /**
  * Build the full playback request for the current session.
@@ -35,12 +40,15 @@ export function sessionToPlaybackRequest(
   loop: boolean,
   tier: Tier = 'free',
 ): PlaybackRequest {
-  const chords = progressionToPerfChords(
+  const beatsPerBar = beatsPerBarFor(session.accompanimentPattern);
+  const authored = progressionToPerfChords(
     session.progression,
     session.key,
     session.octaveShift,
     voicingAestheticFor(session.accompanimentPattern, tier),
   );
+  // Waltz / 6/8 store chords in 4/4 beats; remeter so one stored bar = one musical bar.
+  const chords = remeterChords(authored, beatsPerBar);
   const totalBeats = chords.reduce(
     (max, c) => Math.max(max, c.startBeat + c.durationBeats),
     0,
@@ -57,8 +65,6 @@ export function sessionToPlaybackRequest(
   const strength = tierProfile(tier);
   const raw = generatePerformance(
     { chords, bpm: session.tempoBpm, seed },
-    // Native DrumProvider owns the groove; do not emit PE drum tracks. The groove
-    // id gives the Feel layer its resolution context (which base skeleton to use).
     {
       styleId: session.accompanimentPattern,
       variantId: session.accompanimentVariant,
@@ -73,8 +79,9 @@ export function sessionToPlaybackRequest(
     bpm: session.tempoBpm,
     totalBeats,
     loop,
-    drumPatternId: session.grooveId,
+    drumPatternId: drumPatternFor(session.grooveId, session.accompanimentPattern),
     instrument: session.instrumentId,
+    beatsPerBar,
   });
 
   return request;

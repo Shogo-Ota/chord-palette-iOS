@@ -5,9 +5,12 @@ import Foundation
 /// audio thread. Phase-2 ships synth one-shots differentiated into 7 grooves; a
 /// future phase can swap in sampled hits behind this same protocol (sprint-2.md §10).
 protocol DrumProvider: AnyObject {
-  /// Sample in [-1, 1] for the given position within a 4/4 bar, for `groove`.
+  /// Sample in [-1, 1] for the given position within one bar, for `groove`.
+  /// `beatsPerBar` is the bar length used to wrap tails from the previous bar.
   /// `frame` is the absolute sample index, used only as a stateless noise seed.
-  func sample(groove: String, beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float
+  func sample(
+    groove: String, beatInBar: Double, secondsPerBeat: Double, beatsPerBar: Double, frame: Int64
+  ) -> Float
 }
 
 /// Synth (808-style) drum voices arranged into the 6 MVP grooves (requirements
@@ -31,12 +34,15 @@ final class SynthDrumProvider: DrumProvider {
     fallback = p["pop8"] ?? []
   }
 
-  func sample(groove: String, beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float {
+  func sample(
+    groove: String, beatInBar: Double, secondsPerBeat: Double, beatsPerBar: Double, frame: Int64
+  ) -> Float {
     let hits = patterns[groove] ?? fallback
+    let barLen = max(beatsPerBar, 0.001)
     var out: Float = 0
     for hit in hits {
       var dt = beatInBar - hit.beat
-      if dt < 0 { dt += 4.0 } // tail carried from the previous bar
+      if dt < 0 { dt += barLen } // tail carried from the previous bar
       let t = dt * secondsPerBeat
       out += voiceSample(hit.voice, t: t, frame: frame) * hit.vel
     }

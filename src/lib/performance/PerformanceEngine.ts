@@ -20,7 +20,7 @@ import { profileFor } from './groove/drumProfiles';
 import { lockToGroove } from './groove/lockToGroove';
 import { msToBeat, swingDelayBeats, tempoTimingScale, trackOffsetMs } from './microtiming';
 import { clampVelocity, type NoteEvent, type TrackId } from './NoteEvent';
-import { rhythmFor } from './rhythms';
+import { drumPatternFor, rhythmFor } from './rhythms';
 import { RoundRobinPicker } from './roundRobin';
 import { streamFor } from './rng';
 import { strumOffsetBeats, strumVelocityScale } from './strum';
@@ -483,10 +483,13 @@ function resolvePlan(options: PerformanceOptions, bpm: number): ResolvedPlan {
 
   const rhythm = rhythmFor(options.styleId);
   const grooveId = options.grooveId ?? 'pop8';
+  // Some rhythms own their drum pattern (waltz, shuffle, …). Lock the comp to that
+  // pattern, not to a 4/4 kit the player left selected underneath.
+  const drumId = drumPatternFor(grooveId, options.styleId);
   // Groove-lock: nudge the comp to agree with the drum groove that is playing (subtle
   // accent/microtiming only — hit positions unchanged). Applied to the render template
   // AND every bank member so a per-phrase rotation locks too.
-  const profile = profileFor(grooveId);
+  const profile = profileFor(drumId);
 
   if (rhythm?.source.kind === 'feel') {
     const base = variant?.forcedBase ?? singleton;

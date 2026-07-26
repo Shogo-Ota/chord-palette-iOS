@@ -26,7 +26,9 @@ export type StyleId =
   | 'shuffle'
   | 'swing'
   | 'bossa'
-  | 'reggae';
+  | 'reggae'
+  | 'waltz'
+  | 'sixEight';
 
 /** A per-step on/off pattern over one bar, with accent weights and ghost flags. */
 export interface StepPattern {

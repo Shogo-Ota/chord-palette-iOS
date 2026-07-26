@@ -42,6 +42,8 @@ export type ExportPlan = {
   keyLabel: string;
   bpm: number;
   bars: number;
+  /** Beats in one musical bar (4 for 4/4, 3 for waltz, 6 for 6/8). */
+  beatsPerBar: number;
   /** Number of chords in one progression pass, so the encoder shows one dot per chord. */
   chordsPerCycle: number;
   watermark: boolean;
