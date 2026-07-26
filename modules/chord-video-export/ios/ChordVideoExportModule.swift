@@ -73,13 +73,13 @@ public class ChordVideoExportModule: Module {
         keyLabel: planRecord.keyLabel,
         bpm: planRecord.bpm,
         bars: planRecord.bars,
+        beatsPerBar: planRecord.beatsPerBar,
         chordsPerCycle: planRecord.chordsPerCycle,
         watermark: planRecord.watermark,
         keyboardLow: planRecord.keyboardLow,
         keyboardHigh: planRecord.keyboardHigh,
         pitchClassNames: planRecord.pitchClassNames,
-        segments: segments,
-        beatsPerBar: planRecord.beatsPerBar
+        segments: segments
       )
 
       VideoWriter.write(
