@@ -1,0 +1,26 @@
+---
+description: コード理論・テンション・MIDI 一致ゲート
+globs:
+  - src/data/music.ts
+  - src/lib/voicing.ts
+  - src/lib/transpose.ts
+  - src/lib/theory/**/*
+  - project/docs/music/Theory.md
+  - project/docs/music/ChordDefinitions.md
+  - project/docs/music/Intervals.md
+  - project/docs/music/Extensions.md
+  - project/docs/music/Altered.md
+  - project/docs/music/Voicing.md
+  - project/docs/music/RomanNumerals.md
+  - project/docs/music/Scale.md
+  - project/docs/music/Transposition.md
+alwaysApply: false
+---
+
+# Music Theory Gates
+
+- セブンスは別タブ / 別トグルを維持する。
+- アボイドノートを理由にテンション候補を消さない（`Extensions.md` / `Altered.md`）。
+- `symbol` / `displayName` / `buttonLabel` / `intervals` / MIDI ピッチクラスを一致させる。
+- 全12キーへ自動展開できること。キー別ハードコードを増やさない。
+- 変更時は `music-theory-reviewer` 相当の観点で自己レビューする。
