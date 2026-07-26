@@ -150,19 +150,25 @@ describe('what the variants actually change', () => {
     expect(new Set(counts).size).toBe(1);
   });
 
-  it('Driving 8 Beat and 16 Beat differ, and neither follows the tempo', () => {
-    const eight = signature(render('driving', 'driving.eight'));
-    const sixteen = signature(render('driving', 'driving.sixteen'));
-    expect(eight).not.toBe(sixteen);
-    // The auto reading picks by tempo; a pinned one must not.
-    const fast: PerformanceOptions = {
+  it('the 8-beat rhythm holds its bar at any tempo, where Driving picks by tempo', () => {
+    // A named rhythm is a promise about the bar; Driving's promise is that it will
+    // choose for you. The Variation layer reads no tempo, so counts are comparable.
+    const chordCount = (pattern: AccompanimentPattern, bpm: number) =>
+      render(pattern, undefined, bpm).filter((n) => n.trackId === 'chord').length;
+    expect(chordCount('beat8', 160)).toBe(chordCount('beat8', 90));
+    expect(chordCount('driving', 160)).not.toBe(chordCount('driving', 90));
+  });
+
+  it('Driving 16 Beat pins the busier skeleton the tempo would not have chosen', () => {
+    const pinned: PerformanceOptions = {
       styleId: 'driving',
-      variantId: 'driving.eight',
+      variantId: 'driving.sixteen',
       drums: false,
     };
-    const atFastTempo = generatePerformance({ chords: chords(), bpm: 160, seed: 7 }, fast);
-    const slowSteps = render('driving', 'driving.eight').filter((n) => n.trackId === 'chord').length;
-    expect(atFastTempo.filter((n) => n.trackId === 'chord')).toHaveLength(slowSteps);
+    const atSlowTempo = generatePerformance({ chords: chords(), bpm: 90, seed: 7 }, pinned);
+    const auto = render('driving', undefined, 90);
+    const chordsOf = (notes: NoteEvent[]) => notes.filter((n) => n.trackId === 'chord').length;
+    expect(chordsOf(atSlowTempo)).toBeGreaterThan(chordsOf(auto));
   });
 
   it('Relaxed Sustain drops the top voice and rings longer', () => {

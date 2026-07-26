@@ -1,3 +1,4 @@
+import { RHYTHMS, RHYTHM_IDS } from '@/lib/performance/rhythms';
 import type { AccompanimentPattern, GrooveId, InstrumentId } from '@/types';
 
 /** Display names for instruments (requirements §6). */
@@ -59,19 +60,18 @@ export const GROOVE_IDS: GrooveId[] = [
   'bossaNova',
 ];
 
-/** Accompaniment patterns (all free — requirements §6). */
-export const ACCOMPANIMENT_LABELS: Record<AccompanimentPattern, string> = {
-  block: 'Block',
-  arpeggio: 'Arpeggio',
-  natural: 'Natural',
-  driving: 'Driving',
-  relaxed: 'Relaxed',
-};
+/**
+ * Accompaniment patterns (all free — requirements §6). Labels and order come from the
+ * rhythm catalog, which is also what tells the engine what each id means, so the chip
+ * a player taps and the skeleton they hear can never describe different things.
+ */
+export const ACCOMPANIMENT_LABELS: Record<AccompanimentPattern, string> = Object.fromEntries(
+  RHYTHMS.map((r) => [r.id, r.label]),
+) as Record<AccompanimentPattern, string>;
 
-export const ACCOMPANIMENT_IDS: AccompanimentPattern[] = [
-  'block',
-  'arpeggio',
-  'natural',
-  'driving',
-  'relaxed',
-];
+export const ACCOMPANIMENT_IDS: readonly AccompanimentPattern[] = RHYTHM_IDS;
+
+/** One-line description of the selected accompaniment, shown under the selector. */
+export const ACCOMPANIMENT_HINTS: Record<AccompanimentPattern, string> = Object.fromEntries(
+  RHYTHMS.map((r) => [r.id, r.hint]),
+) as Record<AccompanimentPattern, string>;

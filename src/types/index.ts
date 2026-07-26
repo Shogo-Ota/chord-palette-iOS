@@ -18,13 +18,25 @@ export type MajorKey =
   | 'B';
 
 /**
- * User-facing accompaniment choice (design §3 3-layer redesign). The two "beat"
- * ids (8beat/16beat) were retired from the UI in favour of the three data-driven
- * *feels* (natural/driving/relaxed) resolved by the Feel layer; `block`/`arpeggio`
- * still map 1:1 to their concrete styles. Legacy persisted values are migrated on
- * read via `normalizeAccompaniment` (src/lib/accompaniment.ts) — never here.
+ * User-facing accompaniment choice. Three kinds live in one list, which is what the
+ * player actually reasons about — "how should this sound?":
+ *
+ *  - textures — `block` / `arpeggio`, mapped 1:1 to a concrete style;
+ *  - feels    — `natural` / `driving` / `relaxed`, resolved by the Feel layer from
+ *    tempo and drum groove (`relaxed` is labelled バラード in the UI);
+ *  - rhythms  — `beat8` and the named grooves after it, each owning a skeleton.
+ *
+ * What an id means to the engine is stated in the rhythm catalog
+ * (`src/lib/performance/rhythms/`), never branched on here. Legacy persisted values
+ * are migrated on read via `normalizeAccompaniment` (src/lib/accompaniment.ts).
  */
-export type AccompanimentPattern = 'block' | 'arpeggio' | 'natural' | 'driving' | 'relaxed';
+export type AccompanimentPattern =
+  | 'block'
+  | 'arpeggio'
+  | 'natural'
+  | 'driving'
+  | 'relaxed'
+  | 'beat8';
 export type InstrumentId = 'piano' | 'ePiano' | 'acousticGuitar' | 'electricGuitar' | 'strings';
 export type GrooveId =
   | 'pop8'

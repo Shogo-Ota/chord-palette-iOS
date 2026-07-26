@@ -8,8 +8,9 @@
  * drum groove, because those are the player's other two choices.
  */
 
+import type { AccompanimentPattern } from '@/types';
+
 import { NATURAL_BANK } from '../feel/naturalBank';
-import { EIGHT_BEAT } from '../styles/eightBeat';
 import { NATURAL_COMP } from '../styles/naturalComp';
 import { NATURAL_COMP_DENSE } from '../styles/naturalCompDense';
 import { NATURAL_COMP_SPARSE } from '../styles/naturalCompSparse';
@@ -130,17 +131,13 @@ const NATURAL_VARIANTS: readonly AccompanimentVariant[] = [
   },
 ];
 
+// Driving is the tempo-adaptive reading; the fixed 8- and 16-feels it used to offer
+// are now rhythms of their own, where they can carry their own bar and variants.
 const DRIVING_VARIANTS: readonly AccompanimentVariant[] = [
   {
     id: 'driving.auto',
     label: 'おまかせ',
     hint: 'テンポとドラムで 8 / 16 を選ぶ',
-  },
-  {
-    id: 'driving.eight',
-    label: '8 Beat',
-    hint: '8 ビートで固定',
-    forcedBase: EIGHT_BEAT,
   },
   {
     id: 'driving.sixteen',
@@ -153,6 +150,32 @@ const DRIVING_VARIANTS: readonly AccompanimentVariant[] = [
     label: 'Push',
     hint: '食いを 1 拍前まで広げて突っ込む',
     refine: { anticipation: { maxLeadBeats: 1 }, accentDepthDelta: 3 },
+  },
+];
+
+const BEAT8_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'beat8.pop',
+    label: 'ポップ',
+    hint: '表拍と裏拍を混ぜた標準の 8 ビート',
+  },
+  {
+    id: 'beat8.simple',
+    label: 'シンプル',
+    hint: '和音は 1・3 拍だけ。低音の刻みを立たせる',
+    refine: { chord: HALVES },
+  },
+  {
+    id: 'beat8.drive',
+    label: 'ドライブ',
+    hint: '食いを 1 拍前まで広げて前へ',
+    refine: { anticipation: { maxLeadBeats: 1 }, accentDepthDelta: 4 },
+  },
+  {
+    id: 'beat8.open',
+    label: 'オープン',
+    hint: '長めに伸ばして余白を残す',
+    refine: { gate: { min: 0.88, max: 0.99 } },
   },
 ];
 
@@ -189,4 +212,5 @@ export const VARIANT_CATALOG = {
   natural: NATURAL_VARIANTS,
   driving: DRIVING_VARIANTS,
   relaxed: RELAXED_VARIANTS,
-} as const satisfies Record<string, readonly AccompanimentVariant[]>;
+  beat8: BEAT8_VARIANTS,
+} as const satisfies Record<AccompanimentPattern, readonly AccompanimentVariant[]>;

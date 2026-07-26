@@ -15,11 +15,12 @@ import { isAccompanimentPattern } from '@/lib/accompaniment';
 import { pickArticulation, computeGate } from './articulation';
 import { ensureChordAudible } from './ensureChordAudible';
 import { pickNaturalTemplate } from './feel/naturalBank';
-import { isFeelId, resolveFeel } from './feel/resolve';
+import { resolveFeel } from './feel/resolve';
 import { profileFor } from './groove/drumProfiles';
 import { lockToGroove } from './groove/lockToGroove';
 import { msToBeat, swingDelayBeats, tempoTimingScale, trackOffsetMs } from './microtiming';
 import { clampVelocity, type NoteEvent, type TrackId } from './NoteEvent';
+import { rhythmFor } from './rhythms';
 import { RoundRobinPicker } from './roundRobin';
 import { streamFor } from './rng';
 import { strumOffsetBeats, strumVelocityScale } from './strum';
@@ -88,9 +89,9 @@ export interface PerformanceInput {
 
 export interface PerformanceOptions {
   /**
-   * The accompaniment / style selector. Either a Feel id (`natural` | `driving` |
-   * `relaxed`) resolved through the Feel + Variation layers, or a direct style id
-   * (`block` | `arpeggio` | `eightBeat` | …) that bypasses those layers.
+   * The accompaniment selector. Either an id from the rhythm catalog (`natural`,
+   * `beat8`, …), whose entry says how to build it, or a direct style id (`eightBeat`,
+   * `ballad`, …) that bypasses the Feel and Variation layers entirely.
    */
   styleId: StyleId | string;
   /**
@@ -458,17 +459,20 @@ interface ResolvedPlan {
 }
 
 /**
- * Resolve the render plan from the options. A Feel id (`natural`/`driving`/
- * `relaxed`) goes through the Feel + Variation layers; anything else is a direct
- * style lookup that bypasses Variation (design §3-1: block/arpeggio テンプレ直結).
+ * Resolve the render plan from the options. What an accompaniment id means is stated
+ * in the rhythm catalog, not branched on here: a `feel` entry goes through the Feel +
+ * Variation layers, a `style` entry plays its own skeleton and says for itself whether
+ * it wants Variation and groove-lock. An id the catalog does not know — a direct or
+ * retired style id (`eightBeat`, `ballad`, …) — falls through to the bare style lookup
+ * it has always used.
  *
  * The chosen sub-variation lands last, on whichever skeleton came out of that — it
  * bends a reading rather than replacing one, so the accompaniment still sounds like
  * itself. A variant that names a bank rotates through it; the rest play one template.
  */
 function resolvePlan(options: PerformanceOptions, bpm: number): ResolvedPlan {
-  // Only the five user-facing accompaniments carry variants. A direct or retired
-  // style id (`eightBeat`, `ballad`, …) resolves exactly as it always has.
+  // Only catalog accompaniments carry variants. A direct or retired style id resolves
+  // exactly as it always has.
   const variant = isAccompanimentPattern(options.styleId)
     ? resolveVariant(options.styleId, options.variantId)
     : undefined;
@@ -477,14 +481,16 @@ function resolvePlan(options: PerformanceOptions, bpm: number): ResolvedPlan {
   const singleton = variant?.bank?.length === 1 ? variant.bank[0] : undefined;
   const rotation = variant?.bank && variant.bank.length > 1 ? variant.bank : undefined;
 
-  if (isFeelId(options.styleId)) {
-    const grooveId = options.grooveId ?? 'pop8';
+  const rhythm = rhythmFor(options.styleId);
+  const grooveId = options.grooveId ?? 'pop8';
+  // Groove-lock: nudge the comp to agree with the drum groove that is playing (subtle
+  // accent/microtiming only — hit positions unchanged). Applied to the render template
+  // AND every bank member so a per-phrase rotation locks too.
+  const profile = profileFor(grooveId);
+
+  if (rhythm?.source.kind === 'feel') {
     const base = variant?.forcedBase ?? singleton;
-    const feel = resolveFeel(options.styleId, { tempoBpm: bpm, grooveId }, base);
-    // Groove-lock: nudge the comp to agree with the drum groove that is playing
-    // (subtle accent/microtiming only — hit positions unchanged). Applied to the render
-    // template AND every bank member so the per-phrase rotation locks too.
-    const profile = profileFor(grooveId);
+    const feel = resolveFeel(rhythm.source.feelId, { tempoBpm: bpm, grooveId }, base);
     return {
       style: lockToGroove(bend(feel.template), profile, bpm),
       variation: feel.variation,
@@ -492,6 +498,19 @@ function resolvePlan(options: PerformanceOptions, bpm: number): ResolvedPlan {
       bank: rotation?.map((t) => lockToGroove(bend(t), profile, bpm)),
     };
   }
+
+  if (rhythm?.source.kind === 'style') {
+    const source = rhythm.source;
+    const lock = (s: StylePreset) => (source.grooveLock ? lockToGroove(s, profile, bpm) : s);
+    const base = variant?.forcedBase ?? singleton ?? source.style;
+    return {
+      style: lock(bend(base)),
+      variation: source.variation,
+      humanizeScale: source.humanizeScale ?? 1,
+      bank: rotation?.map((t) => lock(bend(t))),
+    };
+  }
+
   return { style: bend(singleton ?? getStyle(options.styleId)), humanizeScale: 1 };
 }
 

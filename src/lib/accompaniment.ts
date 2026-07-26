@@ -7,23 +7,26 @@
  *
  *   - `eightBeat`     → `natural`   (the standard J-POP comp)
  *   - `sixteenthBeat` → `driving`   (busier, forward-motion 16-feel)
- *   - `block` / `arpeggio` / `natural` / `driving` / `relaxed` → unchanged
+ *   - any id in the rhythm catalog → unchanged
  *   - anything else   → `natural`   (safe, musical default)
+ *
+ * The retired "beat" ids keep pointing at the feels they were migrated to when the
+ * UI first dropped them, NOT at the named rhythms added later: a project saved under
+ * the old `eightBeat` was heard as Natural for two releases, and that is the sound
+ * its owner knows.
  *
  * Pure and RN/Expo-independent (domain layer): used by the read paths in
  * `session.ts` and `projectRepository.ts`, and unit-tested in isolation.
  */
 
+import { RHYTHM_IDS } from '@/lib/performance/rhythms';
 import type { AccompanimentPattern } from '@/types';
 
-/** The current, valid accompaniment ids (the `AccompanimentPattern` union). */
-const VALID: ReadonlySet<AccompanimentPattern> = new Set<AccompanimentPattern>([
-  'block',
-  'arpeggio',
-  'natural',
-  'driving',
-  'relaxed',
-]);
+/**
+ * The current, valid accompaniment ids. Taken from the rhythm catalog rather than
+ * restated, so a rhythm cannot be offered in the selector but rejected on read.
+ */
+const VALID: ReadonlySet<AccompanimentPattern> = new Set<AccompanimentPattern>(RHYTHM_IDS);
 
 /** Retired ids → their closest current feel (data-driven, no switch). */
 const LEGACY_MIGRATION: Readonly<Record<string, AccompanimentPattern>> = {

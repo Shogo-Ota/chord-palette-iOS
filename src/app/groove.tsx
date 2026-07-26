@@ -7,6 +7,7 @@ import { Chip, ChipRow, SectionTitle, VolumeSlider } from '@/components/controls
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import {
+  ACCOMPANIMENT_HINTS,
   ACCOMPANIMENT_IDS,
   ACCOMPANIMENT_LABELS,
   ENABLED_INSTRUMENTS,
@@ -40,7 +41,7 @@ import {
   type VolumeLevels,
 } from '@/services/audio/types';
 import { colors, font, primaryGradient, radius } from '@/theme/tokens';
-import type { AccompanimentPattern, ChordFunction, InstrumentId } from '@/types';
+import type { ChordFunction, InstrumentId } from '@/types';
 
 const FUNC_COLORS: Record<ChordFunction, { color: string; text: string }> = {
   tonic: { color: colors.tonic, text: colors.tonicText },
@@ -390,17 +391,26 @@ export default function GrooveScreen() {
         )}
       </View>
 
-      {/* 伴奏パターン */}
+      {/* 伴奏パターン（リズムは 2 列グリッド。ChipRow は等幅なので数が増えると潰れる） */}
       <SectionTitle>伴奏パターン</SectionTitle>
-      <ChipRow
-        options={ACCOMPANIMENT_IDS.map((id) => ({ key: id, label: ACCOMPANIMENT_LABELS[id] }))}
-        value={styleDraft.draft.accompanimentPattern}
-        onChange={(k) => {
-          const pattern = k as AccompanimentPattern;
-          styleDraft.setAccompaniment(pattern);
-          track('accompaniment_selected', { accompaniment: pattern });
-        }}
-      />
+      <View style={styles.grid}>
+        {ACCOMPANIMENT_IDS.map((id) => (
+          <Chip
+            key={id}
+            label={ACCOMPANIMENT_LABELS[id]}
+            active={id === styleDraft.draft.accompanimentPattern}
+            onPress={() => {
+              styleDraft.setAccompaniment(id);
+              track('accompaniment_selected', { accompaniment: id });
+            }}
+            style={{ width: grooveChipW }}
+            textStyle={{ fontSize: 13 }}
+          />
+        ))}
+      </View>
+      <Text style={styles.patternHint}>
+        {ACCOMPANIMENT_HINTS[styleDraft.draft.accompanimentPattern]}
+      </Text>
       <ChipRow
         options={accompanimentVariants.map((v) => ({ key: v.id, label: v.label }))}
         value={styleDraft.draft.accompanimentVariant}
@@ -408,7 +418,6 @@ export default function GrooveScreen() {
           styleDraft.setAccompanimentVariant(k);
           track('accompaniment_variant_selected', { variant: k });
         }}
-        style={{ marginTop: 8 }}
       />
       <Text style={styles.variantHint}>{selectedVariant.hint}</Text>
 
@@ -524,6 +533,15 @@ const styles = StyleSheet.create({
   grooveSection: { marginBottom: 20 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 
+  patternHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textFaint,
+    fontFamily: font.regular,
+    marginTop: 10,
+    marginBottom: 10,
+    marginHorizontal: 2,
+  },
   variantHint: {
     fontSize: 12,
     lineHeight: 17,
