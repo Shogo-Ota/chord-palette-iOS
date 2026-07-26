@@ -878,7 +878,9 @@ export default function EditorScreen() {
                   <Text style={styles.varApplyTo}>
                     適用先： {selectedEvent.displayName}（{selectedEvent.degreeLabel}）
                   </Text>
-                  <CPVariationPills pills={corePills} onPress={pickVariation} />
+                  {corePills.length > 0 && (
+                    <CPVariationPills pills={corePills} onPress={pickVariation} />
+                  )}
                   {extendedPills.length > 0 && (
                     <>
                       <Pressable

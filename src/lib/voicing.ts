@@ -27,7 +27,7 @@ type ChordQualityRef = Pick<ChordEvent, 'suffix' | 'definitionId'>;
  * single source so a quality is defined once. Events carrying a `definitionId`
  * resolve by id; older ones fall back to their `suffix`.
  */
-function intervalsFor(chord: ChordQualityRef): number[] {
+function intervalsFor(chord: ChordQualityRef): readonly number[] {
   return intervalsForChord(chord.suffix ?? '', chord.definitionId);
 }
 

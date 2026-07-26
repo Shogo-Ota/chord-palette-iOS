@@ -617,11 +617,11 @@ export function getDefinitionById(id: string): ChordDefinition | undefined {
 }
 
 /** Intervals for a legacy suffix/symbol; unknown → major triad (compat). */
-export function intervalsForSuffix(suffix: string): number[] {
+export function intervalsForSuffix(suffix: string): readonly number[] {
   return bySymbol.get(suffix)?.intervals ?? bySymbol.get('')!.intervals;
 }
 
-export function pitchClassesFromIntervals(intervals: number[]): number[] {
+export function pitchClassesFromIntervals(intervals: readonly number[]): number[] {
   const set = new Set(intervals.map((n) => ((n % 12) + 12) % 12));
   return [...set].sort((a, b) => a - b);
 }

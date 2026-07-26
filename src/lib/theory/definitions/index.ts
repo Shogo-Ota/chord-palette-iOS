@@ -11,6 +11,12 @@
  * same. Pure and RN/Expo-independent.
  */
 
+import {
+  getDefinitionById,
+  getDefinitionBySymbol,
+  intervalsForSuffix,
+} from '@/lib/theory/definitions/catalog';
+
 export type {
   ChordDefCategory,
   ChordDefinition,
@@ -26,18 +32,12 @@ export {
   pitchClassesFromIntervals,
 } from '@/lib/theory/definitions/catalog';
 
-import {
-  getDefinitionById,
-  getDefinitionBySymbol,
-  intervalsForSuffix,
-} from '@/lib/theory/definitions/catalog';
-
 /**
  * Semitone intervals for a chord, preferring the stable id and falling back to
  * the legacy suffix. Unknown input resolves to a major triad so a corrupt or
  * future id can never silence a chord.
  */
-export function intervalsForChord(suffix: string, definitionId?: string): number[] {
+export function intervalsForChord(suffix: string, definitionId?: string): readonly number[] {
   if (definitionId) {
     const byId = getDefinitionById(definitionId)?.intervals;
     if (byId) return byId;

@@ -31,7 +31,8 @@ export type ChordDefinition = {
   buttonLabel: string;
   quality: ChordQuality;
   /** Semitone offsets from the root — sole source for MIDI pitch classes. */
-  intervals: number[];
+  /** Readonly: every caller shares the one catalog entry, so it must not be sorted in place. */
+  intervals: readonly number[];
   extensions: string[];
   alterations: string[];
   /** Primary degree(s) that offer this chord, or null if not degree-scoped. */

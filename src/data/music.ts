@@ -324,9 +324,13 @@ export const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId,
  * In C for reference: I and IV take 6/9; only Lydian IV can carry a #11 (B is in
  * key, whereas I would need an F#); Dorian ii is the one minor degree whose ♮6 and
  * ♮11 are both in key; vi's 6/9 would need an F#, and the ♮11 is already covered by
- * its core `11`; V's remaining colours are all altered, so it gains nothing here;
- * iii keeps only what avoids its ♭9 and ♭13. vii° gains its first two: the 11th and
- * ♭13 are diatonic over m7♭5, while the 9th would be the Locrian ♭2.
+ * its core `11`. vii° gains its first two colours: the 11th and ♭13 are diatonic
+ * over m7♭5, while the 9th would be the Locrian ♭2.
+ *
+ * Two degrees are left empty on purpose. V could spell a diatonic 6/9 (G B D E A),
+ * but dropping the 7th throws away the dominant pull the degree exists for, and the
+ * remaining notes are just its core `6` and `add9` stacked. iii is boxed in by its
+ * ♭9 and ♭13, which rules out every extended form.
  */
 const EXTENDED_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
   0: { sixNine: '6/9' },

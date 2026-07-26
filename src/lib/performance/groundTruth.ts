@@ -7,7 +7,8 @@
  * repository. The numbers are produced by `tools/analyze_ground_truth_midi.py` and
  * mirrored from the committed `.features.json`, so a template that cites a
  * reference can be checked against what was actually measured instead of against
- * someone's memory of it.
+ * someone's memory of it. Any field the analyzer does not yet emit says so on
+ * itself, so an assumption is never mistaken for a measurement.
  *
  * This module is data only. Which reference a feel follows, and how closely, is a
  * musical decision made in `templates.ts` / `profiles.ts`.
@@ -62,7 +63,10 @@ export interface GroundTruthReference {
   onsets: GroundTruthOnsets;
   /** Median sounding length of a mid-register note, in beats. */
   medianBodyDurationBeats: number;
-  /** Off-beat 8th as a fraction of the beat; 0.5 = straight. */
+  /**
+   * Off-beat 8th as a fraction of the beat; 0.5 = straight. Not yet produced by the
+   * analyzer — read it as an assumption to be confirmed, not as a measurement.
+   */
   swingRatio: number;
 }
 
@@ -102,6 +106,7 @@ export const GT_001: GroundTruthReference = {
     sixteenth: 44.3,
   },
   medianBodyDurationBeats: 0.296,
+  // Assumed, not measured — see the field's note.
   swingRatio: 0.5,
 };
 
