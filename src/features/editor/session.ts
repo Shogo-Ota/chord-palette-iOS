@@ -1,6 +1,11 @@
 import { useSyncExternalStore } from 'react';
 
 import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
+import {
+  defaultVariantFor,
+  normalizeVariant,
+  type AccompanimentVariantId,
+} from '@/lib/performance/variants';
 import { buildPresetProgression } from '@/lib/presets';
 import { appendWithinCap, canAdd, canSetDuration } from '@/lib/progression';
 import { rebaseProgression, relabelDegreesForKey, transposeProgression } from '@/lib/transpose';
@@ -40,6 +45,8 @@ export type EditorSession = {
   instrumentId: InstrumentId;
   grooveId: GrooveId;
   accompanimentPattern: AccompanimentPattern;
+  /** Sub-variation of the accompaniment; always one the current pattern offers. */
+  accompanimentVariant: AccompanimentVariantId;
   /**
    * When true (default), chord-voice notes end at the gate (tight cut).
    * When false, chord/bass/top durations are extended so the piano rings.
@@ -70,6 +77,7 @@ function initialState(): EditorSession {
     instrumentId: 'piano',
     grooveId: 'pop8',
     accompanimentPattern: DEFAULT_ACCOMPANIMENT,
+    accompanimentVariant: defaultVariantFor(DEFAULT_ACCOMPANIMENT).id,
     releaseCut: DEFAULT_RELEASE_CUT,
     octaveShift: DEFAULT_OCTAVE_SHIFT,
     progression: [],
@@ -134,6 +142,7 @@ export function startNew(): void {
     title: 'はじめての進行',
     tempoBpm: 100,
     accompanimentPattern: DEFAULT_ACCOMPANIMENT,
+    accompanimentVariant: defaultVariantFor(DEFAULT_ACCOMPANIMENT).id,
     progression: [],
     selected: -1,
     dirty: true,
@@ -143,6 +152,7 @@ export function startNew(): void {
 
 function applyProject(p: Project): void {
   const { releaseCut, octaveShift } = state;
+  const accompanimentPattern = normalizeAccompaniment(p.accompanimentPattern);
   state = {
     ...initialState(),
     releaseCut,
@@ -154,7 +164,8 @@ function applyProject(p: Project): void {
     instrumentId: p.instrumentId,
     grooveId: p.grooveId,
     // Migrate any legacy persisted id (eightBeat/sixteenthBeat) on read.
-    accompanimentPattern: normalizeAccompaniment(p.accompanimentPattern),
+    accompanimentPattern,
+    accompanimentVariant: normalizeVariant(accompanimentPattern, p.accompanimentVariant),
     // Respell for the project's own key — a no-op for names, but canonicalizes any
     // legacy slash-chord degree labels ("I/E") to the degree denominator ("I/III").
     // Preserve any saved per-chord keyContext; legacy events fall back to the key.
@@ -186,6 +197,7 @@ function toProject(id: string): Project {
     instrumentId: state.instrumentId,
     grooveId: state.grooveId,
     accompanimentPattern: state.accompanimentPattern,
+    accompanimentVariant: state.accompanimentVariant,
     chordEvents: state.progression,
     createdAt: state.createdAt || Date.now(),
     updatedAt: Date.now(),
@@ -210,6 +222,7 @@ export async function save(): Promise<void> {
       instrumentId: state.instrumentId,
       grooveId: state.grooveId,
       accompanimentPattern: state.accompanimentPattern,
+      accompanimentVariant: state.accompanimentVariant,
       chordEvents: state.progression,
     });
     set({ projectId: created.id, createdAt: created.createdAt, dirty: false });
@@ -358,8 +371,27 @@ export function setGroove(grooveId: GrooveId): void {
   set({ grooveId, dirty: true });
 }
 
-export function setAccompaniment(accompanimentPattern: AccompanimentPattern): void {
-  set({ accompanimentPattern, dirty: true });
+/**
+ * Switch accompaniment. The variant travels with it: an id belonging to the previous
+ * pattern means nothing to the new one, so `normalizeVariant` lands on the new
+ * pattern's default reading rather than leaving a dangling choice behind.
+ */
+export function setAccompaniment(
+  accompanimentPattern: AccompanimentPattern,
+  variant?: AccompanimentVariantId,
+): void {
+  set({
+    accompanimentPattern,
+    accompanimentVariant: normalizeVariant(accompanimentPattern, variant),
+    dirty: true,
+  });
+}
+
+export function setAccompanimentVariant(variant: AccompanimentVariantId): void {
+  set({
+    accompanimentVariant: normalizeVariant(state.accompanimentPattern, variant),
+    dirty: true,
+  });
 }
 
 /**

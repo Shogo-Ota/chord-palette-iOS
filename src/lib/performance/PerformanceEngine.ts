@@ -10,9 +10,11 @@
  * yields byte-identical output.
  */
 
+import { isAccompanimentPattern } from '@/lib/accompaniment';
+
 import { pickArticulation, computeGate } from './articulation';
 import { ensureChordAudible } from './ensureChordAudible';
-import { NATURAL_BANK, pickNaturalTemplate } from './feel/naturalBank';
+import { pickNaturalTemplate } from './feel/naturalBank';
 import { isFeelId, resolveFeel } from './feel/resolve';
 import { profileFor } from './groove/drumProfiles';
 import { lockToGroove } from './groove/lockToGroove';
@@ -23,7 +25,9 @@ import { streamFor } from './rng';
 import { strumOffsetBeats, strumVelocityScale } from './strum';
 import type { Strike, StrikesByTrack } from './strike';
 import { getStyle, type StyleId } from './styles';
-import { stepBeat, type StylePreset, type StepPattern } from './styles/types';
+import { refineStyle } from './styles/refine';
+import { stepBeat, type ArpeggioSpec, type StylePreset, type StepPattern } from './styles/types';
+import { resolveVariant } from './variants';
 import { avoidFiveInARow, computeVelocity } from './velocity';
 import { applyVariation, type VariationContext, type VariationProfile } from './variation';
 
@@ -60,6 +64,20 @@ function upDownOrder(n: number): number[] {
   return order;
 }
 
+/** The index cycle a spec asks for, derived from how many notes the chord actually has. */
+function arpeggioOrder(spec: ArpeggioSpec, n: number): number[] {
+  if (spec.order) return spec.order;
+  const ascending = Array.from({ length: Math.max(1, n) }, (_, i) => i);
+  switch (spec.direction) {
+    case 'up':
+      return ascending;
+    case 'down':
+      return ascending.reverse();
+    default:
+      return upDownOrder(n);
+  }
+}
+
 /** Domain input to the engine — pure data, no service/native types. */
 export interface PerformanceInput {
   chords: PerfChord[];
@@ -75,6 +93,12 @@ export interface PerformanceOptions {
    * (`block` | `arpeggio` | `eightBeat` | …) that bypasses those layers.
    */
   styleId: StyleId | string;
+  /**
+   * Sub-variation of the accompaniment (`natural.sparse`, `block.half`, …). Unknown
+   * or absent falls back to the accompaniment's default reading, so a project saved
+   * before variants existed renders exactly as it did.
+   */
+  variantId?: string;
   /**
    * Drum groove id (`pop8` / `pop16` / …). Only used to give the Feel layer its
    * resolution context (which base skeleton a feel pairs with); ignored for the
@@ -243,7 +267,7 @@ function collectStrikes(
           if (chord !== arpChord) {
             arpChord = chord;
             arpIndex = 0;
-            arpOrder = style.arpeggio.order ?? upDownOrder(source.length);
+            arpOrder = arpeggioOrder(style.arpeggio, source.length);
           }
           const bodyIndex = arpOrder[arpIndex % arpOrder.length] % source.length;
           pitches = [source[bodyIndex]];
@@ -426,9 +450,9 @@ interface ResolvedPlan {
   /** Micro-humanization window multiplier (1 for direct styles). */
   humanizeScale: number;
   /**
-   * Present only for the Natural feel: the comp template bank the collect stage
-   * rotates through per 4-bar phrase (see {@link collectBankStrikes}). All members
-   * share `style`'s render-relevant specs, so `style` still drives rendering.
+   * The comp template bank the collect stage rotates through per 4-bar phrase (see
+   * {@link collectBankStrikes}), when the chosen variant asks for more than one. All
+   * members share `style`'s render-relevant specs, so `style` still drives rendering.
    */
   bank?: readonly StylePreset[];
 }
@@ -437,24 +461,38 @@ interface ResolvedPlan {
  * Resolve the render plan from the options. A Feel id (`natural`/`driving`/
  * `relaxed`) goes through the Feel + Variation layers; anything else is a direct
  * style lookup that bypasses Variation (design §3-1: block/arpeggio テンプレ直結).
- * The Natural feel additionally carries its phrase-rotation bank.
+ *
+ * The chosen sub-variation lands last, on whichever skeleton came out of that — it
+ * bends a reading rather than replacing one, so the accompaniment still sounds like
+ * itself. A variant that names a bank rotates through it; the rest play one template.
  */
 function resolvePlan(options: PerformanceOptions, bpm: number): ResolvedPlan {
+  // Only the five user-facing accompaniments carry variants. A direct or retired
+  // style id (`eightBeat`, `ballad`, …) resolves exactly as it always has.
+  const variant = isAccompanimentPattern(options.styleId)
+    ? resolveVariant(options.styleId, options.variantId)
+    : undefined;
+  const bend = (s: StylePreset) => (variant?.refine ? refineStyle(s, variant.refine) : s);
+  // A bank of one is not a rotation — it is the skeleton the variant wants played.
+  const singleton = variant?.bank?.length === 1 ? variant.bank[0] : undefined;
+  const rotation = variant?.bank && variant.bank.length > 1 ? variant.bank : undefined;
+
   if (isFeelId(options.styleId)) {
     const grooveId = options.grooveId ?? 'pop8';
-    const feel = resolveFeel(options.styleId, { tempoBpm: bpm, grooveId });
+    const base = variant?.forcedBase ?? singleton;
+    const feel = resolveFeel(options.styleId, { tempoBpm: bpm, grooveId }, base);
     // Groove-lock: nudge the comp to agree with the drum groove that is playing
     // (subtle accent/microtiming only — hit positions unchanged). Applied to the render
-    // template AND every Natural bank member so the per-phrase rotation locks too.
+    // template AND every bank member so the per-phrase rotation locks too.
     const profile = profileFor(grooveId);
     return {
-      style: lockToGroove(feel.template, profile, bpm),
+      style: lockToGroove(bend(feel.template), profile, bpm),
       variation: feel.variation,
       humanizeScale: feel.humanizeScale,
-      bank: options.styleId === 'natural' ? NATURAL_BANK.map((t) => lockToGroove(t, profile, bpm)) : undefined,
+      bank: rotation?.map((t) => lockToGroove(bend(t), profile, bpm)),
     };
   }
-  return { style: getStyle(options.styleId), humanizeScale: 1 };
+  return { style: bend(singleton ?? getStyle(options.styleId)), humanizeScale: 1 };
 }
 
 /** The tracks to render for a style: `top` is added only when the style defines it. */

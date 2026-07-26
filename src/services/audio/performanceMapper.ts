@@ -13,6 +13,7 @@
  */
 
 import type { NoteEvent as PerfNote } from '@/lib/performance/NoteEvent';
+import { isDefaultVariant } from '@/lib/performance/variants';
 import type { NoteEvent, PlaybackRequest } from '@/services/audio/types';
 import type { ChordEvent, MajorKey } from '@/types';
 
@@ -21,6 +22,7 @@ export type PlaybackSessionSnapshot = {
   tempoBpm: number;
   grooveId: string;
   accompanimentPattern: string;
+  accompanimentVariant?: string;
   instrumentId: string;
   progression: ChordEvent[];
 };
@@ -32,6 +34,11 @@ export function performanceSeedFromSession(session: PlaybackSessionSnapshot): nu
     String(session.tempoBpm),
     session.grooveId,
     session.accompanimentPattern,
+    // Only a non-default variant joins the fingerprint, so every project that
+    // predates variants keeps the exact seed — and therefore the exact take — it had.
+    ...(isDefaultVariant(session.accompanimentPattern, session.accompanimentVariant)
+      ? []
+      : [session.accompanimentVariant as string]),
     session.instrumentId,
     ...session.progression.map(
       (c) =>

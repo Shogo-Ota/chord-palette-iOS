@@ -50,6 +50,7 @@ export function sessionToPlaybackRequest(
     tempoBpm: session.tempoBpm,
     grooveId: session.grooveId,
     accompanimentPattern: session.accompanimentPattern,
+    accompanimentVariant: session.accompanimentVariant,
     instrumentId: session.instrumentId,
     progression: session.progression,
   });
@@ -60,6 +61,7 @@ export function sessionToPlaybackRequest(
     // id gives the Feel layer its resolution context (which base skeleton to use).
     {
       styleId: session.accompanimentPattern,
+      variantId: session.accompanimentVariant,
       grooveId: session.grooveId,
       drums: false,
       humanizeBoost: strength.humanizeBoost,

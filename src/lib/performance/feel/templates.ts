@@ -13,103 +13,17 @@
  */
 
 import { familyOf } from '../groove/drumProfiles';
-import type { CoreTrackId } from '../NoteEvent';
 import { BALLAD } from '../styles/ballad';
 import { EIGHT_BEAT } from '../styles/eightBeat';
 import { NATURAL_COMP } from '../styles/naturalComp';
+import { refineStyle, type StyleRefinement } from '../styles/refine';
 import { SIXTEEN_BEAT } from '../styles/sixteenBeat';
-import {
-  stepBeat,
-  type AnticipationSpec,
-  type GateSpec,
-  type MsRange,
-  type StepPattern,
-  type StylePreset,
-} from '../styles/types';
-import type { FeelContext, FeelId } from './types';
+import type { StepPattern, StylePreset } from '../styles/types';
 
-const EPSILON = 1e-9;
+import type { FeelContext, FeelId } from './types';
 
 /** Tempo at/above which Driving switches from an 8-feel to the busier 16-feel. */
 const DRIVING_SIXTEEN_TEMPO = 116;
-
-/**
- * Build a top-voice rhythm from a base: hit every OFF-beat (`.5`) grid step the chord
- * leaves silent. This guarantees the top voice's rhythm differs from both the chord
- * (mid body) and the bass, so the three registers never move in lock-step (design §4
- * role separation). Returns null if the base leaves no such slot.
- */
-function buildTopPattern(base: StylePreset): StepPattern | null {
-  const n = base.stepsPerBar;
-  const hits = new Array<boolean>(n).fill(false);
-  const accent = new Array<number>(n).fill(0.5);
-  let any = false;
-  for (let step = 0; step < n; step++) {
-    const beat = stepBeat(base, step);
-    const isHalfOffbeat = Math.abs(((beat * 2) % 2) - 1) < EPSILON; // beat ends in .5
-    if (isHalfOffbeat && !base.chord.hits[step]) {
-      hits[step] = true;
-      accent[step] = 0.62;
-      any = true;
-    }
-  }
-  return any ? { hits, accent } : null;
-}
-
-/** Small, declarative refinements a feel layers onto its base skeleton. */
-interface TemplateOverrides {
-  /** Add a derived role-separation top voice (off-beats the chord leaves silent). */
-  withTop?: boolean;
-  /** Explicit top-voice rhythm (alternative to {@link withTop}). */
-  top?: StepPattern;
-  /** Which chord tone the top voice plays (see {@link StylePreset.topTone}). */
-  topTone?: StylePreset['topTone'];
-  /** Set (`spec`) or remove (`null`) chord-change anticipation. */
-  anticipation?: AnticipationSpec | null;
-  /** Added to the base accent depth (stronger = more dynamic contrast). */
-  accentDepthDelta?: number;
-  /** Per-track microtiming window overrides (e.g. laid-back = positive window). */
-  microtiming?: Partial<Record<CoreTrackId, MsRange>>;
-  /** Gate overrides (e.g. longer sustain for Relaxed). */
-  gate?: Partial<GateSpec>;
-}
-
-/**
- * A feel that restates the gate is restating the whole articulation, so any
- * per-track windows the base style carried are dropped unless the override brings
- * its own — otherwise a style's bass would keep breathing to a rule the feel just
- * replaced.
- */
-function mergeGate(base: GateSpec, o?: Partial<GateSpec>): GateSpec {
-  if (!o) return base;
-  const merged: GateSpec = { ...base, ...o };
-  if (!o.byTrack) delete merged.byTrack;
-  return merged;
-}
-
-function deriveTemplate(base: StylePreset, o: TemplateOverrides): StylePreset {
-  const template: StylePreset = {
-    ...base,
-    velocity: {
-      ...base.velocity,
-      accentDepth: base.velocity.accentDepth + (o.accentDepthDelta ?? 0),
-    },
-    microtiming: { ...base.microtiming, ...(o.microtiming ?? {}) },
-    gate: mergeGate(base.gate, o.gate),
-  };
-
-  if (o.anticipation === null) delete template.anticipation;
-  else if (o.anticipation) template.anticipation = o.anticipation;
-
-  // An explicit top pattern wins; otherwise derive one from the base off-beats.
-  if (o.top) template.top = o.top;
-  else if (o.withTop) {
-    const top = buildTopPattern(base);
-    if (top) template.top = top;
-  }
-  if (o.topTone) template.topTone = o.topTone;
-  return template;
-}
 
 /**
  * Relaxed's top voice: a SINGLE note on beat 3 only (step 4 of BALLAD's 8-step bar).
@@ -125,7 +39,7 @@ const RELAXED_TOP_THIRD: StepPattern = {
 /** A feel's base-selection strategy + refinements + humanize scale (pure data). */
 interface FeelTemplateDef {
   pickBase(ctx: FeelContext): StylePreset;
-  overrides: TemplateOverrides;
+  overrides: StyleRefinement;
   humanizeScale: number;
 }
 
@@ -166,11 +80,21 @@ const FEEL_TEMPLATE_DEFS: Record<FeelId, FeelTemplateDef> = {
   },
 };
 
-/** Resolve a feel's concrete template + humanize scale for a given context. */
+/**
+ * Resolve a feel's concrete template + humanize scale for a given context.
+ *
+ * `forcedBase` lets a caller pin the skeleton the feel's refinements land on — the
+ * feel still sounds like itself, it just stops choosing its base from tempo and drum
+ * groove. Used by the accompaniment variants that offer a fixed 8- or 16-feel.
+ */
 export function resolveFeelTemplate(
   feelId: FeelId,
   ctx: FeelContext,
+  forcedBase?: StylePreset,
 ): { template: StylePreset; humanizeScale: number } {
   const def = FEEL_TEMPLATE_DEFS[feelId];
-  return { template: deriveTemplate(def.pickBase(ctx), def.overrides), humanizeScale: def.humanizeScale };
+  return {
+    template: refineStyle(forcedBase ?? def.pickBase(ctx), def.overrides),
+    humanizeScale: def.humanizeScale,
+  };
 }

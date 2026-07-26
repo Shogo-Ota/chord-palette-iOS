@@ -39,6 +39,11 @@ export const DEFAULT_ACCOMPANIMENT: AccompanimentPattern = 'natural';
  * Migrates legacy ids, passes valid ids through, and falls back to the musical
  * default for unknown input. Deterministic and side-effect free.
  */
+/** Type guard: is a raw id one of the five current accompaniments (no migration)? */
+export function isAccompanimentPattern(raw: unknown): raw is AccompanimentPattern {
+  return typeof raw === 'string' && VALID.has(raw as AccompanimentPattern);
+}
+
 export function normalizeAccompaniment(raw: unknown): AccompanimentPattern {
   if (typeof raw !== 'string') return DEFAULT_ACCOMPANIMENT;
   if (VALID.has(raw as AccompanimentPattern)) return raw as AccompanimentPattern;

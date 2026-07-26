@@ -48,6 +48,31 @@ describe('performanceSeedFromSession', () => {
     const b = performanceSeedFromSession({ ...baseSession, tempoBpm: 120 });
     expect(a).not.toBe(b);
   });
+
+  it('is unchanged by the default accompaniment variant', () => {
+    // A project saved before variants existed must keep the take it always had, so
+    // the default reading contributes nothing to the fingerprint.
+    const natural = { ...baseSession, accompanimentPattern: 'natural' };
+    const before = performanceSeedFromSession(natural);
+    for (const variant of [undefined, '', 'natural.auto', 'nonsense']) {
+      expect(performanceSeedFromSession({ ...natural, accompanimentVariant: variant })).toBe(
+        before,
+      );
+    }
+  });
+
+  it('changes once a non-default variant is chosen', () => {
+    const natural = { ...baseSession, accompanimentPattern: 'natural' };
+    expect(
+      performanceSeedFromSession({ ...natural, accompanimentVariant: 'natural.sparse' }),
+    ).not.toBe(performanceSeedFromSession(natural));
+  });
+
+  it('ignores a variant on a legacy accompaniment id, which offers none', () => {
+    expect(
+      performanceSeedFromSession({ ...baseSession, accompanimentVariant: 'natural.sparse' }),
+    ).toBe(performanceSeedFromSession(baseSession));
+  });
 });
 
 describe('mapPerfNotesToPlaybackRequest', () => {

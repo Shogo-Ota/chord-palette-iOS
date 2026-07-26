@@ -23,6 +23,8 @@ export type AnalyticsEvent =
   | 'chord_duration_changed'
   | 'playback_started'
   | 'groove_selected'
+  | 'accompaniment_selected'
+  | 'accompaniment_variant_selected'
   | 'instrument_selected'
   | 'export_duration_selected'
   | 'video_export_started'

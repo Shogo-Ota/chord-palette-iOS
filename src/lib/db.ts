@@ -5,6 +5,31 @@ const DB_NAME = 'chord-palette.db';
 let dbPromise: Promise<SQLite.SQLiteDatabase> | null = null;
 
 /**
+ * Columns added after a table first shipped. `CREATE TABLE IF NOT EXISTS` does
+ * nothing for an install that already has the table, so a new field needs its own
+ * `ADD COLUMN` — guarded, because SQLite has no `IF NOT EXISTS` for columns and
+ * would fail on every launch after the first.
+ *
+ * Each entry must give a DEFAULT so existing rows get a value; the read path is
+ * still responsible for turning that value into something the domain accepts.
+ */
+const ADDED_COLUMNS: readonly { table: string; column: string; definition: string }[] = [
+  {
+    table: 'projects',
+    column: 'accompaniment_variant',
+    definition: "TEXT NOT NULL DEFAULT ''",
+  },
+];
+
+async function addColumns(db: SQLite.SQLiteDatabase): Promise<void> {
+  for (const { table, column, definition } of ADDED_COLUMNS) {
+    const existing = await db.getAllAsync<{ name: string }>(`PRAGMA table_info(${table});`);
+    if (existing.some((c) => c.name === column)) continue;
+    await db.execAsync(`ALTER TABLE ${table} ADD COLUMN ${column} ${definition};`);
+  }
+}
+
+/**
  * Open (once) the local SQLite database and ensure the schema exists.
  * All repositories go through this so migrations live in one place.
  */
@@ -38,6 +63,7 @@ export function getDb(): Promise<SQLite.SQLiteDatabase> {
           updated_at INTEGER NOT NULL
         );
       `);
+      await addColumns(db);
       return db;
     })();
   }

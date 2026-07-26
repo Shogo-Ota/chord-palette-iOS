@@ -12,6 +12,8 @@
  * same inputs ⇒ identical `ResolvedFeel`. No native / RN / Expo imports.
  */
 
+import type { StylePreset } from '../styles/types';
+
 import { VARIATION_BY_FEEL } from './profiles';
 import { resolveFeelTemplate } from './templates';
 import type { FeelContext, FeelId, ResolvedFeel } from './types';
@@ -30,8 +32,12 @@ export function isFeelId(id: string): id is FeelId {
  * Resolve a Feel to its concrete template, Musical Variation profile and humanize
  * scale for the given tempo/groove context (design §3-1).
  */
-export function resolveFeel(feelId: FeelId, ctx: FeelContext): ResolvedFeel {
-  const { template, humanizeScale } = resolveFeelTemplate(feelId, ctx);
+export function resolveFeel(
+  feelId: FeelId,
+  ctx: FeelContext,
+  forcedBase?: StylePreset,
+): ResolvedFeel {
+  const { template, humanizeScale } = resolveFeelTemplate(feelId, ctx, forcedBase);
   return {
     template,
     variation: VARIATION_BY_FEEL[feelId],

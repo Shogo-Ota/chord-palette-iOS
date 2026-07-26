@@ -2,6 +2,10 @@ import { useCallback, useState } from 'react';
 
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
+import {
+  defaultVariantFor,
+  type AccompanimentVariantId,
+} from '@/lib/performance/variants';
 import type { AccompanimentPattern, GrooveId, InstrumentId } from '@/types';
 
 /**
@@ -17,6 +21,7 @@ export type StyleDraft = {
   instrumentId: InstrumentId;
   grooveId: GrooveId;
   accompanimentPattern: AccompanimentPattern;
+  accompanimentVariant: AccompanimentVariantId;
 };
 
 export type UseStyleDraft = {
@@ -26,6 +31,7 @@ export type UseStyleDraft = {
   setInstrument: (id: InstrumentId) => void;
   setGroove: (id: GrooveId) => void;
   setAccompaniment: (pattern: AccompanimentPattern) => void;
+  setAccompanimentVariant: (id: AccompanimentVariantId) => void;
   /** Write the draft into the shared session (reflects to the editor). */
   commit: () => void;
   /** Drop edits, restoring the draft to the committed session values. */
@@ -38,6 +44,7 @@ function snapshot(): StyleDraft {
     instrumentId: cur.instrumentId,
     grooveId: cur.grooveId,
     accompanimentPattern: cur.accompanimentPattern,
+    accompanimentVariant: cur.accompanimentVariant,
   };
 }
 
@@ -53,16 +60,27 @@ export function useStyleDraft(): UseStyleDraft {
     (grooveId: GrooveId) => setDraft((d) => ({ ...d, grooveId })),
     [],
   );
+  // Switching accompaniment resets the variant: the ids are scoped per pattern, so
+  // carrying the old one over would leave the chip row with nothing selected.
   const setAccompaniment = useCallback(
     (accompanimentPattern: AccompanimentPattern) =>
-      setDraft((d) => ({ ...d, accompanimentPattern })),
+      setDraft((d) => ({
+        ...d,
+        accompanimentPattern,
+        accompanimentVariant: defaultVariantFor(accompanimentPattern).id,
+      })),
+    [],
+  );
+  const setAccompanimentVariant = useCallback(
+    (accompanimentVariant: AccompanimentVariantId) =>
+      setDraft((d) => ({ ...d, accompanimentVariant })),
     [],
   );
 
   const commit = useCallback(() => {
     session.setInstrument(draft.instrumentId);
     session.setGroove(draft.grooveId);
-    session.setAccompaniment(draft.accompanimentPattern);
+    session.setAccompaniment(draft.accompanimentPattern, draft.accompanimentVariant);
   }, [draft]);
 
   const reset = useCallback(() => setDraft(snapshot()), []);
@@ -70,7 +88,17 @@ export function useStyleDraft(): UseStyleDraft {
   const isDirty =
     draft.instrumentId !== s.instrumentId ||
     draft.grooveId !== s.grooveId ||
-    draft.accompanimentPattern !== s.accompanimentPattern;
+    draft.accompanimentPattern !== s.accompanimentPattern ||
+    draft.accompanimentVariant !== s.accompanimentVariant;
 
-  return { draft, isDirty, setInstrument, setGroove, setAccompaniment, commit, reset };
+  return {
+    draft,
+    isDirty,
+    setInstrument,
+    setGroove,
+    setAccompaniment,
+    setAccompanimentVariant,
+    commit,
+    reset,
+  };
 }

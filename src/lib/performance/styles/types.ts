@@ -92,14 +92,19 @@ export interface AnticipationSpec {
  * count so triads never break). The cycle advances within a chord and resets on
  * every chord change.
  */
+export type ArpeggioDirection = 'up' | 'down' | 'upDown';
+
 export interface ArpeggioSpec {
-  /** Explicit index cycle (e.g. `[0, 1, 2, 3, 2, 1]`). Overrides {@link upDown}. */
+  /** Explicit index cycle (e.g. `[0, 1, 2, 3, 2, 1]`). Overrides the derived shape. */
   order?: number[];
   /**
-   * When true, derive a natural ascending-then-descending cycle (endpoints not
-   * repeated) from the actual note count: a 7th chord spells 1 3 5 7 5 3, a 9th
-   * 1 3 5 7 9 7 5 3 — the same up/down shape whether or not tensions appear.
+   * Shape to derive from the actual note count, so triads and tension chords keep the
+   * same contour: `up` climbs 1 3 5 7, `down` falls 7 5 3 1, `upDown` bounces without
+   * repeating the endpoints (a 7th spells 1 3 5 7 5 3, a 9th 1 3 5 7 9 7 5 3).
+   * Defaults to `upDown`.
    */
+  direction?: ArpeggioDirection;
+  /** @deprecated Equivalent to `direction: 'upDown'`; kept for existing presets. */
   upDown?: boolean;
 }
 

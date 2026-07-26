@@ -25,6 +25,7 @@ function project(overrides: Partial<Project> = {}): Project {
     instrumentId: 'piano',
     grooveId: 'pop8',
     accompanimentPattern: 'block',
+    accompanimentVariant: 'block.hold',
     chordEvents: [ev('C'), ev('G'), ev('Am'), ev('F')],
     createdAt: 0,
     updatedAt: 0,

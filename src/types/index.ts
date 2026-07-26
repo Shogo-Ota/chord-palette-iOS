@@ -198,6 +198,12 @@ export type Project = {
   instrumentId: InstrumentId;
   grooveId: GrooveId;
   accompanimentPattern: AccompanimentPattern;
+  /**
+   * Sub-variation of the accompaniment (`natural.sparse`, `block.half`, …). Kept as
+   * a plain string so this layer needs no knowledge of the performance catalog; the
+   * read path normalizes it against whichever variants the accompaniment offers.
+   */
+  accompanimentVariant: string;
   chordEvents: ChordEvent[];
   /** epoch millis */
   createdAt: number;
@@ -216,6 +222,7 @@ export type NewProjectInput = Partial<
     | 'instrumentId'
     | 'grooveId'
     | 'accompanimentPattern'
+    | 'accompanimentVariant'
     | 'chordEvents'
   >
 >;

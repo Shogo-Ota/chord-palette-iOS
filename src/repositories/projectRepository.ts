@@ -4,6 +4,7 @@ import { STARTER_PRESET } from '@/data/presets';
 import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
 import { getDb } from '@/lib/db';
 import { normalizeGroove } from '@/lib/groove';
+import { defaultVariantFor, normalizeVariant } from '@/lib/performance/variants';
 import { buildPresetProgression } from '@/lib/presets';
 import type { NewProjectInput, Project } from '@/types';
 
@@ -17,6 +18,8 @@ type ProjectRow = {
   instrument_id: string;
   groove_id: string;
   accompaniment_pattern: string;
+  /** Added after launch, so a row written by an older build has `''` here. */
+  accompaniment_variant: string | null;
   chord_events: string;
   created_at: number;
   updated_at: number;
@@ -30,6 +33,7 @@ const DEFAULTS: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
   instrumentId: 'piano',
   grooveId: 'pop8',
   accompanimentPattern: DEFAULT_ACCOMPANIMENT,
+  accompanimentVariant: defaultVariantFor(DEFAULT_ACCOMPANIMENT).id,
   chordEvents: [],
 };
 
@@ -38,6 +42,7 @@ function genId(): string {
 }
 
 function rowToProject(row: ProjectRow): Project {
+  const accompanimentPattern = normalizeAccompaniment(row.accompaniment_pattern);
   return {
     id: row.id,
     title: row.title,
@@ -48,7 +53,10 @@ function rowToProject(row: ProjectRow): Project {
     // Migrate any legacy persisted groove (e.g. retired jazzSwing) on read.
     grooveId: normalizeGroove(row.groove_id),
     // Migrate any legacy persisted id (eightBeat/sixteenthBeat) on read.
-    accompanimentPattern: normalizeAccompaniment(row.accompaniment_pattern),
+    accompanimentPattern,
+    // Empty for rows written before variants existed, and stale if the accompaniment
+    // was migrated — either way this lands on the pattern's original reading.
+    accompanimentVariant: normalizeVariant(accompanimentPattern, row.accompaniment_variant),
     chordEvents: JSON.parse(row.chord_events) as Project['chordEvents'],
     createdAt: row.created_at,
     updatedAt: row.updated_at,
@@ -59,8 +67,8 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
   await db.runAsync(
     `INSERT INTO projects
        (id, title, key, tempo_bpm, time_signature, instrument_id, groove_id,
-        accompaniment_pattern, chord_events, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        accompaniment_pattern, accompaniment_variant, chord_events, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        key = excluded.key,
@@ -69,6 +77,7 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
        instrument_id = excluded.instrument_id,
        groove_id = excluded.groove_id,
        accompaniment_pattern = excluded.accompaniment_pattern,
+       accompaniment_variant = excluded.accompaniment_variant,
        chord_events = excluded.chord_events,
        updated_at = excluded.updated_at;`,
     [
@@ -80,6 +89,7 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
       p.instrumentId,
       p.grooveId,
       p.accompanimentPattern,
+      normalizeVariant(p.accompanimentPattern, p.accompanimentVariant),
       JSON.stringify(p.chordEvents),
       p.createdAt,
       p.updatedAt,

@@ -35,6 +35,7 @@ export function useLiveSoundReapply(
     instrumentId: sound.instrumentId,
     grooveId: sound.grooveId,
     accompanimentPattern: sound.accompanimentPattern,
+    accompanimentVariant: sound.accompanimentVariant,
     releaseCut: sound.releaseCut,
     octaveShift: sound.octaveShift,
   });
@@ -43,13 +44,16 @@ export function useLiveSoundReapply(
     const prev = prevRef.current;
     const instrumentChanged = prev.instrumentId !== sound.instrumentId;
     const grooveChanged = prev.grooveId !== sound.grooveId;
-    const accompChanged = prev.accompanimentPattern !== sound.accompanimentPattern;
+    const accompChanged =
+      prev.accompanimentPattern !== sound.accompanimentPattern ||
+      prev.accompanimentVariant !== sound.accompanimentVariant;
     const releaseCutChanged = prev.releaseCut !== sound.releaseCut;
     const octaveChanged = prev.octaveShift !== sound.octaveShift;
     prevRef.current = {
       instrumentId: sound.instrumentId,
       grooveId: sound.grooveId,
       accompanimentPattern: sound.accompanimentPattern,
+      accompanimentVariant: sound.accompanimentVariant,
       releaseCut: sound.releaseCut,
       octaveShift: sound.octaveShift,
     };
@@ -107,6 +111,7 @@ export function useLiveSoundReapply(
     sound.instrumentId,
     sound.grooveId,
     sound.accompanimentPattern,
+    sound.accompanimentVariant,
     sound.releaseCut,
     sound.octaveShift,
     playbackState,

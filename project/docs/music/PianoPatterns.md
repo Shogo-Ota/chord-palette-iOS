@@ -4,19 +4,43 @@
 
 ## 1. 現状 ID
 
-| ID | 要約 |
+ユーザーが選ぶのは **伴奏パターン 5 種**（`AccompanimentPattern`）。`eightBeat` /
+`sixteenthBeat` は引退 ID で、読み込み時に `normalizeAccompaniment` が Natural /
+Driving へ移行する。
+
+| ID | 要約 | 解決経路 |
+|---|---|---|
+| `block` | コード頭で同時打鍵。微 strum。ring 長め | StylePreset 直結 |
+| `arpeggio` | bass sustain、body 16 分アルペジオ | StylePreset 直結 |
+| `natural` | GT-000 由来の 4 分ボディ + 裏拍ベース | Feel 層 |
+| `driving` | テンポ / ドラムで 8 or 16 を選び、食いと上声を足す | Feel 層 |
+| `relaxed` | Ballad ベース。legato・後ノリ・3 拍目に 3rd | Feel 層 |
+
+### 1.1 サブバリエーション
+
+各パターンは複数の「弾き方」を持ち、ユーザーが選ぶ。正本は
+`src/lib/performance/variants/catalog.ts`。**各パターンの 1 番目は
+バリエーション導入前の音そのもの**で、既定値かつ差分ゼロ。保存済みプロジェクトの
+音は変わらない。
+
+| パターン | バリエーション |
 |---|---|
-| `block` | コード頭で同時打鍵。微 strum。ring 長め |
-| `eightBeat` | bass=4分、body=8分 + 食い |
-| `sixteenthBeat` | bass=4分、body=16分（ghost/食い） |
-| `arpeggio` | bass sustain、body 16分アルペジオ |
+| Block | **Hold** / Half / Push / Stab |
+| Arpeggio | **Up & Down** / Up / 8th / Broken |
+| Natural | **おまかせ**（3 種を 4 小節ごと自動ローテーション）/ Steady / Sparse / Dense |
+| Driving | **おまかせ**（8/16 自動）/ 8 Beat / 16 Beat / Push |
+| Relaxed | **Ballad** / Sustain / Slow Arp |
+
+バリエーションは骨格を差し替えるのではなく **差分を重ねる**（`StyleRefinement`）。
+音色・テンポ・ドラムグルーヴには触れない — それらは別の選択軸。
 
 ---
 
 ## 2. パターン記述（実装）
 
 正本（TS）: `src/lib/performance/styles/`（StylePreset）+ `PerformanceEngine.ts`  
-Feel（Natural / Driving / Relaxed）は `src/lib/performance/feel/` で StylePreset に解決される。
+Feel（Natural / Driving / Relaxed）は `src/lib/performance/feel/` で StylePreset に解決される。  
+サブバリエーションは `src/lib/performance/variants/` で、その結果に最後に重なる。
 
 ```ts
 // eightBeat のレイヤ例（抜粋）
@@ -43,8 +67,9 @@ Feel（Natural / Driving / Relaxed）は `src/lib/performance/feel/` で StylePr
 
 ### 3.2 リズム感（GT-001）
 
-- onset の **44% が 16 分の e/a** → `sixteenthBeat` 系が本流  
-- Bass ノート長 median **0.5 拍**、body median **≈0.25–0.30 拍**  
+- onset の **44% が 16 分の e/a** → 16 分駆動が本流  
+- Bass ノート長 **0.29–0.63 拍**（median 0.5）、body **0.21–0.50 拍**（median 0.30）。
+  音域で 1.7 倍違うので、gate はトラック別に持つ（`GateSpec.byTrack`）  
 - inter-onset median **0.25 拍**（16 分グリッド）  
 - 意図的な ≥0.5 拍ギャップあり（詰め込みすぎない）
 

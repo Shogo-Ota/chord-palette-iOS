@@ -27,6 +27,7 @@ import { getSession, useEditorSession } from '@/features/editor/session';
 import { useLiveSoundReapply } from '@/features/editor/useLiveSoundReapply';
 import { useStyleDraft } from '@/features/editor/useStyleDraft';
 import { logger } from '@/lib/logger';
+import { resolveVariant, variantsFor } from '@/lib/performance/variants';
 import { percentToVolume, volumeToPercent } from '@/lib/volume';
 import { track } from '@/services/analytics';
 import { audioService } from '@/services/audio';
@@ -229,6 +230,12 @@ export default function GrooveScreen() {
   const grooveVariant: GrooveVariant = grooveMenuState.variant ?? 'pop';
   const selectedGrooveItem = menuItem(grooveMenuState.itemKey);
 
+  const accompanimentVariants = variantsFor(styleDraft.draft.accompanimentPattern);
+  const selectedVariant = resolveVariant(
+    styleDraft.draft.accompanimentPattern,
+    styleDraft.draft.accompanimentVariant,
+  );
+
   return (
     <ScreenScaffold>
       <View style={styles.header}>
@@ -388,9 +395,22 @@ export default function GrooveScreen() {
       <ChipRow
         options={ACCOMPANIMENT_IDS.map((id) => ({ key: id, label: ACCOMPANIMENT_LABELS[id] }))}
         value={styleDraft.draft.accompanimentPattern}
-        onChange={(k) => styleDraft.setAccompaniment(k as AccompanimentPattern)}
-        style={{ marginBottom: 20 }}
+        onChange={(k) => {
+          const pattern = k as AccompanimentPattern;
+          styleDraft.setAccompaniment(pattern);
+          track('accompaniment_selected', { accompaniment: pattern });
+        }}
       />
+      <ChipRow
+        options={accompanimentVariants.map((v) => ({ key: v.id, label: v.label }))}
+        value={styleDraft.draft.accompanimentVariant}
+        onChange={(k) => {
+          styleDraft.setAccompanimentVariant(k);
+          track('accompaniment_variant_selected', { variant: k });
+        }}
+        style={{ marginTop: 8 }}
+      />
+      <Text style={styles.variantHint}>{selectedVariant.hint}</Text>
 
       {/* 音量 */}
       <View style={styles.volPanel}>
@@ -503,6 +523,16 @@ const styles = StyleSheet.create({
 
   grooveSection: { marginBottom: 20 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+
+  variantHint: {
+    fontSize: 12,
+    lineHeight: 17,
+    color: colors.textFaint,
+    fontFamily: font.regular,
+    marginTop: 8,
+    marginBottom: 20,
+    marginHorizontal: 2,
+  },
 
   volPanel: {
     backgroundColor: colors.surfacePanel,
