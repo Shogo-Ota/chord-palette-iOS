@@ -66,10 +66,22 @@
 
 1. 上のチェックリストを実機で完了する
 2. ASC で build 5 の審査を取り下げる（「Remove from Review」）
-3. `app.json` の `ios.buildNumber` を上げる
-4. `eas build --platform ios --profile production` → `eas submit --platform ios`
+3. `eas build --platform ios --profile production` → `eas submit --platform ios`
+4. EAS が書き換えた `app.json` をコミットする（下記参照）
 5. 説明文を `docs/app-store-listing.md` §4 の最新版に差し替える（プリセット名が入っている）
 6. 審査提出
+
+#### ビルド番号は手で上げない
+
+`eas.json` は production に `autoIncrement: true` を持ち、`cli.appVersionSource` は `local`。つまり **EAS がビルド前に `app.json` の `ios.buildNumber` を +1 して、そのファイルを書き換える**。
+
+したがって `app.json` の値は「次に出す番号」ではなく **「最後に出した番号」**。過去の `chore(app): bump iOS buildNumber to N` コミットは、EAS が書いた結果を後から記録したもの。
+
+- ビルド前の `app.json` は `5`（= build 5 が出ている状態）
+- `eas build --profile production` を実行すると 6 になり、build 6 が出る
+- ビルド後、書き換わった `app.json` をコミットする
+
+手で 6 に上げてからビルドすると 7 が出る。2026-07-26 に一度これをやりかけたので、ここに残す。
 
 ---
 
