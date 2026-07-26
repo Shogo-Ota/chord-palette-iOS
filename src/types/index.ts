@@ -49,6 +49,8 @@ export type DiatonicChord = {
   rootOffset: number;
   /** Chord-quality suffix appended to the transposed root (e.g. '', 'm', 'maj7'). */
   suffix: string;
+  /** Stable Theory Engine id for the chord quality (`@/lib/theory/definitions`). */
+  definitionId?: string;
 };
 
 export type ChordDuration = 1 | 2 | 4; // beats: 1/4, 1/2, 1 bar
@@ -88,6 +90,12 @@ export type LibraryChord = {
   rootOffset: number;
   /** Chord-quality suffix appended to the transposed root (e.g. '', 'm7', '7'). */
   suffix: string;
+  /**
+   * Stable Theory Engine id for the chord quality (`@/lib/theory/definitions`).
+   * Preferred over `suffix` when spelling the chord; optional because cards built
+   * before the catalog existed carry only a suffix.
+   */
+  definitionId?: string;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
 };
@@ -108,6 +116,12 @@ export type ChordEvent = {
    */
   rootOffset: number;
   suffix: string;
+  /**
+   * Stable Theory Engine id for the chord quality (`@/lib/theory/definitions`).
+   * Preferred over `suffix` when spelling the chord; optional so projects saved
+   * before the catalog existed still load and sound the same.
+   */
+  definitionId?: string;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
   /** Bass note when this event is a slash/on-chord. */

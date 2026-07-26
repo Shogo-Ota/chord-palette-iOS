@@ -8,6 +8,7 @@
 
 import { keyTonicPc } from '@/data/music';
 import { voiceLeadProgression, type VoiceLeadingOptions } from '@/lib/performance/voiceLeading';
+import { intervalsForChord } from '@/lib/theory/definitions';
 import { refineBodyVoicing } from '@/lib/voicingColor';
 import type { ChordSpec } from '@/services/audio/schedule';
 import type { ChordEvent, MajorKey } from '@/types';
@@ -17,44 +18,17 @@ const CHORD_ROOT_MIDI = 48;
 /** Upper bass fundamental (C2), an octave below the chord body. */
 const BASS_ROOT_MIDI = 36;
 
-/**
- * Semitone intervals above the root for each chord quality we produce across the
- * library (diatonic triads/7ths, variations, secondary dominants, modal, slash).
- * Extended chords (9/11/13) are voiced compactly rather than fully stacked.
- */
-const INTERVALS: Record<string, number[]> = {
-  '': [0, 4, 7], // major triad
-  m: [0, 3, 7], // minor triad
-  dim: [0, 3, 6], // diminished triad
-  aug: [0, 4, 8], // augmented triad
-  maj7: [0, 4, 7, 11],
-  m7: [0, 3, 7, 10],
-  '7': [0, 4, 7, 10],
-  'm7♭5': [0, 3, 6, 10], // half-diminished
-  dim7: [0, 3, 6, 9],
-  sus2: [0, 2, 7],
-  sus4: [0, 5, 7],
-  '6': [0, 4, 7, 9],
-  m6: [0, 3, 7, 9],
-  add9: [0, 4, 7, 14],
-  '9': [0, 4, 7, 10, 14],
-  '11': [0, 5, 7, 10, 14], // 3rd omitted to avoid clashing with the 11th
-  '13': [0, 4, 7, 10, 14, 21],
-  // Major-quality extensions (avoid-note aware): the ♮11 is dropped so 9/13 stay
-  // consonant over a major 3rd (used by I / IV — Ionian & Lydian).
-  maj9: [0, 4, 7, 11, 14],
-  maj13: [0, 4, 7, 11, 14, 21],
-  // Minor-quality variations (used by ii / iii / vi) so a diatonic minor degree
-  // never flips to a major 3rd when a tension is added.
-  'm(add9)': [0, 3, 7, 14],
-  'm(add11)': [0, 3, 7, 17], // add-11 without the 9 (keeps iii/Phrygian ♭9-free)
-  m9: [0, 3, 7, 10, 14],
-  m11: [0, 3, 7, 10, 14, 17],
-  m13: [0, 3, 7, 10, 14, 21],
-};
+/** The chord fields that determine which semitones it spells. */
+type ChordQualityRef = Pick<ChordEvent, 'suffix' | 'definitionId'>;
 
-function intervalsFor(suffix: string): number[] {
-  return INTERVALS[suffix] ?? INTERVALS[''];
+/**
+ * Which semitones a chord spells, resolved through the Theory Engine catalog
+ * (`@/lib/theory/definitions`) rather than a table kept here — the catalog is the
+ * single source so a quality is defined once. Events carrying a `definitionId`
+ * resolve by id; older ones fall back to their `suffix`.
+ */
+function intervalsFor(chord: ChordQualityRef): number[] {
+  return intervalsForChord(chord.suffix ?? '', chord.definitionId);
 }
 
 function pitchClass(n: number): number {
@@ -69,12 +43,12 @@ function pitchClass(n: number): number {
  * refactor: {@link chordMidiNotes} concatenates the exact same notes as before.
  */
 function chordVoicingParts(
-  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'definitionId' | 'bassOffset'>,
   key: MajorKey,
 ): { bass: number[]; body: number[] } {
   const tonic = keyTonicPc(key);
   const rootMidi = CHORD_ROOT_MIDI + pitchClass(tonic + (chord.rootOffset ?? 0));
-  const body = intervalsFor(chord.suffix ?? '').map((iv) => rootMidi + iv);
+  const body = intervalsFor(chord).map((iv) => rootMidi + iv);
 
   // Slash chords put their explicit bass in the low octaves; otherwise the root.
   // Audit P0-2: drop the always-on C1 sub-bass stack — it muddies headphones and
@@ -97,12 +71,12 @@ function chordVoicingParts(
  * note). Pure and context-free.
  */
 export function chordArpeggioNotes(
-  chord: Pick<ChordEvent, 'rootOffset' | 'suffix'>,
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'definitionId'>,
   key: MajorKey,
 ): number[] {
   const tonic = keyTonicPc(key);
   const rootMidi = CHORD_ROOT_MIDI + pitchClass(tonic + (chord.rootOffset ?? 0));
-  return intervalsFor(chord.suffix ?? '').map((iv) => rootMidi + iv);
+  return intervalsFor(chord).map((iv) => rootMidi + iv);
 }
 
 /**
@@ -121,7 +95,7 @@ export function chordArpeggioNotes(
  * either way, so slash-chord bass ordering is preserved.
  */
 export function chordMidiNotes(
-  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
+  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'definitionId' | 'bassOffset'>,
   key: MajorKey,
   octaveShift = 0,
 ): number[] {

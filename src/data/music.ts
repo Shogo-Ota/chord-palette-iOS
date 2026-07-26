@@ -1,3 +1,4 @@
+import { definitionIdForSuffix } from '@/lib/theory/definitions';
 import type { ChordFunction, DiatonicChord, LibraryChord, MajorKey } from '@/types';
 
 /**
@@ -74,6 +75,7 @@ function build(key: MajorKey, suffixes: readonly string[]): DiatonicChord[] {
       function: DEGREE_FUNCTIONS[i],
       rootOffset: MAJOR_SCALE_OFFSETS[i],
       suffix: suffixes[i],
+      definitionId: definitionIdForSuffix(suffixes[i]),
     };
   });
 }
@@ -222,6 +224,7 @@ export function diatonicLibrary(key: MajorKey): LibraryChord[] {
     isPro: false,
     rootOffset: t.rootOffset,
     suffix: t.suffix,
+    definitionId: t.definitionId,
   }));
 }
 
@@ -243,6 +246,7 @@ export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
     isPro: false,
     rootOffset: s.rootOffset,
     suffix: s.suffix,
+    definitionId: s.definitionId,
   }));
 }
 
@@ -325,6 +329,7 @@ export function variationChord(
     isPro: v.isPro,
     rootOffset: MAJOR_SCALE_OFFSETS[degreeIndex],
     suffix,
+    definitionId: definitionIdForSuffix(suffix),
   };
 }
 
@@ -360,6 +365,7 @@ export function secondaryDominants(key: MajorKey): LibraryChord[] {
       isPro: true, // secondary dominants are Palette Pro (requirements §7)
       rootOffset: (MAJOR_SCALE_OFFSETS[t.degreeIndex] + 7) % 12,
       suffix: '7',
+      definitionId: definitionIdForSuffix('7'),
     };
   });
 }
@@ -397,6 +403,7 @@ export function modalInterchange(key: MajorKey): LibraryChord[] {
       isPro: true, // borrowed / modal-interchange chords are Palette Pro (requirements §7)
       rootOffset: m.offset,
       suffix: m.suffix,
+      definitionId: definitionIdForSuffix(m.suffix),
     };
   });
 }
@@ -428,6 +435,7 @@ export function slashChord(key: MajorKey, target: LibraryChord, bass: string): L
     isPro: true, // slash / on-chords are Palette Pro (requirements §7)
     rootOffset: target.rootOffset,
     suffix: target.suffix,
+    definitionId: target.definitionId,
     bassOffset,
   };
 }
