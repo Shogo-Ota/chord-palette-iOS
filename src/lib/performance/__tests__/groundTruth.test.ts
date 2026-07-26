@@ -36,8 +36,14 @@ describe('GT_001 matches the committed analysis', () => {
     expect(GT_001.strum.meanSpreadMs).toBeCloseTo(features.cluster_spread_ms.mean, 1);
   });
 
-  it('carries the measured note length', () => {
-    expect(GT_001.medianBodyDurationBeats).toBe(features.duration_beats_by_band.mid.median);
+  it('carries the measured note length of both registers', () => {
+    for (const band of ['mid', 'bass'] as const) {
+      expect(GT_001.noteLength[band]).toEqual({
+        p25: features.duration_beats_by_band[band].p25,
+        median: features.duration_beats_by_band[band].median,
+        p75: features.duration_beats_by_band[band].p75,
+      });
+    }
   });
 });
 

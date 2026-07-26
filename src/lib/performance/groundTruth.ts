@@ -55,14 +55,32 @@ export interface GroundTruthOnsets {
   sixteenth: number;
 }
 
+/** Sounding length of a note in one register, in beats. */
+export interface GroundTruthNoteLength {
+  p25: number;
+  median: number;
+  p75: number;
+}
+
+/**
+ * Note length per register. A performer does not hold the bass and the chords for
+ * the same fraction of the beat, so the two are kept apart rather than averaged:
+ * a feel that copies only the mid band would clip its bass.
+ */
+export interface GroundTruthNoteLengths {
+  /** The chord body — what the right hand plays. */
+  mid: GroundTruthNoteLength;
+  /** The low register — what a walking bass line corresponds to. */
+  bass: GroundTruthNoteLength;
+}
+
 export interface GroundTruthReference {
   provenance: GroundTruthProvenance;
   velocity: GroundTruthVelocity;
   timing: GroundTruthTiming;
   strum: GroundTruthStrum;
   onsets: GroundTruthOnsets;
-  /** Median sounding length of a mid-register note, in beats. */
-  medianBodyDurationBeats: number;
+  noteLength: GroundTruthNoteLengths;
   /**
    * Off-beat 8th as a fraction of the beat; 0.5 = straight. Not yet produced by the
    * analyzer — read it as an assumption to be confirmed, not as a measurement.
@@ -105,7 +123,10 @@ export const GT_001: GroundTruthReference = {
     and: 20.2,
     sixteenth: 44.3,
   },
-  medianBodyDurationBeats: 0.296,
+  noteLength: {
+    mid: { p25: 0.206, median: 0.296, p75: 0.5 },
+    bass: { p25: 0.292, median: 0.5, p75: 0.626 },
+  },
   // Assumed, not measured — see the field's note.
   swingRatio: 0.5,
 };

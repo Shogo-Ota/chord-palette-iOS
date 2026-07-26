@@ -10,19 +10,32 @@
 
 import type { Articulation, TrackId } from './NoteEvent';
 import type { Rng } from './rng';
-import type { StylePreset } from './styles/types';
+import type { GateRange, StylePreset } from './styles/types';
 
 /** Target minimum silence before a note of the same pitch is re-struck (ms). */
 export const RESTRIKE_GAP_MS = 20;
 
 /**
- * Resolve a gate (sounding fraction of the nominal length) in [gate.min, gate.max].
+ * The window this track breathes in — its own if the style gave it one, else the
+ * style's shared range.
+ */
+export function gateRangeFor(style: StylePreset, track?: TrackId): GateRange {
+  return (track && style.gate.byTrack?.[track]) ?? style.gate;
+}
+
+/**
+ * Resolve a gate (sounding fraction of the nominal length) inside the track's window.
  * `nominalMs` is the real-time distance to the next strike of this voice; if a full
  * gate would leave less than {@link RESTRIKE_GAP_MS} of silence, the gate is trimmed
- * (but never below the style floor).
+ * (but never below the floor).
  */
-export function computeGate(rng: Rng, style: StylePreset, nominalMs: number): number {
-  const { min, max } = style.gate;
+export function computeGate(
+  rng: Rng,
+  style: StylePreset,
+  nominalMs: number,
+  track?: TrackId,
+): number {
+  const { min, max } = gateRangeFor(style, track);
   const raw = rng.range(min, max);
   if (nominalMs <= 0) return raw;
   const gapCap = 1 - RESTRIKE_GAP_MS / nominalMs;

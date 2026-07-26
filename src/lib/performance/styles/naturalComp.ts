@@ -104,9 +104,16 @@ export const NATURAL_COMP: StylePreset = {
     ghostMin: 20,
     ghostMax: 45,
   },
-  // GT-001's mid-register notes run 0.21 … 0.50 beats (median 0.30) — short stabs
-  // on this 1-beat grid, with the reference's own spread rather than a fixed length.
-  gate: { min: 0.21, max: 0.5, sustain: 'normal' },
+  // GT-001's mid-register notes run 0.21 … 0.50 beats (median 0.30) — short stabs on
+  // this 1-beat grid, with the reference's own spread rather than a fixed length. Its
+  // low register is noticeably longer (0.29 … 0.63, median 0.50), so the walking bass
+  // gets its own window instead of being cut to the chords' length.
+  gate: {
+    min: 0.21,
+    max: 0.5,
+    sustain: 'normal',
+    byTrack: { bass: { min: 0.29, max: 0.63 } },
+  },
   roundRobin: 4,
   // GT-001 rolls its block chords over ~6.5 ms at most (median 0), far tighter than
   // a strummed feel: audible as "played by hands", not as a spread.

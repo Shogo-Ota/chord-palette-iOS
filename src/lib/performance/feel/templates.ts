@@ -74,6 +74,19 @@ interface TemplateOverrides {
   gate?: Partial<GateSpec>;
 }
 
+/**
+ * A feel that restates the gate is restating the whole articulation, so any
+ * per-track windows the base style carried are dropped unless the override brings
+ * its own — otherwise a style's bass would keep breathing to a rule the feel just
+ * replaced.
+ */
+function mergeGate(base: GateSpec, o?: Partial<GateSpec>): GateSpec {
+  if (!o) return base;
+  const merged: GateSpec = { ...base, ...o };
+  if (!o.byTrack) delete merged.byTrack;
+  return merged;
+}
+
 function deriveTemplate(base: StylePreset, o: TemplateOverrides): StylePreset {
   const template: StylePreset = {
     ...base,
@@ -82,7 +95,7 @@ function deriveTemplate(base: StylePreset, o: TemplateOverrides): StylePreset {
       accentDepth: base.velocity.accentDepth + (o.accentDepthDelta ?? 0),
     },
     microtiming: { ...base.microtiming, ...(o.microtiming ?? {}) },
-    gate: { ...base.gate, ...(o.gate ?? {}) },
+    gate: mergeGate(base.gate, o.gate),
   };
 
   if (o.anticipation === null) delete template.anticipation;

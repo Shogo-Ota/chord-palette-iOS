@@ -56,12 +56,22 @@ export interface VelocitySpec {
   ghostMax: number;
 }
 
-/** Gate/articulation knobs (design §4 "Duration": gate 0.72–0.95). */
-export interface GateSpec {
+/** A gate window — the sounding fraction of a note's nominal length. */
+export interface GateRange {
   min: number;
   max: number;
+}
+
+/** Gate/articulation knobs (design §4 "Duration": gate 0.72–0.95). */
+export interface GateSpec extends GateRange {
   /** Default articulation for sustained (chord/bass) notes in this style. */
   sustain: Articulation;
+  /**
+   * Windows for tracks that do not breathe like the rest of the style. Reference
+   * performances rarely hold their bass and their chords for the same fraction of
+   * the beat, so a style may say so per track; tracks left out use the shared range.
+   */
+  byTrack?: Partial<Record<TrackId, GateRange>>;
 }
 
 /**

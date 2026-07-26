@@ -1,3 +1,4 @@
+import { gateRangeFor } from '../articulation';
 import { GT_001 } from '../groundTruth';
 import { NATURAL_COMP } from '../styles/naturalComp';
 import { NATURAL_COMP_DENSE } from '../styles/naturalCompDense';
@@ -44,10 +45,25 @@ describe('Natural comp follows GT-001', () => {
     }
   });
 
-  it('holds notes for the reference note length', () => {
-    const { min, max } = NATURAL_COMP.gate;
-    expect(GT_001.medianBodyDurationBeats).toBeGreaterThanOrEqual(min);
-    expect(GT_001.medianBodyDurationBeats).toBeLessThanOrEqual(max);
+  it('holds each register for its own reference note length', () => {
+    // The gate is a fraction of the nominal length, and both patterns strike once a
+    // beat on this grid — so a gate reads directly as a length in beats.
+    const cases = [
+      { track: 'chord', band: GT_001.noteLength.mid },
+      { track: 'bass', band: GT_001.noteLength.bass },
+    ] as const;
+    for (const { track, band } of cases) {
+      const { min, max } = gateRangeFor(NATURAL_COMP, track);
+      expect(band.median).toBeGreaterThanOrEqual(min);
+      expect(band.median).toBeLessThanOrEqual(max);
+    }
+  });
+
+  it('gives the bass its own window rather than clipping it to the chords', () => {
+    const chord = gateRangeFor(NATURAL_COMP, 'chord');
+    const bass = gateRangeFor(NATURAL_COMP, 'bass');
+    expect(bass).not.toEqual(chord);
+    expect(bass.max).toBeGreaterThan(chord.max);
   });
 });
 

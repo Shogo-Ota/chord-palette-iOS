@@ -394,7 +394,12 @@ function renderTrack(
     const nominalMs = d.nominalBeat * secPerBeat * 1000;
     const gate = held
       ? HELD_GATE
-      : computeGate(streamFor(seed, 'gate', track, d.bar, d.step, d.pitch), style, nominalMs);
+      : computeGate(
+          streamFor(seed, 'gate', track, d.bar, d.step, d.pitch),
+          style,
+          nominalMs,
+          track,
+        );
     const durationBeat = d.nominalBeat * gate;
     const tie =
       held || (style.gate.sustain === 'legato' && gate > 0.88 && i + 1 < drafts.length);

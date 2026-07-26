@@ -44,7 +44,7 @@ OSS（GMD 等）は土台。**オーナーの耳が選んだ MIDI が優先**す
 ### GT-001 — 日もすがら音楽と / Piano（Reo）
 - Status: **reflected** — 測定値は `src/lib/performance/groundTruth.ts`、
   Natural feel への適用は `src/lib/performance/styles/naturalComp.ts`（ベロシティ・アクセント幅・
-  ストラム幅・マイクロタイミング・ゲート）。Driving / Relaxed は未適用。
+  ストラム幅・マイクロタイミング・ゲート。ゲートはコードとベースで別窓）。Driving / Relaxed は未適用。
 - Source: `125BPM_allday_Piano.mid`  
   パス例: `...\MIDIデータ_日もすがら音楽と\125BPM_allday_Piano.mid`  
   関連: Reo - 日もすがら音楽と（Logic プロジェクト名より）
@@ -70,7 +70,7 @@ OSS（GMD 等）は土台。**オーナーの耳が選んだ MIDI が優先**す
 | Body − Bass | 同時発音クラスタ内: median **0**, p75 **+4 ms**, mean **+2 ms** |
 | ストラム | クラスタ spread median **0**, mean **3.2 ms**, p75 **6.5 ms**, max 38 ms |
 | 低音先打ち比 | **0.44**（低音先行は半分未満 → 同時押し寄り） |
-| ノート長 | Bass median **0.5 拍**, Mid median ≈ **0.25–0.30 拍** |
+| ノート長 | Bass **0.29–0.63 拍**（median 0.5）, Mid **0.21–0.50 拍**（median 0.30）— 低域が明確に長い |
 | シンコペ | onset の **44% が e/a**, on-beat 36%, & 20% → **16 分駆動のピアノ** |
 | 休符 | inter-onset median **0.25 拍**; ≥0.5 拍ギャップが 171 箇所 |
 | 音域 | MIDI 34–91、bass(<48) 比率 **15.5%** |
@@ -81,7 +81,9 @@ OSS（GMD 等）は土台。**オーナーの耳が選んだ MIDI が優先**す
 2. **ストラムは数 ms 級**（+8 / +15 ms 仮値は強すぎ。≈0–7 ms 帯が主）  
 3. **16 分シンコペを伴奏の主役**に据える（eightBeat だけだと足りない）  
 4. Humanize は **小さく**（既にクオンタイズ済みの打ち込み感）  
-5. Swing は本教材では **ほぼストレート**（ratio 0.5）
+5. Swing は本教材では **ほぼストレート**（ratio 0.5）。ただしアナライザは swing を出力しないため、
+   `groundTruth.ts` の `swingRatio` は**実測ではなく仮値**として扱う  
+6. **ゲートは音域ごとに分ける**。低域と中域で音価が 1.7 倍違うため、共通レンジで揃えるとベースが切れる
 
 ---
 

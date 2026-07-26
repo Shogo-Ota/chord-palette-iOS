@@ -21,7 +21,6 @@ import {
   CPSuggestionBar,
   CPTransportBar,
   CPVariationPills,
-  type CPVariationPill,
 } from '@/components/cp';
 import { SegTrack } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
@@ -29,11 +28,8 @@ import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
 import { Wordmark } from '@/components/Wordmark';
 import { GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
 import {
-  ALL_VARIATIONS,
-  availableVariations,
   chromaticBassNotes,
   degreeIndexFromRootOffset,
-  extendedVariations,
   diatonicLibrary,
   diatonicSeventhLibrary,
   MAJOR_KEYS,
@@ -50,6 +46,7 @@ import { getSession, useEditorSession } from '@/features/editor/session';
 import { useAutosave } from '@/features/editor/useAutosave';
 import { useChordSuggestions } from '@/features/editor/useChordSuggestions';
 import { useEditorActions } from '@/features/editor/useEditorActions';
+import { variationTiers } from '@/features/editor/variationPills';
 import { isLocked } from '@/lib/entitlements';
 import { isKeyLocked } from '@/lib/keyAccess';
 import { distinctKeys, eventKey, isMultiKey, keyColorSlots } from '@/lib/keyColor';
@@ -323,36 +320,10 @@ export default function EditorScreen() {
     ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0)
     : -1;
 
-  /**
-   * The two tiers of variation pills for the selected degree. The core tier is the
-   * short familiar row; the extended tier holds the richer colours and stays folded
-   * away until asked for, so the default view does not grow.
-   */
-  const buildPills = useCallback(
-    (ids: string[]): CPVariationPill[] =>
-      ids.map((id) => {
-        const variationId = id as VariationId;
-        const meta = ALL_VARIATIONS.find((v) => v.id === variationId)!;
-        const preview = variationChord(key, selectedDegree, variationId);
-        return {
-          id,
-          label: meta.label,
-          preview: preview.displayName,
-          active:
-            selectedEvent?.variation === id || selectedEvent?.suffix === preview.suffix,
-          locked: isLocked(meta.isPro, ent),
-        };
-      }),
+  const { core: corePills, extended: extendedPills } = useMemo(
+    () =>
+      variationTiers({ key, degree: selectedDegree, selected: selectedEvent, entitlements: ent }),
     [key, selectedDegree, selectedEvent, ent],
-  );
-
-  const corePills = useMemo(
-    () => (selectedDegree < 0 ? [] : buildPills(availableVariations(selectedDegree))),
-    [selectedDegree, buildPills],
-  );
-  const extendedPills = useMemo(
-    () => (selectedDegree < 0 ? [] : buildPills(extendedVariations(selectedDegree))),
-    [selectedDegree, buildPills],
   );
 
   const colW = (cols: number) => Math.floor((width - H_PAD * 2 - 8 * (cols - 1)) / cols);
