@@ -13,7 +13,8 @@ import { track } from '@/services/analytics';
 import { billingService, type BillingProduct } from '@/services/billing';
 import { colors, font, radius, rainbow } from '@/theme/tokens';
 
-const APP_ICON = require('../../assets/icon/app-icon.png');
+/** Gold-framed Pro variant — the hero is what the screen is selling. */
+const PRO_ICON = require('../../assets/icon/app-icon-pro.png');
 
 /**
  * Fallback price shown until the provider's localized offering resolves. Kept in
@@ -32,7 +33,7 @@ const PERKS: Perk[] = [
     bg: 'rgba(91,140,255,0.14)',
     border: 'rgba(91,140,255,0.32)',
     title: '高度コード',
-    desc: '6th / 借用和音 / セカンダリードミナント / オンコード',
+    desc: '9th / 11th / 13th / オルタード / 借用和音 / セカンダリードミナント / オンコード',
     included: true,
   },
   {
@@ -41,7 +42,9 @@ const PERKS: Perk[] = [
     bg: 'rgba(124,92,255,0.15)',
     border: 'rgba(124,92,255,0.35)',
     title: '追加プリセット',
-    desc: 'ジャンル別の本格コード進行プリセットを多数追加',
+    // Keep this describing what src/data/presets.ts actually ships. "多数" or a
+    // count that outruns the catalog is the 2.3.1 (inaccurate metadata) trap.
+    desc: 'セカンダリードミナントや借用和音を使った進行プリセット',
     included: true,
   },
   // NOTE: Do not advertise not-yet-available features on the paywall (App Store
@@ -146,7 +149,7 @@ export default function PaywallScreen() {
 
       {/* hero */}
       <View style={styles.hero}>
-        <Image source={APP_ICON} style={styles.heroIcon} />
+        <Image source={PRO_ICON} style={styles.heroIcon} />
         <View style={styles.heroTitleRow}>
           <GradientText colors={rainbow} style={styles.heroTitle}>
             Palette
@@ -284,7 +287,9 @@ const styles = StyleSheet.create({
   heroIcon: {
     width: 92,
     height: 92,
-    borderRadius: 24,
+    // The artwork already carries its corners; this only has to agree with them
+    // so the purple glow below traces the gold frame instead of a square.
+    borderRadius: 20,
     marginBottom: 16,
     shadowColor: '#7c4dff',
     shadowOpacity: 0.6,

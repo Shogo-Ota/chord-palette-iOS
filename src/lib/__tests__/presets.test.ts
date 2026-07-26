@@ -44,7 +44,15 @@ describe('buildPresetProgression', () => {
     expect(chords.every((c) => c.isPro === false)).toBe(true);
   });
 
-  it('ships no built-in catalog (presets are user-curated)', () => {
-    expect(PRESETS).toEqual([]);
+  it('builds every shipped preset into a playable progression', () => {
+    // Catalog content is covered by src/data/__tests__/presets.test.ts; here we only
+    // care that the builder survives everything the catalog throws at it.
+    for (const preset of PRESETS) {
+      const chords = buildPresetProgression(preset, 'C');
+      expect({ preset: preset.id, count: chords.length }).toEqual({
+        preset: preset.id,
+        count: preset.chords.length,
+      });
+    }
   });
 });
