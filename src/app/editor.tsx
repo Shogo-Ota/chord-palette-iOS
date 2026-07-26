@@ -14,17 +14,26 @@ import {
 } from 'react-native';
 
 import { Icon, type IconName } from '@/components/Icon';
-import { CPChordContextMenu, CPCoachMarks, CPSettingChip, CPSuggestionBar, CPTransportBar } from '@/components/cp';
+import {
+  CPChordContextMenu,
+  CPCoachMarks,
+  CPSettingChip,
+  CPSuggestionBar,
+  CPTransportBar,
+  CPVariationPills,
+  type CPVariationPill,
+} from '@/components/cp';
 import { SegTrack } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
 import { Wordmark } from '@/components/Wordmark';
 import { GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
 import {
+  ALL_VARIATIONS,
   availableVariations,
-  CHORD_VARIATIONS,
   chromaticBassNotes,
   degreeIndexFromRootOffset,
+  extendedVariations,
   diatonicLibrary,
   diatonicSeventhLibrary,
   MAJOR_KEYS,
@@ -32,6 +41,7 @@ import {
   secondaryDominants,
   slashChord,
   variationChord,
+  type VariationId,
 } from '@/data/music';
 import { loadAdminMode, useAdminMode } from '@/features/admin/adminMode';
 import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
@@ -166,6 +176,7 @@ export default function EditorScreen() {
   const [audioError, setAudioError] = useState<string | null>(null);
   const [saveToast, setSaveToast] = useState(false);
   const [reduceMotion, setReduceMotion] = useState(false);
+  const [showMoreTensions, setShowMoreTensions] = useState(false);
   const isAdmin = useAdminMode();
   const playLift = useRef(new Animated.Value(0)).current;
   const stripScrollRef = useRef<ScrollView>(null);
@@ -312,6 +323,38 @@ export default function EditorScreen() {
     ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0)
     : -1;
 
+  /**
+   * The two tiers of variation pills for the selected degree. The core tier is the
+   * short familiar row; the extended tier holds the richer colours and stays folded
+   * away until asked for, so the default view does not grow.
+   */
+  const buildPills = useCallback(
+    (ids: string[]): CPVariationPill[] =>
+      ids.map((id) => {
+        const variationId = id as VariationId;
+        const meta = ALL_VARIATIONS.find((v) => v.id === variationId)!;
+        const preview = variationChord(key, selectedDegree, variationId);
+        return {
+          id,
+          label: meta.label,
+          preview: preview.displayName,
+          active:
+            selectedEvent?.variation === id || selectedEvent?.suffix === preview.suffix,
+          locked: isLocked(meta.isPro, ent),
+        };
+      }),
+    [key, selectedDegree, selectedEvent, ent],
+  );
+
+  const corePills = useMemo(
+    () => (selectedDegree < 0 ? [] : buildPills(availableVariations(selectedDegree))),
+    [selectedDegree, buildPills],
+  );
+  const extendedPills = useMemo(
+    () => (selectedDegree < 0 ? [] : buildPills(extendedVariations(selectedDegree))),
+    [selectedDegree, buildPills],
+  );
+
   const colW = (cols: number) => Math.floor((width - H_PAD * 2 - 8 * (cols - 1)) / cols);
   const wDia = colW(4);
   const wAdv = colW(3);
@@ -361,6 +404,11 @@ export default function EditorScreen() {
     hapticSelection();
     setContextMenuOpen(true);
   };
+
+  /** Apply a variation pill to the selected degree (both tiers route through here). */
+  function pickVariation(id: string) {
+    pickChord(variationChord(key, selectedDegree, id as VariationId));
+  }
 
   /**
    * Library pick: with a progression card selected → replace that card in place
@@ -821,7 +869,7 @@ export default function EditorScreen() {
                 <Text style={styles.varEmptyHint}>
                   このコードはダイアトニック以外のため、ここでの飾り付けは使えません（差し替えは上のグリッドから）
                 </Text>
-              ) : availableVariations(selectedDegree).length === 0 ? (
+              ) : corePills.length === 0 && extendedPills.length === 0 ? (
                 <Text style={styles.varEmptyHint}>
                   この度数（{selectedEvent.degreeLabel}）に足せるテンションはありません
                 </Text>
@@ -830,33 +878,31 @@ export default function EditorScreen() {
                   <Text style={styles.varApplyTo}>
                     適用先： {selectedEvent.displayName}（{selectedEvent.degreeLabel}）
                   </Text>
-                  <View style={styles.varRow}>
-                    {availableVariations(selectedDegree).map((id) => {
-                      const v = CHORD_VARIATIONS.find((x) => x.id === id)!;
-                      const preview = variationChord(key, selectedDegree, id);
-                      const active = selectedEvent.variation === id || selectedEvent.suffix === preview.suffix;
-                      return (
-                        <Pressable
-                          key={id}
-                          style={[
-                            styles.varPill,
-                            active && styles.varPillActive,
-                            v.isPro && !ent.palettePro && styles.varPillPro,
-                          ]}
-                          onPress={() => pickChord(preview)}>
-                          <View style={styles.varPillInner}>
-                            <Text style={styles.varPillText}>{v.label}</Text>
-                            <Text style={styles.varPillSub} numberOfLines={1}>
-                              {preview.displayName}
-                            </Text>
-                          </View>
-                          {v.isPro && !ent.palettePro && (
-                            <Icon name="lock" size={10} color={colors.gold} strokeWidth={2.4} />
-                          )}
-                        </Pressable>
-                      );
-                    })}
-                  </View>
+                  <CPVariationPills pills={corePills} onPress={pickVariation} />
+                  {extendedPills.length > 0 && (
+                    <>
+                      <Pressable
+                        accessibilityRole="button"
+                        accessibilityState={{ expanded: showMoreTensions }}
+                        style={styles.varMoreToggle}
+                        onPress={() => setShowMoreTensions((v) => !v)}>
+                        <Text style={styles.varMoreText}>
+                          {showMoreTensions ? '色づけを閉じる' : `もっと色づけ（${extendedPills.length}）`}
+                        </Text>
+                        <View style={showMoreTensions && styles.varMoreChevronOpen}>
+                          <Icon
+                            name="chevronDown"
+                            size={12}
+                            color={colors.pinkText}
+                            strokeWidth={2.4}
+                          />
+                        </View>
+                      </Pressable>
+                      {showMoreTensions && (
+                        <CPVariationPills pills={extendedPills} onPress={pickVariation} />
+                      )}
+                    </>
+                  )}
                 </>
               )}
             </View>
@@ -1700,30 +1746,22 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     marginHorizontal: 2,
   },
-  varRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 7, marginBottom: 14 },
-  varPill: {
+  varMoreToggle: {
     flexDirection: 'row',
     alignItems: 'center',
+    alignSelf: 'flex-start',
     gap: 5,
     minHeight: 44,
-    backgroundColor: rgba(colors.pink, 0.12),
-    borderWidth: 1,
-    borderColor: rgba(colors.pink, 0.4),
-    borderRadius: radius.md,
-    paddingVertical: spacing.s8,
-    paddingHorizontal: spacing.s16,
+    paddingHorizontal: spacing.s8,
+    marginBottom: 6,
   },
-  varPillActive: {
-    backgroundColor: rgba(colors.primary, 0.22),
-    borderColor: colors.primary,
+  varMoreText: {
+    fontSize: typeSize.label,
+    color: colors.pinkText,
+    fontFamily: font.semibold,
+    fontWeight: '600',
   },
-  varPillPro: {
-    backgroundColor: colors.surfaceLocked,
-    borderColor: colors.borderFaint,
-  },
-  varPillInner: { alignItems: 'center' },
-  varPillText: { fontSize: typeSize.label, color: colors.pinkText, fontFamily: font.bold, fontWeight: '700' },
-  varPillSub: { fontSize: 9, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600', marginTop: 1 },
+  varMoreChevronOpen: { transform: [{ rotate: '180deg' }] },
   varEmptyHint: {
     fontSize: 11.5,
     color: colors.textFaint,

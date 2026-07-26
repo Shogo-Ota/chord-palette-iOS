@@ -6,12 +6,15 @@ import {
   diatonicLibrary,
   diatonicSevenths,
   diatonicTriads,
+  EXTENDED_VARIATIONS,
+  extendedVariations,
   modalInterchange,
   noteAt,
   secondaryDominants,
   slashChord,
   variationChord,
 } from '@/data/music';
+import { intervalsForChord } from '@/lib/theory/definitions';
 
 describe('diatonicSevenths', () => {
   it('builds the C major seventh chords', () => {
@@ -103,6 +106,46 @@ describe('variationChord — quality-aware, avoid-note-safe (C major)', () => {
     expect(availableVariations(2)).toEqual(['sus4', '11']);
     // vii° (diminished): no variations offered.
     expect(availableVariations(6)).toEqual([]);
+  });
+});
+
+describe('extendedVariations — second tier (C major)', () => {
+  it('keeps the core tier free of the extended ids', () => {
+    const extendedIds: string[] = EXTENDED_VARIATIONS.map((v) => v.id);
+    for (let degree = 0; degree < 7; degree += 1) {
+      expect(availableVariations(degree).filter((id) => extendedIds.includes(id))).toEqual([]);
+    }
+  });
+
+  it('offers only in-key, avoid-note-safe colours per degree', () => {
+    expect(extendedVariations(0)).toEqual(['sixNine']);
+    // ii (Dorian): the one minor degree whose ♮6 and ♮11 are both in key.
+    expect(extendedVariations(1)).toEqual(['m6nine', 'm13_9_11']);
+    // IV (Lydian): the only degree that can carry a #11.
+    expect(extendedVariations(3)).toEqual(['sixNine', 'maj9sharp11', 'maj13sharp11']);
+    // vii° gains its first colours: 11 and ♭13 are diatonic over m7♭5.
+    expect(extendedVariations(6)).toEqual(['m7b5_11', 'm7b5_b13']);
+    // iii / V / vi: everything left would leave the key or duplicate the core tier.
+    expect(extendedVariations(2)).toEqual([]);
+    expect(extendedVariations(4)).toEqual([]);
+    expect(extendedVariations(5)).toEqual([]);
+  });
+
+  it('builds the degree-correct symbol and is spelled by the catalog', () => {
+    expect(variationChord('C', 3, 'maj9sharp11').displayName).toBe('Fmaj9(#11)');
+    expect(variationChord('C', 1, 'm6nine').displayName).toBe('Dm6/9');
+    expect(variationChord('C', 6, 'm7b5_b13').displayName).toBe('Bm7♭5(♭13)');
+    for (let degree = 0; degree < 7; degree += 1) {
+      for (const id of extendedVariations(degree)) {
+        const chord = variationChord('C', degree, id);
+        expect(chord.definitionId).toBeDefined();
+        expect(intervalsForChord(chord.suffix, chord.definitionId).length).toBeGreaterThan(0);
+      }
+    }
+  });
+
+  it('is Pro-gated in full', () => {
+    expect(EXTENDED_VARIATIONS.every((v) => v.isPro)).toBe(true);
   });
 });
 

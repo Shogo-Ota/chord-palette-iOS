@@ -268,7 +268,30 @@ export const CHORD_VARIATIONS = [
   { id: '13', label: '13', suffix: '13', isPro: true },
 ] as const;
 
-export type VariationId = (typeof CHORD_VARIATIONS)[number]['id'];
+/**
+ * Richer colours offered behind a second tier, so the first row a beginner sees
+ * stays the short familiar one. Same two rules as the core set: the degree keeps
+ * its quality and every tone stays inside the key.
+ *
+ * Deliberately absent: altered dominants (7♭9, 7alt, 13♭9 …) leave the key by
+ * definition and belong with the other out-of-key colours on the Advanced tab;
+ * `maj11` puts the ♮11 avoid note over a major 3rd; `m9(11)` and `m13(9)` spell
+ * exactly the same notes as the `11` and `13` already offered on minor degrees.
+ */
+export const EXTENDED_VARIATIONS = [
+  { id: 'sixNine', label: '6/9', suffix: '6/9', isPro: true },
+  { id: 'maj9sharp11', label: 'maj9(#11)', suffix: 'maj9(#11)', isPro: true },
+  { id: 'maj13sharp11', label: 'maj13(#11)', suffix: 'maj13(#11)', isPro: true },
+  { id: 'm6nine', label: 'm6/9', suffix: 'm6/9', isPro: true },
+  { id: 'm13_9_11', label: 'm13(9,11)', suffix: 'm13(9,11)', isPro: true },
+  { id: 'm7b5_11', label: 'm7♭5(11)', suffix: 'm7♭5(11)', isPro: true },
+  { id: 'm7b5_b13', label: 'm7♭5(♭13)', suffix: 'm7♭5(♭13)', isPro: true },
+] as const;
+
+/** Every variation the editor can build, core tier first. */
+export const ALL_VARIATIONS = [...CHORD_VARIATIONS, ...EXTENDED_VARIATIONS] as const;
+
+export type VariationId = (typeof ALL_VARIATIONS)[number]['id'];
 
 /**
  * Diatonic-correct tension mapping. For each major-key degree (I..vi) it maps a
@@ -296,12 +319,46 @@ export const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId,
 };
 
 /**
- * Variations that are diatonically usable on the given degree, in button order —
- * avoid-notes and non-diatonic tensions removed. vii° (index 6) returns [].
+ * Extended-tier suffixes per degree, filtered by the same rules as the core map.
+ *
+ * In C for reference: I and IV take 6/9; only Lydian IV can carry a #11 (B is in
+ * key, whereas I would need an F#); Dorian ii is the one minor degree whose ♮6 and
+ * ♮11 are both in key; vi's 6/9 would need an F#, and the ♮11 is already covered by
+ * its core `11`; V's remaining colours are all altered, so it gains nothing here;
+ * iii keeps only what avoids its ♭9 and ♭13. vii° gains its first two: the 11th and
+ * ♭13 are diatonic over m7♭5, while the 9th would be the Locrian ♭2.
+ */
+const EXTENDED_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
+  0: { sixNine: '6/9' },
+  1: { m6nine: 'm6/9', m13_9_11: 'm13(9,11)' },
+  3: { sixNine: '6/9', maj9sharp11: 'maj9(#11)', maj13sharp11: 'maj13(#11)' },
+  6: { m7b5_11: 'm7♭5(11)', m7b5_b13: 'm7♭5(♭13)' },
+};
+
+/** Suffix map covering both tiers — the single lookup `variationChord` resolves against. */
+const ALL_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = Object.fromEntries(
+  Array.from({ length: 7 }, (_, degree) => [
+    degree,
+    { ...DEGREE_VARIATION_SUFFIX[degree], ...EXTENDED_DEGREE_SUFFIX[degree] },
+  ]),
+);
+
+/**
+ * Core-tier variations usable on the given degree, in button order — avoid-notes
+ * and non-diatonic tensions removed. vii° (index 6) returns [].
  */
 export function availableVariations(degreeIndex: number): VariationId[] {
   const map = DEGREE_VARIATION_SUFFIX[degreeIndex] ?? {};
   return CHORD_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
+}
+
+/**
+ * Extended-tier variations usable on the given degree, in button order. Shown only
+ * after the player opens the second tier, so the default row stays short.
+ */
+export function extendedVariations(degreeIndex: number): VariationId[] {
+  const map = EXTENDED_DEGREE_SUFFIX[degreeIndex] ?? {};
+  return EXTENDED_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
 }
 
 /**
@@ -316,8 +373,8 @@ export function variationChord(
   variationId: VariationId,
 ): LibraryChord {
   const root = MAJOR_SCALES[key][degreeIndex];
-  const v = CHORD_VARIATIONS.find((x) => x.id === variationId) ?? CHORD_VARIATIONS[0];
-  const suffix = DEGREE_VARIATION_SUFFIX[degreeIndex]?.[variationId] ?? v.suffix;
+  const v = ALL_VARIATIONS.find((x) => x.id === variationId) ?? ALL_VARIATIONS[0];
+  const suffix = ALL_DEGREE_SUFFIX[degreeIndex]?.[variationId] ?? v.suffix;
   return {
     id: `var-${key}-${root}-${suffix}`,
     displayName: `${root}${suffix}`,

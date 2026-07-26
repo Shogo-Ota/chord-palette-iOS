@@ -13,3 +13,5 @@ export { CPTransportBar } from './CPTransportBar';
 export { CPAddSlot } from './CPAddSlot';
 export { CPSuggestionBar } from './CPSuggestionBar';
 export { CPCoachMarks } from './CPCoachMarks';
+export { CPVariationPills } from './CPVariationPills';
+export type { CPVariationPill } from './CPVariationPills';
