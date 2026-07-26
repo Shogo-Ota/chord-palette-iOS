@@ -8,6 +8,7 @@ import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@/config/legal';
+import { shippedPerks } from '@/features/paywall/perks';
 import { logger } from '@/lib/logger';
 import { track } from '@/services/analytics';
 import { billingService, type BillingProduct } from '@/services/billing';
@@ -25,32 +26,11 @@ const PRO_ICON = require('../../assets/icon/app-icon-pro.png');
 const FALLBACK_PRICE = '¥500';
 const PERIOD_SUFFIX = '/ 月';
 
-type Perk = { glyph: string; color: string; bg: string; border: string; title: string; desc: string; included: boolean };
-const PERKS: Perk[] = [
-  {
-    glyph: '♪',
-    color: colors.blueText,
-    bg: 'rgba(91,140,255,0.14)',
-    border: 'rgba(91,140,255,0.32)',
-    title: '高度コード',
-    desc: '9th / 11th / 13th / オルタード / 借用和音 / セカンダリードミナント / オンコード',
-    included: true,
-  },
-  {
-    glyph: '★',
-    color: colors.purpleText,
-    bg: 'rgba(124,92,255,0.15)',
-    border: 'rgba(124,92,255,0.35)',
-    title: '追加プリセット',
-    // Keep this describing what src/data/presets.ts actually ships. "多数" or a
-    // count that outruns the catalog is the 2.3.1 (inaccurate metadata) trap.
-    desc: 'セカンダリードミナントや借用和音を使った進行プリセット',
-    included: true,
-  },
-  // NOTE: Do not advertise not-yet-available features on the paywall (App Store
-  // Guideline 2.3.x). The "追加音色（予定）" perk is intentionally omitted until it
-  // ships; re-add it here with `included: true` when the feature is live.
-];
+/**
+ * Only what a subscriber actually receives — the catalog filters itself against
+ * PRO_POLICY, so an unshipped feature cannot reach this screen (see perks.ts).
+ */
+const PERKS = shippedPerks();
 
 type Status = 'idle' | 'purchasing' | 'restoring' | 'success' | 'error';
 
@@ -179,23 +159,17 @@ export default function PaywallScreen() {
       {/* perks */}
       <View style={{ gap: 11, marginTop: 14, marginBottom: 22 }}>
         {PERKS.map((p) => (
-          <View key={p.title} style={[styles.perkRow, !p.included && styles.perkRowSoon]}>
+          <View key={p.title} style={styles.perkRow}>
             <View style={[styles.perkIcon, { backgroundColor: p.bg, borderColor: p.border }]}>
               <Text style={[styles.perkGlyph, { color: p.color }]}>{p.glyph}</Text>
             </View>
             <View style={{ flex: 1 }}>
-              <Text style={[styles.perkTitle, !p.included && styles.perkTitleSoon]}>{p.title}</Text>
+              <Text style={styles.perkTitle}>{p.title}</Text>
               <Text style={styles.perkDesc}>{p.desc}</Text>
             </View>
-            {p.included ? (
-              <View style={styles.perkCheck}>
-                <Icon name="check" size={13} color={colors.success} strokeWidth={2.8} />
-              </View>
-            ) : (
-              <View style={styles.perkSoonPill}>
-                <Text style={styles.perkSoonText}>予定</Text>
-              </View>
-            )}
+            <View style={styles.perkCheck}>
+              <Icon name="check" size={13} color={colors.success} strokeWidth={2.8} />
+            </View>
           </View>
         ))}
       </View>
@@ -328,11 +302,9 @@ const styles = StyleSheet.create({
     paddingVertical: 15,
     paddingHorizontal: 16,
   },
-  perkRowSoon: { backgroundColor: colors.surfaceLocked, borderColor: colors.borderFaint },
   perkIcon: { width: 46, height: 46, borderRadius: radius.lg, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   perkGlyph: { fontSize: 20 },
   perkTitle: { fontSize: 15, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
-  perkTitleSoon: { color: colors.textMuted },
   perkDesc: { fontSize: 11, color: colors.textDim, marginTop: 3, lineHeight: 16 },
   perkCheck: {
     width: 24,
@@ -342,16 +314,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  perkSoonPill: {
-    backgroundColor: colors.surfaceInput,
-    borderWidth: 1,
-    borderColor: colors.borderSubtle,
-    borderRadius: radius.sm,
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-  },
-  perkSoonText: { fontSize: 10, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
-
   purchaseBtn: {
     borderRadius: radius['2xl'],
     paddingVertical: 17,
