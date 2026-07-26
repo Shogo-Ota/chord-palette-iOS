@@ -4,4 +4,5 @@ export {
   remeterBeats,
   remeterChords,
   remeterScale,
+  rescaleBeats,
 } from './remeter';

@@ -22,12 +22,13 @@ import {
   menuStateForGroove,
   type GrooveVariant,
 } from '@/data/grooveMenu';
-import { sessionToPlaybackRequest } from '@/features/editor/playback';
+import { beatsPerBarFor, sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
 import { useLiveSoundReapply } from '@/features/editor/useLiveSoundReapply';
 import { useStyleDraft } from '@/features/editor/useStyleDraft';
 import { logger } from '@/lib/logger';
+import { rescaleBeats } from '@/lib/performance/meter';
 import { resolveVariant, variantsFor } from '@/lib/performance/variants';
 import { percentToVolume, volumeToPercent } from '@/lib/volume';
 import { track } from '@/services/analytics';
@@ -213,14 +214,21 @@ export default function GrooveScreen() {
     if (styleDraft.isDirty && audioService.getState() === 'playing') {
       const cur = getSession();
       if (cur.progression.length > 0) {
-        const startBeat = audioService.getCurrentBeat();
+        // The playhead is counted in the draft rhythm's beats. If the draft changed
+        // the meter, hand the committed plan the same place in the progression
+        // rather than the same number (see rescaleBeats).
+        const startBeat = rescaleBeats(
+          audioService.getCurrentBeat(),
+          beatsPerBarFor(sound.accompanimentPattern),
+          beatsPerBarFor(cur.accompanimentPattern),
+        );
         audioService
           .play({ ...sessionToPlaybackRequest(cur, true, getTier()), startBeat })
           .catch((e) => logger.error('Audio restore failed', { error: String(e) }));
       }
     }
     router.back();
-  }, [styleDraft.isDirty, router]);
+  }, [styleDraft.isDirty, router, sound.accompanimentPattern]);
 
   // Rebuild (or audition) when the draft instrument / groove / accompaniment
   // (or the device-level release-cut) changes.

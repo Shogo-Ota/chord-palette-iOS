@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
 
-import { chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
+import { beatsPerBarFor, chordPreviewRequest, sessionToPlaybackRequest } from '@/features/editor/playback';
 import type { EditorSession } from '@/features/editor/session';
+import { rescaleBeats } from '@/lib/performance/meter';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
 import { getTier } from '@/services/billing';
@@ -100,7 +101,14 @@ export function useLiveSoundReapply(
     }
 
     if (nativeState !== 'playing' || sound.progression.length === 0) return;
-    const startBeat = audioService.getCurrentBeat();
+    // The playhead is counted in the OLD rhythm's beats. A waltz or 6/8 bar is not
+    // four beats long, so carrying the raw number into the new plan would fold it to
+    // a different chord; rescale it to keep the same place in the progression.
+    const startBeat = rescaleBeats(
+      audioService.getCurrentBeat(),
+      beatsPerBarFor(prev.accompanimentPattern),
+      beatsPerBarFor(sound.accompanimentPattern),
+    );
     audioService
       .play({
         ...sessionToPlaybackRequest(sound, loopRef.current, getTier()),

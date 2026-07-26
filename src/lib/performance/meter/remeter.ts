@@ -30,6 +30,16 @@ export function authoringBeats(beats: number, fromBeatsPerBar: number): number {
   return scale === 0 ? beats : beats / scale;
 }
 
+/**
+ * Move a playhead from one rhythm's beat space into another's, keeping it at the
+ * same point in the progression. Swapping the rhythm mid-playback changes the loop
+ * length (four bars is 16 beats in 4/4, 12 in a waltz, 24 in 6/8), so carrying the
+ * raw beat across would fold it somewhere else and jump the chord.
+ */
+export function rescaleBeats(beat: number, fromBeatsPerBar: number, toBeatsPerBar: number): number {
+  return remeterBeats(authoringBeats(beat, fromBeatsPerBar), toBeatsPerBar);
+}
+
 /** Remeter a voice-led chord list. No-op when the meters already agree. */
 export function remeterChords(chords: PerfChord[], toBeatsPerBar: number): PerfChord[] {
   const scale = remeterScale(toBeatsPerBar);
