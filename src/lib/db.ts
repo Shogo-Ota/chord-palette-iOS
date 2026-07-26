@@ -49,6 +49,13 @@ const ADDED_COLUMNS: readonly {
         WHERE EXISTS (SELECT 1 FROM app_meta WHERE key = 'seeded');
     `,
   },
+  {
+    table: 'projects',
+    column: 'favorite',
+    // No backfill: favourites did not exist before this column, so nothing to
+    // grandfather — every row starts unfavourited whichever tier made it.
+    definition: 'INTEGER NOT NULL DEFAULT 0',
+  },
 ];
 
 async function addColumns(db: SQLite.SQLiteDatabase): Promise<void> {

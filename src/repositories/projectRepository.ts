@@ -179,6 +179,35 @@ export async function countCappedProjects(): Promise<number> {
   return row?.n ?? 0;
 }
 
+/**
+ * Ids the player has starred.
+ *
+ * Kept out of `Project` on purpose: a favourite is how the list screen is
+ * organised, not part of the composition, and threading a flag through the
+ * session, autosave and every project fixture would spread that concern across
+ * the app for no gain.
+ */
+export async function getFavoriteIds(): Promise<Set<string>> {
+  const db = await getDb();
+  const rows = await db.getAllAsync<{ id: string }>(
+    `SELECT id FROM projects WHERE favorite = 1;`,
+  );
+  return new Set(rows.map((r) => r.id));
+}
+
+export async function countFavorites(): Promise<number> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ n: number }>(
+    `SELECT COUNT(*) AS n FROM projects WHERE favorite = 1;`,
+  );
+  return row?.n ?? 0;
+}
+
+export async function setFavorite(id: string, on: boolean): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`UPDATE projects SET favorite = ? WHERE id = ?;`, [on ? 1 : 0, id]);
+}
+
 export async function deleteProject(id: string): Promise<void> {
   const db = await getDb();
   await db.runAsync(`DELETE FROM projects WHERE id = ?;`, [id]);

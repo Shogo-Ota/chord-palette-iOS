@@ -43,7 +43,7 @@ export const FREE_POLICY: TierPolicy = {
     // lib/db.ts), so the limit only ever governs what someone makes next. Nobody
     // loses a project or gets locked out of one they already wrote.
     projects: 5,
-    favourites: UNLIMITED,
+    favourites: 20,
     // 720p on a 9:16 frame. Fine for a phone timeline, visibly softer than the
     // 1080p a subscriber gets.
     videoHeight: 1280,

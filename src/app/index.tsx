@@ -11,10 +11,16 @@ import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
 import { Wordmark } from '@/components/Wordmark';
 import { loadAdminMode, setAdminMode, toggleAdminMode, useAdminMode } from '@/features/admin/adminMode';
 import { startNew } from '@/features/editor/session';
+import { favoriteLimitMessage, toggleFavorite } from '@/features/projects/favorites';
 import { saveAllowance, saveLimitMessage } from '@/features/projects/saveLimit';
 import { logger } from '@/lib/logger';
 import { toSummary } from '@/lib/projectSummary';
-import { deleteProject, duplicateProject, listProjects } from '@/repositories/projectRepository';
+import {
+  deleteProject,
+  duplicateProject,
+  getFavoriteIds,
+  listProjects,
+} from '@/repositories/projectRepository';
 import { track } from '@/services/analytics';
 import { useEntitlements } from '@/services/billing';
 import { colors, font, radius } from '@/theme/tokens';
@@ -27,6 +33,7 @@ export default function ProjectListScreen() {
   const [adminToast, setAdminToast] = useState<string | null>(null);
   const ent = useEntitlements();
   const upsell = useUpsellToast();
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     loadAdminMode();
@@ -76,6 +83,9 @@ export default function ProjectListScreen() {
         logger.error('Failed to load projects', { error: String(e) });
         setProjects([]);
       });
+    getFavoriteIds()
+      .then(setFavorites)
+      .catch(() => setFavorites(new Set()));
   }, []);
 
   useFocusEffect(
@@ -140,7 +150,28 @@ export default function ProjectListScreen() {
     ]);
   };
 
-  const summaries: ProjectSummary[] = (projects ?? []).map((p) => toSummary(p));
+  const onToggleFavorite = (id: string) => {
+    toggleFavorite(id, favorites.has(id), ent)
+      .then((result) => {
+        if (!result.ok) {
+          upsell.show(favoriteLimitMessage(result.limit));
+          return;
+        }
+        setFavorites((prev) => {
+          const next = new Set(prev);
+          if (result.favorited) next.add(id);
+          else next.delete(id);
+          return next;
+        });
+      })
+      .catch((e) => logger.error('Failed to toggle favourite', { error: String(e) }));
+  };
+
+  // Starred projects sit at the top; the rest keep the newest-first order the
+  // repository returns, so starring is a way to pin rather than a separate list.
+  const summaries: ProjectSummary[] = (projects ?? [])
+    .map((p) => toSummary(p))
+    .sort((a, b) => Number(favorites.has(b.id)) - Number(favorites.has(a.id)));
 
   return (
     <View style={styles.screenRoot}>
@@ -193,6 +224,8 @@ export default function ProjectListScreen() {
             <ProjectCard
               key={p.id}
               project={p}
+              favorited={favorites.has(p.id)}
+              onToggleFavorite={() => onToggleFavorite(p.id)}
               onPress={() => router.push(`/editor?id=${p.id}`)}
               onLongPress={() => {
                 const full = projects.find((x) => x.id === p.id);
@@ -215,11 +248,15 @@ export default function ProjectListScreen() {
 
 function ProjectCard({
   project,
+  favorited,
+  onToggleFavorite,
   onPress,
   onLongPress,
   onDelete,
 }: {
   project: ProjectSummary;
+  favorited: boolean;
+  onToggleFavorite: () => void;
   onPress: () => void;
   onLongPress: () => void;
   onDelete: () => void;
@@ -240,6 +277,20 @@ function ProjectCard({
             {project.updatedLabel}
           </Text>
         </View>
+        <Pressable
+          onPress={onToggleFavorite}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel={favorited ? 'お気に入りを解除' : 'お気に入りに追加'}
+          accessibilityHint={`${project.title} をお気に入り${favorited ? 'から外す' : 'に入れる'}`}
+          style={({ pressed }) => [styles.favBtn, pressed && styles.deleteBtnPressed]}>
+          <Icon
+            name={favorited ? 'bookmarkFilled' : 'bookmark'}
+            size={17}
+            color={favorited ? colors.goldText : colors.textMuted}
+            strokeWidth={2}
+          />
+        </Pressable>
         <Pressable
           onPress={onDelete}
           hitSlop={6}
@@ -373,6 +424,14 @@ const styles = StyleSheet.create({
     fontFamily: font.bold,
     fontWeight: '700',
     color: colors.textPrimary,
+  },
+  favBtn: {
+    width: 44,
+    height: 44,
+    marginTop: -4,
+    borderRadius: radius.lg,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   deleteBtn: {
     width: 44,

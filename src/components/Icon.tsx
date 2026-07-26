@@ -26,7 +26,8 @@ export type IconName =
   | 'pencil'
   | 'undo'
   | 'loop'
-  | 'bookmark';
+  | 'bookmark'
+  | 'bookmarkFilled';
 
 type Props = {
   name: IconName;
@@ -225,6 +226,12 @@ export function Icon({ name, size = 20, color = '#9aa3b5', strokeWidth = 2, ...r
       return (
         <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
           <Path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" {...stroke} strokeLinecap="butt" />
+        </Svg>
+      );
+    case 'bookmarkFilled':
+      return (
+        <Svg width={size} height={size} viewBox="0 0 24 24" {...rest}>
+          <Path d="M6 3h12a1 1 0 0 1 1 1v17l-7-4-7 4V4a1 1 0 0 1 1-1z" fill={color} />
         </Svg>
       );
     default:
