@@ -1,8 +1,9 @@
 /**
  * Natural-feel chord comp.
  *
- * The rhythm is distilled from `docs/midi-references/Good_Song_Chords_Top_10.mid`
- * (ch0 piano, ~199 bars) — attack timing only, never key / melody / chord choice:
+ * The rhythm is distilled from the GT-000 reference (ch0 piano, ~199 bars; see
+ * `docs/midi-references/Good_Song_Chords_Top_10.rhythm.json` for the analysis and
+ * the ledger for its provenance) — attack timing only, never key / melody / chord:
  *  - Chord body: straight quarters on beats 1–4 (aggregate bodyHeat ≥ 30% on
  *    16th steps 0/4/8/12).
  *  - Bass: off-beat eighths (&) — the walking &s that dominate the reference

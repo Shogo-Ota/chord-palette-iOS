@@ -40,6 +40,11 @@ yarn-error.*
 # temporary export / verification output
 dist-check/
 
+# Reference performances are third-party material: analyse them locally and
+# commit only the extracted features (see project/docs/music/GroundTruthMidi.md).
+*.mid
+*.midi
+
 # typescript
 *.tsbuildinfo
 

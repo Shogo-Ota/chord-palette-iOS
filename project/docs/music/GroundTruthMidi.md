@@ -29,6 +29,18 @@ OSS（GMD 等）は土台。**オーナーの耳が選んだ MIDI が優先**す
 
 ## 3. 登録一覧
 
+### GT-000 — Good Song Chords Top 10（10 曲集計）
+- Status: **reflected**（リズム骨格のみ）— `src/lib/performance/styles/naturalComp.ts` ほか
+  Natural bank 3 種のヒット位置。強弱・タイミング・長さは GT-001 が上書きしている。
+- Source: `Good Song Chords Top 10 v20220617a.mid`（ch0 piano, ≈199 小節）
+- License / Attribution: 第三者教材。**リポジトリにコミットしない**（`.mid` は削除済み）。
+  解析結果 `docs/midi-references/Good_Song_Chords_Top_10.rhythm.json` のみ保持する。
+- Style tags: pop, chord-comp, 90bpm hint
+- Analyzed: sprint 7–8
+- Features JSON: `docs/midi-references/Good_Song_Chords_Top_10.rhythm.json`
+- Extracted into: `PianoPatterns.md`（4 分ボディ + & ベースの骨格）
+- Notes: 抽出対象はアタック位置のみ。キー / メロディ / コード選択は学習していない。
+
 ### GT-001 — 日もすがら音楽と / Piano（Reo）
 - Status: **reflected** — 測定値は `src/lib/performance/groundTruth.ts`、
   Natural feel への適用は `src/lib/performance/styles/naturalComp.ts`（ベロシティ・アクセント幅・
