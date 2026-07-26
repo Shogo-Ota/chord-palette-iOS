@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
     gap: 6,
     opacity: 0.55,
   },
-  wmIcon: { width: 16, height: 16, borderRadius: 5 },
+  wmIcon: { width: 16, height: 16 },
   wmText: { fontSize: 9.5, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
 
   optRow: {
