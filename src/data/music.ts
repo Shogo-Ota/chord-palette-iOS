@@ -256,13 +256,19 @@ export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
 
 /**
  * Variation suffixes offered under the diatonic tab.
- * Free: sus4 / add9 (requirements §7). Pro: 6th / sus2 / 9 / 11 / 13.
+ *
+ * Free: sus4 / add9 / sus2. Pro: 6th / 9 / 11 / 13.
+ *
+ * sus2 sits with sus4 rather than with the tensions: it is the same suspension
+ * heard from the other side, it adds no note outside the triad's own scale, and a
+ * player who can reach for one and not the other is being taught a rule that does
+ * not exist.
  */
 export const CHORD_VARIATIONS = [
   { id: 'sus4', label: 'sus4', suffix: 'sus4', isPro: false },
   { id: 'add9', label: 'add9', suffix: 'add9', isPro: false },
   { id: '6', label: '6th', suffix: '6', isPro: true },
-  { id: 'sus2', label: 'sus2', suffix: 'sus2', isPro: true },
+  { id: 'sus2', label: 'sus2', suffix: 'sus2', isPro: false },
   { id: '9', label: '9', suffix: '9', isPro: true },
   { id: '11', label: '11', suffix: '11', isPro: true },
   { id: '13', label: '13', suffix: '13', isPro: true },

@@ -74,12 +74,14 @@ describe('diatonicLibrary', () => {
 });
 
 describe('CHORD_VARIATIONS (Pro gating, requirements §7)', () => {
-  it('offers sus4/add9 free and 6th/sus2/9/11/13 as Pro, without 5th', () => {
+  it('offers the suspensions free and the tensions as Pro, without 5th', () => {
     const ids = CHORD_VARIATIONS.map((v) => v.id);
     expect(ids).toEqual(['sus4', 'add9', '6', 'sus2', '9', '11', '13']);
     expect(ids).not.toContain('5');
+    // sus2 belongs with sus4: same suspension from the other side, nothing added
+    // from outside the triad's scale.
     const free = CHORD_VARIATIONS.filter((v) => !v.isPro).map((v) => v.id);
-    expect(free).toEqual(['sus4', 'add9']);
+    expect(free).toEqual(['sus4', 'add9', 'sus2']);
   });
 
   it('marks sus4/add9 free and 6th/9th Pro on built chords', () => {

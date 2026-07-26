@@ -8,6 +8,10 @@
  * Adding a member here is deliberately a compile error until both FREE_POLICY and
  * PRO_POLICY say what they think of it — see `policy.ts`. That is the point: the
  * free/paid boundary should never drift because someone forgot to decide.
+ *
+ * Keep the grain at the tier's level. Individual chord colours carry their own
+ * `isPro` flag in the variation catalog (`src/data/music.ts`); naming one of them
+ * here too would give the same question two answers.
  */
 export type Capability =
   /* Chords the library offers but does not hand to everyone. */
@@ -16,7 +20,6 @@ export type Capability =
   | 'chord.secondaryDominant'
   | 'chord.borrowed'
   | 'chord.slash'
-  | 'chord.sus2'
   /* Writing. */
   | 'key.transpose'
   | 'preset.pro'

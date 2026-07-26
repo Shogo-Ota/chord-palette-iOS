@@ -483,8 +483,8 @@ export default function EditorScreen() {
   }
 
   function changeKey(k: MajorKey) {
-    // Free tier is limited to C major; moving to any other key is Palette Pro.
-    // Returning to C is always allowed so a free user can never get stuck.
+    // Every key is free now; the guard stays so the gate has one owner
+    // (`lib/keyAccess`) if the boundary is ever revisited.
     if (isKeyLocked(k, ent)) {
       setKeyPickerOpen(false);
       upsell.show('C以外のキーは Palette Pro で解放されます');
@@ -1126,7 +1126,7 @@ export default function EditorScreen() {
                 );
               })}
             </View>
-            {!ent.palettePro && (
+            {MAJOR_KEYS.some((k) => isKeyLocked(k, ent)) && (
               <Text style={styles.keyFreeHint}>
                 無料版はCメジャーのみ。他のキーは Palette Pro で解放されます。
               </Text>

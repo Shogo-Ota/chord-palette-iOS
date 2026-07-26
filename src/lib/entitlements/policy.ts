@@ -16,9 +16,9 @@ export interface TierPolicy {
  *
  * The product rule these values encode: free is not a crippled paid tier, it is a
  * complete one. Everything needed to write a progression and share it — all 13
- * rhythms, all drum grooves, diatonic triads and sevenths, add9/sus4, chord
- * function display, 16 bars, video export — stays here. What sits behind the
- * paywall is *extra harmonic reach*, not permission to use the app.
+ * rhythms, all drum grooves, diatonic triads and sevenths, add9/sus4/sus2, key
+ * change, chord function display, 16 bars, video export — stays here. What sits
+ * behind the paywall is *extra harmonic reach*, not permission to use the app.
  */
 export const FREE_POLICY: TierPolicy = {
   id: 'free',
@@ -28,8 +28,9 @@ export const FREE_POLICY: TierPolicy = {
     'chord.secondaryDominant': false,
     'chord.borrowed': false,
     'chord.slash': false,
-    'chord.sus2': false,
-    'key.transpose': false,
+    // Writing in the key you actually sing in is not an advanced feature — a free
+    // player stuck in C major cannot use the app for their own song at all.
+    'key.transpose': true,
     'preset.pro': false,
     'suggestion.pro': false,
     'theory.substitution': false,
@@ -56,7 +57,6 @@ export const PRO_POLICY: TierPolicy = {
     'chord.secondaryDominant': true,
     'chord.borrowed': true,
     'chord.slash': true,
-    'chord.sus2': true,
     'key.transpose': true,
     'preset.pro': true,
     'suggestion.pro': true,

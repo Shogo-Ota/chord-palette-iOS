@@ -45,7 +45,7 @@ describe('variationTiers', () => {
 
   it('locks the Pro colours for a free player and frees them for a subscriber', () => {
     const free = variationTiers(base);
-    expect(free.core.filter((p) => !p.locked).map((p) => p.id)).toEqual(['sus4', 'add9']);
+    expect(free.core.filter((p) => !p.locked).map((p) => p.id)).toEqual(['sus4', 'add9', 'sus2']);
     expect(free.extended.every((p) => p.locked)).toBe(true);
     expect(free.altered.every((p) => p.locked)).toBe(true);
 

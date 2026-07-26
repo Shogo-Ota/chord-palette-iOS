@@ -4,22 +4,23 @@ import type { MajorKey } from '@/types';
 /**
  * Key access gating (pure domain, UI/Expo independent).
  *
- * Free tier is limited to **C major**. Selecting or transposing to any other
- * key is a Palette Pro feature (product decision 2026-07-21). Moving *to* a
- * free key (e.g. back to C) is always allowed so a lapsed/free user can never
- * get stuck in a locked key.
+ * Every major key is now free. The tier previously held all but C major, which
+ * meant a free player could not write in the key they sing in — a restriction
+ * that blocked the app's core use rather than reserving something extra.
+ *
+ * The gate stays wired to the `key.transpose` capability instead of being deleted,
+ * so the decision lives with the rest of the free/paid boundary and can be read
+ * (or revisited) in one place. `FREE_KEYS` is the floor underneath that: even with
+ * the capability withdrawn, moving *to* one of these is always allowed, so nobody
+ * can get stranded in a key they are not entitled to change out of.
  *
  * Presets carry no absolute key — they render in the current session key
- * (`startFromPreset`), so a free user's presets always sound in C. Only saved
- * projects can carry a non-C key; loading/playing those is not gated here,
- * only *changing* the key is.
- *
- * `FREE_KEYS` is an array so the free set can be widened later (e.g. add a
- * couple of common keys) without touching call sites.
+ * (`startFromPreset`). Only saved projects carry a key; loading and playing those
+ * is not gated here, only *changing* the key is.
  */
 export const FREE_KEYS: readonly MajorKey[] = ['C'];
 
-/** Whether `key` is playable/selectable without Palette Pro. */
+/** Whether `key` is reachable even without the transpose capability. */
 export function isKeyFree(key: MajorKey): boolean {
   return FREE_KEYS.includes(key);
 }
