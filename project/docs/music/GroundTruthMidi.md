@@ -30,7 +30,9 @@ OSS（GMD 等）は土台。**オーナーの耳が選んだ MIDI が優先**す
 ## 3. 登録一覧
 
 ### GT-001 — 日もすがら音楽と / Piano（Reo）
-- Status: **KB 反映済み / 実装反映は作業中**（`src/lib/performance/feel/groundTruth.ts` に集約予定）
+- Status: **reflected** — 測定値は `src/lib/performance/groundTruth.ts`、
+  Natural feel への適用は `src/lib/performance/styles/naturalComp.ts`（ベロシティ・アクセント幅・
+  ストラム幅・マイクロタイミング・ゲート）。Driving / Relaxed は未適用。
 - Source: `125BPM_allday_Piano.mid`  
   パス例: `...\MIDIデータ_日もすがら音楽と\125BPM_allday_Piano.mid`  
   関連: Reo - 日もすがら音楽と（Logic プロジェクト名より）

@@ -1,4 +1,4 @@
-import features from '../../../../../docs/midi-references/GT-001_125BPM_allday_Piano.features.json';
+import features from '../../../../docs/midi-references/GT-001_125BPM_allday_Piano.features.json';
 import { accentSpreadMidi, GT_001, velocitySpreadMidi } from '../groundTruth';
 
 /**
