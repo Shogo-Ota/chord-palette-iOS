@@ -18,10 +18,16 @@ import type { BillingProduct, BillingProvider, BillingResult } from './BillingPr
  * happens server-side (Convex) in Phase 4.
  */
 
-/** Default (would-be) store product for Palette Pro monthly (¥490 / 月). */
+/**
+ * Default (would-be) store product for Palette Pro monthly.
+ *
+ * The price must track the real App Store tier (¥500 — Apple has no ¥490 JPY
+ * tier), because this is what the paywall renders in dev builds and therefore
+ * what any screenshot taken from one would advertise.
+ */
 export const PALETTE_PRO_PRODUCT: BillingProduct = {
   productId: 'palette_pro_monthly',
-  priceString: '¥490',
+  priceString: '¥500',
   period: 'month',
   title: 'Palette Pro',
 };

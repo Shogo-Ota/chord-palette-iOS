@@ -18,7 +18,7 @@ import type { Entitlements } from '@/lib/entitlements';
 export interface BillingProduct {
   /** Store product id, e.g. 'palette_pro_monthly'. */
   productId: string;
-  /** Localized price string from the store, e.g. '¥490'. UI appends the period. */
+  /** Localized price string from the store, e.g. '¥500'. UI appends the period. */
   priceString: string;
   /** Subscription period. MVP ships monthly only; UI renders '/月'. */
   period: 'month';

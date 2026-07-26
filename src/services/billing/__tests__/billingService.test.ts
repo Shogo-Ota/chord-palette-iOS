@@ -25,7 +25,7 @@ describe('billingService.getOfferings', () => {
     expect(products).toHaveLength(1);
     expect(products[0]).toMatchObject({
       productId: 'palette_pro_monthly',
-      priceString: '¥490',
+      priceString: '¥500',
       period: 'month',
     });
   });
