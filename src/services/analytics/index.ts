@@ -25,6 +25,7 @@ export type AnalyticsEvent =
   | 'groove_selected'
   | 'accompaniment_selected'
   | 'accompaniment_variant_selected'
+  | 'style_card_selected'
   | 'instrument_selected'
   | 'export_duration_selected'
   | 'video_export_started'

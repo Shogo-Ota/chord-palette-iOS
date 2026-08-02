@@ -6,6 +6,7 @@ import { Pressable, StyleSheet, Text, useWindowDimensions, View } from 'react-na
 import { Chip, ChipRow, SectionTitle, VolumeSlider } from '@/components/controls';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { StyleCardGrid } from '@/components/StyleCardGrid';
 import {
   ACCOMPANIMENT_HINTS,
   ACCOMPANIMENT_IDS,
@@ -29,6 +30,11 @@ import { useLiveSoundReapply } from '@/features/editor/useLiveSoundReapply';
 import { useStyleDraft } from '@/features/editor/useStyleDraft';
 import { logger } from '@/lib/logger';
 import { rescaleBeats } from '@/lib/performance/meter';
+import {
+  STYLE_CARDS,
+  styleForRhythm,
+  type StyleCardDef,
+} from '@/lib/performance/model/styleCards';
 import { resolveVariant, variantsFor } from '@/lib/performance/variants';
 import { percentToVolume, volumeToPercent } from '@/lib/volume';
 import { track } from '@/services/analytics';
@@ -71,6 +77,10 @@ export default function GrooveScreen() {
   );
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const playing = playbackState === 'playing';
+
+  // 詳細設定 is closed by default (指示書 §16): the primary experience — style,
+  // audition, instrument, apply — must complete without ever opening it.
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   // Live channel volumes for the sliders. Seeded from the cached/persisted
   // levels so the UI reflects reality; the canonical store stays SQLite.
@@ -201,7 +211,7 @@ export default function GrooveScreen() {
       .catch((e) => logger.error('Audio play failed', { error: String(e) }));
   }
 
-  // Confirm: reflect the draft into the session (drives the editor's play
+  // Apply: reflect the draft into the session (drives the editor's play
   // button), then return. Audition audio already matches the draft.
   const handleConfirm = useCallback(() => {
     styleDraft.commit();
@@ -231,8 +241,26 @@ export default function GrooveScreen() {
   }, [styleDraft.isDirty, router, sound.accompanimentPattern]);
 
   // Rebuild (or audition) when the draft instrument / groove / accompaniment
-  // (or the device-level release-cut) changes.
+  // (or the device-level release-cut) changes. Auditioning keeps the playhead's
+  // place in the progression, so styles can be compared at the same spot.
   useLiveSoundReapply(playbackState, true, sound);
+
+  // The style card a rhythm belongs to (axis metadata) — a rhythm picked in
+  // 詳細設定 still lights up its style family.
+  const selectedStyleId = styleForRhythm(styleDraft.draft.accompanimentPattern);
+  const selectedCard = STYLE_CARDS.find((c) => c.id === selectedStyleId);
+
+  // Tapping a card selects its recommended rhythm + drum groove (指示書 §13:
+  // the style picks the rhythm internally; 詳細設定 can still override).
+  const handleStyleSelect = useCallback(
+    (card: StyleCardDef) => {
+      if (!card.recommends) return;
+      styleDraft.setAccompaniment(card.recommends.pattern);
+      styleDraft.setGroove(card.recommends.grooveId);
+      track('style_card_selected', { style: card.id });
+    },
+    [styleDraft],
+  );
 
   // Map the draft groove onto the two-level selector (primary family + Pop/Rock).
   const grooveMenuState = menuStateForGroove(styleDraft.draft.grooveId);
@@ -245,18 +273,30 @@ export default function GrooveScreen() {
     styleDraft.draft.accompanimentVariant,
   );
 
+  const auditionSummary = [
+    selectedCard?.label,
+    INSTRUMENT_LABELS[styleDraft.draft.instrumentId],
+    ACCOMPANIMENT_LABELS[styleDraft.draft.accompanimentPattern],
+  ]
+    .filter(Boolean)
+    .join(' ・ ');
+
   return (
     <ScreenScaffold>
       <View style={styles.header}>
         <Pressable style={styles.backBtn} onPress={handleBack} hitSlop={8}>
           <Icon name="chevronLeft" size={17} color={colors.textSecondary} strokeWidth={2.4} />
         </Pressable>
-        <Text style={styles.title}>スタイル（試聴）</Text>
+        <Text style={styles.title}>伴奏スタイル</Text>
       </View>
 
-      {/* current progression */}
+      {/* 1. Style — the screen's protagonist (指示書 §4/§6). */}
+      <SectionTitle>スタイルを選ぶ</SectionTitle>
+      <StyleCardGrid cards={STYLE_CARDS} selectedId={selectedStyleId} onSelect={handleStyleSelect} />
+
+      {/* 2. Current progression — context, deliberately quiet (指示書 §8). */}
       <View style={styles.progPanel}>
-        <Text style={styles.progLabel}>現在の進行</Text>
+        <Text style={styles.progLabel}>現在のコード進行</Text>
         {s.progression.length === 0 ? (
           <Text style={styles.progEmpty}>まだコードがありません</Text>
         ) : (
@@ -282,10 +322,13 @@ export default function GrooveScreen() {
         )}
       </View>
 
-      {/* audition (does not change the editor until 確定) */}
+      {/* 3. Audition — the heart of the screen (指示書 §7). */}
       <View style={styles.playPanel}>
-        <Text style={styles.auditionLabel}>試聴</Text>
-        <Pressable onPress={togglePlayback} disabled={s.progression.length === 0}>
+        <Pressable
+          onPress={togglePlayback}
+          disabled={s.progression.length === 0}
+          accessibilityRole="button"
+          accessibilityLabel={playing ? '試聴を停止' : 'このスタイルを試聴'}>
           <LinearGradient
             colors={primaryGradient}
             start={{ x: 0, y: 0 }}
@@ -298,33 +341,15 @@ export default function GrooveScreen() {
             <Icon name={playing ? 'pause' : 'play'} size={27} color="#fff" />
           </LinearGradient>
         </Pressable>
+        <Text style={styles.auditionTitle}>
+          {playing ? '試聴中 — タップで停止' : 'このスタイルを試聴'}
+        </Text>
         <Text style={styles.auditionHint}>
-          {s.progression.length === 0
-            ? 'コードを追加すると試聴できます'
-            : 'この画面で音を試せます（まだ反映されません）'}
+          {s.progression.length === 0 ? 'コードを追加すると試聴できます' : auditionSummary}
         </Text>
       </View>
 
-      {/* confirm: reflect the auditioned style to the editor's play button */}
-      <Pressable
-        onPress={handleConfirm}
-        accessibilityRole="button"
-        accessibilityLabel="この音色を確定してコード進行画面に反映"
-        style={styles.confirmWrap}>
-        <LinearGradient
-          colors={primaryGradient}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={[styles.confirmBtn, !styleDraft.isDirty && styles.confirmBtnIdle]}>
-          <Icon name="check" size={18} color="#fff" strokeWidth={2.6} />
-          <Text style={styles.confirmText}>この音色で確定</Text>
-        </LinearGradient>
-      </Pressable>
-      <Text style={styles.confirmNote}>
-        {styleDraft.isDirty ? '未確定の変更があります' : '現在の設定が反映済みです'}
-      </Text>
-
-      {/* 音色（現在は Piano / E.Piano のみ有効。追加は labels.ts の ENABLED_INSTRUMENTS） */}
+      {/* 4. Instrument — below style in the hierarchy (指示書 §9). */}
       <SectionTitle>音色</SectionTitle>
       <ChipRow
         options={ENABLED_INSTRUMENTS.map((id) => ({ key: id, label: INSTRUMENT_LABELS[id] }))}
@@ -333,115 +358,149 @@ export default function GrooveScreen() {
           styleDraft.setInstrument(k as InstrumentId);
           track('instrument_selected', { instrument: k });
         }}
-        style={{ marginBottom: 12 }}
+        style={{ marginBottom: 20 }}
         chipStyle={{ paddingVertical: 12 }}
       />
 
-      {/* サステイン: ON=音を伸ばす（内部 releaseCut=false）/ OFF=短く切る（releaseCut=true）。
-          リリースカットと同じ軸なので、UI はサステインに統一して表示だけ反転する。 */}
-      <SectionTitle>サステイン</SectionTitle>
-      <ChipRow
-        options={[
-          { key: 'on', label: 'ON' },
-          { key: 'off', label: 'OFF' },
-        ]}
-        value={s.releaseCut ? 'off' : 'on'}
-        onChange={(k) => handleReleaseCutChange(k === 'off')}
-        style={{ marginBottom: 20 }}
-      />
-
-      {/* 音域（オクターブ）: 標準=元の低め（最低音C2）/ +1oct=1オクターブ上げ（最低音C3）。
-          全体を平行移動するだけなので低音は常に本体の下に保たれる。 */}
-      <SectionTitle>音域（オクターブ）</SectionTitle>
-      <ChipRow
-        options={[
-          { key: '0', label: '標準' },
-          { key: '1', label: '+1 オクターブ' },
-        ]}
-        value={s.octaveShift >= 1 ? '1' : '0'}
-        onChange={(k) => handleOctaveChange(Number(k))}
-        style={{ marginBottom: 20 }}
-      />
-
-      {/* ドラムグルーヴ（8/16 Beat は Pop / Rock の強弱を下段で切替） */}
-      <SectionTitle>ドラムグルーヴ</SectionTitle>
-      <View style={styles.grooveSection}>
-        <View style={styles.grid}>
-          {GROOVE_MENU.map((item) => (
-            <Chip
-              key={item.key}
-              label={item.label}
-              active={item.key === grooveMenuState.itemKey}
-              onPress={() => {
-                const g = grooveForItem(item, grooveVariant);
-                styleDraft.setGroove(g);
-                track('groove_selected', { groove: g });
-              }}
-              style={{ width: grooveChipW }}
-              textStyle={{ fontSize: 13 }}
-            />
-          ))}
+      {/* 5. 詳細設定 — closed by default; the main flow never needs it (指示書 §10/§16). */}
+      <Pressable
+        onPress={() => setAdvancedOpen((v) => !v)}
+        accessibilityRole="button"
+        accessibilityState={{ expanded: advancedOpen }}
+        style={styles.advancedHeader}>
+        <Text style={styles.advancedTitle}>詳細設定</Text>
+        <View style={{ transform: [{ rotate: advancedOpen ? '180deg' : '0deg' }] }}>
+          <Icon name="chevronDown" size={15} color={colors.textFaint} strokeWidth={2.5} />
         </View>
-        {selectedGrooveItem?.variants && (
+      </Pressable>
+
+      {advancedOpen && (
+        <View style={styles.advancedBody}>
+          {/* 伴奏パターン（リズムは 2 列グリッド。スタイルカードの内側の上級者選択） */}
+          <SectionTitle>伴奏パターン</SectionTitle>
+          <View style={styles.grid}>
+            {ACCOMPANIMENT_IDS.map((id) => (
+              <Chip
+                key={id}
+                label={ACCOMPANIMENT_LABELS[id]}
+                active={id === styleDraft.draft.accompanimentPattern}
+                onPress={() => {
+                  styleDraft.setAccompaniment(id);
+                  track('accompaniment_selected', { accompaniment: id });
+                }}
+                style={{ width: grooveChipW }}
+                textStyle={{ fontSize: 13 }}
+              />
+            ))}
+          </View>
+          <Text style={styles.patternHint}>
+            {ACCOMPANIMENT_HINTS[styleDraft.draft.accompanimentPattern]}
+          </Text>
           <ChipRow
-            options={GROOVE_VARIANTS.map((v) => ({ key: v, label: GROOVE_VARIANT_LABELS[v] }))}
-            value={grooveVariant}
+            options={accompanimentVariants.map((v) => ({ key: v.id, label: v.label }))}
+            value={styleDraft.draft.accompanimentVariant}
             onChange={(k) => {
-              const variants = selectedGrooveItem.variants;
-              if (variants) {
-                const g = variants[k as GrooveVariant];
-                styleDraft.setGroove(g);
-                track('groove_selected', { groove: g });
-              }
+              styleDraft.setAccompanimentVariant(k);
+              track('accompaniment_variant_selected', { variant: k });
             }}
-            style={{ marginTop: 8 }}
           />
-        )}
-      </View>
+          <Text style={styles.variantHint}>{selectedVariant.hint}</Text>
 
-      {/* 伴奏パターン（リズムは 2 列グリッド。ChipRow は等幅なので数が増えると潰れる） */}
-      <SectionTitle>伴奏パターン</SectionTitle>
-      <View style={styles.grid}>
-        {ACCOMPANIMENT_IDS.map((id) => (
-          <Chip
-            key={id}
-            label={ACCOMPANIMENT_LABELS[id]}
-            active={id === styleDraft.draft.accompanimentPattern}
-            onPress={() => {
-              styleDraft.setAccompaniment(id);
-              track('accompaniment_selected', { accompaniment: id });
-            }}
-            style={{ width: grooveChipW }}
-            textStyle={{ fontSize: 13 }}
+          {/* ドラムグルーヴ */}
+          <SectionTitle>ドラムグルーヴ</SectionTitle>
+          <View style={styles.grooveSection}>
+            <View style={styles.grid}>
+              {GROOVE_MENU.map((item) => (
+                <Chip
+                  key={item.key}
+                  label={item.label}
+                  active={item.key === grooveMenuState.itemKey}
+                  onPress={() => {
+                    const g = grooveForItem(item, grooveVariant);
+                    styleDraft.setGroove(g);
+                    track('groove_selected', { groove: g });
+                  }}
+                  style={{ width: grooveChipW }}
+                  textStyle={{ fontSize: 13 }}
+                />
+              ))}
+            </View>
+            {selectedGrooveItem?.variants && (
+              <ChipRow
+                options={GROOVE_VARIANTS.map((v) => ({ key: v, label: GROOVE_VARIANT_LABELS[v] }))}
+                value={grooveVariant}
+                onChange={(k) => {
+                  const variants = selectedGrooveItem.variants;
+                  if (variants) {
+                    const g = variants[k as GrooveVariant];
+                    styleDraft.setGroove(g);
+                    track('groove_selected', { groove: g });
+                  }
+                }}
+                style={{ marginTop: 8 }}
+              />
+            )}
+          </View>
+
+          {/* 余韻（内部 releaseCut の反転表示。指示書 §11: 技術用語を出さない） */}
+          <SectionTitle>余韻</SectionTitle>
+          <ChipRow
+            options={[
+              { key: 'on', label: '標準（伸ばす）' },
+              { key: 'off', label: '短く切る' },
+            ]}
+            value={s.releaseCut ? 'off' : 'on'}
+            onChange={(k) => handleReleaseCutChange(k === 'off')}
+            style={{ marginBottom: 20 }}
           />
-        ))}
-      </View>
-      <Text style={styles.patternHint}>
-        {ACCOMPANIMENT_HINTS[styleDraft.draft.accompanimentPattern]}
+
+          {/* 音域（指示書 §12: オクターブという言葉を前面に出さない） */}
+          <SectionTitle>音域</SectionTitle>
+          <ChipRow
+            options={[
+              { key: '0', label: '標準' },
+              { key: '1', label: '高め' },
+            ]}
+            value={s.octaveShift >= 1 ? '1' : '0'}
+            onChange={(k) => handleOctaveChange(Number(k))}
+            style={{ marginBottom: 20 }}
+          />
+
+          {/* 伴奏バランス（指示書 §15） */}
+          <SectionTitle>伴奏バランス</SectionTitle>
+          <View style={styles.volPanel}>
+            <VolumeSlider
+              label="コード音"
+              percent={volumeToPercent(volumes.chord)}
+              onChange={(p) => handleVolumeChange('chord', p)}
+            />
+            <VolumeSlider
+              label="ドラム"
+              percent={volumeToPercent(volumes.drum)}
+              onChange={(p) => handleVolumeChange('drum', p)}
+            />
+          </View>
+        </View>
+      )}
+
+      {/* 6. Apply — the user is choosing a whole setup, not just a tone (指示書 §17). */}
+      <Pressable
+        onPress={handleConfirm}
+        accessibilityRole="button"
+        accessibilityLabel="この設定を確定してコード進行画面に反映"
+        style={styles.confirmWrap}>
+        <LinearGradient
+          colors={primaryGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.confirmBtn, !styleDraft.isDirty && styles.confirmBtnIdle]}>
+          <Icon name="check" size={18} color="#fff" strokeWidth={2.6} />
+          <Text style={styles.confirmText}>この設定を使う</Text>
+        </LinearGradient>
+      </Pressable>
+      <Text style={styles.confirmNote}>
+        {styleDraft.isDirty ? '未確定の変更があります' : '現在の設定が反映済みです'}
       </Text>
-      <ChipRow
-        options={accompanimentVariants.map((v) => ({ key: v.id, label: v.label }))}
-        value={styleDraft.draft.accompanimentVariant}
-        onChange={(k) => {
-          styleDraft.setAccompanimentVariant(k);
-          track('accompaniment_variant_selected', { variant: k });
-        }}
-      />
-      <Text style={styles.variantHint}>{selectedVariant.hint}</Text>
-
-      {/* 音量 */}
-      <View style={styles.volPanel}>
-        <VolumeSlider
-          label="コード音"
-          percent={volumeToPercent(volumes.chord)}
-          onChange={(p) => handleVolumeChange('chord', p)}
-        />
-        <VolumeSlider
-          label="ドラム"
-          percent={volumeToPercent(volumes.drum)}
-          onChange={(p) => handleVolumeChange('drum', p)}
-        />
-      </View>
     </ScreenScaffold>
   );
 }
@@ -465,38 +524,54 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.borderSubtle,
     borderRadius: radius['2xl'],
-    paddingVertical: 14,
+    paddingVertical: 12,
     paddingHorizontal: 15,
-    marginBottom: 16,
+    marginTop: 16,
+    marginBottom: 14,
   },
-  progLabel: { fontSize: 10.5, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600', marginBottom: 10 },
+  progLabel: { fontSize: 10.5, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600', marginBottom: 8 },
   progEmpty: { fontSize: 12.5, color: colors.textDim },
   progRow: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  progChip: { flex: 1, borderWidth: 1, borderRadius: radius.md, paddingVertical: 8, alignItems: 'center' },
-  progChipText: { fontSize: 13, fontFamily: font.bold, fontWeight: '700' },
+  progChip: { flex: 1, borderWidth: 1, borderRadius: radius.md, paddingVertical: 7, alignItems: 'center' },
+  progChipText: { fontSize: 12.5, fontFamily: font.bold, fontWeight: '700' },
   progArrow: { color: colors.textFaintest },
 
   playPanel: {
     flexDirection: 'column',
     alignItems: 'center',
     justifyContent: 'center',
-    gap: 10,
+    gap: 9,
     backgroundColor: colors.surfacePanel,
     borderWidth: 1,
     borderColor: colors.borderSubtle,
     borderRadius: radius['2xl'],
-    paddingVertical: 16,
-    marginBottom: 12,
+    paddingVertical: 18,
+    marginBottom: 20,
   },
-  auditionLabel: {
-    fontSize: 11,
+  auditionTitle: {
+    fontSize: 13.5,
     fontFamily: font.bold,
     fontWeight: '700',
-    color: colors.textMuted,
-    letterSpacing: 1.5,
+    color: colors.textPrimary,
   },
   auditionHint: { fontSize: 11.5, color: colors.textFaint, fontFamily: font.medium },
-  confirmWrap: { borderRadius: radius.pill, marginBottom: 6 },
+
+  advancedHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    backgroundColor: colors.surfacePanel,
+    borderWidth: 1,
+    borderColor: colors.borderSubtle,
+    borderRadius: radius.xl,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
+    marginBottom: 12,
+  },
+  advancedTitle: { fontSize: 13.5, fontFamily: font.bold, fontWeight: '700', color: colors.textSecondary },
+  advancedBody: { marginBottom: 8 },
+
+  confirmWrap: { borderRadius: radius.pill, marginTop: 8, marginBottom: 6 },
   confirmBtn: {
     flexDirection: 'row',
     alignItems: 'center',
