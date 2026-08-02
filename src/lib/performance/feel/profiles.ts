@@ -35,11 +35,14 @@ export const DRIVING_VARIATION: VariationProfile = {
 
 // Relaxed = laid-back but slightly fuller than before (a touch fewer rests/ties and
 // bass-only bars) so a few more notes sing without losing the space.
+// Ballad Engine v1 (ballad_engine_spec §9): the 4-bar phrase breathes MORE at its
+// end (twoFourBar up) while mid-phrase stabs stay scarce (extraStab down) — the
+// phrase-end "呼吸" comes from thinning bar 4, not from adding notes.
 export const RELAXED_VARIATION: VariationProfile = {
   rests: { probability: 0.26, maxPerPhrase: 2 },
   ties: { probability: 0.38, maxPerPhrase: 2 },
-  twoFourBar: { probability: 0.25, maxPerPhrase: 1 },
-  phraseFill: { sustainFinal: true, extraStabProbability: 0.28 },
+  twoFourBar: { probability: 0.45, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: true, extraStabProbability: 0.2 },
   bassOnly: { probability: 0.1, maxPerPhrase: 1 },
 };
 

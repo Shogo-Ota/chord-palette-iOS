@@ -176,8 +176,22 @@
 
 ---
 
-## 次のアクション（承認待ち・実装はまだ行わない）
+## 14. v1 実装状況（2026-08-02）
 
-1. 本仕様の仮説 H1〜H10 と v1 スコープ（§11）のオーナー確認
+オーナー承認（「どんどん進めて」）を受け、§11 の v1 スコープを JS 側のみで実装した。
+
+| §11 項目 | 実装 | 場所 |
+|---|---|---|
+| 1. `ballad.hold` / `ballad.arp.slow` | `relaxed` 標準は据え置き（既存の hold 相当）。新バリアント `relaxed.arpSlow`（ラベル「流れ」: 8分で1〜2拍を上行→3拍目保持）を追加 | `variants/catalog.ts` |
+| 2. ベース `BALLAD_WARM` | `relaxed` を root-only から `BALLAD_WARM`（root / 弱拍で5度、approach 0.15・passing なし）へ変更 | `bass/profiles.ts` |
+| 3. ドラム流用可否 | **流用で足りる**と判断。`relaxed` はプレイヤーのグルーヴ選択をそのまま使い、`balladBrush` 追加は保留（不足の実機報告があれば v1.1 で検討） | `rhythms/drumPattern.ts`（変更なし） |
+| 4. フレーズ終端の音数減 | `RELAXED_VARIATION` の `twoFourBar` 0.25→0.45、`extraStab` 0.28→0.2（4小節目の呼吸を深く、途中の付加は控えめに） | `feel/profiles.ts` |
+| 5. キャリブレーションテスト | レイドバック微時間・legato ゲート・ベロシティ中心・BALLAD_WARM・arpSlow 挙動を凍結 | `__tests__/balladCalibration.test.ts` |
+
+検証: 全テストスイート 63 / 1615 件パス（`bassLine.test.ts` は relaxed の root-only 固定を BALLAD_WARM 前提へ更新）。§12-3 の聴感チェック（実機）はオーナー実施待ち。
+
+## 次のアクション
+
+1. §12-3 の聴感チェック（実機・Dev Client）をオーナーが実施し、H4/H6/H7/H10 を主観評価
 2. §13 に基づく教材 MIDI の用意方法の決定（オーナー打ち込み or ライセンス素材購入）
-3. 承認後、v1 実装（見込み: JS 側 2〜4時間、ドラム追加が必要な場合はネイティブ+EAS ビルド待ち 30分程度を追加）
+3. 教材が揃い次第、`MIDI_INGEST=1` で `LibraryPattern` 化し、仮説と突き合わせて v1.1 を調整

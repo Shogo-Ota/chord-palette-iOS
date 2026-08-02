@@ -47,7 +47,7 @@ const chordOf = (s: Strike): ChordTones => (s.pitches[0] === 41 ? F_TONES : C_TO
 
 describe('planner unit contract', () => {
   it('is the exact identity for root-only profiles (textures, legacy ids)', () => {
-    for (const styleId of ['block', 'arpeggio', 'relaxed', 'eightBeat', 'unknown']) {
+    for (const styleId of ['block', 'arpeggio', 'eightBeat', 'unknown']) {
       const strikes = twoSegments();
       expect(planBassLine(strikes, { seed: 7, styleId, chordOf })).toBe(strikes);
     }
@@ -171,7 +171,7 @@ describe('engine-level guarantees across the catalog', () => {
   });
 
   it('the textures stay exactly on the root (unchanged sound)', () => {
-    for (const pattern of ['block', 'arpeggio', 'relaxed']) {
+    for (const pattern of ['block', 'arpeggio']) {
       const { notes, chords } = renderBass(pattern, 7);
       for (const n of notes) {
         const chord = activeChord(chords, n.timeBeat)!;
@@ -179,5 +179,25 @@ describe('engine-level guarantees across the catalog', () => {
         expect(n.pitch).toBe(anchor);
       }
     }
+  });
+
+  // Ballad Engine v1 (ballad_engine_spec §4): relaxed warmed up from root-only to
+  // BALLAD_WARM — only chord tones (its sparse grid suppresses connectives via the
+  // planner's 1-beat guard), roots on chord arrivals, and SOME movement to a fifth.
+  it('relaxed moves gently: chord tones only, root on arrivals, fifths appear', () => {
+    let sawFifth = false;
+    for (const seed of [1, 2, 3, 4, 5, 6, 7, 8]) {
+      const { notes, chords } = renderBass('relaxed', seed);
+      for (const n of notes) {
+        const chord = activeChord(chords, n.timeBeat)!;
+        const allowed = new Set(
+          [...chord.bassMidi, ...chord.bodyMidi, ...(chord.arpMidi ?? [])].map((p) => p % 12),
+        );
+        expect(allowed.has(((n.pitch % 12) + 12) % 12)).toBe(true);
+        const anchor = Math.max(...chord.bassMidi);
+        if (n.pitch % 12 !== anchor % 12) sawFifth = true;
+      }
+    }
+    expect(sawFifth).toBe(true);
   });
 });

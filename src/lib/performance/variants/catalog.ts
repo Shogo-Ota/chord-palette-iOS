@@ -44,6 +44,16 @@ const QUARTERS_ON_8: StepPattern = {
 };
 
 /**
+ * Ballad slow arpeggio (ballad_engine_spec §3 `ballad.arp.slow`): four 8ths climb
+ * through beats 1–2, then one held answer on beat 3 — the rise breathes, the hold
+ * rings. Accents taper as the line climbs so the landing chord stays the peak.
+ */
+const BALLAD_ARP_SLOW: StepPattern = {
+  hits: [X, X, X, X, X, o, o, o],
+  accent: [0.85, 0.52, 0.6, 0.55, 0.75, 0.4, 0.4, 0.4],
+};
+
+/**
  * Sparser 16th comps: keep beat heads, drop half the "a" pushes so rests open the
  * groove (city-pop / R&B breathing room).
  */
@@ -184,6 +194,17 @@ const RELAXED_VARIANTS: readonly AccompanimentVariant[] = [
       top: null,
       arpeggio: { direction: 'up' },
       gate: { min: 0.7, max: 0.9, sustain: 'normal' },
+    },
+  },
+  {
+    id: 'relaxed.arpSlow',
+    label: '流れ',
+    hint: '8 分で上がって、3 拍目で伸ばす',
+    refine: {
+      chord: BALLAD_ARP_SLOW,
+      top: null,
+      arpeggio: { direction: 'up' },
+      gate: { min: 0.72, max: 0.92, sustain: 'legato' },
     },
   },
 ];

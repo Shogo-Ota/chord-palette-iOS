@@ -1,12 +1,14 @@
 /**
  * Bass movement profiles per rhythm (implementation_v1.01 Phase 7).
  *
- * Deliberately conservative: the two textures (block / arpeggio) and the ballad
- * feel keep today's root-only bass — their bass is sparse and the stillness is
- * the point — while the moving rhythms get root–fifth alternation and the driving
- * ones add the octave pump. Approach notes appear more the more forward-leaning
- * the rhythm is. An id outside this table (legacy direct styles, fixtures)
- * resolves to root-only, i.e. EXACTLY the pre-v1.01 sound.
+ * Deliberately conservative: the two textures (block / arpeggio) keep today's
+ * root-only bass — their bass is sparse and the stillness is the point — while
+ * the moving rhythms get root–fifth alternation and the driving ones add the
+ * octave pump. Approach notes appear more the more forward-leaning the rhythm
+ * is. The ballad feel (`relaxed`) warmed up in Ballad Engine v1: mostly root,
+ * with the odd drop to the fifth late in a chord (ballad_engine_spec §4). An id
+ * outside this table (legacy direct styles, fixtures) resolves to root-only,
+ * i.e. EXACTLY the pre-v1.01 sound.
  */
 
 import type { BassProfile } from './types';
@@ -23,6 +25,18 @@ const BALLAD_LINE: BassProfile = {
   figures: ['rootFifth'],
   approachChance: 0.3,
   passing: true,
+};
+
+/**
+ * Ballad Engine v1 (ballad_engine_spec §4 BALLAD_WARM): roughly half the chords
+ * stay home on the root, the other half drop to the fifth on the weak strike.
+ * Approach kept rare — and the planner's 1-beat guard suppresses it entirely on
+ * this feel's sparse half-bar grid — so the stillness survives the movement.
+ */
+const BALLAD_WARM: BassProfile = {
+  figures: ['rootFifth', 'rootOnly'],
+  approachChance: 0.15,
+  passing: false,
 };
 
 /** Root–fifth (sometimes staying home) with regular approach pushes (pop/band). */
@@ -42,7 +56,7 @@ const DRIVE_LINE: BassProfile = {
 const PROFILE_OF: Record<string, BassProfile> = {
   block: ROOT_ONLY,
   arpeggio: ROOT_ONLY,
-  relaxed: ROOT_ONLY,
+  relaxed: BALLAD_WARM,
   sixEight: BALLAD_LINE,
   waltz: BALLAD_LINE,
   bossa: BALLAD_LINE,
