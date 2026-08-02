@@ -122,3 +122,51 @@ describe('applyVariation — musical effects', () => {
     }
   });
 });
+
+describe('applyTwoFourBar — phrase-position variation (v1.01 Phase 8)', () => {
+  // Only the position rule fires, at probability 1, over two 4-bar phrases.
+  const POSITION_ONLY: VariationProfile = {
+    ...NOOP,
+    twoFourBar: { probability: 1, maxPerPhrase: 1 },
+  };
+  const CTX8: VariationContext = { ...CTX, bars: 8 };
+
+  function keysOf(list: Strike[]): Set<string> {
+    return new Set(list.map((s) => `${s.bar}:${s.step}`));
+  }
+
+  it('adds stabs only on bars 2–3 and thins only bar 4 of each phrase', () => {
+    const input = chordStrikes(8);
+    const out = applyVariation({ chord: input }, EIGHT_BEAT, CTX8, POSITION_ONLY, 21);
+    const before = keysOf(input);
+    const after = keysOf(out.chord ?? []);
+
+    for (const key of after) {
+      if (before.has(key)) continue;
+      const bar = Number(key.split(':')[0]);
+      expect([1, 2, 5, 6]).toContain(bar); // added = small change, bars 2–3
+    }
+    for (const key of before) {
+      if (after.has(key)) continue;
+      const [bar, step] = key.split(':').map(Number);
+      expect(bar % 4).toBe(3); // removed = connecting change, bar 4 only
+      expect(step).not.toBe(0); // never the bar head
+    }
+  });
+
+  it('leaves the progression’s final bar to the phrase-end sustain', () => {
+    const input = chordStrikes(8);
+    const out = applyVariation({ chord: input }, EIGHT_BEAT, CTX8, POSITION_ONLY, 21);
+    const finalBefore = input.filter((s) => s.bar === 7).length;
+    const finalAfter = (out.chord ?? []).filter((s) => s.bar === 7).length;
+    expect(finalAfter).toBe(finalBefore);
+  });
+
+  it('the connecting change actually fires on the first phrase boundary', () => {
+    const input = chordStrikes(8);
+    const out = applyVariation({ chord: input }, EIGHT_BEAT, CTX8, POSITION_ONLY, 21);
+    const bar3Before = input.filter((s) => s.bar === 3).length;
+    const bar3After = (out.chord ?? []).filter((s) => s.bar === 3).length;
+    expect(bar3After).toBe(bar3Before - 1);
+  });
+});
