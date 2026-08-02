@@ -1,0 +1,617 @@
+{
+  "conditions": {
+    "progression": "C - G - Am - F",
+    "bpm": 90,
+    "timeSignature": {
+      "beatsPerBar": 4,
+      "beatUnit": 4
+    },
+    "style": "ballad",
+    "pattern": "relaxed",
+    "instrument": "piano",
+    "seed": 20260803,
+    "engineVersion": "1.0.0-performance",
+    "generatedAt": "2026-08-03T00:00:00.000Z",
+    "baselineVersion": "v1",
+    "drums": true
+  },
+  "events": [
+    {
+      "part": "bass",
+      "noteNumber": 36,
+      "startBeat": 0,
+      "durationBeats": 1.818857280947268,
+      "velocity": 78,
+      "channel": 1,
+      "barIndex": 0,
+      "beatPosition": 0
+    },
+    {
+      "part": "kick",
+      "noteNumber": 36,
+      "startBeat": 0,
+      "durationBeats": 3.403793751746416,
+      "velocity": 98,
+      "channel": 9,
+      "barIndex": 0,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 0,
+      "durationBeats": 0.9653279154375195,
+      "velocity": 58,
+      "channel": 9,
+      "barIndex": 0,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 52,
+      "startBeat": 0,
+      "durationBeats": 1.9252584095485508,
+      "velocity": 69,
+      "channel": 0,
+      "barIndex": 0,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 55,
+      "startBeat": 0,
+      "durationBeats": 1.912646079994738,
+      "velocity": 82,
+      "channel": 0,
+      "barIndex": 0,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 0.9928550890831475,
+      "durationBeats": 0.9148183893132955,
+      "velocity": 47,
+      "channel": 9,
+      "barIndex": 0,
+      "beatPosition": 0.9928550890831475
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 1.9824786626727344,
+      "durationBeats": 0.8803739330451935,
+      "velocity": 59,
+      "channel": 9,
+      "barIndex": 0,
+      "beatPosition": 1.9824786626727344
+    },
+    {
+      "part": "bass",
+      "noteNumber": 43,
+      "startBeat": 2.000769824175741,
+      "durationBeats": 1.7487904406152666,
+      "velocity": 83,
+      "channel": 1,
+      "barIndex": 0,
+      "beatPosition": 2.000769824175741
+    },
+    {
+      "part": "top",
+      "noteNumber": 64,
+      "startBeat": 2.0009267587413384,
+      "durationBeats": 3.498443725965917,
+      "velocity": 71,
+      "channel": 0,
+      "barIndex": 0,
+      "beatPosition": 2.0009267587413384
+    },
+    {
+      "part": "chord",
+      "noteNumber": 52,
+      "startBeat": 2.0036584176602874,
+      "durationBeats": 1.8951090490072966,
+      "velocity": 62,
+      "channel": 0,
+      "barIndex": 0,
+      "beatPosition": 2.0036584176602874
+    },
+    {
+      "part": "chord",
+      "noteNumber": 55,
+      "startBeat": 2.0036584176602874,
+      "durationBeats": 1.8834401236101985,
+      "velocity": 77,
+      "channel": 0,
+      "barIndex": 0,
+      "beatPosition": 2.0036584176602874
+    },
+    {
+      "part": "snare",
+      "noteNumber": 38,
+      "startBeat": 2.0185949045271605,
+      "durationBeats": 3.447462436966598,
+      "velocity": 80,
+      "channel": 9,
+      "barIndex": 0,
+      "beatPosition": 2.0185949045271605
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 2.9902666179599935,
+      "durationBeats": 0.8958257853519171,
+      "velocity": 46,
+      "channel": 9,
+      "barIndex": 0,
+      "beatPosition": 2.9902666179599935
+    },
+    {
+      "part": "kick",
+      "noteNumber": 36,
+      "startBeat": 4,
+      "durationBeats": 3.8406209122017025,
+      "velocity": 94,
+      "channel": 9,
+      "barIndex": 1,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 4,
+      "durationBeats": 0.9088012945000082,
+      "velocity": 65,
+      "channel": 9,
+      "barIndex": 1,
+      "beatPosition": 0
+    },
+    {
+      "part": "bass",
+      "noteNumber": 43,
+      "startBeat": 4,
+      "durationBeats": 1.934961557984352,
+      "velocity": 94,
+      "channel": 1,
+      "barIndex": 1,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 50,
+      "startBeat": 4,
+      "durationBeats": 1.7074838680773974,
+      "velocity": 74,
+      "channel": 0,
+      "barIndex": 1,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 59,
+      "startBeat": 4,
+      "durationBeats": 1.7389494635164737,
+      "velocity": 78,
+      "channel": 0,
+      "barIndex": 1,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 5.0051887816049465,
+      "durationBeats": 0.8984545778110623,
+      "velocity": 63,
+      "channel": 9,
+      "barIndex": 1,
+      "beatPosition": 1.0051887816049465
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 5.988280685107085,
+      "durationBeats": 0.9328502274584025,
+      "velocity": 65,
+      "channel": 9,
+      "barIndex": 1,
+      "beatPosition": 1.9882806851070853
+    },
+    {
+      "part": "top",
+      "noteNumber": 59,
+      "startBeat": 6.006403723559418,
+      "durationBeats": 3.4323617146536707,
+      "velocity": 68,
+      "channel": 0,
+      "barIndex": 1,
+      "beatPosition": 2.0064037235594183
+    },
+    {
+      "part": "bass",
+      "noteNumber": 50,
+      "startBeat": 6.009654895437784,
+      "durationBeats": 1.9256034210324287,
+      "velocity": 89,
+      "channel": 1,
+      "barIndex": 1,
+      "beatPosition": 2.0096548954377838
+    },
+    {
+      "part": "chord",
+      "noteNumber": 50,
+      "startBeat": 6.021201058037344,
+      "durationBeats": 1.921206421032548,
+      "velocity": 68,
+      "channel": 0,
+      "barIndex": 1,
+      "beatPosition": 2.0212010580373443
+    },
+    {
+      "part": "chord",
+      "noteNumber": 59,
+      "startBeat": 6.021201058037344,
+      "durationBeats": 1.8949671509303152,
+      "velocity": 73,
+      "channel": 0,
+      "barIndex": 1,
+      "beatPosition": 2.0212010580373443
+    },
+    {
+      "part": "snare",
+      "noteNumber": 38,
+      "startBeat": 6.023096068005463,
+      "durationBeats": 3.79839872688055,
+      "velocity": 97,
+      "channel": 9,
+      "barIndex": 1,
+      "beatPosition": 2.0230960680054633
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 7.0050402470472,
+      "durationBeats": 0.8848721671011298,
+      "velocity": 63,
+      "channel": 9,
+      "barIndex": 1,
+      "beatPosition": 3.0050402470471997
+    },
+    {
+      "part": "kick",
+      "noteNumber": 36,
+      "startBeat": 8,
+      "durationBeats": 3.5982382729649545,
+      "velocity": 88,
+      "channel": 9,
+      "barIndex": 2,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 8,
+      "durationBeats": 0.9054351316019893,
+      "velocity": 60,
+      "channel": 9,
+      "barIndex": 2,
+      "beatPosition": 0
+    },
+    {
+      "part": "bass",
+      "noteNumber": 45,
+      "startBeat": 8,
+      "durationBeats": 1.7200303444825111,
+      "velocity": 79,
+      "channel": 1,
+      "barIndex": 2,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 52,
+      "startBeat": 8,
+      "durationBeats": 1.7882651437446475,
+      "velocity": 78,
+      "channel": 0,
+      "barIndex": 2,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 60,
+      "startBeat": 8,
+      "durationBeats": 1.8509708863496779,
+      "velocity": 71,
+      "channel": 0,
+      "barIndex": 2,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 8.989334387978792,
+      "durationBeats": 0.8717777873668819,
+      "velocity": 57,
+      "channel": 9,
+      "barIndex": 2,
+      "beatPosition": 0.9893343879787917
+    },
+    {
+      "part": "bass",
+      "noteNumber": 52,
+      "startBeat": 10.003067338720253,
+      "durationBeats": 1.8728701443411409,
+      "velocity": 74,
+      "channel": 1,
+      "barIndex": 2,
+      "beatPosition": 2.0030673387202533
+    },
+    {
+      "part": "chord",
+      "noteNumber": 52,
+      "startBeat": 10.0055834836198,
+      "durationBeats": 1.8626621224172413,
+      "velocity": 63,
+      "channel": 0,
+      "barIndex": 2,
+      "beatPosition": 2.0055834836198
+    },
+    {
+      "part": "chord",
+      "noteNumber": 60,
+      "startBeat": 10.0055834836198,
+      "durationBeats": 1.9354551541246474,
+      "velocity": 66,
+      "channel": 0,
+      "barIndex": 2,
+      "beatPosition": 2.0055834836198
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 10.005676204824837,
+      "durationBeats": 0.9197247324511408,
+      "velocity": 59,
+      "channel": 9,
+      "barIndex": 2,
+      "beatPosition": 2.0056762048248373
+    },
+    {
+      "part": "snare",
+      "noteNumber": 38,
+      "startBeat": 10.008829110947673,
+      "durationBeats": 3.6549834858626125,
+      "velocity": 80,
+      "channel": 9,
+      "barIndex": 2,
+      "beatPosition": 2.008829110947673
+    },
+    {
+      "part": "top",
+      "noteNumber": 60,
+      "startBeat": 10.010202307987425,
+      "durationBeats": 3.712603277824819,
+      "velocity": 71,
+      "channel": 0,
+      "barIndex": 2,
+      "beatPosition": 2.0102023079874254
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 10.996943119224733,
+      "durationBeats": 0.872232720721513,
+      "velocity": 46,
+      "channel": 9,
+      "barIndex": 2,
+      "beatPosition": 2.996943119224733
+    },
+    {
+      "part": "kick",
+      "noteNumber": 36,
+      "startBeat": 12,
+      "durationBeats": 3.6398612575978038,
+      "velocity": 81,
+      "channel": 9,
+      "barIndex": 3,
+      "beatPosition": 0
+    },
+    {
+      "part": "bass",
+      "noteNumber": 41,
+      "startBeat": 12,
+      "durationBeats": 1.7863085897825657,
+      "velocity": 72,
+      "channel": 1,
+      "barIndex": 3,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 12,
+      "durationBeats": 0.8927867465093732,
+      "velocity": 52,
+      "channel": 9,
+      "barIndex": 3,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 57,
+      "startBeat": 12,
+      "durationBeats": 1.7516296643018723,
+      "velocity": 61,
+      "channel": 0,
+      "barIndex": 3,
+      "beatPosition": 0
+    },
+    {
+      "part": "chord",
+      "noteNumber": 60,
+      "startBeat": 12,
+      "durationBeats": 1.766357744578272,
+      "velocity": 76,
+      "channel": 0,
+      "barIndex": 3,
+      "beatPosition": 0
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 12.996559221717476,
+      "durationBeats": 0.8772711969632655,
+      "velocity": 40,
+      "channel": 9,
+      "barIndex": 3,
+      "beatPosition": 0.9965592217174759
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 13.991322266609203,
+      "durationBeats": 0.9660256608203053,
+      "velocity": 52,
+      "channel": 9,
+      "barIndex": 3,
+      "beatPosition": 1.9913222666092025
+    },
+    {
+      "part": "bass",
+      "noteNumber": 41,
+      "startBeat": 14.004845239487588,
+      "durationBeats": 1.8599150333367287,
+      "velocity": 76,
+      "channel": 1,
+      "barIndex": 3,
+      "beatPosition": 2.0048452394875884
+    },
+    {
+      "part": "snare",
+      "noteNumber": 38,
+      "startBeat": 14.008383827771429,
+      "durationBeats": 1.8675089215487242,
+      "velocity": 74,
+      "channel": 9,
+      "barIndex": 3,
+      "beatPosition": 2.0083838277714285
+    },
+    {
+      "part": "top",
+      "noteNumber": 69,
+      "startBeat": 14.008445713029602,
+      "durationBeats": 1.7044163939356805,
+      "velocity": 56,
+      "channel": 0,
+      "barIndex": 3,
+      "beatPosition": 2.0084457130296016
+    },
+    {
+      "part": "chord",
+      "noteNumber": 57,
+      "startBeat": 14.01572667403254,
+      "durationBeats": 1.96,
+      "velocity": 57,
+      "channel": 0,
+      "barIndex": 3,
+      "beatPosition": 2.015726674032541
+    },
+    {
+      "part": "chord",
+      "noteNumber": 60,
+      "startBeat": 14.01572667403254,
+      "durationBeats": 1.96,
+      "velocity": 70,
+      "channel": 0,
+      "barIndex": 3,
+      "beatPosition": 2.015726674032541
+    },
+    {
+      "part": "hat",
+      "noteNumber": 42,
+      "startBeat": 14.988712902374965,
+      "durationBeats": 0.9651560628414154,
+      "velocity": 40,
+      "channel": 9,
+      "barIndex": 3,
+      "beatPosition": 2.9887129023749655
+    }
+  ],
+  "partStats": {
+    "bass": {
+      "noteCount": 8,
+      "velocityMean": 80.625,
+      "velocityStandardDeviation": 7.105235745561156,
+      "durationMean": 1.8334171015652827,
+      "minimumNote": 36,
+      "maximumNote": 52,
+      "polyphony": 1,
+      "timingDeviation": 0.002292162227670813,
+      "invalidNoteCount": 0
+    },
+    "kick": {
+      "noteCount": 4,
+      "velocityMean": 90.25,
+      "velocityStandardDeviation": 6.417748826496718,
+      "durationMean": 3.620628548627719,
+      "minimumNote": 36,
+      "maximumNote": 36,
+      "polyphony": 1,
+      "timingDeviation": 0,
+      "invalidNoteCount": 0
+    },
+    "hat": {
+      "noteCount": 16,
+      "velocityMean": 54.5,
+      "velocityStandardDeviation": 8.246211251235321,
+      "durationMean": 0.9094833955809009,
+      "minimumNote": 42,
+      "maximumNote": 42,
+      "polyphony": 1,
+      "timingDeviation": 0.006197017546803386,
+      "invalidNoteCount": 0
+    },
+    "chord": {
+      "noteCount": 16,
+      "velocityMean": 70.3125,
+      "velocityStandardDeviation": 6.916635291093495,
+      "durationMean": 1.8596500800771174,
+      "minimumNote": 50,
+      "maximumNote": 60,
+      "polyphony": 2,
+      "timingDeviation": 0.0057712041687465465,
+      "invalidNoteCount": 0
+    },
+    "top": {
+      "noteCount": 4,
+      "velocityMean": 66.5,
+      "velocityStandardDeviation": 6.18465843842649,
+      "durationMean": 3.086956278095022,
+      "minimumNote": 59,
+      "maximumNote": 69,
+      "polyphony": 1,
+      "timingDeviation": 0.0064946258294459325,
+      "invalidNoteCount": 0
+    },
+    "snare": {
+      "noteCount": 4,
+      "velocityMean": 82.75,
+      "velocityStandardDeviation": 8.584142356694699,
+      "durationMean": 3.1920883928146213,
+      "minimumNote": 38,
+      "maximumNote": 38,
+      "polyphony": 1,
+      "timingDeviation": 0.014725977812931279,
+      "invalidNoteCount": 0
+    }
+  },
+  "integrity": {
+    "negativeStartTimeCount": 0,
+    "nonPositiveDurationCount": 0,
+    "pitchOutOfRangeCount": 0,
+    "velocityOutOfRangeCount": 0,
+    "noteOnOffInconsistencyCount": 0,
+    "duplicateEventCount": 0,
+    "errorCount": 0
+  }
+}
