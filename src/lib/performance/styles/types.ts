@@ -60,6 +60,13 @@ export interface VelocitySpec {
   /** Ghost-note velocity window (design range 20–45). */
   ghostMin: number;
   ghostMax: number;
+  /**
+   * How much the TOP note of a multi-pitch chord strike is lifted above its inner
+   * voices (implementation_v1.01 Phase 4: 「トップノートをわずかに目立たせる」;
+   * inner voices give back 1). Omitted = the engine default (+3). Single-pitch
+   * strikes and non-chord tracks are unaffected.
+   */
+  topEmphasis?: number;
 }
 
 /** A gate window — the sounding fraction of a note's nominal length. */

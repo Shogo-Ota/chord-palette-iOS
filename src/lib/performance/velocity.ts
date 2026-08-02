@@ -27,8 +27,18 @@ export interface VelocityParams {
   bar: number;
   /** Whether this hit is a ghost note. */
   ghost: boolean;
+  /**
+   * This pitch's role within its strike (v1.01 Phase 4): `top` = the highest
+   * note of a multi-pitch chord strike (lifted by the style's `topEmphasis`),
+   * `inner` = the voices under it (give back 1). Omitted = no role shaping
+   * (single-pitch strikes, bass, drums).
+   */
+  chordRole?: 'top' | 'inner';
   rng: Rng;
 }
+
+/** Default lift for the strike's top note when the style does not say. */
+const DEFAULT_TOP_EMPHASIS = 3;
 
 /** Resolve one note's MIDI velocity from accent, phrase position and humanize. */
 export function computeVelocity(p: VelocityParams): number {
@@ -40,9 +50,15 @@ export function computeVelocity(p: VelocityParams): number {
   const center = p.track === 'top' ? v.center.chord : v.center[p.track];
   const accentTerm = (p.accent - 0.6) * v.accentDepth;
   const phraseTerm = phraseCurve(p.bar) * v.phraseDepth;
+  const roleTerm =
+    p.chordRole === 'top'
+      ? (v.topEmphasis ?? DEFAULT_TOP_EMPHASIS)
+      : p.chordRole === 'inner'
+        ? -1
+        : 0;
   const humanizeMag = p.rng.range(v.humanizeMin, v.humanizeMax);
   const humanize = (p.rng.bool() ? 1 : -1) * humanizeMag;
-  return clampVelocity(center + accentTerm + phraseTerm + humanize);
+  return clampVelocity(center + accentTerm + phraseTerm + roleTerm + humanize);
 }
 
 /**

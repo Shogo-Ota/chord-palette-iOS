@@ -146,6 +146,8 @@ interface NoteDraft {
   strumRank: number;
   /** Number of simultaneous pitches in this strike — for strum. */
   strumSize: number;
+  /** Highest pitch of a multi-pitch strike (velocity top emphasis, v1.01 Phase 4). */
+  strikeTop: boolean;
   /** Sequential strike index within the track — for `alternate` strum direction. */
   strumStrike: number;
 }
@@ -337,6 +339,7 @@ function toDrafts(strikes: Strike[], totalBeats: number): NoteDraft[] {
     const nextBeat = i + 1 < strikes.length ? strikes[i + 1].gridBeat : totalBeats;
     const nominalBeat = Math.max(nextBeat - s.gridBeat, EPSILON);
     const size = s.pitches.length;
+    const topPitch = size > 1 ? Math.max(...s.pitches) : undefined;
     s.pitches.forEach((pitch, rank) => {
       drafts.push({
         bar: s.bar,
@@ -350,6 +353,7 @@ function toDrafts(strikes: Strike[], totalBeats: number): NoteDraft[] {
         sustain: s.sustain,
         strumRank: rank,
         strumSize: size,
+        strikeTop: topPitch !== undefined && pitch === topPitch,
         strumStrike: i,
       });
     });
@@ -378,6 +382,10 @@ function renderTrack(
       accent: d.accent,
       bar: d.bar,
       ghost: d.ghost,
+      // Chord-role shaping (v1.01 Phase 4): only multi-pitch chord strikes carry
+      // roles — the top note sings, the inner voices sit slightly back.
+      chordRole:
+        track === 'chord' && d.strumSize > 1 ? (d.strikeTop ? 'top' : 'inner') : undefined,
       rng: streamFor(seed, 'vel', track, d.bar, d.step, i, d.pitch),
     }),
   );
