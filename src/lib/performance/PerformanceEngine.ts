@@ -13,6 +13,7 @@
 import { isAccompanimentPattern } from '@/lib/accompaniment';
 
 import { pickArticulation, computeGate } from './articulation';
+import { planBassLine } from './bass';
 import { ensureChordAudible } from './ensureChordAudible';
 import { pickNaturalTemplate } from './feel/naturalBank';
 import { resolveFeel } from './feel/resolve';
@@ -566,6 +567,18 @@ export function generatePerformance(
     strikesByTrack[track] = bank
       ? collectBankStrikes(track, bank, input.chords, bars, totalBeats, input.seed)
       : collectStrikes(track, patternFor(style, track), style, input.chords, 0, bars, totalBeats);
+  }
+
+  // 1b) Bass-line planning (v1.01 Phase 7): re-pitch the collected bass strikes
+  // (root / fifth / octave / passing / approach) per the rhythm's movement
+  // profile. Grid, velocity and timing are untouched; root-only profiles (the
+  // textures, ballad feel, legacy ids) return the strikes unchanged.
+  if (strikesByTrack.bass) {
+    strikesByTrack.bass = planBassLine(strikesByTrack.bass, {
+      seed: input.seed,
+      styleId: String(options.styleId),
+      chordOf: (s) => chordForStrike(input.chords, s.gridBeat, style, 'bass'),
+    });
   }
 
   // 2) Musical Variation (Feels only): rewrite chord/top strikes with intent.
