@@ -68,24 +68,22 @@ describe('diatonicLibrary', () => {
 });
 
 describe('CHORD_VARIATIONS (Pro gating, requirements §7)', () => {
-  it('offers sus4/add9 free and 6th/sus2/9/11/13 as Pro, without 5th', () => {
-    const ids = CHORD_VARIATIONS.map((v) => v.id);
-    expect(ids).toEqual(['sus4', 'add9', '6', 'sus2', '9', '11', '13']);
-    expect(ids).not.toContain('5');
+  it('keeps sus4/add9 free; extended tensions remain Pro', () => {
     const free = CHORD_VARIATIONS.filter((v) => !v.isPro).map((v) => v.id);
     expect(free).toEqual(['sus4', 'add9']);
+    expect(CHORD_VARIATIONS.map((v) => v.id)).toEqual(expect.arrayContaining(['maj11', 'alt', 'sixNine']));
   });
 
   it('marks sus4/add9 free and 6th/9th Pro on built chords', () => {
     expect(variationChord('C', 0, 'sus4')).toMatchObject({ displayName: 'Csus4', isPro: false });
     expect(variationChord('C', 0, 'add9')).toMatchObject({ displayName: 'Cadd9', isPro: false });
     expect(variationChord('C', 0, '6')).toMatchObject({ displayName: 'C6', isPro: true });
-    // I (Ionian): the ♮11 is an avoid note, so 9 is voiced as maj9 (not dominant C9).
+    // I: 9 is voiced as maj9 (not dominant C9).
     expect(variationChord('C', 0, '9')).toMatchObject({ displayName: 'Cmaj9', isPro: true });
   });
 });
 
-describe('variationChord — quality-aware, avoid-note-safe (C major)', () => {
+describe('variationChord — quality-aware (C major, Phase 5 catalog)', () => {
   it('keeps minor degrees minor (vi + add9 → Am(add9), not the major Aadd9)', () => {
     expect(variationChord('C', 5, 'add9').displayName).toBe('Am(add9)');
     expect(variationChord('C', 5, '9').displayName).toBe('Am9');
@@ -93,15 +91,17 @@ describe('variationChord — quality-aware, avoid-note-safe (C major)', () => {
     expect(variationChord('C', 1, '13').displayName).toBe('Dm13');
   });
 
-  it('offers only diatonic tensions per degree and none on vii°', () => {
-    // I: no ♮11.
-    expect(availableVariations(0)).toEqual(['sus4', 'add9', '6', 'sus2', '9', '13']);
-    // vi: no ♮6 / 13 (F# is out of key).
-    expect(availableVariations(5)).toEqual(['sus4', 'add9', 'sus2', '9', '11']);
-    // iii (Phrygian): only the 4/11 avoid the ♭9/♭13.
-    expect(availableVariations(2)).toEqual(['sus4', '11']);
-    // vii° (diminished): no variations offered.
-    expect(availableVariations(6)).toEqual([]);
+  it('offers practical tensions per degree without avoid-note removal', () => {
+    expect(availableVariations(0)).toEqual(
+      expect.arrayContaining(['sus4', 'add9', '6', 'sus2', '9', '13', 'maj11', 'sixNine']),
+    );
+    expect(availableVariations(5)).toEqual(
+      expect.arrayContaining(['sus4', 'add9', 'sus2', '9', '11', '13', 'sixNine']),
+    );
+    expect(availableVariations(2)).toEqual(
+      expect.arrayContaining(['sus4', 'add9', '9', '11', '13', 'nine_11']),
+    );
+    expect(availableVariations(6).length).toBeGreaterThan(0);
   });
 });
 

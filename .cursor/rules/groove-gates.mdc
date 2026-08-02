@@ -1,0 +1,29 @@
+---
+description: 伴奏・グルーヴ・Humanize ゲート
+globs:
+  - modules/chord-audio/**/*
+  - src/app/groove.tsx
+  - src/lib/groove/**/*
+  - src/services/audio/**/*
+  - project/docs/music/Groove.md
+  - project/docs/music/GroundTruthMidi.md
+  - project/docs/music/Velocity.md
+  - project/docs/music/Timing.md
+  - project/docs/music/PianoPatterns.md
+  - project/docs/music/DrumPatterns.md
+  - project/docs/music/Humanize.md
+  - project/docs/music/Swing.md
+  - project/docs/music/Accent.md
+  - project/docs/design/GrooveEngineDesign.md
+alwaysApply: false
+---
+
+# Groove Gates
+
+- 原曲の MIDI フレーズや伴奏パターンを製品に直置きしない。
+- 蓄積してよいのはスタイル / Humanize / Swing / Accent / Voicing などの抽象特徴のみ。
+- 最終教師はオーナー正解 MIDI（`GroundTruthMidi.md`）。OSS は土台。
+- Preview と Export で決定論的に同じ結果になること（シード戦略を明示）。
+- Piano と Drum の swing を将来共有できるパラメータ設計を優先する。
+- 16 分グリッドへ 8 分用 swing を雑に載せない（`Swing.md`）。
+- 変更時は KB（Groove 系）を先に更新し、`groove-reviewer` を使う。

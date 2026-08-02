@@ -1,5 +1,21 @@
 import Foundation
 
+/// Drum voice kinds, mirrored 1:1 from the TS `DrumVoice` union
+/// (src/lib/groove/types.ts). String-backed so the JS bridge payload (which sends
+/// the voice as a string) resolves to a synthesizable voice off the audio thread.
+enum DrumVoiceKind: String {
+  case kick, snare, hatClosed, hatOpen, ride, rim
+}
+
+/// One resolved drum hit within a 4/4 bar: `beat` position (0..4), synth `voice`,
+/// and linear `vel` (0..1). Precompiled TS Groove Engine hits are converted to
+/// this off the audio thread so the render callback stays allocation-free.
+struct DrumVoiceHit {
+  let beat: Double
+  let voice: DrumVoiceKind
+  let vel: Float
+}
+
 /// Abstraction over the drum voice. The concrete groove is chosen per render call
 /// from the (immutable) plan snapshot, so there is no shared mutable state on the
 /// audio thread. Phase-2 ships synth one-shots differentiated into 7 grooves; a
@@ -8,6 +24,11 @@ protocol DrumProvider: AnyObject {
   /// Sample in [-1, 1] for the given position within a 4/4 bar, for `groove`.
   /// `frame` is the absolute sample index, used only as a stateless noise seed.
   func sample(groove: String, beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float
+
+  /// Sample in [-1, 1] using an explicit precompiled hit list (TS Groove Engine
+  /// bridge). The voice one-shots are still synthesized here — only the schedule
+  /// comes from JS. `hits` is precompiled off the audio thread (NativeGrooveBridge.md).
+  func sample(hits: [DrumVoiceHit], beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float
 }
 
 /// Synth (808-style) drum voices arranged into the 7 MVP grooves (requirements
@@ -15,19 +36,16 @@ protocol DrumProvider: AnyObject {
 /// Not sampled, but each groove uses distinct voices, velocities and (for jazz)
 /// triplet swing so the character is clearly audible and stays in sync.
 final class SynthDrumProvider: DrumProvider {
-  private enum Voice { case kick, snare, hatClosed, hatOpen, ride, rim }
-  private struct Hit { let beat: Double; let voice: Voice; let vel: Float }
-
   /// Groove id → pre-resolved hit list. Built ONCE at init so the real-time
   /// `sample(...)` never allocates (rebuilding the pattern per sample was starving
   /// the audio render callback). Read-only after init ⇒ safe to read on the audio
   /// thread without a lock.
-  private let patterns: [String: [Hit]]
-  private let fallback: [Hit]
+  private let patterns: [String: [DrumVoiceHit]]
+  private let fallback: [DrumVoiceHit]
 
   init() {
     let keys = ["pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "jazzSwing", "bossaNova"]
-    var p = [String: [Hit]]()
+    var p = [String: [DrumVoiceHit]]()
     for k in keys { p[k] = Self.pattern(for: k) }
     patterns = p
     fallback = p["pop8"] ?? []
@@ -35,6 +53,12 @@ final class SynthDrumProvider: DrumProvider {
 
   func sample(groove: String, beatInBar: Double, secondsPerBeat: Double, frame: Int64) -> Float {
     let hits = patterns[groove] ?? fallback
+    return sample(hits: hits, beatInBar: beatInBar, secondsPerBeat: secondsPerBeat, frame: frame)
+  }
+
+  func sample(
+    hits: [DrumVoiceHit], beatInBar: Double, secondsPerBeat: Double, frame: Int64
+  ) -> Float {
     var out: Float = 0
     for hit in hits {
       var dt = beatInBar - hit.beat
@@ -49,73 +73,75 @@ final class SynthDrumProvider: DrumProvider {
   // MARK: - Groove patterns (1 bar / 4 beats)
 
   /// Straight hats every `step` beats, accented on the downbeats.
-  private static func hats(_ voice: Voice, step: Double, vel: Float, accent: Float) -> [Hit] {
-    var out = [Hit]()
+  private static func hats(
+    _ voice: DrumVoiceKind, step: Double, vel: Float, accent: Float
+  ) -> [DrumVoiceHit] {
+    var out = [DrumVoiceHit]()
     var b = 0.0
     while b < 4.0 - 1e-9 {
       let onDownbeat = abs(b.rounded() - b) < 1e-9
-      out.append(Hit(beat: b, voice: voice, vel: onDownbeat ? accent : vel))
+      out.append(DrumVoiceHit(beat: b, voice: voice, vel: onDownbeat ? accent : vel))
       b += step
     }
     return out
   }
 
-  private static func pattern(for groove: String) -> [Hit] {
+  private static func pattern(for groove: String) -> [DrumVoiceHit] {
     switch groove {
     case "pop8", "pop8-min":
       return [
-        Hit(beat: 0, voice: .kick, vel: 0.9), Hit(beat: 2, voice: .kick, vel: 0.85),
-        Hit(beat: 1, voice: .snare, vel: 0.9), Hit(beat: 3, voice: .snare, vel: 0.9),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 0.9), DrumVoiceHit(beat: 2, voice: .kick, vel: 0.85),
+        DrumVoiceHit(beat: 1, voice: .snare, vel: 0.9), DrumVoiceHit(beat: 3, voice: .snare, vel: 0.9),
       ] + hats(.hatClosed, step: 0.5, vel: 0.45, accent: 0.6)
 
     case "pop16":
       return [
-        Hit(beat: 0, voice: .kick, vel: 0.9), Hit(beat: 2, voice: .kick, vel: 0.85),
-        Hit(beat: 2.5, voice: .kick, vel: 0.5),
-        Hit(beat: 1, voice: .snare, vel: 0.9), Hit(beat: 3, voice: .snare, vel: 0.9),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 0.9), DrumVoiceHit(beat: 2, voice: .kick, vel: 0.85),
+        DrumVoiceHit(beat: 2.5, voice: .kick, vel: 0.5),
+        DrumVoiceHit(beat: 1, voice: .snare, vel: 0.9), DrumVoiceHit(beat: 3, voice: .snare, vel: 0.9),
       ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.58)
 
     case "rock8":
       return [
-        Hit(beat: 0, voice: .kick, vel: 1.0), Hit(beat: 2, voice: .kick, vel: 0.95),
-        Hit(beat: 1, voice: .snare, vel: 0.98), Hit(beat: 3, voice: .snare, vel: 0.98),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 1.0), DrumVoiceHit(beat: 2, voice: .kick, vel: 0.95),
+        DrumVoiceHit(beat: 1, voice: .snare, vel: 0.98), DrumVoiceHit(beat: 3, voice: .snare, vel: 0.98),
       ] + hats(.hatClosed, step: 0.5, vel: 0.6, accent: 0.72)
 
     case "rock16":
       return [
-        Hit(beat: 0, voice: .kick, vel: 1.0), Hit(beat: 1.5, voice: .kick, vel: 0.7),
-        Hit(beat: 2, voice: .kick, vel: 0.95),
-        Hit(beat: 1, voice: .snare, vel: 0.98), Hit(beat: 3, voice: .snare, vel: 0.98),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 1.0), DrumVoiceHit(beat: 1.5, voice: .kick, vel: 0.7),
+        DrumVoiceHit(beat: 2, voice: .kick, vel: 0.95),
+        DrumVoiceHit(beat: 1, voice: .snare, vel: 0.98), DrumVoiceHit(beat: 3, voice: .snare, vel: 0.98),
       ] + hats(.hatClosed, step: 0.25, vel: 0.52, accent: 0.66)
 
     case "soul16":
       // Backbeat + syncopated kick + ghost-note snares for a soulful pocket.
       return [
-        Hit(beat: 0, voice: .kick, vel: 0.9), Hit(beat: 2.5, voice: .kick, vel: 0.72),
-        Hit(beat: 1, voice: .snare, vel: 0.95), Hit(beat: 3, voice: .snare, vel: 0.95),
-        Hit(beat: 1.75, voice: .snare, vel: 0.3), Hit(beat: 3.75, voice: .snare, vel: 0.3),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 0.9), DrumVoiceHit(beat: 2.5, voice: .kick, vel: 0.72),
+        DrumVoiceHit(beat: 1, voice: .snare, vel: 0.95), DrumVoiceHit(beat: 3, voice: .snare, vel: 0.95),
+        DrumVoiceHit(beat: 1.75, voice: .snare, vel: 0.3), DrumVoiceHit(beat: 3.75, voice: .snare, vel: 0.3),
       ] + hats(.hatClosed, step: 0.25, vel: 0.4, accent: 0.55)
 
     case "jazzSwing":
       // Classic swing ride (triplet feel: off-beats at 2/3), hi-hat on 2 & 4,
       // feathered kick. Ride is the character voice.
       return [
-        Hit(beat: 0, voice: .ride, vel: 0.7),
-        Hit(beat: 1, voice: .ride, vel: 0.66), Hit(beat: 1.0 + 2.0 / 3.0, voice: .ride, vel: 0.5),
-        Hit(beat: 2, voice: .ride, vel: 0.7),
-        Hit(beat: 3, voice: .ride, vel: 0.66), Hit(beat: 3.0 + 2.0 / 3.0, voice: .ride, vel: 0.5),
-        Hit(beat: 1, voice: .hatOpen, vel: 0.4), Hit(beat: 3, voice: .hatOpen, vel: 0.4),
-        Hit(beat: 0, voice: .kick, vel: 0.22), Hit(beat: 1, voice: .kick, vel: 0.2),
-        Hit(beat: 2, voice: .kick, vel: 0.22), Hit(beat: 3, voice: .kick, vel: 0.2),
+        DrumVoiceHit(beat: 0, voice: .ride, vel: 0.7),
+        DrumVoiceHit(beat: 1, voice: .ride, vel: 0.66), DrumVoiceHit(beat: 1.0 + 2.0 / 3.0, voice: .ride, vel: 0.5),
+        DrumVoiceHit(beat: 2, voice: .ride, vel: 0.7),
+        DrumVoiceHit(beat: 3, voice: .ride, vel: 0.66), DrumVoiceHit(beat: 3.0 + 2.0 / 3.0, voice: .ride, vel: 0.5),
+        DrumVoiceHit(beat: 1, voice: .hatOpen, vel: 0.4), DrumVoiceHit(beat: 3, voice: .hatOpen, vel: 0.4),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 0.22), DrumVoiceHit(beat: 1, voice: .kick, vel: 0.2),
+        DrumVoiceHit(beat: 2, voice: .kick, vel: 0.22), DrumVoiceHit(beat: 3, voice: .kick, vel: 0.2),
       ]
 
     case "bossaNova":
       // Surdo-style kick, cross-stick (rim) clave, straight 8th hats.
       return [
-        Hit(beat: 0, voice: .kick, vel: 0.72), Hit(beat: 1.5, voice: .kick, vel: 0.6),
-        Hit(beat: 2, voice: .kick, vel: 0.72), Hit(beat: 3.5, voice: .kick, vel: 0.6),
-        Hit(beat: 0, voice: .rim, vel: 0.72), Hit(beat: 1.5, voice: .rim, vel: 0.62),
-        Hit(beat: 2.5, voice: .rim, vel: 0.66), Hit(beat: 3, voice: .rim, vel: 0.6),
+        DrumVoiceHit(beat: 0, voice: .kick, vel: 0.72), DrumVoiceHit(beat: 1.5, voice: .kick, vel: 0.6),
+        DrumVoiceHit(beat: 2, voice: .kick, vel: 0.72), DrumVoiceHit(beat: 3.5, voice: .kick, vel: 0.6),
+        DrumVoiceHit(beat: 0, voice: .rim, vel: 0.72), DrumVoiceHit(beat: 1.5, voice: .rim, vel: 0.62),
+        DrumVoiceHit(beat: 2.5, voice: .rim, vel: 0.66), DrumVoiceHit(beat: 3, voice: .rim, vel: 0.6),
       ] + hats(.hatClosed, step: 0.5, vel: 0.32, accent: 0.42)
 
     default:
@@ -126,7 +152,7 @@ final class SynthDrumProvider: DrumProvider {
 
   // MARK: - Voice synthesis
 
-  private func voiceSample(_ voice: Voice, t: Double, frame: Int64) -> Float {
+  private func voiceSample(_ voice: DrumVoiceKind, t: Double, frame: Int64) -> Float {
     switch voice {
     case .kick:
       let decay = 0.18

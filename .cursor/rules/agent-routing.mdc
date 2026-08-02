@@ -1,0 +1,28 @@
+---
+description: 音楽変更時の Reviewer ルーティング
+globs:
+  - src/data/music.ts
+  - src/lib/voicing.ts
+  - src/lib/transpose.ts
+  - src/lib/music/**/*
+  - src/lib/groove/**/*
+  - modules/chord-audio/**/*
+  - project/docs/music/**/*
+  - project/docs/design/**/*
+alwaysApply: false
+---
+
+# Agent Routing（音楽プラットフォーム）
+
+詳細: `project/docs/design/CursorAgentDesign.md`
+
+| 変更 | 必須 Reviewer |
+|---|---|
+| コード定義・テンション・移調・ボイシング・intervals/MIDI | music-theory-reviewer |
+| 伴奏・ドラム・Humanize・Swing・Velocity/Timing | groove-reviewer |
+| `project/docs/music/**` の更新 | knowledge-builder → 関連 reviewer |
+| 層分離・型・テスト・bridge | implementation-reviewer |
+| テンション+MIDI | theory + implementation |
+| 理論+伴奏 | theory + groove |
+
+実装エージェントは KB 更新なしに音楽仕様を変えてはならない。

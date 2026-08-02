@@ -5,6 +5,8 @@ UI・外部サービスに依存しない**純粋ロジック**を置く。単�
 - `env.ts` — 型付き環境変数アクセサ（expo-constants経由）
 - `logger.ts` — 構造化ロガー
 - `errors.ts` — アプリ共通エラー階層（ユーザー向け/開発者向けメッセージ分離）
-- 今後: `music/`（ダイアトニック・転調・コード計算）、`limits/`（16小節・投稿上限判定）
+- `music/` — ChordDefinition カタログ・テンション候補・MIDI intervals（仕様の正は `project/docs/music/`）
+- `groove/` — Piano/Drum PatternDoc・GrooveProfile・compile（伴奏の TS 正本。Native 配線は次段）
+- `voicing.ts` / `transpose.ts` — ボイシング・移調（music カタログを利用）
 
-依存の向き: `app → features → lib`。`lib` は他層へ依存しない。
+依存の向き: `app → features → lib`。`lib` は他層へ依存しない（移行中の例外は減らしていく）。

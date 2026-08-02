@@ -1,4 +1,15 @@
+import { getDefinitionBySymbol } from '@/lib/music/definitions/catalog';
+import {
+  CHORD_VARIATIONS,
+  availableVariations,
+  variationMeta,
+  variationSuffix,
+  type VariationId,
+} from '@/lib/music/variations';
 import type { ChordFunction, DiatonicChord, LibraryChord, MajorKey } from '@/types';
+
+export { CHORD_VARIATIONS, availableVariations };
+export type { VariationId };
 
 /**
  * Major-scale note spellings for the 12 supported keys.
@@ -56,6 +67,10 @@ const DEGREE_FUNCTIONS: ChordFunction[] = [
 const SEVENTH_SUFFIXES = ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7♭5'] as const;
 /** Suffixes for diatonic triads per degree. */
 const TRIAD_SUFFIXES = ['', 'm', 'm', '', '', 'm', 'dim'] as const;
+
+function definitionIdForSuffix(suffix: string): string | undefined {
+  return getDefinitionBySymbol(suffix)?.id;
+}
 
 function build(key: MajorKey, suffixes: readonly string[]): DiatonicChord[] {
   const scale = MAJOR_SCALES[key];
@@ -175,6 +190,7 @@ export function diatonicLibrary(key: MajorKey): LibraryChord[] {
     isPro: false,
     rootOffset: t.rootOffset,
     suffix: t.suffix,
+    definitionId: definitionIdForSuffix(t.suffix),
   }));
 }
 
@@ -196,6 +212,7 @@ export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
     isPro: false,
     rootOffset: s.rootOffset,
     suffix: s.suffix,
+    definitionId: definitionIdForSuffix(s.suffix),
   }));
 }
 
@@ -204,60 +221,8 @@ export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
 /* ------------------------------------------------------------------ */
 
 /**
- * Variation suffixes offered under the diatonic tab.
- * Free: sus4 / add9 (requirements §7). Pro: 6th / sus2 / 9 / 11 / 13.
- */
-export const CHORD_VARIATIONS = [
-  { id: 'sus4', label: 'sus4', suffix: 'sus4', isPro: false },
-  { id: 'add9', label: 'add9', suffix: 'add9', isPro: false },
-  { id: '6', label: '6th', suffix: '6', isPro: true },
-  { id: 'sus2', label: 'sus2', suffix: 'sus2', isPro: true },
-  { id: '9', label: '9', suffix: '9', isPro: true },
-  { id: '11', label: '11', suffix: '11', isPro: true },
-  { id: '13', label: '13', suffix: '13', isPro: true },
-] as const;
-
-export type VariationId = (typeof CHORD_VARIATIONS)[number]['id'];
-
-/**
- * Diatonic-correct tension mapping. For each major-key degree (I..vi) it maps a
- * variation to the concrete chord-quality suffix that (a) respects the degree's
- * major/minor quality and (b) stays INSIDE the key — i.e. avoid-notes and
- * non-diatonic tensions are simply not offered for that degree. vii° (diminished)
- * takes no variations. Index = degree (0 = I … 5 = vi). Only listed variations are
- * available; the editor greys out / omits the rest.
- *
- * Reasoning per degree (in C for reference):
- *  I  (Ionian):     ♮11(F) is the avoid note → no 11; 9/13 voiced as maj9/maj13.
- *  ii (Dorian):     no avoid note → the full set (minor-quality forms).
- *  iii(Phrygian):   ♭9(F) & ♭13(C) are avoid → only sus4 & the 11 (add-11, no 9).
- *  IV (Lydian):     ♮4(B♭) is out of key → no sus4/11; 9/13 as maj9/maj13.
- *  V  (Mixolydian): ♮11(C) is the avoid note → no 11; 9/13 are dominant 9/13.
- *  vi (Aeolian):    ♮6(F#) is out of key → no 6/13; minor-quality forms.
- */
-const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
-  0: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
-  1: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '6': 'm6', '9': 'm9', '11': 'm11', '13': 'm13' },
-  2: { sus4: 'sus4', '11': 'm(add11)' },
-  3: { sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
-  4: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': '9', '13': '13' },
-  5: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '9': 'm9', '11': 'm11' },
-};
-
-/**
- * Variations that are diatonically usable on the given degree, in button order —
- * avoid-notes and non-diatonic tensions removed. vii° (index 6) returns [].
- */
-export function availableVariations(degreeIndex: number): VariationId[] {
-  const map = DEGREE_VARIATION_SUFFIX[degreeIndex] ?? {};
-  return CHORD_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
-}
-
-/**
- * Build a variation chord on a diatonic degree, respecting the degree's quality
- * and the key (e.g. I + add9 → Cadd9, but vi + add9 → Am(add9), not Aadd9). If a
- * variation is not diatonic for the degree it falls back to the raw suffix, but
- * the editor only offers {@link availableVariations} so that path is unused in UI.
+ * Build a variation chord on a diatonic degree.
+ * Catalog + degree maps live in `@/lib/music` (Phase 5: avoid-notes do not restrict).
  */
 export function variationChord(
   key: MajorKey,
@@ -265,8 +230,8 @@ export function variationChord(
   variationId: VariationId,
 ): LibraryChord {
   const root = MAJOR_SCALES[key][degreeIndex];
-  const v = CHORD_VARIATIONS.find((x) => x.id === variationId) ?? CHORD_VARIATIONS[0];
-  const suffix = DEGREE_VARIATION_SUFFIX[degreeIndex]?.[variationId] ?? v.suffix;
+  const v = variationMeta(variationId);
+  const suffix = variationSuffix(degreeIndex, variationId);
   return {
     id: `var-${key}-${root}-${suffix}`,
     displayName: `${root}${suffix}`,
@@ -278,6 +243,7 @@ export function variationChord(
     isPro: v.isPro,
     rootOffset: MAJOR_SCALE_OFFSETS[degreeIndex],
     suffix,
+    definitionId: definitionIdForSuffix(suffix),
   };
 }
 
@@ -313,6 +279,7 @@ export function secondaryDominants(key: MajorKey): LibraryChord[] {
       isPro: true, // secondary dominants are Palette Pro (requirements §7)
       rootOffset: (MAJOR_SCALE_OFFSETS[t.degreeIndex] + 7) % 12,
       suffix: '7',
+      definitionId: definitionIdForSuffix('7'),
     };
   });
 }
@@ -350,6 +317,7 @@ export function modalInterchange(key: MajorKey): LibraryChord[] {
       isPro: true, // borrowed / modal-interchange chords are Palette Pro (requirements §7)
       rootOffset: m.offset,
       suffix: m.suffix,
+      definitionId: definitionIdForSuffix(m.suffix),
     };
   });
 }
@@ -377,6 +345,7 @@ export function slashChord(key: MajorKey, target: LibraryChord, bass: string): L
     isPro: true, // slash / on-chords are Palette Pro (requirements §7)
     rootOffset: target.rootOffset,
     suffix: target.suffix,
+    definitionId: target.definitionId ?? definitionIdForSuffix(target.suffix),
     bassOffset: offsetFromTonic(key, bass),
   };
 }

@@ -1,0 +1,23 @@
+---
+description: 音楽仕様は project/docs/music が唯一の正
+globs:
+  - src/data/music.ts
+  - src/lib/voicing.ts
+  - src/lib/transpose.ts
+  - src/lib/music/**/*
+  - src/lib/groove/**/*
+  - modules/chord-audio/**/*
+  - project/docs/music/**/*
+alwaysApply: false
+---
+
+# 音楽 Knowledge Base
+
+- Chord Palette の音楽仕様の正は `project/docs/music/` である。
+- **Theory Engine**（Theory〜Transposition）と **Groove Engine**（Groove 以下）を分けて扱う。
+- 投資順: 理論 → グルーヴ → ボイシング → AI メロディ（`Groove.md` §2）。
+- コード定義・テンション・MIDI・伴奏・グルーヴを変える前に、必ず該当 KB を更新する。
+- Sprint 文書やコードコメントと矛盾する場合は KB を優先し、要件書との矛盾は実装せず選択肢を提示する。
+- 原曲 MIDI / フレーズの製品コードへのコピーは禁止。抽象特徴のみを蓄積する。
+- グルーヴの最終教師はオーナー正解 MIDI（`GroundTruthMidi.md`）。OSS は土台。
+- 「理論上存在する」≠「UI に出す」。実用性・ポップス優先（`Theory.md` §2.1）。

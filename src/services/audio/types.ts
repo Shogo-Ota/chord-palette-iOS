@@ -55,6 +55,32 @@ export type NoteEvent = {
   velocity: number;
 };
 
+/**
+ * Beat-level accompaniment strike from the TS Groove Engine.
+ * Native converts to frames using its device sample rate.
+ * @see project/docs/design/NativeGrooveBridge.md
+ */
+export type BeatStrikePayload = {
+  startBeat: number;
+  durationBeats: number;
+  note: number;
+  gain: number;
+};
+
+/**
+ * Beat-level drum hit from the TS Groove Engine. `beat` is the position within a
+ * 4/4 bar (0..4); Native synthesizes the voice one-shot itself — only the hit
+ * schedule crosses the wire (sample-rate independent).
+ * @see project/docs/design/NativeGrooveBridge.md
+ */
+export type DrumHitPayload = {
+  beat: number;
+  /** 'kick' | 'snare' | 'hatClosed' | 'hatOpen' | 'ride' | 'rim'. */
+  voice: string;
+  /** 0..1 velocity. */
+  vel: number;
+};
+
 /** A fully-specified request handed to the native engine in a single call. */
 export type PlaybackRequest = {
   bpm: number;
@@ -66,12 +92,21 @@ export type PlaybackRequest = {
   drumPatternId: string;
   /**
    * Accompaniment rhythm id ('block' | 'eightBeat' | 'sixteenthBeat' | 'arpeggio').
-   * Native re-triggers/arpeggiates each chord's body notes on this grid while the
-   * low bass sustains; chord events stay 1:1 with the timeline (highlight-safe).
+   * When {@link chordStrikes} is present, Native skips its internal pattern expand.
    */
   accompaniment: string;
   /** Instrument id → native maps to a General MIDI program (SoundFont). */
   instrument: string;
+  /**
+   * Optional precompiled piano accompaniment (TS Groove Engine).
+   * Empty/omitted → Native falls back to `buildChordStrikes`.
+   */
+  chordStrikes?: BeatStrikePayload[];
+  /**
+   * Optional precompiled drum hits (TS Groove Engine). One 4/4 bar; Native loops
+   * them. Empty/omitted → Native falls back to its `drumPatternId` pattern.
+   */
+  drumHits?: DrumHitPayload[];
 };
 
 /** Single-chord audition (chord-card tap). */
@@ -94,6 +129,10 @@ export type RenderAudioRequest = {
   accompaniment: string;
   instrument: string;
   durationSec: number;
+  /** Optional precompiled piano accompaniment (same contract as PlaybackRequest). */
+  chordStrikes?: BeatStrikePayload[];
+  /** Optional precompiled drum hits (same contract as PlaybackRequest). */
+  drumHits?: DrumHitPayload[];
 };
 
 /** Result of an offline audio render: a temp file URI + its sample rate. */

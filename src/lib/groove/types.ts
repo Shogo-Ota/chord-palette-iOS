@@ -1,0 +1,128 @@
+/**
+ * Groove Engine types — data-driven accompaniment (Phase 6).
+ * Spec: project/docs/design/GrooveEngineDesign.md, project/docs/music/Groove.md
+ *
+ * TS compiles beat-level strikes/hits; Native prefers them when present
+ * (see NativeGrooveBridge.md). Older Dev Clients ignore the fields and expand
+ * patterns themselves.
+ */
+
+import type { AccompanimentPattern, GrooveId } from '@/types';
+
+export type PedalStyle = 'none' | 'ringCap' | 'cc64';
+
+export type GrooveFeatures = {
+  /** 0.5 = straight, ~0.666 = triplet swing. */
+  swingRatio: number;
+  timingBiasBeats: number;
+  /** Per-beat accent multipliers (length 4) or empty. */
+  velocityAccent: number[];
+  ghostDensity: number;
+  strumMs: number;
+  pedalStyle: PedalStyle;
+  humanize: { velocityAmount: number; timingAmountBeats: number };
+};
+
+export type GrooveSource =
+  | { type: 'handcrafted' }
+  | { type: 'gmd'; attribution: string }
+  | { type: 'user-analysis'; label?: string };
+
+export type GrooveProfile = {
+  id: string;
+  tags: string[];
+  source: GrooveSource;
+  features: GrooveFeatures;
+  pianoPatternId: AccompanimentPattern;
+  drumPatternId: GrooveId | 'pop8-min';
+  bassPatternId?: string;
+};
+
+export type CompStroke = {
+  beat: number;
+  vel: number;
+  look?: number;
+};
+
+export type PianoPart = 'bass' | 'body' | 'all';
+
+export type PianoGridLayer = {
+  part: PianoPart;
+  strokes: CompStroke[];
+  nominalRingBeats: number;
+  strumSec: number;
+  sparkle: boolean;
+  timingAmountBeats: number;
+  velAmount: number;
+};
+
+/** Declarative piano accompaniment pattern. */
+export type PianoPatternDoc = {
+  id: AccompanimentPattern;
+  /** Grid layers (eightBeat / sixteenthBeat). */
+  grids?: PianoGridLayer[];
+  /** Chord-locked block / arpeggio modes. */
+  mode?: 'block' | 'arpeggio';
+};
+
+export type DrumVoice = 'kick' | 'snare' | 'hatClosed' | 'hatOpen' | 'ride' | 'rim';
+
+export type DrumHit = {
+  beat: number;
+  voice: DrumVoice;
+  vel: number;
+  tags?: string[];
+};
+
+export type DrumPatternDoc = {
+  id: string;
+  hits: DrumHit[];
+};
+
+/**
+ * Beat-level drum hit for the Native bridge (sample-rate independent).
+ * `beat` is the position within a 4/4 bar (0..4); Native folds playback frames
+ * into a bar and synthesizes the voice itself. Only the schedule crosses the wire.
+ * @see project/docs/design/NativeGrooveBridge.md
+ */
+export type DrumHitPayload = {
+  beat: number;
+  voice: DrumVoice;
+  vel: number;
+};
+
+/**
+ * Beat-level accompaniment strike (sample-rate independent).
+ * Bridge contract: project/docs/design/NativeGrooveBridge.md
+ */
+export type BeatStrike = {
+  startBeat: number;
+  durationBeats: number;
+  note: number;
+  gain: number;
+};
+
+/** Frame-level strike (tests / offline helpers). Native converts from BeatStrike. */
+export type NoteStrike = {
+  startFrame: number;
+  durationFrames: number;
+  note: number;
+  gain: number;
+};
+
+export type ChordTimelineEvent = {
+  midiNotes: number[];
+  startBeat: number;
+  lengthBeats: number;
+  velocity: number;
+};
+
+export type PianoCompileInput = {
+  bpm: number;
+  sampleRate: number;
+  totalBeats: number;
+  events: ChordTimelineEvent[];
+  patternId: AccompanimentPattern;
+  features?: GrooveFeatures;
+  bassPatternId?: string;
+};
