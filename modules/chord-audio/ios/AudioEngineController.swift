@@ -142,6 +142,20 @@ final class AudioEngineController {
   private var chordVolume: Float = 0.85
   private var drumVolume: Float = 0.8
 
+  // MARK: - Diagnostics (v1.01 Phase 1)
+
+  /// Playback lifecycle timeline (play/pause/stop/interruption/route change…).
+  private let diagnosticsLog = PlaybackDiagnostics()
+  /// Highest simultaneous chord voices seen in any render frame. Under `unfairLock`.
+  private var peakPolyphony = 0
+  /// Cumulative voice-frames skipped by the polyphony cap. Under `unfairLock`.
+  private var cappedVoiceFrames = 0
+  /// Most chord voices allowed to sound at once. Well above any healthy take
+  /// (chords 3–6 notes + bass + top with legato tails ≈ 10–15); only pathological
+  /// overlap pile-ups — the CPU-starvation shape behind the "low notes only"
+  /// report — are trimmed, newest attacks first.
+  private static let maxChordPolyphony = 24
+
   var onStateChange: ((String) -> Void)?
   var onPosition: ((Int, Double, Int) -> Void)?
 
@@ -164,6 +178,7 @@ final class AudioEngineController {
       if !engine.isRunning {
         try? AVAudioSession.sharedInstance().setActive(true)
         try? engine.start()
+        diagnosticsLog.record("prepare.rearm", "engineRunning=\(engine.isRunning)")
       }
       state = .ready
       return
@@ -175,6 +190,7 @@ final class AudioEngineController {
       registerObservers()
       try engine.start()
       prepared = true
+      diagnosticsLog.record("prepare", "sr=\(sampleRate)")
       // Load the default instrument (piano). Falls back to the synth on failure,
       // so playback is never silent even if the SoundFont is missing.
       setInstrument("piano")
@@ -278,6 +294,43 @@ final class AudioEngineController {
     return result
   }
 
+  /// Playback lifecycle timeline + polyphony stats for JS (v1.01 Phase 1).
+  /// Safe to call anytime; brief lock hold, never touches the audio thread.
+  func playbackDiagnostics() -> [String: Any] {
+    os_unfair_lock_lock(&unfairLock)
+    let snap = plan
+    let playing = isPlaying
+    let peak = peakPolyphony
+    let capped = cappedVoiceFrames
+    let frame = currentFrame
+    os_unfair_lock_unlock(&unfairLock)
+    var result = diagnosticsLog.snapshot()
+    result["state"] = state.rawValue
+    result["isPlaying"] = playing
+    result["engineRunning"] = engine.isRunning
+    result["prepared"] = prepared
+    result["peakPolyphony"] = peak
+    result["polyphonyCap"] = Self.maxChordPolyphony
+    result["cappedVoiceFrames"] = capped
+    result["currentFrame"] = frame
+    if let snap = snap {
+      result["planBpm"] = snap.bpm
+      result["planTotalBeats"] = snap.totalBeats
+      result["planAccompaniment"] = snap.accompaniment
+      result["planDrumPattern"] = snap.drumPattern
+      result["planStrikeCount"] = snap.chordStrikes.count
+      // Scheduled note range: a low ceiling here means the PLAN lacks high notes
+      // (upstream JS problem); a healthy range with low-only OUTPUT points at the
+      // native render/provider side. Key evidence for the "low notes only" report.
+      if let minNote = snap.chordStrikes.map(\.note).min(),
+        let maxNote = snap.chordStrikes.map(\.note).max() {
+        result["planNoteMin"] = minNote
+        result["planNoteMax"] = maxNote
+      }
+    }
+    return result
+  }
+
   /// Swap the chord voice to `instrumentId`, loading + caching the sampled
   /// SoundFont program on first use. Heavy work (offline render) runs on the
   /// calling (non-audio) thread; the pointer swap is done under the lock.
@@ -290,6 +343,7 @@ final class AudioEngineController {
     chordProvider = provider
     currentInstrument = instrumentId
     os_unfair_lock_unlock(&unfairLock)
+    diagnosticsLog.record("instrument", "\(instrumentId) sampled=\(provider is SampledInstrumentProvider)")
   }
 
   /// Resolve (and cache) the provider for `instrumentId`. Does not change the
@@ -449,6 +503,13 @@ final class AudioEngineController {
     os_unfair_lock_unlock(&unfairLock)
     state = .playing
     startPositionTimer()
+    let noteMin = strikes.map(\.note).min() ?? 0
+    let noteMax = strikes.map(\.note).max() ?? 0
+    diagnosticsLog.record(
+      "play",
+      "bpm=\(Int(bpm)) beats=\(totalBeats) acc=\(accompaniment) drums=\(drumPattern) "
+        + "startBeat=\(String(format: "%.2f", clampedBeat)) strikes=\(strikes.count) "
+        + "noteRange=\(noteMin)-\(noteMax) engineRunning=\(engine.isRunning)")
   }
 
   /// Current playhead in beats (0 when idle). Used by JS for position-preserving
@@ -477,6 +538,7 @@ final class AudioEngineController {
     if wasPlaying {
       stopPositionTimer()
       state = .paused
+      diagnosticsLog.record("pause")
     }
   }
 
@@ -495,6 +557,7 @@ final class AudioEngineController {
       if !engine.isRunning { try? engine.start() }
       state = .playing
       startPositionTimer()
+      diagnosticsLog.record("resume", "engineRunning=\(engine.isRunning)")
     }
   }
 
@@ -508,7 +571,10 @@ final class AudioEngineController {
     finished = false
     os_unfair_lock_unlock(&unfairLock)
     stopPositionTimer()
-    if wasActive { state = .stopped }
+    if wasActive {
+      state = .stopped
+      diagnosticsLog.record("stop")
+    }
   }
 
   func previewChord(notes: [Int], velocity: Int, durationSec: Double, instrument: String) {
@@ -588,6 +654,8 @@ final class AudioEngineController {
     }
 
     var producedSound = false
+    var bufferPeakVoices = 0
+    var bufferDropped = 0
 
     for frame in 0..<Int(frameCount) {
       let absoluteSample = sampleTime + Double(frame)
@@ -595,7 +663,9 @@ final class AudioEngineController {
 
       if playing, let snap = snap {
         let absFrame = absoluteSample - base
-        let progression = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr, provider: provider)
+        let progression = chordSampleValue(
+          snap: snap, absFrame: absFrame, sr: sr, provider: provider,
+          activeVoices: &bufferPeakVoices, dropped: &bufferDropped)
         value += progression
       }
 
@@ -635,6 +705,9 @@ final class AudioEngineController {
       let elapsed = (sampleTime + Double(frameCount) - pb) / sampleRate
       if elapsed >= previewDurationSec { previewActive = false }
     }
+    // Diagnostics counters (v1.01 Phase 1) — already inside the lock section.
+    if bufferPeakVoices > peakPolyphony { peakPolyphony = bufferPeakVoices }
+    if bufferDropped > 0 { cappedVoiceFrames += bufferDropped }
     os_unfair_lock_unlock(&unfairLock)
 
     isSilence.pointee = ObjCBool(!producedSound)
@@ -694,7 +767,9 @@ final class AudioEngineController {
     snap: PlanSnapshot,
     absFrame: Double,
     sr: Double,
-    provider: InstrumentProvider
+    provider: InstrumentProvider,
+    activeVoices: inout Int,
+    dropped: inout Int
   ) -> Float {
     let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
     if !snap.loop && absFrame >= loopFrames {
@@ -705,34 +780,45 @@ final class AudioEngineController {
     let fi = Int(folded.frameInLoop)
 
     var sum: Float = 0
+    var active = 0
     let maxDur = snap.maxStrikeDur
     if maxDur > 0 && !snap.chordStrikes.isEmpty {
       let lo = fi - maxDur
-      // Lower bound: first strike with start >= fi - maxStrikeDur (strikes sorted by start).
+      // Upper bound: first strike with start > fi (strikes sorted by start).
       var left = 0
       var right = snap.chordStrikes.count
       while left < right {
         let mid = (left + right) / 2
-        if snap.chordStrikes[mid].start < lo {
+        if snap.chordStrikes[mid].start <= fi {
           left = mid + 1
         } else {
           right = mid
         }
       }
-      var i = left
-      while i < snap.chordStrikes.count {
+      // Scan BACKWARD from the newest sounding strike (v1.01 Phase 1): when the
+      // polyphony cap engages, the freshest attacks keep sounding and only the
+      // oldest tails are skipped — bounding the per-frame synthesis cost instead
+      // of letting a pathological overlap pile-up starve the render callback.
+      var i = left - 1
+      while i >= 0 {
         let strike = snap.chordStrikes[i]
-        if strike.start > fi { break }
+        if strike.start < lo { break }
         let rel = fi - strike.start
         if rel >= 0 && rel < strike.dur {
-          let t = Double(rel) / sr
-          sum += provider.sample(
-            note: strike.note, tSeconds: t, durationSeconds: Double(strike.dur) / sr
-          ) * strike.gain
+          if active < Self.maxChordPolyphony {
+            let t = Double(rel) / sr
+            sum += provider.sample(
+              note: strike.note, tSeconds: t, durationSeconds: Double(strike.dur) / sr
+            ) * strike.gain
+          } else {
+            dropped += 1
+          }
+          active += 1
         }
-        i += 1
+        i -= 1
       }
     }
+    if active > activeVoices { activeVoices = active }
     // Soft-clip the summed voices (tanh) — smooth headroom, no hard digital clip.
     return tanh(sum)
   }
@@ -1146,9 +1232,11 @@ final class AudioEngineController {
     else { return }
     switch type {
     case .began:
+      diagnosticsLog.record("interruption.began")
       // Pause on interruption; position is preserved for a later resume().
       pause()
     case .ended:
+      diagnosticsLog.record("interruption.ended")
       // Even if the system suggests .shouldResume, we deliberately do NOT
       // auto-resume playback (avoid surprise playback, §4.1). We only re-arm the
       // engine so a user-triggered resume() from the UI will actually sound. The
@@ -1170,7 +1258,10 @@ final class AudioEngineController {
     // Posted on an internal queue after the OS stopped the engine. We only read a
     // bool and call start() (never deallocate the engine here, per Apple's
     // deadlock warning), and never take the state lock around start().
-    if prepared && !engine.isRunning { try? engine.start() }
+    if prepared && !engine.isRunning {
+      diagnosticsLog.record("engineConfigChange", "restarting")
+      try? engine.start()
+    }
   }
 
   @objc private func handleRouteChange(_ note: Notification) {
@@ -1179,6 +1270,7 @@ final class AudioEngineController {
       let raw = info[AVAudioSessionRouteChangeReasonKey] as? UInt,
       let reason = AVAudioSession.RouteChangeReason(rawValue: raw)
     else { return }
+    diagnosticsLog.record("routeChange", "reason=\(raw)")
     // Headphones unplugged → pause instead of blasting the speaker.
     if reason == .oldDeviceUnavailable { pause() }
   }
@@ -1246,6 +1338,9 @@ final class AudioEngineController {
     let drumGain: Float = 0.8
 
     var frame = 0
+    // Offline render ignores the diagnostics counters (throwaway accumulators).
+    var offlineVoices = 0
+    var offlineDropped = 0
     while frame < total {
       let n = min(chunk, total - frame)
       guard
@@ -1255,7 +1350,9 @@ final class AudioEngineController {
       buf.frameLength = AVAudioFrameCount(n)
       for i in 0..<n {
         let absFrame = Double(frame + i)
-        let c = chordSampleValue(snap: snap, absFrame: absFrame, sr: sr, provider: chordProv)
+        let c = chordSampleValue(
+          snap: snap, absFrame: absFrame, sr: sr, provider: chordProv,
+          activeVoices: &offlineVoices, dropped: &offlineDropped)
         let d = offlineDrumSample(snap: snap, absFrame: absFrame, sr: sr, provider: drumProv)
         // Soft-clip the summed mix (mirrors the real-time master limiter) so drum
         // transients over a sustained E.Piano don't hard-clip into "wavering".

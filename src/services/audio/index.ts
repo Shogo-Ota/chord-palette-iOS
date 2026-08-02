@@ -6,6 +6,7 @@ import { getVolumeLevels, setVolumeLevel } from '@/repositories/settingsReposito
 import { clampVolume } from '@/services/audio/schedule';
 import type {
   AudioDiagnostics,
+  PlaybackDiagnosticsSnapshot,
   PlaybackRequest,
   PlaybackState,
   PositionEvent,
@@ -92,6 +93,36 @@ export const audioService = {
       return diag;
     } catch (e) {
       logger.warn(`[audio-diagnostics] ${reason}: failed`, { error: String(e) });
+      return null;
+    }
+  },
+
+  /**
+   * Fetch the playback lifecycle timeline + polyphony stats (v1.01 Phase 1).
+   * Returns null when the native module is unavailable or the binary predates
+   * the API. Call AFTER a playback anomaly (e.g. "low notes only") to read back
+   * the events that led up to it.
+   */
+  async getPlaybackDiagnostics(): Promise<PlaybackDiagnosticsSnapshot | null> {
+    if (!ChordAudioNative?.getPlaybackDiagnostics) return null;
+    return await ChordAudioNative.getPlaybackDiagnostics();
+  },
+
+  /**
+   * Fetch playback diagnostics and print them to the Metro/JS console. Never
+   * throws — diagnostics must not break playback.
+   */
+  async logPlaybackDiagnostics(reason: string): Promise<PlaybackDiagnosticsSnapshot | null> {
+    try {
+      const diag = await this.getPlaybackDiagnostics();
+      if (!diag) {
+        logger.info(`[playback-diagnostics] ${reason}: unavailable`);
+        return null;
+      }
+      logger.info(`[playback-diagnostics] ${reason}`, diag as unknown as Record<string, unknown>);
+      return diag;
+    } catch (e) {
+      logger.warn(`[playback-diagnostics] ${reason}: failed`, { error: String(e) });
       return null;
     }
   },

@@ -182,3 +182,51 @@ export type AudioDiagnostics = {
    */
   sampledPeakByOctave?: Record<string, number>;
 };
+
+/* ------------------------------------------------------------------ */
+/* Playback diagnostics (v1.01 Phase 1 — the "low notes only" report)  */
+/* ------------------------------------------------------------------ */
+
+/** One entry in the native playback lifecycle ring buffer. */
+export type PlaybackDiagnosticsEvent = {
+  /** ISO 8601 timestamp (fractional seconds). */
+  at: string;
+  /** Event kind: play / pause / stop / resume / interruption.* / routeChange / …. */
+  kind: string;
+  /** Free-form detail (e.g. `bpm=120 … noteRange=36-79 engineRunning=true`). */
+  detail: string;
+};
+
+/**
+ * Timeline + polyphony snapshot from the native engine. Read AFTER a playback
+ * anomaly to reconstruct what led up to it:
+ * - `planNoteMin/Max` low ceiling → the scheduled plan lacked high notes (JS side).
+ * - Healthy plan range but low-only OUTPUT → native render/provider side.
+ * - `cappedVoiceFrames > 0` → the polyphony cap engaged (overlap pile-up).
+ */
+export type PlaybackDiagnosticsSnapshot = {
+  /** Recent lifecycle events, oldest first (ring buffer of 200). */
+  events: PlaybackDiagnosticsEvent[];
+  /** Total occurrences per event kind since engine creation. */
+  counts: Record<string, number>;
+  state: PlaybackState;
+  isPlaying: boolean;
+  engineRunning: boolean;
+  prepared: boolean;
+  /** Highest simultaneous chord voices seen in any render frame. */
+  peakPolyphony: number;
+  /** Voice ceiling enforced by the render callback. */
+  polyphonyCap: number;
+  /** Cumulative voice-frames skipped by the cap (0 ⇒ never engaged). */
+  cappedVoiceFrames: number;
+  currentFrame: number;
+  planBpm?: number;
+  planTotalBeats?: number;
+  planAccompaniment?: string;
+  planDrumPattern?: string;
+  planStrikeCount?: number;
+  /** Lowest scheduled MIDI note in the active plan. */
+  planNoteMin?: number;
+  /** Highest scheduled MIDI note in the active plan. */
+  planNoteMax?: number;
+};

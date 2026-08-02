@@ -163,6 +163,14 @@ public class ChordAudioModule: Module {
       return self.controller.audioDiagnostics()
     }
 
+    // Playback lifecycle timeline + polyphony stats (v1.01 Phase 1): recent
+    // play/pause/stop/interruption/route-change events plus peak polyphony and
+    // the scheduled note range, so the state leading up to a rare failure (the
+    // "low notes only" report) can be read back from JS after the fact.
+    AsyncFunction("getPlaybackDiagnostics") { () -> [String: Any] in
+      return self.controller.playbackDiagnostics()
+    }
+
     AsyncFunction("pause") {
       self.controller.pause()
     }
