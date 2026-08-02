@@ -9,20 +9,10 @@ import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { StyleCardGrid } from '@/components/StyleCardGrid';
 import {
   ACCOMPANIMENT_HINTS,
-  ACCOMPANIMENT_IDS,
   ACCOMPANIMENT_LABELS,
   ENABLED_INSTRUMENTS,
   INSTRUMENT_LABELS,
 } from '@/data/labels';
-import {
-  GROOVE_MENU,
-  GROOVE_VARIANTS,
-  GROOVE_VARIANT_LABELS,
-  grooveForItem,
-  menuItem,
-  menuStateForGroove,
-  type GrooveVariant,
-} from '@/data/grooveMenu';
 import { beatsPerBarFor, sessionToPlaybackRequest } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
@@ -31,11 +21,11 @@ import { useStyleDraft } from '@/features/editor/useStyleDraft';
 import { logger } from '@/lib/logger';
 import { rescaleBeats } from '@/lib/performance/meter';
 import {
+  cardForSelection,
+  CORE_PATTERNS,
   STYLE_CARDS,
-  styleForRhythm,
   type StyleCardDef,
 } from '@/lib/performance/model/styleCards';
-import { resolveVariant, variantsFor } from '@/lib/performance/variants';
 import { percentToVolume, volumeToPercent } from '@/lib/volume';
 import { track } from '@/services/analytics';
 import { audioService } from '@/services/audio';
@@ -245,41 +235,28 @@ export default function GrooveScreen() {
   // place in the progression, so styles can be compared at the same spot.
   useLiveSoundReapply(playbackState, true, sound);
 
-  // The style card a rhythm belongs to (axis metadata) — a rhythm picked in
-  // 詳細設定 still lights up its style family.
-  const selectedStyleId = styleForRhythm(styleDraft.draft.accompanimentPattern);
-  const selectedCard = STYLE_CARDS.find((c) => c.id === selectedStyleId);
-
-  // Tapping a card selects its recommended rhythm + drum groove (指示書 §13:
-  // the style picks the rhythm internally; 詳細設定 can still override).
-  const handleStyleSelect = useCallback(
-    (card: StyleCardDef) => {
-      if (!card.recommends) return;
-      styleDraft.setAccompaniment(card.recommends.pattern);
-      styleDraft.setGroove(card.recommends.grooveId);
-      track('style_card_selected', { style: card.id });
-    },
-    [styleDraft],
-  );
-
-  // Map the draft groove onto the two-level selector (primary family + Pop/Rock).
-  const grooveMenuState = menuStateForGroove(styleDraft.draft.grooveId);
-  const grooveVariant: GrooveVariant = grooveMenuState.variant ?? 'pop';
-  const selectedGrooveItem = menuItem(grooveMenuState.itemKey);
-
-  const accompanimentVariants = variantsFor(styleDraft.draft.accompanimentPattern);
-  const selectedVariant = resolveVariant(
+  // The card the current rhythm+groove pair came from; hand-tweaked = none.
+  const selectedCard = cardForSelection(
     styleDraft.draft.accompanimentPattern,
-    styleDraft.draft.accompanimentVariant,
+    styleDraft.draft.grooveId,
   );
 
+  // Tapping a card applies its FULL internal preset (ブラッシュアップ指示):
+  // rhythm + drum groove into the draft, 余韻 / 音域 as immediate device prefs.
+  function handleStyleSelect(card: StyleCardDef) {
+    if (!card.preset) return;
+    styleDraft.setAccompaniment(card.preset.pattern);
+    styleDraft.setGroove(card.preset.grooveId);
+    handleReleaseCutChange(card.preset.releaseCut);
+    handleOctaveChange(card.preset.octaveShift);
+    track('style_card_selected', { style: card.id });
+  }
+
+  // Audition summary stays short (ブラッシュアップ指示 §試聴UI): style + tone.
   const auditionSummary = [
-    selectedCard?.label,
+    selectedCard?.label ?? ACCOMPANIMENT_LABELS[styleDraft.draft.accompanimentPattern],
     INSTRUMENT_LABELS[styleDraft.draft.instrumentId],
-    ACCOMPANIMENT_LABELS[styleDraft.draft.accompanimentPattern],
-  ]
-    .filter(Boolean)
-    .join(' ・ ');
+  ].join(' ・ ');
 
   return (
     <ScreenScaffold>
@@ -292,7 +269,7 @@ export default function GrooveScreen() {
 
       {/* 1. Style — the screen's protagonist (指示書 §4/§6). */}
       <SectionTitle>スタイルを選ぶ</SectionTitle>
-      <StyleCardGrid cards={STYLE_CARDS} selectedId={selectedStyleId} onSelect={handleStyleSelect} />
+      <StyleCardGrid cards={STYLE_CARDS} selectedId={selectedCard?.id} onSelect={handleStyleSelect} />
 
       {/* 2. Current progression — context, deliberately quiet (指示書 §8). */}
       <View style={styles.progPanel}>
@@ -376,10 +353,11 @@ export default function GrooveScreen() {
 
       {advancedOpen && (
         <View style={styles.advancedBody}>
-          {/* 伴奏パターン（リズムは 2 列グリッド。スタイルカードの内側の上級者選択） */}
+          {/* 伴奏パターン — 必要最低限の 4 種のみ（ブラッシュアップ指示）。
+              スタイルカードが選ぶ内部リズム（relaxed 等）はここに出さない。 */}
           <SectionTitle>伴奏パターン</SectionTitle>
           <View style={styles.grid}>
-            {ACCOMPANIMENT_IDS.map((id) => (
+            {CORE_PATTERNS.map((id) => (
               <Chip
                 key={id}
                 label={ACCOMPANIMENT_LABELS[id]}
@@ -393,68 +371,11 @@ export default function GrooveScreen() {
               />
             ))}
           </View>
-          <Text style={styles.patternHint}>
+          <Text style={styles.patternHint} numberOfLines={2}>
             {ACCOMPANIMENT_HINTS[styleDraft.draft.accompanimentPattern]}
           </Text>
-          <ChipRow
-            options={accompanimentVariants.map((v) => ({ key: v.id, label: v.label }))}
-            value={styleDraft.draft.accompanimentVariant}
-            onChange={(k) => {
-              styleDraft.setAccompanimentVariant(k);
-              track('accompaniment_variant_selected', { variant: k });
-            }}
-          />
-          <Text style={styles.variantHint}>{selectedVariant.hint}</Text>
 
-          {/* ドラムグルーヴ */}
-          <SectionTitle>ドラムグルーヴ</SectionTitle>
-          <View style={styles.grooveSection}>
-            <View style={styles.grid}>
-              {GROOVE_MENU.map((item) => (
-                <Chip
-                  key={item.key}
-                  label={item.label}
-                  active={item.key === grooveMenuState.itemKey}
-                  onPress={() => {
-                    const g = grooveForItem(item, grooveVariant);
-                    styleDraft.setGroove(g);
-                    track('groove_selected', { groove: g });
-                  }}
-                  style={{ width: grooveChipW }}
-                  textStyle={{ fontSize: 13 }}
-                />
-              ))}
-            </View>
-            {selectedGrooveItem?.variants && (
-              <ChipRow
-                options={GROOVE_VARIANTS.map((v) => ({ key: v, label: GROOVE_VARIANT_LABELS[v] }))}
-                value={grooveVariant}
-                onChange={(k) => {
-                  const variants = selectedGrooveItem.variants;
-                  if (variants) {
-                    const g = variants[k as GrooveVariant];
-                    styleDraft.setGroove(g);
-                    track('groove_selected', { groove: g });
-                  }
-                }}
-                style={{ marginTop: 8 }}
-              />
-            )}
-          </View>
-
-          {/* 余韻（内部 releaseCut の反転表示。指示書 §11: 技術用語を出さない） */}
-          <SectionTitle>余韻</SectionTitle>
-          <ChipRow
-            options={[
-              { key: 'on', label: '標準（伸ばす）' },
-              { key: 'off', label: '短く切る' },
-            ]}
-            value={s.releaseCut ? 'off' : 'on'}
-            onChange={(k) => handleReleaseCutChange(k === 'off')}
-            style={{ marginBottom: 20 }}
-          />
-
-          {/* 音域（指示書 §12: オクターブという言葉を前面に出さない） */}
+          {/* 音域 */}
           <SectionTitle>音域</SectionTitle>
           <ChipRow
             options={[
@@ -466,14 +387,21 @@ export default function GrooveScreen() {
             style={{ marginBottom: 20 }}
           />
 
-          {/* 伴奏バランス（指示書 §15） */}
-          <SectionTitle>伴奏バランス</SectionTitle>
+          {/* 余韻 */}
+          <SectionTitle>余韻</SectionTitle>
+          <ChipRow
+            options={[
+              { key: 'on', label: '自然' },
+              { key: 'off', label: '短め' },
+            ]}
+            value={s.releaseCut ? 'off' : 'on'}
+            onChange={(k) => handleReleaseCutChange(k === 'off')}
+            style={{ marginBottom: 20 }}
+          />
+
+          {/* ドラム音量 — コード音量は固定（ブラッシュアップ指示 §④） */}
+          <SectionTitle>ドラム音量</SectionTitle>
           <View style={styles.volPanel}>
-            <VolumeSlider
-              label="コード音"
-              percent={volumeToPercent(volumes.chord)}
-              onChange={(p) => handleVolumeChange('chord', p)}
-            />
             <VolumeSlider
               label="ドラム"
               percent={volumeToPercent(volumes.drum)}
@@ -613,7 +541,6 @@ const styles = StyleSheet.create({
   bigPlayActive: { opacity: 0.85 },
   bigPlayDisabled: { opacity: 0.4 },
 
-  grooveSection: { marginBottom: 20 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
 
   patternHint: {
@@ -622,15 +549,6 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     fontFamily: font.regular,
     marginTop: 10,
-    marginBottom: 10,
-    marginHorizontal: 2,
-  },
-  variantHint: {
-    fontSize: 12,
-    lineHeight: 17,
-    color: colors.textFaint,
-    fontFamily: font.regular,
-    marginTop: 8,
     marginBottom: 20,
     marginHorizontal: 2,
   },

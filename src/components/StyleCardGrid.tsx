@@ -67,7 +67,7 @@ export function StyleCardGrid({
 }
 
 const styles = StyleSheet.create({
-  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
+  grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12 },
   card: {
     // Two columns at every width: half the row minus half the gap.
     flexBasis: '48%',
@@ -105,6 +105,6 @@ const styles = StyleSheet.create({
     color: colors.textTertiary,
     marginBottom: 4,
   },
-  cardDesc: { fontSize: 11, lineHeight: 15.5, fontFamily: font.regular, color: colors.textFaint },
+  cardDesc: { fontSize: 12, lineHeight: 16.5, fontFamily: font.regular, color: colors.textFaint },
   textDimmed: { color: colors.textFaintest },
 });
