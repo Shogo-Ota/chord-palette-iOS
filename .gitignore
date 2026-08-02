@@ -45,6 +45,10 @@ dist-check/
 *.mid
 *.midi
 
+# Teacher MIDI files stay local (rights ledger: docs/style_datasets/midi_registry.json,
+# policy: docs/midi_dataset_policy.md). Only relativized LibraryPattern JSON is committed.
+assets_dev/midi_teacher/
+
 # typescript
 *.tsbuildinfo
 
