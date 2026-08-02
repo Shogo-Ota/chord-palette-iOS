@@ -1,0 +1,3386 @@
+{
+  "seed": 20260802,
+  "generatedAt": "2026-08-02T12:55:57.163Z",
+  "entries": [
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "block",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 60,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 103.5,
+            "velocityStdDev": 7.22841614740048,
+            "durationBeatsMean": 3.761462048329413,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 116.375,
+            "velocityStdDev": 6.362733296312206,
+            "durationBeatsMean": 1.892590543432161,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.46875,
+            "velocityStdDev": 19.15395581694549,
+            "durationBeatsMean": 0.4589368021039994,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005424990792686076,
+            "timingDeviationMax": 0.013633591790760846
+          },
+          "chord": {
+            "noteCount": 8,
+            "velocityMean": 88.5,
+            "velocityStdDev": 4.69041575982343,
+            "durationBeatsMean": 3.799469055235386,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 112.375,
+            "velocityStdDev": 5.0974871260259205,
+            "durationBeatsMean": 1.8083756909240034,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014712006811372802,
+            "timingDeviationMax": 0.023414800083886078
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "arpeggio",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 128,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 80.8125,
+            "velocityStdDev": 7.160820047313017,
+            "durationBeatsMean": 0.8277495048078708,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0031167512002722025,
+            "timingDeviationMax": 0.00795476114284277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 102.125,
+            "velocityStdDev": 7.622950544244663,
+            "durationBeatsMean": 1.6761262396280654,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021070147376061055,
+            "timingDeviationMax": 0.006238553723630247
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 58.1875,
+            "velocityStdDev": 7.439075463389251,
+            "durationBeatsMean": 0.40872812237139433,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.00480619416855666,
+            "timingDeviationMax": 0.013599815660078285
+          },
+          "chord": {
+            "noteCount": 64,
+            "velocityMean": 69.515625,
+            "velocityStdDev": 7.262902715813768,
+            "durationBeatsMean": 0.19874590261861164,
+            "pitchMin": 48,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.0037273766344260682,
+            "timingDeviationMax": 0.009665228725178387
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 6.777720855862979,
+            "durationBeatsMean": 1.5182984426000619,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020255417730911385,
+            "timingDeviationMax": 0.026657980210767818
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "natural",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 104,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 108.75,
+            "velocityStdDev": 5.825590098865522,
+            "durationBeatsMean": 0.7556407199415844,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0015824634627787937,
+            "timingDeviationMax": 0.005498481923559062
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 48.25,
+            "velocityStdDev": 17.66882848408462,
+            "durationBeatsMean": 0.18272418217831735,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004991943532797411,
+            "timingDeviationMax": 0.012385994833428615
+          },
+          "chord": {
+            "noteCount": 36,
+            "velocityMean": 70.36111111111111,
+            "velocityStdDev": 8.475955461637014,
+            "durationBeatsMean": 0.326918147810308,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.008298551748454945,
+            "timingDeviationMax": 0.021076881881958442
+          },
+          "bass": {
+            "noteCount": 20,
+            "velocityMean": 71.15,
+            "velocityStdDev": 5.9772485308877705,
+            "durationBeatsMean": 0.35256234237889295,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002844553642448333,
+            "timingDeviationMax": 0.006886267273531921
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 104.375,
+            "velocityStdDev": 4.3857011982122085,
+            "durationBeatsMean": 0.8319243795995136,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014740778786469538,
+            "timingDeviationMax": 0.02236430947327328
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "driving",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 180,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 93.5625,
+            "velocityStdDev": 12.082884330738253,
+            "durationBeatsMean": 0.8118786718999037,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002354255714357781,
+            "timingDeviationMax": 0.0064485983584203765
+          },
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 112.125,
+            "velocityStdDev": 12.06169038733792,
+            "durationBeatsMean": 0.8177808106451994,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0022136314163789528,
+            "timingDeviationMax": 0.005139062373308967
+          },
+          "hat": {
+            "noteCount": 64,
+            "velocityMean": 47.828125,
+            "velocityStdDev": 16.731850883401243,
+            "durationBeatsMean": 0.19652285069772932,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004659511885649614,
+            "timingDeviationMax": 0.01181146917644238
+          },
+          "chord": {
+            "noteCount": 60,
+            "velocityMean": 80.2,
+            "velocityStdDev": 10.266125526864228,
+            "durationBeatsMean": 0.4231339372390261,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.00333579246520533,
+            "timingDeviationMax": 0.008550045125042871
+          },
+          "top": {
+            "noteCount": 16,
+            "velocityMean": 79.6875,
+            "velocityStdDev": 7.033124750066644,
+            "durationBeatsMean": 0.7893358504131902,
+            "pitchMin": 55,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.0039023538443310017,
+            "timingDeviationMax": 0.010037650866409287
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 112.75,
+            "velocityStdDev": 8.027297179001161,
+            "durationBeatsMean": 1.4993979234667496,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.016609442539347374,
+            "timingDeviationMax": 0.021859543772830392
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "relaxed",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 54,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 85.375,
+            "velocityStdDev": 4.871793817476269,
+            "durationBeatsMean": 1.8371148675284348,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.006032963870423236,
+            "timingDeviationMax": 0.022283215266208245
+          },
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 95.25,
+            "velocityStdDev": 5.717298313014636,
+            "durationBeatsMean": 3.7095981574989856,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 54.0625,
+            "velocityStdDev": 6.2496874921871095,
+            "durationBeatsMean": 0.9261538450396618,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005008830583467003,
+            "timingDeviationMax": 0.014554860395270985
+          },
+          "chord": {
+            "noteCount": 18,
+            "velocityMean": 71.27777777777777,
+            "velocityStdDev": 6.934659773401973,
+            "durationBeatsMean": 1.640591847301306,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.008046557446134115,
+            "timingDeviationMax": 0.030124066774181557
+          },
+          "top": {
+            "noteCount": 4,
+            "velocityMean": 69,
+            "velocityStdDev": 8.336666000266533,
+            "durationBeatsMean": 3.2428334735240787,
+            "pitchMin": 59,
+            "pitchMax": 69,
+            "timingDeviationMean": 0.015980001664130827,
+            "timingDeviationMax": 0.028789444725036972
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 87.75,
+            "velocityStdDev": 2.8613807855648994,
+            "durationBeatsMean": 3.1689093836816027,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020955105528374984,
+            "timingDeviationMax": 0.026207719669701035
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "beat8",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 88,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 95.58333333333333,
+            "velocityStdDev": 11.08646572277307,
+            "durationBeatsMean": 1.123940148175461,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 117.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.7061978123674635,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.53125,
+            "velocityStdDev": 19.233733996223926,
+            "durationBeatsMean": 0.42052654383012855,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005424990792686076,
+            "timingDeviationMax": 0.013633591790760846
+          },
+          "chord": {
+            "noteCount": 28,
+            "velocityMean": 84.32142857142857,
+            "velocityStdDev": 8.920496348412504,
+            "durationBeatsMean": 1.0047290607773383,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004586289600386063,
+            "timingDeviationMax": 0.010426884298833983
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 113.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6975176114065107,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014712006811372802,
+            "timingDeviationMax": 0.023414800083886078
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "beat16",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 162,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 91.875,
+            "velocityStdDev": 10.976537477729487,
+            "durationBeatsMean": 0.8298988932499197,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0028710435540948293,
+            "timingDeviationMax": 0.007864144339536416
+          },
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 110.625,
+            "velocityStdDev": 11.35712881849986,
+            "durationBeatsMean": 0.8348173422043329,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0026995505077794246,
+            "timingDeviationMax": 0.006267149235743119
+          },
+          "hat": {
+            "noteCount": 64,
+            "velocityMean": 47.484375,
+            "velocityStdDev": 16.37642378113656,
+            "durationBeatsMean": 0.20098730925004946,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005682331567865427,
+            "timingDeviationMax": 0.014404230702979248
+          },
+          "chord": {
+            "noteCount": 58,
+            "velocityMean": 79.34482758620689,
+            "velocityStdDev": 9.88651419365329,
+            "durationBeatsMean": 0.4536899280322492,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004206511098677431,
+            "timingDeviationMax": 0.010426884298833983
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 109.75,
+            "velocityStdDev": 8.027297179001161,
+            "durationBeatsMean": 1.5369982695556246,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020255417730911385,
+            "timingDeviationMax": 0.026657980210767818
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "shuffle",
+      "style": "band",
+      "feel": "shuffle",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 104,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 95.58333333333333,
+            "velocityStdDev": 11.30971804344486,
+            "durationBeatsMean": 1.0758899839206908,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 113.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.6314763585804029,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 47.96875,
+            "velocityStdDev": 18.007783690324025,
+            "durationBeatsMean": 0.4036028842609085,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004853365177520257,
+            "timingDeviationMax": 0.012036029337478382
+          },
+          "chord": {
+            "noteCount": 44,
+            "velocityMean": 78.8409090909091,
+            "velocityStdDev": 9.155085973029076,
+            "durationBeatsMean": 0.6101871835023418,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.03201667306990411,
+            "timingDeviationMax": 0.09108652174030452
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 111.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6146892273100093,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.012132174537706125,
+            "timingDeviationMax": 0.020288467258680498
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "swing",
+      "style": "band",
+      "feel": "swing",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 100,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 91.0625,
+            "velocityStdDev": 8.99631000744194,
+            "durationBeatsMean": 0.8219267681840574,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003915701692409734,
+            "timingDeviationMax": 0.01043992334650845
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 100.625,
+            "velocityStdDev": 7.498958260985321,
+            "durationBeatsMean": 1.671476358580403,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0027922846758348663,
+            "timingDeviationMax": 0.008826015651070662
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 42.625,
+            "velocityStdDev": 15.261778238462254,
+            "durationBeatsMean": 0.4136028842609084,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.006052305732639051,
+            "timingDeviationMax": 0.015061587774466645
+          },
+          "chord": {
+            "noteCount": 36,
+            "velocityMean": 71.80555555555556,
+            "velocityStdDev": 8.669292693321015,
+            "durationBeatsMean": 0.7387950936655723,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.05788113885652083,
+            "timingDeviationMax": 0.08456660791952197
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 5.9107952087684446,
+            "durationBeatsMean": 1.6521892273100094,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011167603116511687,
+            "timingDeviationMax": 0.02079862402783128
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "bossa",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 80,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 83.5625,
+            "velocityStdDev": 6.051536478449089,
+            "durationBeatsMean": 0.6640938156982884,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0036491003700745844,
+            "timingDeviationMax": 0.00905168845252291
+          },
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 81.4375,
+            "velocityStdDev": 6.981840283907961,
+            "durationBeatsMean": 0.6750635351461095,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0028925661305886363,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 45.9375,
+            "velocityStdDev": 5.825254822752392,
+            "durationBeatsMean": 0.6974670934863388,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.003522032006263026,
+            "timingDeviationMax": 0.009999014795098127
+          },
+          "chord": {
+            "noteCount": 32,
+            "velocityMean": 60.78125,
+            "velocityStdDev": 6.16813573436091,
+            "durationBeatsMean": 0.6441982110359458,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.022494025514834773,
+            "timingDeviationMax": 0.05344384387228729
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "reggae",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 60,
+        "maxPolyphony": 4,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 97,
+            "velocityStdDev": 9.941495528004493,
+            "durationBeatsMean": 0.41970267154528607,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 109.375,
+            "velocityStdDev": 5.31360282670807,
+            "durationBeatsMean": 0.6483287227223627,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 8,
+            "velocityMean": 60.75,
+            "velocityStdDev": 7.189401922274203,
+            "durationBeatsMean": 0.6383034817047883,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0035307147631342545,
+            "timingDeviationMax": 0.008344338173900456
+          },
+          "chord": {
+            "noteCount": 32,
+            "velocityMean": 78.1875,
+            "velocityStdDev": 6.395494019229476,
+            "durationBeatsMean": 0.3013120354185958,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004039770626310141,
+            "timingDeviationMax": 0.007777004709661028
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "sixEight",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 68,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 91.625,
+            "velocityStdDev": 7.415144974981946,
+            "durationBeatsMean": 2.710714485614444,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002530930854030833,
+            "timingDeviationMax": 0.008894345687508576
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 92.25,
+            "velocityStdDev": 6.199798383818623,
+            "durationBeatsMean": 2.656344618840376,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0023533934040458893,
+            "timingDeviationMax": 0.0076968902181828724
+          },
+          "hat": {
+            "noteCount": 24,
+            "velocityMean": 32.541666666666664,
+            "velocityStdDev": 10.855026357509328,
+            "durationBeatsMean": 0.8679181856580543,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005330948728490738,
+            "timingDeviationMax": 0.011322933721510609
+          },
+          "chord": {
+            "noteCount": 24,
+            "velocityMean": 69,
+            "velocityStdDev": 9.482439911049617,
+            "durationBeatsMean": 0.872649477910794,
+            "pitchMin": 48,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.004036056391674925,
+            "timingDeviationMax": 0.014014001491169381
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 69.75,
+            "velocityStdDev": 4.02336923485777,
+            "durationBeatsMean": 4.3252219711896025,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011590870131738873,
+            "timingDeviationMax": 0.018353841850224484
+          }
+        }
+      }
+    },
+    {
+      "progression": "A: C - G - Am - F @ 120",
+      "rhythm": "waltz",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 120,
+      "metrics": {
+        "totalNotes": 46,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 99.75,
+            "velocityStdDev": 6.417748826496718,
+            "durationBeatsMean": 2.552741340617649,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 104.75,
+            "velocityStdDev": 5.261891294962297,
+            "durationBeatsMean": 1.8337471210921648,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 12,
+            "velocityMean": 49.583333333333336,
+            "velocityStdDev": 5.203497755249721,
+            "durationBeatsMean": 0.587479849382847,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0038551590359325503,
+            "timingDeviationMax": 0.009999014795098127
+          },
+          "chord": {
+            "noteCount": 18,
+            "velocityMean": 72.88888888888889,
+            "velocityStdDev": 8.102735401557569,
+            "durationBeatsMean": 0.7338876337037396,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.003669355480461816,
+            "timingDeviationMax": 0.010532043377635247
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 68.25,
+            "velocityStdDev": 6.609652033201143,
+            "durationBeatsMean": 0.8198892862768843,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.0104219371947111,
+            "timingDeviationMax": 0.017162134433475806
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "block",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 64,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 100.75,
+            "velocityStdDev": 9.832980219648569,
+            "durationBeatsMean": 3.77577755311504,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 116.375,
+            "velocityStdDev": 6.362733296312206,
+            "durationBeatsMean": 1.892590543432161,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.46875,
+            "velocityStdDev": 19.15395581694549,
+            "durationBeatsMean": 0.46396599795950666,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005424990792686076,
+            "timingDeviationMax": 0.013633591790760846
+          },
+          "chord": {
+            "noteCount": 12,
+            "velocityMean": 89.66666666666667,
+            "velocityStdDev": 7.027722880769339,
+            "durationBeatsMean": 3.7752550412776564,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 112.375,
+            "velocityStdDev": 5.0974871260259205,
+            "durationBeatsMean": 1.8083756909240034,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014712006811372802,
+            "timingDeviationMax": 0.023414800083886078
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "arpeggio",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 128,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 79.625,
+            "velocityStdDev": 8.79541784112614,
+            "durationBeatsMean": 0.7993697740792411,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0031167512002722025,
+            "timingDeviationMax": 0.00795476114284277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 102.125,
+            "velocityStdDev": 7.622950544244663,
+            "durationBeatsMean": 1.6761262396280654,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021070147376061055,
+            "timingDeviationMax": 0.006238553723630247
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 58.1875,
+            "velocityStdDev": 7.439075463389251,
+            "durationBeatsMean": 0.40872812237139433,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.00480619416855666,
+            "timingDeviationMax": 0.013599815660078285
+          },
+          "chord": {
+            "noteCount": 64,
+            "velocityMean": 69.21875,
+            "velocityStdDev": 7.43191754781362,
+            "durationBeatsMean": 0.20215366887288844,
+            "pitchMin": 48,
+            "pitchMax": 67,
+            "timingDeviationMean": 0.0037273766344260682,
+            "timingDeviationMax": 0.009665228725178387
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 6.777720855862979,
+            "durationBeatsMean": 1.5182984426000619,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020255417730911385,
+            "timingDeviationMax": 0.026657980210767818
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "natural",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 122,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 108.75,
+            "velocityStdDev": 5.825590098865522,
+            "durationBeatsMean": 0.7556407199415844,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0015824634627787937,
+            "timingDeviationMax": 0.005498481923559062
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 48.25,
+            "velocityStdDev": 17.66882848408462,
+            "durationBeatsMean": 0.18272418217831735,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004991943532797411,
+            "timingDeviationMax": 0.012385994833428615
+          },
+          "chord": {
+            "noteCount": 54,
+            "velocityMean": 69.96296296296296,
+            "velocityStdDev": 7.292723321439852,
+            "durationBeatsMean": 0.332316764165686,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.007150712478123962,
+            "timingDeviationMax": 0.01981089669108904
+          },
+          "bass": {
+            "noteCount": 20,
+            "velocityMean": 71.15,
+            "velocityStdDev": 6.605111656891199,
+            "durationBeatsMean": 0.34780967371491717,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002844553642448333,
+            "timingDeviationMax": 0.006886267273531921
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 104.375,
+            "velocityStdDev": 4.3857011982122085,
+            "durationBeatsMean": 0.8319243795995136,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.01474077878646976,
+            "timingDeviationMax": 0.02236430947327328
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "driving",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 113,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 99.83333333333333,
+            "velocityStdDev": 11.05164643340027,
+            "durationBeatsMean": 1.0560689962414715,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0027375875728523256,
+            "timingDeviationMax": 0.007011027992575691
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 120,
+            "velocityStdDev": 5.894913061275798,
+            "durationBeatsMean": 1.6724930840835441,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0017936467368317166,
+            "timingDeviationMax": 0.005873044005598516
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 50.09375,
+            "velocityStdDev": 19.804291477795918,
+            "durationBeatsMean": 0.4119224644962378,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004448492450002554,
+            "timingDeviationMax": 0.011179545268424462
+          },
+          "chord": {
+            "noteCount": 45,
+            "velocityMean": 86.73333333333333,
+            "velocityStdDev": 8.507251808506279,
+            "durationBeatsMean": 0.8966800837382176,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.003512902976136282,
+            "timingDeviationMax": 0.008550045125042871
+          },
+          "top": {
+            "noteCount": 8,
+            "velocityMean": 73.5,
+            "velocityStdDev": 5.408326913195984,
+            "durationBeatsMean": 1.5747277762628802,
+            "pitchMin": 59,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004789660715422167,
+            "timingDeviationMax": 0.008918273358102802
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 116.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6829554568685128,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.012063845585325611,
+            "timingDeviationMax": 0.019200136068786122
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "relaxed",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 63,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 80.25,
+            "velocityStdDev": 5.425633603552677,
+            "durationBeatsMean": 1.7941706635174337,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.006032963870423236,
+            "timingDeviationMax": 0.022283215266208245
+          },
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 95.25,
+            "velocityStdDev": 5.717298313014636,
+            "durationBeatsMean": 3.7095981574989856,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 54.0625,
+            "velocityStdDev": 6.2496874921871095,
+            "durationBeatsMean": 0.9269224702081796,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005008830583467003,
+            "timingDeviationMax": 0.014554860395270985
+          },
+          "chord": {
+            "noteCount": 27,
+            "velocityMean": 71.22222222222223,
+            "velocityStdDev": 5.762801102173307,
+            "durationBeatsMean": 1.6386180183816885,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.008046557446134115,
+            "timingDeviationMax": 0.030124066774181557
+          },
+          "top": {
+            "noteCount": 4,
+            "velocityMean": 69.25,
+            "velocityStdDev": 6.378675411086537,
+            "durationBeatsMean": 3.149529296210967,
+            "pitchMin": 59,
+            "pitchMax": 65,
+            "timingDeviationMean": 0.015980001664130827,
+            "timingDeviationMax": 0.028789444725036972
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 87.75,
+            "velocityStdDev": 2.8613807855648994,
+            "durationBeatsMean": 3.1689093836816027,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020955105528374984,
+            "timingDeviationMax": 0.026207719669701035
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "beat8",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 102,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 97.66666666666667,
+            "velocityStdDev": 9.885455084224612,
+            "durationBeatsMean": 1.0872686511192782,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 117.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.7061978123674635,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.53125,
+            "velocityStdDev": 19.233733996223926,
+            "durationBeatsMean": 0.42115154383012854,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005424990792686076,
+            "timingDeviationMax": 0.013633591790760846
+          },
+          "chord": {
+            "noteCount": 42,
+            "velocityMean": 83.69047619047619,
+            "velocityStdDev": 8.656096379728416,
+            "durationBeatsMean": 1.0054816994659928,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004586289600386063,
+            "timingDeviationMax": 0.010426884298833983
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 113.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6975176114065107,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014712006811372802,
+            "timingDeviationMax": 0.023414800083886078
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "beat16",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 191,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 92.1875,
+            "velocityStdDev": 10.266564359609305,
+            "durationBeatsMean": 0.8302277361220329,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0028710435540948293,
+            "timingDeviationMax": 0.007864144339536416
+          },
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 110.625,
+            "velocityStdDev": 11.35712881849986,
+            "durationBeatsMean": 0.8348173422043329,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0026995505077794246,
+            "timingDeviationMax": 0.006267149235743119
+          },
+          "hat": {
+            "noteCount": 64,
+            "velocityMean": 47.484375,
+            "velocityStdDev": 16.37642378113656,
+            "durationBeatsMean": 0.20302264539380613,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005682331567865427,
+            "timingDeviationMax": 0.014404230702979248
+          },
+          "chord": {
+            "noteCount": 87,
+            "velocityMean": 79.14942528735632,
+            "velocityStdDev": 9.294082576245659,
+            "durationBeatsMean": 0.45857485257568165,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004206511098677431,
+            "timingDeviationMax": 0.010426884298833983
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 109.75,
+            "velocityStdDev": 8.027297179001161,
+            "durationBeatsMean": 1.5369982695556246,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020255417730911385,
+            "timingDeviationMax": 0.026657980210767818
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "shuffle",
+      "style": "band",
+      "feel": "shuffle",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 126,
+        "maxPolyphony": 10,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 97.83333333333333,
+            "velocityStdDev": 10.237458451957478,
+            "durationBeatsMean": 1.0440017256109664,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 113.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.6314763585804029,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 47.96875,
+            "velocityStdDev": 18.007783690324025,
+            "durationBeatsMean": 0.4036028842609085,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004853365177520257,
+            "timingDeviationMax": 0.012036029337478382
+          },
+          "chord": {
+            "noteCount": 66,
+            "velocityMean": 81.16666666666667,
+            "velocityStdDev": 8.938482233940205,
+            "durationBeatsMean": 0.6114386964745991,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.03201667306990411,
+            "timingDeviationMax": 0.09108652174030452
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 111.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6146892273100093,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.012132174537706125,
+            "timingDeviationMax": 0.020288467258680498
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "swing",
+      "style": "band",
+      "feel": "swing",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 118,
+        "maxPolyphony": 10,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 86.1875,
+            "velocityStdDev": 8.889732490350877,
+            "durationBeatsMean": 0.8043191635940458,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003915701692409734,
+            "timingDeviationMax": 0.01043992334650845
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 100.625,
+            "velocityStdDev": 7.498958260985321,
+            "durationBeatsMean": 1.671476358580403,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0027922846758348663,
+            "timingDeviationMax": 0.008826015651070662
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 42.625,
+            "velocityStdDev": 15.261778238462254,
+            "durationBeatsMean": 0.4136028842609084,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.006052305732639051,
+            "timingDeviationMax": 0.015061587774466645
+          },
+          "chord": {
+            "noteCount": 54,
+            "velocityMean": 70.42592592592592,
+            "velocityStdDev": 8.901938723196768,
+            "durationBeatsMean": 0.7415931628960948,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.05788113885652084,
+            "timingDeviationMax": 0.08456660791952197
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 5.9107952087684446,
+            "durationBeatsMean": 1.6521892273100094,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011167603116511687,
+            "timingDeviationMax": 0.02079862402783128
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "bossa",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 96,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 78.625,
+            "velocityStdDev": 7.507288125548399,
+            "durationBeatsMean": 0.6326058459177876,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0036491003700745844,
+            "timingDeviationMax": 0.00905168845252291
+          },
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 81.4375,
+            "velocityStdDev": 6.981840283907961,
+            "durationBeatsMean": 0.6750635351461095,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0028925661305886363,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 45.9375,
+            "velocityStdDev": 5.825254822752392,
+            "durationBeatsMean": 0.6974670934863388,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.003522032006263026,
+            "timingDeviationMax": 0.009999014795098127
+          },
+          "chord": {
+            "noteCount": 48,
+            "velocityMean": 60.895833333333336,
+            "velocityStdDev": 6.955931471692982,
+            "durationBeatsMean": 0.6531083783843011,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.018905088713842323,
+            "timingDeviationMax": 0.04681018551687366
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "reggae",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 76,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 100.58333333333333,
+            "velocityStdDev": 8.788802851102963,
+            "durationBeatsMean": 0.38692329239818113,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 109.375,
+            "velocityStdDev": 5.31360282670807,
+            "durationBeatsMean": 0.6483287227223627,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 8,
+            "velocityMean": 60.75,
+            "velocityStdDev": 7.189401922274203,
+            "durationBeatsMean": 0.6383034817047883,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0035307147631342545,
+            "timingDeviationMax": 0.008344338173900456
+          },
+          "chord": {
+            "noteCount": 48,
+            "velocityMean": 77.4375,
+            "velocityStdDev": 9.23062441459587,
+            "durationBeatsMean": 0.3127227551466785,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.004039770626310141,
+            "timingDeviationMax": 0.007777004709661028
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "sixEight",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 68,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 88.25,
+            "velocityStdDev": 6.887488656977955,
+            "durationBeatsMean": 2.7289601560612207,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002530930854030833,
+            "timingDeviationMax": 0.008894345687508576
+          },
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 92.25,
+            "velocityStdDev": 6.199798383818623,
+            "durationBeatsMean": 2.656344618840376,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0023533934040458893,
+            "timingDeviationMax": 0.0076968902181828724
+          },
+          "hat": {
+            "noteCount": 24,
+            "velocityMean": 32.541666666666664,
+            "velocityStdDev": 10.855026357509328,
+            "durationBeatsMean": 0.8679181856580543,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005330948728490738,
+            "timingDeviationMax": 0.011322933721510609
+          },
+          "chord": {
+            "noteCount": 24,
+            "velocityMean": 68.66666666666667,
+            "velocityStdDev": 9.330356668185605,
+            "durationBeatsMean": 0.875133097076517,
+            "pitchMin": 48,
+            "pitchMax": 67,
+            "timingDeviationMean": 0.004036056391674925,
+            "timingDeviationMax": 0.014014001491169381
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 69.75,
+            "velocityStdDev": 4.02336923485777,
+            "durationBeatsMean": 4.3252219711896025,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011590870131738873,
+            "timingDeviationMax": 0.018353841850224484
+          }
+        }
+      }
+    },
+    {
+      "progression": "B: Cmaj7 - Am7 - Dm7 - G7 @ 100",
+      "rhythm": "waltz",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 100,
+      "metrics": {
+        "totalNotes": 55,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 97.25,
+            "velocityStdDev": 8.728545125048045,
+            "durationBeatsMean": 2.5795829120907,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 104.75,
+            "velocityStdDev": 5.261891294962297,
+            "durationBeatsMean": 1.8337471210921648,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 12,
+            "velocityMean": 49.583333333333336,
+            "velocityStdDev": 5.203497755249721,
+            "durationBeatsMean": 0.587479849382847,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0038551590359325503,
+            "timingDeviationMax": 0.009999014795098127
+          },
+          "chord": {
+            "noteCount": 27,
+            "velocityMean": 72.22222222222223,
+            "velocityStdDev": 5.946261404559847,
+            "durationBeatsMean": 0.7454208439124611,
+            "pitchMin": 50,
+            "pitchMax": 60,
+            "timingDeviationMean": 0.003669355480461816,
+            "timingDeviationMax": 0.010532043377635247
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 68.25,
+            "velocityStdDev": 6.609652033201143,
+            "durationBeatsMean": 0.8198892862768843,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.0104219371947111,
+            "timingDeviationMax": 0.017162134433475806
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "block",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 60,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 116.375,
+            "velocityStdDev": 6.362733296312206,
+            "durationBeatsMean": 1.892590543432161,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.46875,
+            "velocityStdDev": 19.15395581694549,
+            "durationBeatsMean": 0.45316604077078704,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005424990792686076,
+            "timingDeviationMax": 0.013633591790760846
+          },
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 95.5,
+            "velocityStdDev": 5.408326913195984,
+            "durationBeatsMean": 3.743646835833788,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "chord": {
+            "noteCount": 8,
+            "velocityMean": 91.5,
+            "velocityStdDev": 6.123724356957945,
+            "durationBeatsMean": 3.710418330207467,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 112.375,
+            "velocityStdDev": 5.0974871260259205,
+            "durationBeatsMean": 1.80668956506066,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014712006811372802,
+            "timingDeviationMax": 0.023414800083886078
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "arpeggio",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 128,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 102.125,
+            "velocityStdDev": 7.622950544244663,
+            "durationBeatsMean": 1.6761262396280654,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021070147376061055,
+            "timingDeviationMax": 0.006238553723630247
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 58.1875,
+            "velocityStdDev": 7.439075463389251,
+            "durationBeatsMean": 0.40872812237139433,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.00480619416855666,
+            "timingDeviationMax": 0.013599815660078285
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 80.25,
+            "velocityStdDev": 6.656763477847174,
+            "durationBeatsMean": 0.7952000416716326,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0031167512002722025,
+            "timingDeviationMax": 0.00795476114284277
+          },
+          "chord": {
+            "noteCount": 64,
+            "velocityMean": 68.671875,
+            "velocityStdDev": 7.340075543506007,
+            "durationBeatsMean": 0.1976847130092695,
+            "pitchMin": 48,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.0037273766344260682,
+            "timingDeviationMax": 0.009665228725178387
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 6.777720855862979,
+            "durationBeatsMean": 1.5182984426000619,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020255417730911385,
+            "timingDeviationMax": 0.026657980210767818
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "natural",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 104,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 108.75,
+            "velocityStdDev": 5.825590098865522,
+            "durationBeatsMean": 0.7556407199415844,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0015824634627787937,
+            "timingDeviationMax": 0.005498481923559062
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 48.25,
+            "velocityStdDev": 17.66882848408462,
+            "durationBeatsMean": 0.18272418217831735,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004991943532797411,
+            "timingDeviationMax": 0.012385994833428615
+          },
+          "chord": {
+            "noteCount": 36,
+            "velocityMean": 70.44444444444444,
+            "velocityStdDev": 7.484964352488573,
+            "durationBeatsMean": 0.3181922531642421,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.009783365906414482,
+            "timingDeviationMax": 0.02532431865700957
+          },
+          "bass": {
+            "noteCount": 20,
+            "velocityMean": 70.8,
+            "velocityStdDev": 6.265780079128217,
+            "durationBeatsMean": 0.33259134610649205,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002844553642448333,
+            "timingDeviationMax": 0.006886267273531921
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 104.375,
+            "velocityStdDev": 4.3857011982122085,
+            "durationBeatsMean": 0.8319243795995136,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.01474077878646976,
+            "timingDeviationMax": 0.02236430947327328
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "driving",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 180,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 112.125,
+            "velocityStdDev": 12.06169038733792,
+            "durationBeatsMean": 0.8176888972755599,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0022136314163789528,
+            "timingDeviationMax": 0.005139062373308967
+          },
+          "hat": {
+            "noteCount": 64,
+            "velocityMean": 47.828125,
+            "velocityStdDev": 16.731850883401243,
+            "durationBeatsMean": 0.19414720967688479,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004659511885649614,
+            "timingDeviationMax": 0.01181146917644238
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 93.125,
+            "velocityStdDev": 9.130135541162574,
+            "durationBeatsMean": 0.8041121481382287,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002354255714357781,
+            "timingDeviationMax": 0.0064485983584203765
+          },
+          "chord": {
+            "noteCount": 60,
+            "velocityMean": 79.35,
+            "velocityStdDev": 11.091776232867302,
+            "durationBeatsMean": 0.4257481197798106,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.00333579246520533,
+            "timingDeviationMax": 0.008550045125042871
+          },
+          "top": {
+            "noteCount": 16,
+            "velocityMean": 78,
+            "velocityStdDev": 8.902246907382429,
+            "durationBeatsMean": 0.7906138069770532,
+            "pitchMin": 60,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.0039023538443310017,
+            "timingDeviationMax": 0.010037650866409287
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 112.75,
+            "velocityStdDev": 8.027297179001161,
+            "durationBeatsMean": 1.4993979234667496,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.016609442539347374,
+            "timingDeviationMax": 0.021859543772830392
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "relaxed",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 54,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 95.25,
+            "velocityStdDev": 5.717298313014636,
+            "durationBeatsMean": 3.7095981574989856,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 54.0625,
+            "velocityStdDev": 6.2496874921871095,
+            "durationBeatsMean": 0.9252690483111654,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005008830583467003,
+            "timingDeviationMax": 0.014554860395270985
+          },
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 81.875,
+            "velocityStdDev": 7.166545541612082,
+            "durationBeatsMean": 1.798866227865219,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.006032963870423236,
+            "timingDeviationMax": 0.022283215266208245
+          },
+          "chord": {
+            "noteCount": 18,
+            "velocityMean": 71.44444444444444,
+            "velocityStdDev": 6.953993434808378,
+            "durationBeatsMean": 1.615654430016789,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.008046557446134115,
+            "timingDeviationMax": 0.030124066774181557
+          },
+          "top": {
+            "noteCount": 4,
+            "velocityMean": 68.5,
+            "velocityStdDev": 6.06217782649107,
+            "durationBeatsMean": 3.216447173859924,
+            "pitchMin": 64,
+            "pitchMax": 72,
+            "timingDeviationMean": 0.015980001664130827,
+            "timingDeviationMax": 0.028789444725036972
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 87.75,
+            "velocityStdDev": 2.8613807855648994,
+            "durationBeatsMean": 3.1689093836816027,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020955105528374984,
+            "timingDeviationMax": 0.026207719669701035
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "beat8",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 88,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 117.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.7061978123674635,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.53125,
+            "velocityStdDev": 19.233733996223926,
+            "durationBeatsMean": 0.41921068354274515,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005424990792686076,
+            "timingDeviationMax": 0.013633591790760846
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 96.75,
+            "velocityStdDev": 8.166241485530538,
+            "durationBeatsMean": 1.0818379027600167,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "chord": {
+            "noteCount": 28,
+            "velocityMean": 84.35714285714286,
+            "velocityStdDev": 8.98893878097761,
+            "durationBeatsMean": 0.9824070464005317,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.004586289600386063,
+            "timingDeviationMax": 0.010426884298833983
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 113.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6975176114065107,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.014712006811372802,
+            "timingDeviationMax": 0.023414800083886078
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "beat16",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 162,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 110.625,
+            "velocityStdDev": 11.35712881849986,
+            "durationBeatsMean": 0.8346713032851889,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0026995505077794246,
+            "timingDeviationMax": 0.006267149235743119
+          },
+          "hat": {
+            "noteCount": 64,
+            "velocityMean": 47.484375,
+            "velocityStdDev": 16.37642378113656,
+            "durationBeatsMean": 0.19814229662248783,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005682331567865427,
+            "timingDeviationMax": 0.014404230702979248
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 91.5,
+            "velocityStdDev": 8.215838362577491,
+            "durationBeatsMean": 0.8234267901151905,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0028710435540948293,
+            "timingDeviationMax": 0.007864144339536416
+          },
+          "chord": {
+            "noteCount": 58,
+            "velocityMean": 79.70689655172414,
+            "velocityStdDev": 9.318148070945057,
+            "durationBeatsMean": 0.4555814653281899,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.004206511098677431,
+            "timingDeviationMax": 0.010426884298833983
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 109.75,
+            "velocityStdDev": 8.027297179001161,
+            "durationBeatsMean": 1.5369982695556246,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.020255417730911385,
+            "timingDeviationMax": 0.026657980210767818
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "shuffle",
+      "style": "band",
+      "feel": "shuffle",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 104,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 5,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 113.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.6314763585804029,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 47.96875,
+            "velocityStdDev": 18.007783690324025,
+            "durationBeatsMean": 0.4036028842609085,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004853365177520257,
+            "timingDeviationMax": 0.012036029337478382
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 96.83333333333333,
+            "velocityStdDev": 8.571593913749194,
+            "durationBeatsMean": 1.0392793357333479,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "chord": {
+            "noteCount": 44,
+            "velocityMean": 78.5909090909091,
+            "velocityStdDev": 9.264590904519162,
+            "durationBeatsMean": 0.6037085491659077,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.04067468172791274,
+            "timingDeviationMax": 0.11489604554982824
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 111.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6146892273100093,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.012132174537706125,
+            "timingDeviationMax": 0.020288467258680498
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "swing",
+      "style": "band",
+      "feel": "swing",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 100,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 100.625,
+            "velocityStdDev": 7.498958260985321,
+            "durationBeatsMean": 1.671476358580403,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0027922846758348663,
+            "timingDeviationMax": 0.008826015651070662
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 42.625,
+            "velocityStdDev": 15.261778238462254,
+            "durationBeatsMean": 0.4132296033305464,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.006052305732639051,
+            "timingDeviationMax": 0.015061587774466645
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 87.5,
+            "velocityStdDev": 8.215838362577491,
+            "durationBeatsMean": 0.7919095493142958,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003915701692409734,
+            "timingDeviationMax": 0.01043992334650845
+          },
+          "chord": {
+            "noteCount": 36,
+            "velocityMean": 69.47222222222223,
+            "velocityStdDev": 8.877205863931357,
+            "durationBeatsMean": 0.7440056029382955,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.07639965737503929,
+            "timingDeviationMax": 0.1083761317290457
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 5.9107952087684446,
+            "durationBeatsMean": 1.6521892273100094,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011167603116511687,
+            "timingDeviationMax": 0.02079862402783128
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "bossa",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 80,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 81.4375,
+            "velocityStdDev": 6.981840283907961,
+            "durationBeatsMean": 0.6750635351461095,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0028925661305886363,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 45.9375,
+            "velocityStdDev": 5.825254822752392,
+            "durationBeatsMean": 0.6974670934863388,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.003522032006263026,
+            "timingDeviationMax": 0.009999014795098127
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 78.625,
+            "velocityStdDev": 7.0787975673838845,
+            "durationBeatsMean": 0.6501623495694367,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0036491003700745844,
+            "timingDeviationMax": 0.00905168845252291
+          },
+          "chord": {
+            "noteCount": 32,
+            "velocityMean": 60.78125,
+            "velocityStdDev": 6.228635359169775,
+            "durationBeatsMean": 0.6522324909266172,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.025034847830703744,
+            "timingDeviationMax": 0.05736193488724517
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "reggae",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 60,
+        "maxPolyphony": 4,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 109.375,
+            "velocityStdDev": 5.31360282670807,
+            "durationBeatsMean": 0.6483287227223627,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0021873740693069965,
+            "timingDeviationMax": 0.007162248787315306
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 97.91666666666667,
+            "velocityStdDev": 9.01349297195907,
+            "durationBeatsMean": 0.39802183624318177,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003338521430307643,
+            "timingDeviationMax": 0.008550034137287277
+          },
+          "hat": {
+            "noteCount": 8,
+            "velocityMean": 60.75,
+            "velocityStdDev": 7.189401922274203,
+            "durationBeatsMean": 0.6383034817047883,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0035307147631342545,
+            "timingDeviationMax": 0.008344338173900456
+          },
+          "chord": {
+            "noteCount": 32,
+            "velocityMean": 76.96875,
+            "velocityStdDev": 8.966898763647329,
+            "durationBeatsMean": 0.32866150406116507,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.004039770626310141,
+            "timingDeviationMax": 0.007777004709661028
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "sixEight",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 68,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 92.25,
+            "velocityStdDev": 6.199798383818623,
+            "durationBeatsMean": 2.656344618840376,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0023533934040458893,
+            "timingDeviationMax": 0.0076968902181828724
+          },
+          "hat": {
+            "noteCount": 24,
+            "velocityMean": 32.541666666666664,
+            "velocityStdDev": 10.855026357509328,
+            "durationBeatsMean": 0.8677800417310532,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005330948728490738,
+            "timingDeviationMax": 0.011322933721510609
+          },
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 87.25,
+            "velocityStdDev": 8.540345426269361,
+            "durationBeatsMean": 2.7373375919961833,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002530930854030833,
+            "timingDeviationMax": 0.008894345687508576
+          },
+          "chord": {
+            "noteCount": 24,
+            "velocityMean": 69.95833333333333,
+            "velocityStdDev": 8.988321898750376,
+            "durationBeatsMean": 0.8822295434426309,
+            "pitchMin": 48,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.004036056391674925,
+            "timingDeviationMax": 0.014014001491169381
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 69.75,
+            "velocityStdDev": 4.02336923485777,
+            "durationBeatsMean": 4.3252219711896025,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011590870131738873,
+            "timingDeviationMax": 0.018353841850224484
+          }
+        }
+      }
+    },
+    {
+      "progression": "C: Am - F - C - G @ 140",
+      "rhythm": "waltz",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 140,
+      "metrics": {
+        "totalNotes": 46,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 104.75,
+            "velocityStdDev": 5.261891294962297,
+            "durationBeatsMean": 1.8337471210921648,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 12,
+            "velocityMean": 49.583333333333336,
+            "velocityStdDev": 5.203497755249721,
+            "durationBeatsMean": 0.587479849382847,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0038551590359325503,
+            "timingDeviationMax": 0.009999014795098127
+          },
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 92.5,
+            "velocityStdDev": 4.272001872658765,
+            "durationBeatsMean": 2.5193378171883527,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "chord": {
+            "noteCount": 18,
+            "velocityMean": 71.55555555555556,
+            "velocityStdDev": 5.678636595191394,
+            "durationBeatsMean": 0.7382666342993293,
+            "pitchMin": 55,
+            "pitchMax": 64,
+            "timingDeviationMean": 0.003669355480461816,
+            "timingDeviationMax": 0.010532043377635247
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 68.25,
+            "velocityStdDev": 6.609652033201143,
+            "durationBeatsMean": 0.8198892862768843,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.0104219371947111,
+            "timingDeviationMax": 0.017162134433475806
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "block",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 64,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 116.375,
+            "velocityStdDev": 6.362733296312206,
+            "durationBeatsMean": 1.892590543432161,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0020581201470296073,
+            "timingDeviationMax": 0.006739024995336962
+          },
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 98.25,
+            "velocityStdDev": 9.41740410091868,
+            "durationBeatsMean": 3.8041536755114795,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.46875,
+            "velocityStdDev": 19.15395581694549,
+            "durationBeatsMean": 0.46582050247961904,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005104423154936401,
+            "timingDeviationMax": 0.012827970457670368
+          },
+          "chord": {
+            "noteCount": 12,
+            "velocityMean": 93.75,
+            "velocityStdDev": 6.49519052838329,
+            "durationBeatsMean": 3.782848751737425,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 112.375,
+            "velocityStdDev": 5.0974871260259205,
+            "durationBeatsMean": 1.8083756909240034,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.013842660954337116,
+            "timingDeviationMax": 0.02203119826074662
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "arpeggio",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 128,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 102.125,
+            "velocityStdDev": 7.622950544244663,
+            "durationBeatsMean": 1.6761262396280654,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0019825093212929024,
+            "timingDeviationMax": 0.005869911912688153
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 81.0625,
+            "velocityStdDev": 6.004880827293744,
+            "durationBeatsMean": 0.81477633514849,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002932579538437903,
+            "timingDeviationMax": 0.0074847070753110145
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 58.1875,
+            "velocityStdDev": 7.439075463389251,
+            "durationBeatsMean": 0.40872812237139433,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004522191785869274,
+            "timingDeviationMax": 0.012796190189256151
+          },
+          "chord": {
+            "noteCount": 64,
+            "velocityMean": 70.03125,
+            "velocityStdDev": 7.019990985571136,
+            "durationBeatsMean": 0.20110440186790585,
+            "pitchMin": 48,
+            "pitchMax": 67,
+            "timingDeviationMean": 0.0035071225605735517,
+            "timingDeviationMax": 0.009094101573236202
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 6.777720855862979,
+            "durationBeatsMean": 1.5182984426000619,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.01905850668317574,
+            "timingDeviationMax": 0.02508273592558652
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "natural",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 122,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 108.75,
+            "velocityStdDev": 5.825590098865522,
+            "durationBeatsMean": 0.7556407199415844,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.001488954258160008,
+            "timingDeviationMax": 0.005173571628075635
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 48.25,
+            "velocityStdDev": 17.66882848408462,
+            "durationBeatsMean": 0.18272418217831735,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004696965051314046,
+            "timingDeviationMax": 0.01165409513872584
+          },
+          "chord": {
+            "noteCount": 54,
+            "velocityMean": 72.33333333333333,
+            "velocityStdDev": 6.92552979655441,
+            "durationBeatsMean": 0.3459175562321778,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.006157926485118367,
+            "timingDeviationMax": 0.017098937902087386
+          },
+          "bass": {
+            "noteCount": 20,
+            "velocityMean": 70.9,
+            "velocityStdDev": 6.34744042902334,
+            "durationBeatsMean": 0.34101381480554116,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.00267646638175833,
+            "timingDeviationMax": 0.006479351480095374
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 104.375,
+            "velocityStdDev": 4.3857011982122085,
+            "durationBeatsMean": 0.8319243795995136,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.013869732767269383,
+            "timingDeviationMax": 0.02104278209530719
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "driving",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 113,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 120,
+            "velocityStdDev": 5.894913061275798,
+            "durationBeatsMean": 1.6724930840835441,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0016876585205643502,
+            "timingDeviationMax": 0.005526000496176131
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 96.41666666666667,
+            "velocityStdDev": 7.983924821512009,
+            "durationBeatsMean": 1.0931172245232543,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0025758210344566193,
+            "timingDeviationMax": 0.006596739974832566
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 50.09375,
+            "velocityStdDev": 19.804291477795918,
+            "durationBeatsMean": 0.41223496449623787,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004185626987047912,
+            "timingDeviationMax": 0.010518935775290394
+          },
+          "chord": {
+            "noteCount": 45,
+            "velocityMean": 87.11111111111111,
+            "velocityStdDev": 9.73475382835978,
+            "durationBeatsMean": 0.915297176422396,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.003305322345728416,
+            "timingDeviationMax": 0.008044815185836995
+          },
+          "top": {
+            "noteCount": 8,
+            "velocityMean": 76.625,
+            "velocityStdDev": 7.210019070709869,
+            "durationBeatsMean": 1.5233899960477717,
+            "pitchMin": 59,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.004506635309510898,
+            "timingDeviationMax": 0.008391284477851535
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 116.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6829554568685128,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011350981982556574,
+            "timingDeviationMax": 0.018065582573813188
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "relaxed",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 63,
+        "maxPolyphony": 8,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 95.25,
+            "velocityStdDev": 5.717298313014636,
+            "durationBeatsMean": 3.7095981574989856,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 81.375,
+            "velocityStdDev": 8.572302782799964,
+            "durationBeatsMean": 1.821848384223413,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.005676470550807333,
+            "timingDeviationMax": 0.020966479818659067
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 54.0625,
+            "velocityStdDev": 6.2496874921871095,
+            "durationBeatsMean": 0.926939353123307,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004712854230807577,
+            "timingDeviationMax": 0.013694800462823231
+          },
+          "chord": {
+            "noteCount": 27,
+            "velocityMean": 71.5925925925926,
+            "velocityStdDev": 7.409999546455023,
+            "durationBeatsMean": 1.6439032184570617,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.007571079051589812,
+            "timingDeviationMax": 0.028344008282980226
+          },
+          "top": {
+            "noteCount": 4,
+            "velocityMean": 64,
+            "velocityStdDev": 6.519202405202649,
+            "durationBeatsMean": 3.146656053899788,
+            "pitchMin": 61,
+            "pitchMax": 71,
+            "timingDeviationMean": 0.015035728838523,
+            "timingDeviationMax": 0.027088250264011293
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 87.75,
+            "velocityStdDev": 2.8613807855648994,
+            "durationBeatsMean": 3.1689093836816027,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.01971684929260764,
+            "timingDeviationMax": 0.02465908168921871
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "beat8",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 102,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 117.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.7061978123674635,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0020581201470296073,
+            "timingDeviationMax": 0.006739024995336962
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 94.25,
+            "velocityStdDev": 7.338539818428913,
+            "durationBeatsMean": 1.1188282529889448,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003141245163971388,
+            "timingDeviationMax": 0.008044804847356701
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 49.53125,
+            "velocityStdDev": 19.233733996223926,
+            "durationBeatsMean": 0.4214640438301286,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005104423154936401,
+            "timingDeviationMax": 0.012827970457670368
+          },
+          "chord": {
+            "noteCount": 42,
+            "velocityMean": 84.11904761904762,
+            "velocityStdDev": 8.68277545311181,
+            "durationBeatsMean": 1.0243997656129902,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.004315281578544994,
+            "timingDeviationMax": 0.009810750226629139
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 113.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6975176114065107,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.013842660954337116,
+            "timingDeviationMax": 0.02203119826074662
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "beat16",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 191,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 110.625,
+            "velocityStdDev": 11.35712881849986,
+            "durationBeatsMean": 0.8348173422043329,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.002540031614137836,
+            "timingDeviationMax": 0.005896817689994727
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 92.4375,
+            "velocityStdDev": 8.810283409175893,
+            "durationBeatsMean": 0.8315708383964374,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0027013909804439185,
+            "timingDeviationMax": 0.007399444901291297
+          },
+          "hat": {
+            "noteCount": 64,
+            "velocityMean": 47.484375,
+            "velocityStdDev": 16.37642378113656,
+            "durationBeatsMean": 0.20372561015283294,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.0053465574297643075,
+            "timingDeviationMax": 0.013553071615985068
+          },
+          "chord": {
+            "noteCount": 87,
+            "velocityMean": 80.41379310344827,
+            "velocityStdDev": 9.714962655896814,
+            "durationBeatsMean": 0.4681075217124161,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.003957944533755523,
+            "timingDeviationMax": 0.009810750226629139
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 109.75,
+            "velocityStdDev": 8.027297179001161,
+            "durationBeatsMean": 1.5369982695556246,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.01905850668317574,
+            "timingDeviationMax": 0.02508273592558652
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "shuffle",
+      "style": "band",
+      "feel": "shuffle",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 126,
+        "maxPolyphony": 10,
+        "nonChordToneCount": 6,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 113.125,
+            "velocityStdDev": 6.41165930161608,
+            "durationBeatsMean": 1.6314763585804029,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0020581201470296073,
+            "timingDeviationMax": 0.006739024995336962
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 94.41666666666667,
+            "velocityStdDev": 7.3649884966343,
+            "durationBeatsMean": 1.0714448576715465,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003141245163971388,
+            "timingDeviationMax": 0.008044804847356701
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 47.96875,
+            "velocityStdDev": 18.007783690324025,
+            "durationBeatsMean": 0.4036028842609085,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.004566575417030375,
+            "timingDeviationMax": 0.01132480942208236
+          },
+          "chord": {
+            "noteCount": 66,
+            "velocityMean": 79.89393939393939,
+            "velocityStdDev": 9.675224197353474,
+            "durationBeatsMean": 0.6215440124966146,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.031915412360952564,
+            "timingDeviationMax": 0.09062837878898344
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 111.25,
+            "velocityStdDev": 5.0682837331783235,
+            "durationBeatsMean": 1.6146892273100093,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.011415273315023483,
+            "timingDeviationMax": 0.019089603284303536
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "swing",
+      "style": "band",
+      "feel": "swing",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 118,
+        "maxPolyphony": 10,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 100.625,
+            "velocityStdDev": 7.498958260985321,
+            "durationBeatsMean": 1.671476358580403,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0026272860358992345,
+            "timingDeviationMax": 0.008304478362598289
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 92,
+            "velocityStdDev": 8.824681297361396,
+            "durationBeatsMean": 0.8047102388768691,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.0036843193196763185,
+            "timingDeviationMax": 0.009823018785123594
+          },
+          "hat": {
+            "noteCount": 32,
+            "velocityMean": 42.625,
+            "velocityStdDev": 15.261778238462254,
+            "durationBeatsMean": 0.4136028842609084,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005694669484801258,
+            "timingDeviationMax": 0.014171584860521058
+          },
+          "chord": {
+            "noteCount": 54,
+            "velocityMean": 70.74074074074075,
+            "velocityStdDev": 8.72243846551161,
+            "durationBeatsMean": 0.746938586705451,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.05829085607223826,
+            "timingDeviationMax": 0.08449373260306503
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 98.75,
+            "velocityStdDev": 5.9107952087684446,
+            "durationBeatsMean": 1.6521892273100094,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.010507699295990408,
+            "timingDeviationMax": 0.019569614426186988
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "bossa",
+      "style": "city",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 96,
+        "maxPolyphony": 6,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 16,
+            "velocityMean": 81.4375,
+            "velocityStdDev": 6.981840283907961,
+            "durationBeatsMean": 0.6750635351461095,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0027216417683265798,
+            "timingDeviationMax": 0.006739024995336962
+          },
+          "bass": {
+            "noteCount": 16,
+            "velocityMean": 80.1875,
+            "velocityStdDev": 8.398055950635243,
+            "durationBeatsMean": 0.6630127580360569,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003433471711842828,
+            "timingDeviationMax": 0.008516815953056422
+          },
+          "hat": {
+            "noteCount": 16,
+            "velocityMean": 45.9375,
+            "velocityStdDev": 5.825254822752392,
+            "durationBeatsMean": 0.6974670934863388,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.003313911933165492,
+            "timingDeviationMax": 0.009408163920842316
+          },
+          "chord": {
+            "noteCount": 48,
+            "velocityMean": 60.5,
+            "velocityStdDev": 6.519202405202649,
+            "durationBeatsMean": 0.6603444971024632,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.01664569590348249,
+            "timingDeviationMax": 0.04357270297114724
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "reggae",
+      "style": "band",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 76,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 109.375,
+            "velocityStdDev": 5.31360282670807,
+            "durationBeatsMean": 0.6483287227223627,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0020581201470296073,
+            "timingDeviationMax": 0.006739024995336962
+          },
+          "bass": {
+            "noteCount": 12,
+            "velocityMean": 95.41666666666667,
+            "velocityStdDev": 7.2509577911396565,
+            "durationBeatsMean": 0.41993137848932144,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.003141245163971388,
+            "timingDeviationMax": 0.008044804847356701
+          },
+          "hat": {
+            "noteCount": 8,
+            "velocityMean": 60.75,
+            "velocityStdDev": 7.189401922274203,
+            "durationBeatsMean": 0.6383034817047883,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.003322081618039957,
+            "timingDeviationMax": 0.007851263645442641
+          },
+          "chord": {
+            "noteCount": 48,
+            "velocityMean": 77.0625,
+            "velocityStdDev": 9.90455755784511,
+            "durationBeatsMean": 0.31345797651010804,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.0038010569074827597,
+            "timingDeviationMax": 0.007317454431362336
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "sixEight",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 68,
+        "maxPolyphony": 5,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 8,
+            "velocityMean": 92.25,
+            "velocityStdDev": 6.199798383818623,
+            "durationBeatsMean": 2.656344618840376,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0.0022143292483526866,
+            "timingDeviationMax": 0.0072420739780181265
+          },
+          "bass": {
+            "noteCount": 8,
+            "velocityMean": 88.875,
+            "velocityStdDev": 7.114026637566098,
+            "durationBeatsMean": 2.7572498764976627,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0.002381375849020151,
+            "timingDeviationMax": 0.00836877071506592
+          },
+          "hat": {
+            "noteCount": 24,
+            "velocityMean": 32.541666666666664,
+            "velocityStdDev": 10.855026357509328,
+            "durationBeatsMean": 0.8679181856580543,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.005015938121807104,
+            "timingDeviationMax": 0.010653851274330606
+          },
+          "chord": {
+            "noteCount": 24,
+            "velocityMean": 68.5,
+            "velocityStdDev": 8.426149773176359,
+            "durationBeatsMean": 0.876580574827579,
+            "pitchMin": 48,
+            "pitchMax": 67,
+            "timingDeviationMean": 0.003797562150348821,
+            "timingDeviationMax": 0.013185901403055311
+          },
+          "snare": {
+            "noteCount": 4,
+            "velocityMean": 69.75,
+            "velocityStdDev": 4.02336923485777,
+            "durationBeatsMean": 4.3252219711896025,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.010905955078499119,
+            "timingDeviationMax": 0.01726929664998167
+          }
+        }
+      }
+    },
+    {
+      "progression": "D: Dm7 - G7 - Cmaj7 - A7 @ 90",
+      "rhythm": "waltz",
+      "style": "ballad",
+      "feel": "straight",
+      "bpm": 90,
+      "metrics": {
+        "totalNotes": 55,
+        "maxPolyphony": 7,
+        "nonChordToneCount": 0,
+        "invalidNoteCount": 0,
+        "perTrack": {
+          "kick": {
+            "noteCount": 4,
+            "velocityMean": 104.75,
+            "velocityStdDev": 5.261891294962297,
+            "durationBeatsMean": 1.8337471210921648,
+            "pitchMin": 36,
+            "pitchMax": 36,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "bass": {
+            "noteCount": 4,
+            "velocityMean": 94.75,
+            "velocityStdDev": 8.584142356694699,
+            "durationBeatsMean": 2.6327881415840237,
+            "pitchMin": 36,
+            "pitchMax": 45,
+            "timingDeviationMean": 0,
+            "timingDeviationMax": 0
+          },
+          "hat": {
+            "noteCount": 12,
+            "velocityMean": 49.583333333333336,
+            "velocityStdDev": 5.203497755249721,
+            "durationBeatsMean": 0.587479849382847,
+            "pitchMin": 42,
+            "pitchMax": 42,
+            "timingDeviationMean": 0.003627354183808995,
+            "timingDeviationMax": 0.009408163920842316
+          },
+          "chord": {
+            "noteCount": 27,
+            "velocityMean": 71.51851851851852,
+            "velocityStdDev": 6.7019641696400125,
+            "durationBeatsMean": 0.7455788709586746,
+            "pitchMin": 52,
+            "pitchMax": 62,
+            "timingDeviationMean": 0.003452529929343393,
+            "timingDeviationMax": 0.009909695359866078
+          },
+          "snare": {
+            "noteCount": 8,
+            "velocityMean": 68.25,
+            "velocityStdDev": 6.609652033201143,
+            "durationBeatsMean": 0.8198892862768843,
+            "pitchMin": 38,
+            "pitchMax": 38,
+            "timingDeviationMean": 0.009806095451387248,
+            "timingDeviationMax": 0.01614800830786134
+          }
+        }
+      }
+    }
+  ]
+}
