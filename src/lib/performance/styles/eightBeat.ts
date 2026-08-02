@@ -16,9 +16,12 @@ export const EIGHT_BEAT: StylePreset = {
   stepsPerBar: 8, // 8th-note grid
   // Syncopated pop comp: 1 (step0), &of2 (step3), 3 (step4), &of4 (step7).
   // Down-beats (1 & 3) are strongest; the two off-beat pushes sit just under them.
+  // Band Engine v1 (band_engine_spec §11-1): the on/off contrast widened — beat 3
+  // lifted, the off-beat pushes pulled slightly under — so the drive reads as
+  // accent, not density.
   chord: {
     hits: [true, false, false, true, true, false, false, true],
-    accent: [1.0, 0.5, 0.5, 0.7, 0.85, 0.5, 0.5, 0.72],
+    accent: [1.0, 0.5, 0.5, 0.66, 0.9, 0.5, 0.5, 0.7],
   },
   // Bass keeps its root feel on 1 & 3 and adds a light &of4 push into the next chord.
   bass: {
@@ -49,7 +52,8 @@ export const EIGHT_BEAT: StylePreset = {
   },
   velocity: {
     center: { chord: 78, bass: 88, kick: 104, snare: 98, hat: 66 },
-    accentDepth: 34,
+    // Band Engine v1: deeper accent range — the widened accents above land harder.
+    accentDepth: 38,
     phraseDepth: 7,
     humanizeMin: 4,
     humanizeMax: 7,

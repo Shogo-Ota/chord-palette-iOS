@@ -39,19 +39,22 @@ export const SIXTEEN_BEAT: StylePreset = {
     ghost: [B, H, B, H, B, H, B, H, B, H, B, H, B, H, B, H],
   },
   kickFeelMs: { min: -3, max: 3 },
+  // City Engine v1 (city_engine_spec §7/§9): the 16th lattice reads as 洗練 when
+  // the grains line up — chord timing and velocity spread tightened so the comp
+  // sounds even and polished rather than loose.
   microtiming: {
     kick: { min: -2, max: 2 },
     bass: { min: -2, max: 2 },
     hat: { min: -6, max: 4 },
     snare: { min: 4, max: 14 },
-    chord: { min: -4, max: 4 },
+    chord: { min: -3, max: 3 },
   },
   velocity: {
     center: { chord: 76, bass: 86, kick: 102, snare: 96, hat: 62 },
     accentDepth: 36,
     phraseDepth: 8,
-    humanizeMin: 4,
-    humanizeMax: 7,
+    humanizeMin: 3,
+    humanizeMax: 5,
     ghostMin: 20,
     ghostMax: 45,
   },

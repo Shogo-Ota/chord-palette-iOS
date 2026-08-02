@@ -46,10 +46,31 @@ const POP_LINE: BassProfile = {
   passing: true,
 };
 
+/**
+ * Band Engine v1 (band_engine_spec §4 BAND_MOVE): the pop line plus an
+ * occasional octave pump for the サビ-like lift, connectives on the change.
+ */
+const BAND_LINE: BassProfile = {
+  figures: ['rootFifth', 'rootOnly', 'rootOctave'],
+  approachChance: 0.5,
+  passing: true,
+};
+
 /** Octave pump joins the pool; approaches lead almost every change (drive). */
 const DRIVE_LINE: BassProfile = {
   figures: ['rootOctave', 'rootFifth'],
   approachChance: 0.6,
+  passing: true,
+};
+
+/**
+ * City Engine v1 (city_engine_spec §4 CITY_SMOOTH): the 16-beat bass sings
+ * instead of pumping — fifths over octave jumps, connectives kept moderate,
+ * so the line reads 滑らか rather than driving.
+ */
+const CITY_LINE: BassProfile = {
+  figures: ['rootFifth', 'rootOnly'],
+  approachChance: 0.4,
   passing: true,
 };
 
@@ -61,12 +82,12 @@ const PROFILE_OF: Record<string, BassProfile> = {
   waltz: BALLAD_LINE,
   bossa: BALLAD_LINE,
   natural: POP_LINE,
-  beat8: POP_LINE,
+  beat8: BAND_LINE,
   shuffle: POP_LINE,
   swing: POP_LINE,
   reggae: POP_LINE,
   driving: DRIVE_LINE,
-  beat16: DRIVE_LINE,
+  beat16: CITY_LINE,
 };
 
 /** The movement profile a rhythm id plays with (unknown ids stay root-only). */

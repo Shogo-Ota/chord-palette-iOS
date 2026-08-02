@@ -15,12 +15,16 @@
 
 import type { VariationProfile } from '../variation/types';
 
-/** 8-beat: light space and a phrase-end ring; the bar itself carries the groove. */
+/**
+ * 8-beat: light space; the bar itself carries the groove. Band Engine v1
+ * (band_engine_spec §9): the phrase END pushes forward instead of landing —
+ * no final ring, more pickup stabs into the next phrase (Ballad's opposite).
+ */
 export const EIGHT_VARIATION: VariationProfile = {
   rests: { probability: 0.14, maxPerPhrase: 2 },
   ties: { probability: 0.22, maxPerPhrase: 2 },
-  twoFourBar: { probability: 0.45, maxPerPhrase: 1 },
-  phraseFill: { sustainFinal: true, extraStabProbability: 0.4 },
+  twoFourBar: { probability: 0.5, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: false, extraStabProbability: 0.55 },
   bassOnly: { probability: 0, maxPerPhrase: 0 },
 };
 

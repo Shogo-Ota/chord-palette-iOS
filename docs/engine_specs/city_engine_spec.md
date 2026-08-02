@@ -117,8 +117,20 @@ Ballad 仕様 §13 と同一（`docs/midi_dataset_policy.md` / `docs/midi_source
 
 ---
 
+## 14. v1 実装状況（2026-08-03）
+
+オーナー指示（「まずはすすめて」）を受け、§11 の 1・2・4 を JS 側のみで実装した。
+
+| §11 項目 | 実装 | 場所 |
+|---|---|---|
+| 1. 粒立ち | chord microtiming ±4→±3ms、velocity humanize 4–7→3–5（揃い＝洗練） | `styles/sixteenBeat.ts` |
+| 2. ベース | `beat16` を `DRIVE_LINE` → `CITY_LINE`（rootFifth/rootOnly, approach 0.4）へ。オクターブポンプを外し滑らかに | `bass/profiles.ts` |
+| 3. カードプリセット判断 | **未実施** — 暫定（arpeggio＋soul16＋高め）のまま。聴感比較待ち | `model/styleCards.ts` |
+| 4. テスト | スケルトン値・CITY_LINE・「オクターブが出ない」「でも動く」を凍結 | `__tests__/cityCalibration.test.ts` |
+
+検証: 全スイート 66 / 1635 件パス。
+
 ## 次のアクション
 
-1. 仮説 H1〜H10 と v1 スコープ（§11）のオーナー確認
-2. City カード暫定プリセット（arpeggio＋高め）の実機聴感フィードバック
-3. 承認後、v1 実装（見込み: JS 側 1.5〜3時間。ネイティブ変更なし）
+1. 実機で City カード（arpeggio＋高め）と 詳細設定なしの beat16 を聴き比べ、カードプリセットの本命を決定（§11-3）
+2. 教材 MIDI が揃い次第、仮説検証と v1.1 調整

@@ -170,8 +170,21 @@ Ballad 仕様 §13 と同一（`docs/midi_dataset_policy.md` / `docs/midi_source
 
 ---
 
+## 14. v1 実装状況（2026-08-03）
+
+オーナー指示（「まずはすすめて」）を受け、§11 を JS 側のみで実装した。
+
+| §11 項目 | 実装 | 場所 |
+|---|---|---|
+| 1. アクセント差 | chord accent の表裏差を拡大（3拍目 0.85→0.9、裏の食い 0.7/0.72→0.66/0.7）、accentDepth 34→38 | `styles/eightBeat.ts` |
+| 2. フレーズ終端 | `EIGHT_VARIATION` を前進型へ: sustainFinal true→false、extraStab 0.4→0.55、twoFourBar 0.45→0.5 | `rhythms/variations.ts` |
+| 3. ベース | `beat8` を `BAND_LINE`（rootFifth/rootOnly/rootOctave, approach 0.5）へ。オクターブポンプがサビ的リフトとして時折入る。`driving` は `DRIVE_LINE` のまま | `bass/profiles.ts` |
+| 4. テスト | スケルトン値・variation 値・両ベースプロファイル・オクターブ到達・Ballad との音量差を凍結 | `__tests__/bandCalibration.test.ts` |
+| 5. カード整合 | Band カード＝ driving + rock8（確認済み。driving は 8/16 スケルトンへ解決されるため §11-1/2 の改良が乗る） | `model/styleCards.ts` |
+
+検証: 全スイート 66 / 1635 件パス。§12-3 の聴感チェック（実機）はオーナー実施待ち。
+
 ## 次のアクション
 
-1. 本仕様の仮説 H1〜H10 と v1 スコープ（§11）のオーナー確認
-2. Ballad v1 の聴感チェック結果を待ち、同じ調整手法（プロファイル値＋キャリブレーションテスト）を Band に適用
-3. 承認後、v1 実装（見込み: JS 側 1.5〜3時間。ネイティブ変更なし）
+1. §12-3 の聴感チェック（実機・Metro リロードのみで反映）
+2. 教材 MIDI が揃い次第、仮説検証と v1.1 調整
