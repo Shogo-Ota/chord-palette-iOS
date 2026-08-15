@@ -1,0 +1,37 @@
+{
+  "experimentId": "2026-08-15-playback-default-sequencer",
+  "baseline": {
+    "playbackArtifacts": "PASS: 7 artifacts regenerated",
+    "midiQaCorpus": {
+      "cases": 42,
+      "hardHarmonyFindings": 0,
+      "structureFindings": 0,
+      "regressions": 0,
+      "knownQaFindings": {
+        "degree": 21,
+        "register": 8,
+        "transpose": 201
+      }
+    },
+    "qualityContractTests": "PASS: 171/171"
+  },
+  "after": {
+    "playbackPolicyTests": "PASS: 4/4",
+    "playbackFidelityTests": "PASS",
+    "nativePlaybackPlanTests": "PASS",
+    "combinedQualityRegression": "PASS: 183/183",
+    "lint": "PASS",
+    "format": "PASS",
+    "iosBundle": "PASS",
+    "typecheck": {
+      "status": "BLOCKED_BY_PRE_EXISTING_ERRORS",
+      "errors": [
+        "dist-check/eas-production-archive-v2 missing GT-001_125BPM_allday_Piano.features.json",
+        "src/lib/__tests__/projectSummary.test.ts fixture accompanimentEnergy optionality"
+      ],
+      "newErrorsFromExperiment": 0
+    }
+  },
+  "knownQaFindingAssessment": "Existing MIDI QA findings predate this playback-only change and are tracked for the next autonomous QA calibration iteration.",
+  "result": "IMPROVED"
+}

@@ -1,0 +1,26 @@
+{
+  "experimentId": "2026-08-15-playback-default-sequencer",
+  "before": {
+    "engine": "sampled",
+    "pass": false,
+    "failures": [
+      "CC64 loss: sampled playback does not schedule Final MIDI pedal events",
+      "Playback pitch mismatch: notes above MIDI 84 are clamped to 84"
+    ]
+  },
+  "after": {
+    "engine": "sequencer",
+    "pass": true,
+    "userChordLegalityPct": 100,
+    "simultaneousIdenticalPitchDuplicates": 0,
+    "invalidVoiceCrossing": 0,
+    "slashBassContract": "PASS",
+    "midiPitchRange": "0-127",
+    "playbackPitchMismatch": 0,
+    "cc64Mismatch": 0,
+    "unexpectedLegacyBass": 0,
+    "crash": 0,
+    "silence": 0
+  },
+  "generationUnchanged": true
+}

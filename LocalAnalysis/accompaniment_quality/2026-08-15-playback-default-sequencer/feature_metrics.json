@@ -1,0 +1,42 @@
+{
+  "experimentId": "2026-08-15-playback-default-sequencer",
+  "qualityCategory": "PLAYBACK",
+  "generationChanged": false,
+  "finalMidiChanged": false,
+  "cases": [
+    {
+      "label": "Natural Type1 · C | Am | F | G",
+      "finalMidi": { "noteOn": 72, "noteOff": 72, "cc64": 16, "pitchMin": 36, "pitchMax": 67 },
+      "sampled": { "cc64Preserved": 0, "pitchClampRange": [24, 84] },
+      "sequencer": {
+        "noteOn": 72,
+        "noteOff": 72,
+        "cc64": 16,
+        "pitchMismatch": 0,
+        "onsetMismatch": 0,
+        "noteOffMismatch": 0,
+        "velocityMismatch": 0,
+        "cc64Mismatch": 0
+      }
+    },
+    {
+      "label": "Variation Type1 · D | Bm | G | A",
+      "finalMidi": { "noteOn": 55, "noteOff": 55, "cc64": 16, "pitchMin": 49, "pitchMax": 86 },
+      "sampled": { "cc64Preserved": 0, "pitchClampRange": [24, 84], "notesAtOrAbove85": 13 },
+      "sequencer": {
+        "noteOn": 55,
+        "noteOff": 55,
+        "cc64": 16,
+        "pitchMismatch": 0,
+        "onsetMismatch": 0,
+        "noteOffMismatch": 0,
+        "velocityMismatch": 0,
+        "cc64Mismatch": 0
+      }
+    }
+  ],
+  "sources": [
+    "LocalAnalysis/teacher_forensic_audit/phase3c/phase3c_playback_fidelity.json",
+    "LocalAnalysis/playback_regression/manifest.json"
+  ]
+}

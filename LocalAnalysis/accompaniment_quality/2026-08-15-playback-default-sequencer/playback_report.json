@@ -1,0 +1,45 @@
+{
+  "experimentId": "2026-08-15-playback-default-sequencer",
+  "candidateCount": 6,
+  "candidates": [
+    {
+      "id": "A",
+      "strategy": "legacy sampled unchanged",
+      "decision": "REJECT",
+      "reason": "CC64 loss and pitch clamp violate hard gates"
+    },
+    {
+      "id": "B",
+      "strategy": "sampled pitch range expansion only",
+      "decision": "REJECT",
+      "reason": "CC64 remains absent"
+    },
+    {
+      "id": "C",
+      "strategy": "sampled duration extension as pedal substitute",
+      "decision": "REJECT",
+      "reason": "changes Final MIDI duration semantics and is explicitly forbidden"
+    },
+    {
+      "id": "D",
+      "strategy": "sampled arbitrary pedal injection",
+      "decision": "REJECT",
+      "reason": "does not reproduce authored CC64 and is explicitly forbidden"
+    },
+    {
+      "id": "E",
+      "strategy": "second SMF-driven realtime implementation",
+      "decision": "REJECT",
+      "reason": "duplicates an already validated realtime provider with higher regression risk"
+    },
+    {
+      "id": "F",
+      "strategy": "existing flattened Final MIDI realtime sequencer",
+      "decision": "ADOPT",
+      "reason": "event-for-event NoteOn, NoteOff, pitch, onset, duration, velocity and CC64 fidelity"
+    }
+  ],
+  "adoptedEngine": "sequencer",
+  "legacyOverrideRetained": "sampled",
+  "fallbackBehavior": "Older/incomplete JS requests still fall through to native sampled playback"
+}

@@ -1,0 +1,20 @@
+{
+  "experimentId": "2026-08-15-playback-default-sequencer",
+  "hypothesis": "Making the already validated realtime sequencer the default removes known Final MIDI playback violations without changing generation.",
+  "qualityCategory": "PLAYBACK",
+  "classification": "IMPROVED",
+  "decision": "ADOPT",
+  "implementation": [
+    "Default unknown/unset playback policy to sequencer",
+    "Retain sampled as an explicit build-time/runtime diagnostic override",
+    "Attach the native MIDI schedule from the same SessionPerformancePlan"
+  ],
+  "reason": "The sampled path fails absolute CC64 and pitch-fidelity gates. The sequencer path has zero measured mismatch on required Natural and Variation cases and all public pattern/type/effect bridge regressions pass.",
+  "baselineMidi": [
+    "LocalAnalysis/playback_regression/ballad_type1.mid",
+    "LocalAnalysis/playback_regression/arpeggio_type1.mid"
+  ],
+  "candidateMidi": "Identical to baseline by contract; this iteration changes playback provider only.",
+  "humanPreference": "Not requested: only one candidate survives hard gates.",
+  "nextAction": "Calibrate MIDI QA false-positive findings before changing musical generation."
+}
