@@ -20,9 +20,14 @@ import type { AccompanimentVariant, AccompanimentVariantId } from './types';
 export type { AccompanimentVariant, AccompanimentVariantId } from './types';
 export { VARIANT_CATALOG } from './catalog';
 
-/** The variants an accompaniment offers, in chip order. */
+/** Every catalogued reading, including ones kept only so saved projects still resolve. */
 export function variantsFor(pattern: AccompanimentPattern): readonly AccompanimentVariant[] {
   return VARIANT_CATALOG[pattern];
+}
+
+/** The readings the Style screen and MIDI QA may offer, in chip order. */
+export function offeredVariantsFor(pattern: AccompanimentPattern): readonly AccompanimentVariant[] {
+  return VARIANT_CATALOG[pattern].filter((v) => v.offered !== false);
 }
 
 /** The variant an accompaniment falls back to — the reading it had before variants. */

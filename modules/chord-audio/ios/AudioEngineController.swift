@@ -31,6 +31,8 @@ final class PlanSnapshot {
   let chordStrikes: [NoteStrike]
   /// Beats per bar for drum groove folding (default 4/4).
   let beatsPerBar: Double
+  /// off | clap | full — controls which drum voices play (Groove UI).
+  let drumMode: String
   /// Longest chord strike duration (frames); used to bound the audio-thread scan.
   let maxStrikeDur: Int
 
@@ -42,7 +44,8 @@ final class PlanSnapshot {
     drumPattern: String = "pop8",
     accompaniment: String = "block",
     chordStrikes: [NoteStrike] = [],
-    beatsPerBar: Double = 4.0
+    beatsPerBar: Double = 4.0,
+    drumMode: String = "full"
   ) {
     self.bpm = bpm
     self.totalBeats = totalBeats
@@ -52,6 +55,7 @@ final class PlanSnapshot {
     self.accompaniment = accompaniment
     self.chordStrikes = chordStrikes
     self.beatsPerBar = beatsPerBar
+    self.drumMode = drumMode
     self.maxStrikeDur = chordStrikes.map(\.dur).max() ?? 0
   }
 }
@@ -93,12 +97,21 @@ final class AudioEngineController {
 
   /// Instrument id → General MIDI program number.
   private static let programForInstrument: [String: UInt8] = [
-    "piano": 0, // Acoustic Grand Piano
-    // ePiano uses ElectricPianoInstrumentProvider (not SoundFont program 4).
+    "piano": 0, // Acoustic Grand Piano (FluidR3 GM program 0)
+    "ePiano": 4, // Rhodes MKII SF2 — its single preset is program 4, bank 0
     "acousticGuitar": 25, // Acoustic Guitar (steel)
     "electricGuitar": 27, // Electric Guitar (clean)
     "strings": 48, // String Ensemble 1
   ]
+
+  /// Instrument id → bundled SoundFont base name. Instruments not listed fall back to
+  /// the default GM bank. E.Piano ships its own dedicated Rhodes MKII bank so it no
+  /// longer depends on the synth EP (FluidR3's EP presets read as hiss on device).
+  private static let soundFontForInstrument: [String: String] = [
+    "ePiano": "Rhodes_MKII_Piano",
+  ]
+  /// The general-purpose GM SoundFont (piano program 0, GM percussion for drums).
+  private static let defaultSoundFontName = "FluidR3_GM2-2"
   private var chordSource: AVAudioSourceNode?
   private var drumSource: AVAudioSourceNode?
   /// Master brick-wall limiter (Apple AUPeakLimiter) inserted between the mix bus
@@ -135,6 +148,33 @@ final class AudioEngineController {
 
   private var prepared = false
   private var positionTimer: DispatchSourceTimer?
+
+  // MARK: - Playback v2 (realtime sampler)
+
+  /// Whether the CURRENT take runs on v2 (`RealtimeSamplerEngine`) instead of v1
+  /// (pre-rendered buffers summed in a render callback). Selected per play request by
+  /// JS so both can be A/B'd in one build, and so a fault in v2 cannot affect the
+  /// shipping path.
+  ///
+  /// A plain `Bool` rather than a lock-guarded string: it is read from whichever thread
+  /// asks for the transport state, and a trivially-copyable value cannot be corrupted by
+  /// a concurrent read. Worst case a reader sees the previous engine for one call, which
+  /// is harmless — writes only happen when a take starts or stops.
+  private var useRealtimeEngine = false
+  private var activeEngineName: String { useRealtimeEngine ? "sequencer" : "sampled" }
+  /// v2 engine. Attached during `buildEngine`; idle (and silent) until a request
+  /// selects it. See `docs/audio/playback_rebuild_v2.md`.
+  private var realtime: RealtimeSamplerEngine?
+  /// Beats of the v2 plan, so the position timer can fold / detect the end.
+  private var realtimeTotalBeats: Double = 0
+  private var realtimeEvents: [NoteEventValue] = []
+  /// Playback-only pre-roll. It owns a separate sampler on the master bus so drum
+  /// muting cannot silence the transport cue.
+  private var countInPlayer: CountInPlayer?
+  private let countInLock = NSLock()
+  private var countInActive = false
+  private var countInPaused = false
+  private var pendingCountInStart: (() -> Void)?
 
   /// Last volumes pushed from JS (also applied as a render-time gain so 0 = mute
   /// even if the AVAudioMixerNode path misbehaves). Read under `unfairLock`.
@@ -196,6 +236,9 @@ final class AudioEngineController {
       setInstrument("piano")
       // Load sampled GM percussion for the drums (synth fallback on failure).
       loadDrumVoice()
+      if let url = Self.soundFontURL() {
+        _ = countInPlayer?.load(soundFontURL: url)
+      }
       state = .ready
     } catch {
       state = .failed
@@ -203,7 +246,6 @@ final class AudioEngineController {
     }
   }
 
-  private static let soundFontNames = ["FluidR3_GM2-2"]
   private static let soundFontExts = ["SF2", "sf2"]
 
   /// Candidate bundles the SoundFont could live in for a CocoaPods static
@@ -224,28 +266,33 @@ final class AudioEngineController {
   /// CocoaPods static framework / resource bundle can end up in. Falls back to a
   /// recursive scan of the resource roots so a resource bundle that landed under
   /// an unexpected subdirectory (or a renamed bundle) is still found.
-  private static func soundFontURL() -> URL? {
+  private static func soundFontURL(named name: String) -> URL? {
     // 1. Fast path: direct named lookup in each candidate bundle.
     for bundle in candidateBundles() {
-      for name in soundFontNames {
-        for ext in soundFontExts {
-          if let url = bundle.url(forResource: name, withExtension: ext) { return url }
-        }
+      for ext in soundFontExts {
+        if let url = bundle.url(forResource: name, withExtension: ext) { return url }
       }
     }
-    // 2. Fallback: recursively scan the resource roots for ANY *.SF2 file. Runs
-    //    once on the (non-audio) calling thread during setInstrument.
+    // 2. Fallback: recursively scan the resource roots for the SAME base name only.
+    //    Name-scoped so a second bundled bank (e.g. the Rhodes SF2) is never returned
+    //    in place of the requested one. Runs once on the (non-audio) calling thread.
+    let lower = name.lowercased()
     let lowerExts = Set(soundFontExts.map { $0.lowercased() })
     for root in resourceRoots() {
       guard
         let en = FileManager.default.enumerator(at: root, includingPropertiesForKeys: nil)
       else { continue }
-      for case let url as URL in en where lowerExts.contains(url.pathExtension.lowercased()) {
+      for case let url as URL in en
+      where lowerExts.contains(url.pathExtension.lowercased())
+        && url.deletingPathExtension().lastPathComponent.lowercased() == lower {
         return url
       }
     }
     return nil
   }
+
+  /// The default GM SoundFont URL — used by drums and JS diagnostics.
+  private static func soundFontURL() -> URL? { soundFontURL(named: defaultSoundFontName) }
 
   /// Resource directories scanned as a last resort, and reported by diagnostics.
   private static func resourceRoots() -> [URL] {
@@ -291,6 +338,29 @@ final class AudioEngineController {
     }
     result["searchedBundlePaths"] = Self.candidateBundles().map { $0.bundlePath }
     result["searchedResourceRoots"] = Self.resourceRoots().map { $0.path }
+    // Which voice each instrument would actually get, and from which file. Without
+    // this, an instrument whose dedicated bank is missing looks identical to one that
+    // loaded — the failure only shows up as "the timbre is wrong" on device.
+    var perInstrument: [String: Any] = [:]
+    for id in ["piano", "ePiano"] {
+      let name = Self.soundFontForInstrument[id] ?? Self.defaultSoundFontName
+      let resolved = Self.soundFontURL(named: name)
+      var entry: [String: Any] = [
+        "soundFontName": name,
+        "found": resolved != nil,
+        "program": Self.programForInstrument[id] ?? 0,
+        "isDedicatedBank": Self.soundFontForInstrument[id] != nil,
+      ]
+      if let resolved = resolved { entry["path"] = resolved.path }
+      if let cached = sampledCache[id] {
+        entry["sampledLoaded"] = cached.isLoaded
+        if let err = cached.lastLoadError { entry["lastLoadError"] = err }
+      }
+      perInstrument[id] = entry
+    }
+    result["instrumentSoundFonts"] = perInstrument
+    result["activeEngine"] = activeEngineName
+    if let rt = realtime { result["realtime"] = rt.diagnostics() }
     return result
   }
 
@@ -306,7 +376,9 @@ final class AudioEngineController {
     os_unfair_lock_unlock(&unfairLock)
     var result = diagnosticsLog.snapshot()
     result["state"] = state.rawValue
-    result["isPlaying"] = playing
+    result["activeEngine"] = activeEngineName
+    if let rt = realtime { result["realtime"] = rt.diagnostics() }
+    result["isPlaying"] = useRealtimeEngine ? (realtime?.isPlaying ?? false) : playing
     result["engineRunning"] = engine.isRunning
     result["prepared"] = prepared
     result["peakPolyphony"] = peak
@@ -337,6 +409,20 @@ final class AudioEngineController {
   /// Safe to call while playing — only the provider pointer changes; transport
   /// position / plan are preserved (hot-swap).
   func setInstrument(_ instrumentId: String) {
+    // v2 hot-swap: load the program into the live sampler. No pre-render, so the swap
+    // costs one SoundFont load instead of 61 offline note captures.
+    if useRealtimeEngine, let rt = realtime {
+      guard let url = Self.soundFontURL() else {
+        diagnosticsLog.record("instrument.v2.error", "no SoundFont resolved")
+        return
+      }
+      let program = UInt8(Self.programForInstrument[instrumentId] ?? 0)
+      let ok = rt.setInstrument(instrumentId, program: program, soundFontURL: url)
+      currentInstrument = instrumentId
+      diagnosticsLog.record(
+        "instrument.v2", "\(instrumentId) program=\(program) ok=\(ok) \(rt.lastError ?? "")")
+      return
+    }
     guard prepared, instrumentId != currentInstrument else { return }
     let provider = resolveInstrumentProvider(instrumentId)
     os_unfair_lock_lock(&unfairLock)
@@ -349,15 +435,12 @@ final class AudioEngineController {
   /// Resolve (and cache) the provider for `instrumentId`. Does not change the
   /// active voice — callers decide whether to install it.
   private func resolveInstrumentProvider(_ instrumentId: String) -> InstrumentProvider {
-    // Free E.Piano: synthesized (FluidR3 EP chorus/tine reads as hiss on device).
-    if instrumentId == "ePiano" {
-      return electricPianoProvider
-    }
     if let cached = sampledCache[instrumentId], cached.isLoaded {
       return cached
     }
     let program = Self.programForInstrument[instrumentId] ?? 0
-    if let url = Self.soundFontURL() {
+    let sfName = Self.soundFontForInstrument[instrumentId] ?? Self.defaultSoundFontName
+    if let url = Self.soundFontURL(named: sfName) {
       let sampled = SampledInstrumentProvider(sampleRate: sampleRate)
       // Retain before load so a failed attempt's lastLoadError stays observable.
       lastSampledAttempt = sampled
@@ -366,6 +449,9 @@ final class AudioEngineController {
         return sampled
       }
     }
+    // E.Piano keeps its dedicated clean synth as a fallback if the Rhodes SF2 can
+    // not be loaded, so the EP voice is never silent.
+    if instrumentId == "ePiano" { return electricPianoProvider }
     return synthProvider
   }
 
@@ -384,7 +470,12 @@ final class AudioEngineController {
 
   func teardown() {
     stopPositionTimer()
+    cancelCountIn(clearPending: true)
+    realtime?.teardown()
+    useRealtimeEngine = false
     if engine.isRunning { engine.stop() }
+    countInPlayer?.teardown(engine: engine)
+    countInPlayer = nil
     NotificationCenter.default.removeObserver(self)
     try? AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
     os_unfair_lock_lock(&unfairLock)
@@ -429,6 +520,16 @@ final class AudioEngineController {
     engine.connect(drum, to: mix.drumMixer, format: fmt)
     mix.connect(engine: engine, format: fmt)
 
+    // Playback v2 samplers share the same chord / drum buses, so the existing volume
+    // controls apply to both engines. Attached before `start` (dynamic attachment on a
+    // running engine is the riskier path) and silent until a request selects v2.
+    let rt = RealtimeSamplerEngine(engine: engine)
+    rt.attach(chordBus: mix.chordMixer, drumBus: mix.drumMixer, format: fmt)
+    realtime = rt
+    let preRoll = CountInPlayer(engine: engine)
+    preRoll.attach(engine: engine, masterBus: engine.mainMixerNode, format: fmt)
+    countInPlayer = preRoll
+
     // Re-route the master through the peak limiter: mainMixerNode → limiter → output.
     // (Mixer.connect wired chord/drum → mainMixerNode; accessing mainMixerNode also
     // auto-connected it to the output, which this reconnection supersedes.)
@@ -450,6 +551,108 @@ final class AudioEngineController {
     engine.prepare()
   }
 
+  // MARK: - Count-in
+
+  /// Run a transport start after one native-clocked pre-roll. The pending start is
+  /// retained if the user pauses during the count, and resume starts the song directly.
+  func playAfterCountIn(
+    config: CountInConfigValue,
+    bpm: Double,
+    start: @escaping () -> Void
+  ) {
+    guard prepared else { return }
+    cancelCountIn(clearPending: true)
+    if !engine.isRunning {
+      try? AVAudioSession.sharedInstance().setActive(true)
+      try? engine.start()
+    }
+    countInLock.lock()
+    pendingCountInStart = start
+    countInActive = true
+    countInPaused = false
+    countInLock.unlock()
+    state = .playing
+    diagnosticsLog.record("countIn.start", "beats=\(config.beats) bpm=\(Int(bpm))")
+
+    let scheduled = countInPlayer?.play(config: config, bpm: bpm) { [weak self] in
+      self?.finishCountIn()
+    } ?? false
+    if !scheduled {
+      diagnosticsLog.record("countIn.unavailable", countInPlayer?.lastError ?? "player not ready")
+      finishCountIn()
+    }
+  }
+
+  private func finishCountIn() {
+    countInLock.lock()
+    guard countInActive else {
+      countInLock.unlock()
+      return
+    }
+    countInActive = false
+    countInLock.unlock()
+    diagnosticsLog.record("countIn.complete")
+    DispatchQueue.main.async { [weak self] in
+      _ = self?.startPendingCountIn(logKind: "countIn.handoff", resuming: false)
+    }
+  }
+
+  @discardableResult
+  private func pauseCountInIfNeeded() -> Bool {
+    countInLock.lock()
+    let active = countInActive || pendingCountInStart != nil
+    if active {
+      countInActive = false
+      countInPaused = true
+    }
+    countInLock.unlock()
+    guard active else { return false }
+    countInPlayer?.cancel()
+    state = .paused
+    diagnosticsLog.record("countIn.pause")
+    return true
+  }
+
+  @discardableResult
+  private func resumePendingCountInIfNeeded() -> Bool {
+    return startPendingCountIn(logKind: "countIn.resumeWithoutRecount", resuming: true)
+  }
+
+  @discardableResult
+  private func startPendingCountIn(logKind: String, resuming: Bool) -> Bool {
+    countInLock.lock()
+    if resuming { countInPaused = false }
+    guard !countInActive, !countInPaused, let start = pendingCountInStart else {
+      countInLock.unlock()
+      return false
+    }
+    pendingCountInStart = nil
+    countInLock.unlock()
+    diagnosticsLog.record(logKind)
+    start()
+    return true
+  }
+
+  @discardableResult
+  private func cancelCountIn(clearPending: Bool) -> Bool {
+    countInLock.lock()
+    let hadCountIn = countInActive || pendingCountInStart != nil
+    countInActive = false
+    if clearPending {
+      pendingCountInStart = nil
+      countInPaused = false
+    }
+    countInLock.unlock()
+    if hadCountIn { countInPlayer?.cancel() }
+    return hadCountIn
+  }
+
+  private var hasPendingCountIn: Bool {
+    countInLock.lock()
+    defer { countInLock.unlock() }
+    return countInActive || pendingCountInStart != nil
+  }
+
   // MARK: - Transport
 
   func play(
@@ -461,13 +664,20 @@ final class AudioEngineController {
     accompaniment: String,
     instrument: String,
     startBeat: Double = 0,
-    beatsPerBar: Double = 4.0
+    beatsPerBar: Double = 4.0,
+    drumMode: String = "full"
   ) {
     // §3.1: play() starts transport. `startBeat > 0` seeks into the loop so a
     // live re-apply (timbre/groove) can keep the playhead instead of rewinding.
     // Valid once prepared from ready/playing/paused/stopped.
     guard prepared, state == .ready || state == .playing || state == .paused || state == .stopped else {
       return
+    }
+    cancelCountIn(clearPending: true)
+    // Coming back from a v2 take: silence it, or its voices would sound underneath.
+    if useRealtimeEngine {
+      realtime?.stop()
+      useRealtimeEngine = false
     }
     // Re-arm the session + engine defensively before starting transport. The engine
     // can be left stopped (or the session deactivated) by an interruption, a route /
@@ -488,7 +698,7 @@ final class AudioEngineController {
     let snapshot = PlanSnapshot(
       bpm: bpm, totalBeats: totalBeats, loop: loop, events: events,
       drumPattern: drumPattern, accompaniment: accompaniment, chordStrikes: strikes,
-      beatsPerBar: beatsPerBar
+      beatsPerBar: beatsPerBar, drumMode: drumMode
     )
     let fpb = Scheduler.framesPerBeat(bpm: bpm, sampleRate: sampleRate)
     let clampedBeat = max(0, startBeat)
@@ -512,9 +722,93 @@ final class AudioEngineController {
         + "noteRange=\(noteMin)-\(noteMax) engineRunning=\(engine.isRunning)")
   }
 
+  /// Playback v2 — play a whole `FinalMidiSnapshot` (as SMF bytes) on the realtime
+  /// sampler. JS hands over the entire plan in one call; scheduling, note-off, CC64,
+  /// release and polyphony are Apple's, not ours.
+  ///
+  /// `chordEvents` is used only to report which chord the playhead is inside, so the
+  /// existing UI keeps working; it never affects what sounds.
+  func playRealtime(
+    midiEvents: [ScheduledMidiEvent],
+    bpm: Double,
+    totalBeats: Double,
+    loop: Bool,
+    hasDrums: Bool,
+    gmProgram: Int,
+    instrument: String,
+    startBeat: Double,
+    planSignature: String?,
+    chordEvents: [NoteEventValue]
+  ) {
+    guard prepared, let rt = realtime else {
+      diagnosticsLog.record("play.v2.reject", "prepared=\(prepared) attached=\(realtime != nil)")
+      return
+    }
+    cancelCountIn(clearPending: true)
+    if !engine.isRunning {
+      try? AVAudioSession.sharedInstance().setActive(true)
+      try? engine.start()
+    }
+
+    // Silence v1 so the two engines can never sound at once.
+    os_unfair_lock_lock(&unfairLock)
+    isPlaying = false
+    plan = nil
+    baseSampleTime = nil
+    pausedFrames = 0
+    currentFrame = 0
+    finished = false
+    os_unfair_lock_unlock(&unfairLock)
+
+    // v2 uses the general GM bank for every voice: the program in the snapshot decides
+    // the timbre (0 = grand, 4 = e.piano). Keeping v2 off the separately bundled Rhodes
+    // SF2 means this path does not depend on an asset that is not in version control.
+    guard let url = Self.soundFontURL() else {
+      diagnosticsLog.record("play.v2.error", "no SoundFont resolved for v2")
+      state = .failed
+      return
+    }
+    guard rt.setInstrument(instrument, program: UInt8(max(0, min(127, gmProgram))), soundFontURL: url)
+    else {
+      diagnosticsLog.record("play.v2.error", rt.lastError ?? "instrument load failed")
+      state = .failed
+      return
+    }
+    if hasDrums {
+      _ = rt.loadDrumBank(soundFontURL: url)
+    }
+
+    useRealtimeEngine = true
+    realtimeTotalBeats = totalBeats
+    realtimeEvents = chordEvents
+
+    guard
+      rt.play(
+        events: midiEvents,
+        bpm: bpm,
+        totalBeats: totalBeats,
+        loop: loop,
+        startBeat: startBeat,
+        signature: planSignature)
+    else {
+      diagnosticsLog.record("play.v2.error", rt.lastError ?? "start failed")
+      state = .failed
+      return
+    }
+    state = .playing
+    startPositionTimer()
+    diagnosticsLog.record(
+      "play.v2",
+      "bpm=\(Int(bpm)) beats=\(totalBeats) program=\(gmProgram) drums=\(hasDrums) "
+        + "startBeat=\(String(format: "%.2f", startBeat)) events=\(midiEvents.count) "
+        + "sig=\(planSignature ?? "-") engineRunning=\(engine.isRunning)")
+  }
+
   /// Current playhead in beats (0 when idle). Used by JS for position-preserving
   /// re-apply when hot-swapping voices.
   func currentBeat() -> Double {
+    if hasPendingCountIn { return 0 }
+    if useRealtimeEngine { return realtime?.currentBeat ?? 0 }
     os_unfair_lock_lock(&unfairLock)
     let snap = plan
     let frame = currentFrame
@@ -527,6 +821,18 @@ final class AudioEngineController {
   }
 
   func pause() {
+    if pauseCountInIfNeeded() {
+      stopPositionTimer()
+      return
+    }
+    if useRealtimeEngine {
+      guard let rt = realtime, rt.isPlaying else { return }
+      rt.pause()
+      stopPositionTimer()
+      state = .paused
+      diagnosticsLog.record("pause.v2")
+      return
+    }
     os_unfair_lock_lock(&unfairLock)
     let wasPlaying = isPlaying
     if wasPlaying {
@@ -543,6 +849,19 @@ final class AudioEngineController {
   }
 
   func resume() {
+    if resumePendingCountInIfNeeded() { return }
+    if useRealtimeEngine {
+      guard state == .paused, let rt = realtime, rt.hasPlan else { return }
+      if !engine.isRunning { try? engine.start() }
+      guard rt.resume() else {
+        diagnosticsLog.record("resume.v2.error", rt.lastError ?? "resume failed")
+        return
+      }
+      state = .playing
+      startPositionTimer()
+      diagnosticsLog.record("resume.v2", "engineRunning=\(engine.isRunning)")
+      return
+    }
     os_unfair_lock_lock(&unfairLock)
     let canResume = (state == .paused) && plan != nil
     if canResume {
@@ -562,6 +881,23 @@ final class AudioEngineController {
   }
 
   func stop() {
+    if cancelCountIn(clearPending: true) {
+      stopPositionTimer()
+      state = .stopped
+      diagnosticsLog.record("countIn.stop")
+      return
+    }
+    if useRealtimeEngine {
+      let wasActive = (realtime?.isPlaying ?? false) || state == .paused
+      // All notes off + sustain up: nothing from this take may bleed into the next.
+      realtime?.stop()
+      stopPositionTimer()
+      if wasActive {
+        state = .stopped
+        diagnosticsLog.record("stop.v2")
+      }
+      return
+    }
     os_unfair_lock_lock(&unfairLock)
     let wasActive = isPlaying || state == .paused
     isPlaying = false
@@ -578,6 +914,12 @@ final class AudioEngineController {
   }
 
   func previewChord(notes: [Int], velocity: Int, durationSec: Double, instrument: String) {
+    // A v2 take leaves the realtime sampler as the voice in use; auditioning through it
+    // keeps a chord tap and the accompaniment sounding like the same instrument.
+    if useRealtimeEngine, let rt = realtime {
+      rt.previewChord(notes: notes, velocity: velocity, durationSec: durationSec)
+      return
+    }
     setInstrument(instrument)
     os_unfair_lock_lock(&unfairLock)
     previewNotes = notes
@@ -1113,6 +1455,7 @@ final class AudioEngineController {
   }
 
   private func drumSampleValue(snap: PlanSnapshot, absFrame: Double, sr: Double, provider: DrumProvider) -> Float {
+    if snap.drumMode == "off" { return 0 }
     let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
     if !snap.loop && absFrame >= loopFrames { return 0 }
     let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: snap.loop)
@@ -1123,7 +1466,7 @@ final class AudioEngineController {
     if beatInBar < 0 { beatInBar += bpb }
     return provider.sample(
       groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, beatsPerBar: bpb,
-      frame: Int64(absFrame)
+      frame: Int64(absFrame), drumMode: snap.drumMode
     )
   }
 
@@ -1178,6 +1521,26 @@ final class AudioEngineController {
   }
 
   private func emitPosition() {
+    if useRealtimeEngine {
+      guard let rt = realtime else { return }
+      // A non-looping plan that ran off its end reports `stopped` exactly like v1's
+      // render-callback finish signal, so the UI transport behaves identically.
+      if rt.reachedEnd {
+        DispatchQueue.main.async { [weak self] in self?.stop() }
+        return
+      }
+      guard rt.isPlaying else { return }
+      let beat = rt.currentBeat
+      var index = -1
+      for (i, event) in realtimeEvents.enumerated()
+      where beat >= event.startBeat && beat < event.startBeat + event.lengthBeats {
+        index = i
+        break
+      }
+      let loopIndex = realtimeTotalBeats > 0 ? Int(rt.rawBeat / realtimeTotalBeats) : 0
+      onPosition?(index, beat, loopIndex)
+      return
+    }
     os_unfair_lock_lock(&unfairLock)
     let snap = plan
     let frame = currentFrame
@@ -1262,6 +1625,12 @@ final class AudioEngineController {
       diagnosticsLog.record("engineConfigChange", "restarting")
       try? engine.start()
     }
+    // A hardware config change stops the engine, and with it the sequencer — v2 cannot
+    // pick up mid-bar the way the v1 render callback does. Report stopped rather than
+    // leaving the UI showing a playhead that is not moving.
+    if useRealtimeEngine, state == .playing, realtime?.isPlaying != true {
+      DispatchQueue.main.async { [weak self] in self?.stop() }
+    }
   }
 
   @objc private func handleRouteChange(_ note: Notification) {
@@ -1294,12 +1663,19 @@ final class AudioEngineController {
   ) throws -> (url: URL, sampleRate: Double) {
     let sr = 44_100.0
     var chordProv: InstrumentProvider = synthProvider
-    if instrument == "ePiano" {
-      chordProv = ElectricPianoInstrumentProvider()
-    } else if let url = Self.soundFontURL() {
-      let program = Self.programForInstrument[instrument] ?? 0
+    let program = Self.programForInstrument[instrument] ?? 0
+    let sfName = Self.soundFontForInstrument[instrument] ?? Self.defaultSoundFontName
+    var chordLoaded = false
+    if let url = Self.soundFontURL(named: sfName) {
       let sampled = SampledInstrumentProvider(sampleRate: sr)
-      if sampled.load(soundFontURL: url, program: program) { chordProv = sampled }
+      if sampled.load(soundFontURL: url, program: program) {
+        chordProv = sampled
+        chordLoaded = true
+      }
+    }
+    // E.Piano falls back to its dedicated synth (matches playback) if the SF2 fails.
+    if !chordLoaded && instrument == "ePiano" {
+      chordProv = ElectricPianoInstrumentProvider()
     }
     // Match playback: sampled GM percussion when available, synth otherwise.
     var drumProv: DrumProvider = SynthDrumProvider()
@@ -1372,6 +1748,7 @@ final class AudioEngineController {
     sr: Double,
     provider: DrumProvider
   ) -> Float {
+    if snap.drumMode == "off" { return 0 }
     let loopFrames = Scheduler.loopLengthFrames(totalBeats: snap.totalBeats, bpm: snap.bpm, sampleRate: sr)
     let folded = Scheduler.fold(absoluteFrame: absFrame, loopLengthFrames: loopFrames, loop: true)
     let beat = Scheduler.beat(forFrameInLoop: folded.frameInLoop, bpm: snap.bpm, sampleRate: sr)
@@ -1381,7 +1758,7 @@ final class AudioEngineController {
     if beatInBar < 0 { beatInBar += bpb }
     return provider.sample(
       groove: snap.drumPattern, beatInBar: beatInBar, secondsPerBeat: spb, beatsPerBar: bpb,
-      frame: Int64(absFrame)
+      frame: Int64(absFrame), drumMode: snap.drumMode
     )
   }
 }

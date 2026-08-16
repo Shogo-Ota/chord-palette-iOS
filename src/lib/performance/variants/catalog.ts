@@ -11,6 +11,24 @@
 import type { AccompanimentPattern } from '@/types';
 
 import { NATURAL_BANK } from '../feel/naturalBank';
+import {
+  HUMAN_TEMPLATE_ARPEGGIO_P1_A10,
+  HUMAN_TEMPLATE_ARPEGGIO_P1_A11,
+  HUMAN_TEMPLATE_ARPEGGIO_P1_C10,
+  HUMAN_TEMPLATE_ARPEGGIO_P1_C11,
+  HUMAN_TEMPLATE_ARPEGGIO_P2_A10,
+  HUMAN_TEMPLATE_BALLAD_P1_A7,
+  HUMAN_TEMPLATE_BALLAD_P1_A8,
+  HUMAN_TEMPLATE_BALLAD_P1_C7,
+  HUMAN_TEMPLATE_BALLAD_P1_C8,
+  HUMAN_TEMPLATE_BALLAD_P4_A7,
+  HUMAN_TEMPLATE_NORMAL_P1_A1,
+  HUMAN_TEMPLATE_NORMAL_P1_A3,
+  HUMAN_TEMPLATE_NORMAL_P1_C1,
+  HUMAN_TEMPLATE_VARIATION_P1_C12,
+  HUMAN_TEMPLATE_VARIATION_P1_C13,
+  HUMAN_TEMPLATE_VARIATION_P1_C14,
+} from '../humanTemplate/catalog';
 import { NATURAL_COMP } from '../styles/naturalComp';
 import { NATURAL_COMP_DENSE } from '../styles/naturalCompDense';
 import { NATURAL_COMP_SPARSE } from '../styles/naturalCompSparse';
@@ -72,82 +90,132 @@ const BEAT16_FUNK_CHORD: StepPattern = {
 /* The catalog                                                         */
 /* ------------------------------------------------------------------ */
 
+/**
+ * Production offers Block Type1, Natural Type1–3 and Variation Type1–3.
+ * Block is a single plain held-chord reading — no teacher take.
+ * Variation Types are P1_C12 / P1_C13 / P1_C14 (the Style screen label is
+ * バリエーション; the rhythm id stays `arpeggio` so saved projects still resolve).
+ * Older Natural banks and retired Arpeggio takes stay in the catalog
+ * (`offered: false`).
+ */
 const BLOCK_VARIANTS: readonly AccompanimentVariant[] = [
   {
-    id: 'block.hold',
-    label: 'Hold',
-    hint: '1 小節に 1 回、伸ばす',
-  },
-  {
-    id: 'block.half',
-    label: 'Half',
-    hint: '1 拍目と 3 拍目で打ち直す',
-    refine: { chord: HALVES, bass: HALVES },
-  },
-  {
-    id: 'block.push',
-    label: 'Push',
-    hint: '次のコードを 8 分早く食う',
-    refine: { anticipation: { maxLeadBeats: 0.5 }, chord: HALVES, bass: HALVES },
-  },
-  {
-    id: 'block.stab',
-    label: 'Stab',
-    hint: 'short に切って余白を作る',
-    refine: { gate: { min: 0.24, max: 0.42, sustain: 'normal' } },
+    id: 'block.type1',
+    label: 'ブロック',
+    hint: 'コード構成音を、コードの長さいっぱい鳴らす',
   },
 ];
 
 const ARPEGGIO_VARIANTS: readonly AccompanimentVariant[] = [
   {
-    id: 'arpeggio.upDown',
-    label: 'Up & Down',
-    hint: '上がって下がる往復',
+    id: 'arpeggio.type1',
+    label: 'Type 1',
+    hint: 'バリエーション1。動きのある標準の弾き',
+    humanTemplateId: HUMAN_TEMPLATE_VARIATION_P1_C12,
   },
   {
-    id: 'arpeggio.up',
-    label: 'Up',
-    hint: '低い音から上へ流れ続ける',
-    refine: { arpeggio: { direction: 'up' } },
+    id: 'arpeggio.type2',
+    label: 'Type 2',
+    hint: 'バリエーション2。別のフレーズ',
+    humanTemplateId: HUMAN_TEMPLATE_VARIATION_P1_C13,
   },
   {
-    id: 'arpeggio.eighth',
-    label: '8th',
-    hint: '8 分でゆったり分散',
-    refine: { chord: EIGHTHS_ON_16 },
+    id: 'arpeggio.type3',
+    label: 'Type 3',
+    hint: 'バリエーション3。もう少し形の違う弾き',
+    humanTemplateId: HUMAN_TEMPLATE_VARIATION_P1_C14,
   },
   {
-    id: 'arpeggio.broken',
-    label: 'Broken',
-    hint: '1-5-3-7 と跳ねる分散',
-    refine: { arpeggio: { order: [0, 2, 1, 3] } },
+    id: 'arpeggio.type4',
+    label: 'Type 4',
+    hint: '並び順が違う分散を別の手で',
+    humanTemplateId: HUMAN_TEMPLATE_ARPEGGIO_P1_A11,
+    offered: false,
+  },
+  {
+    id: 'arpeggio.type5',
+    label: 'Type 5',
+    hint: '別の曲から起こした、動きの大きい分散',
+    humanTemplateId: HUMAN_TEMPLATE_ARPEGGIO_P2_A10,
+    offered: false,
+  },
+  {
+    id: 'arpeggio.legacy1',
+    label: '旧 Type 1',
+    hint: '旧アルペジオ Type1',
+    humanTemplateId: HUMAN_TEMPLATE_ARPEGGIO_P1_C10,
+    offered: false,
+  },
+  {
+    id: 'arpeggio.legacy2',
+    label: '旧 Type 2',
+    hint: '旧アルペジオ Type2',
+    humanTemplateId: HUMAN_TEMPLATE_ARPEGGIO_P1_A10,
+    offered: false,
+  },
+  {
+    id: 'arpeggio.legacy3',
+    label: '旧 Type 3',
+    hint: '旧アルペジオ Type3',
+    humanTemplateId: HUMAN_TEMPLATE_ARPEGGIO_P1_C11,
+    offered: false,
   },
 ];
 
 const NATURAL_VARIANTS: readonly AccompanimentVariant[] = [
   {
+    id: 'natural.type1',
+    label: 'Type 1',
+    hint: '標準のナチュラル。素直に弾く',
+    humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A1,
+  },
+  {
+    id: 'natural.type2',
+    label: 'Type 2',
+    hint: '同じ伴奏を別の手で',
+    humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_C1,
+  },
+  {
+    id: 'natural.type3',
+    label: 'Type 3',
+    hint: 'もう少し動きのあるナチュラル',
+    humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A3,
+  },
+  {
     id: 'natural.auto',
     label: 'おまかせ',
     hint: '4 小節ごとにベースの譜割りが変わる',
     bank: NATURAL_BANK,
+    offered: false,
   },
   {
     id: 'natural.steady',
     label: 'Steady',
     hint: 'すべての裏拍にベース',
     bank: [NATURAL_COMP],
+    offered: false,
   },
   {
     id: 'natural.sparse',
     label: 'Sparse',
     hint: '2 拍・4 拍の裏だけ、隙間を多く',
     bank: [NATURAL_COMP_SPARSE],
+    offered: false,
   },
   {
     id: 'natural.dense',
     label: 'Dense',
     hint: '2 拍目にもベースを置いて厚く',
     bank: [NATURAL_COMP_DENSE],
+    offered: false,
+  },
+];
+
+const CITY_VARIANTS: readonly AccompanimentVariant[] = [
+  {
+    id: 'city.type1',
+    label: 'Type 1',
+    hint: '短いコード、意図的な休符、控えめな構成音の間引き',
   },
 ];
 
@@ -175,37 +243,39 @@ const DRIVING_VARIANTS: readonly AccompanimentVariant[] = [
 
 const RELAXED_VARIANTS: readonly AccompanimentVariant[] = [
   {
-    id: 'relaxed.ballad',
-    label: '標準',
-    hint: '半小節ごとに置いて長く伸ばす',
+    id: 'relaxed.type1',
+    label: 'Type 1',
+    hint: '長く伸ばす標準のバラード',
+    humanTemplateId: HUMAN_TEMPLATE_BALLAD_P1_C7,
+    offered: false,
   },
   {
-    id: 'relaxed.sustain',
-    label: 'サステイン',
-    hint: '上声を止めて、和音だけを長く',
-    refine: { top: null, gate: { min: 0.92, max: 0.99 } },
+    id: 'relaxed.type2',
+    label: 'Type 2',
+    hint: '同じバラードを別の手で。高い音域が切ない',
+    humanTemplateId: HUMAN_TEMPLATE_BALLAD_P1_A7,
+    offered: false,
   },
   {
-    id: 'relaxed.arp',
-    label: '分散',
-    hint: '4 分でゆっくり分散させる',
-    refine: {
-      chord: QUARTERS_ON_8,
-      top: null,
-      arpeggio: { direction: 'up' },
-      gate: { min: 0.7, max: 0.9, sustain: 'normal' },
-    },
+    id: 'relaxed.type3',
+    label: 'Type 3',
+    hint: 'もう少し動きのあるバラード',
+    humanTemplateId: HUMAN_TEMPLATE_BALLAD_P1_C8,
+    offered: false,
   },
   {
-    id: 'relaxed.arpSlow',
-    label: '流れ',
-    hint: '8 分で上がって、3 拍目で伸ばす',
-    refine: {
-      chord: BALLAD_ARP_SLOW,
-      top: null,
-      arpeggio: { direction: 'up' },
-      gate: { min: 0.72, max: 0.92, sustain: 'legato' },
-    },
+    id: 'relaxed.type4',
+    label: 'Type 4',
+    hint: '動きのあるバラードを別の手で',
+    humanTemplateId: HUMAN_TEMPLATE_BALLAD_P1_A8,
+    offered: false,
+  },
+  {
+    id: 'relaxed.type5',
+    label: 'Type 5',
+    hint: '別の曲から起こした、ゆったりしたバラード',
+    humanTemplateId: HUMAN_TEMPLATE_BALLAD_P4_A7,
+    offered: false,
   },
 ];
 
@@ -411,6 +481,7 @@ export const VARIANT_CATALOG = {
   block: BLOCK_VARIANTS,
   arpeggio: ARPEGGIO_VARIANTS,
   natural: NATURAL_VARIANTS,
+  city: CITY_VARIANTS,
   driving: DRIVING_VARIANTS,
   relaxed: RELAXED_VARIANTS,
   beat8: BEAT8_VARIANTS,

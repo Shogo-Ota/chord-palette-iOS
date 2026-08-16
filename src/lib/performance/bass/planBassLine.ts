@@ -21,6 +21,7 @@
 import { streamFor } from '../rng';
 import type { Strike } from '../strike';
 import { bassProfileFor } from './profiles';
+import type { BassProfile } from './types';
 
 /** The chord shape the planner reads (structurally satisfied by `PerfChord`). */
 export interface ChordTones {
@@ -34,6 +35,8 @@ export interface BassPlanInput {
   styleId: string;
   /** The chord a strike voices (anticipation included), for chord-true fifths. */
   chordOf: (strike: Strike) => ChordTones | undefined;
+  /** Optional Energy override — replaces {@link bassProfileFor} when set. */
+  bassProfile?: BassProfile;
 }
 
 /** Bass register bounds (D1 – G3) and the largest allowed consecutive leap. */
@@ -94,7 +97,7 @@ function segmentByRoot(strikes: Strike[]): number[][] {
 
 /** Plan the bass line. Root-only profiles return the input untouched (identity). */
 export function planBassLine(strikes: Strike[], input: BassPlanInput): Strike[] {
-  const profile = bassProfileFor(input.styleId);
+  const profile = input.bassProfile ?? bassProfileFor(input.styleId);
   const isIdentity =
     profile.approachChance === 0 &&
     profile.figures.length === 1 &&

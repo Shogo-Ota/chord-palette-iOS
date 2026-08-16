@@ -1,4 +1,5 @@
 import { buildExportPlan, buildSegments, pitchClassNamesFor } from '@/lib/exportPlan';
+import { progressionCycleDurationSec } from '@/lib/exportCycleTiming';
 import type { ChordEvent } from '@/types';
 
 function ev(partial: Partial<ChordEvent> & Pick<ChordEvent, 'rootOffset' | 'suffix'>): ChordEvent {
@@ -15,8 +16,22 @@ function ev(partial: Partial<ChordEvent> & Pick<ChordEvent, 'rootOffset' | 'suff
 }
 
 const PROG: ChordEvent[] = [
-  ev({ rootOffset: 0, suffix: '', displayName: 'C', degreeLabel: 'I', function: 'tonic', durationBeats: 4 }),
-  ev({ rootOffset: 7, suffix: '', displayName: 'G', degreeLabel: 'V', function: 'dominant', durationBeats: 4 }),
+  ev({
+    rootOffset: 0,
+    suffix: '',
+    displayName: 'C',
+    degreeLabel: 'I',
+    function: 'tonic',
+    durationBeats: 4,
+  }),
+  ev({
+    rootOffset: 7,
+    suffix: '',
+    displayName: 'G',
+    degreeLabel: 'V',
+    function: 'dominant',
+    durationBeats: 4,
+  }),
 ];
 
 describe('pitchClassNamesFor', () => {
@@ -156,6 +171,32 @@ describe('buildExportPlan — one dot per chord regardless of chord length', () 
     // The dot-cycle segments match the chord count exactly (one pass, no clipping loss).
     expect(plan.segments).toHaveLength(prog.length);
   });
+
+  it.each([
+    [4, 4.8],
+    [3, 3.6],
+    [6, 7.2],
+  ])(
+    'ends exactly after one pass at 100 BPM in a %i-beat meter',
+    (beatsPerBar, expectedDuration) => {
+      const durationSec = progressionCycleDurationSec(PROG, 100, beatsPerBar);
+      const plan = buildExportPlan({
+        progression: PROG,
+        key: 'C',
+        bpm: 100,
+        title: 'Loop',
+        durationSec,
+        audioUri: 'file:///a.m4a',
+        watermark: false,
+        beatsPerBar,
+      });
+      const finalSegment = plan.segments.at(-1);
+
+      expect(durationSec).toBeCloseTo(expectedDuration, 10);
+      expect(plan.segments).toHaveLength(PROG.length);
+      expect(finalSegment!.startSec + finalSegment!.durationSec).toBeCloseTo(durationSec, 10);
+    },
+  );
 });
 
 describe('buildExportPlan', () => {

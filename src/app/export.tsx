@@ -8,7 +8,10 @@ import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { useEditorSession } from '@/features/editor/session';
+import { useMidiExport } from '@/features/export/useMidiExport';
 import { VideoExportError } from '@/lib/errors';
+import { progressionCycleDurationSec } from '@/lib/exportCycleTiming';
+import { beatsPerBarFor } from '@/lib/performance/rhythms';
 import { chordMidiNotes } from '@/lib/voicing';
 import { track } from '@/services/analytics';
 import { getTier } from '@/services/billing';
@@ -64,6 +67,13 @@ export default function ExportScreen() {
   const [busy, setBusy] = useState<'idle' | 'save' | 'share'>('idle');
   const [progress, setProgress] = useState(0);
   const saving = busy !== 'idle';
+  const midi = useMidiExport();
+  const exportBeatsPerBar = beatsPerBarFor(s.accompanimentPattern);
+  const cycleDurationSec = progressionCycleDurationSec(
+    s.progression,
+    s.tempoBpm,
+    exportBeatsPerBar,
+  );
 
   function exportInput() {
     return {
@@ -74,9 +84,13 @@ export default function ExportScreen() {
       grooveId: s.grooveId,
       accompaniment: s.accompanimentPattern,
       accompanimentVariant: s.accompanimentVariant,
+      accompanimentEnergy: s.accompanimentEnergy,
       instrumentId: s.instrumentId,
       releaseCut: s.releaseCut,
       octaveShift: s.octaveShift,
+      drumMode: s.drumMode,
+      drumBeat: s.drumBeat,
+      instrumentEffect: s.instrumentEffect,
       tier: getTier(),
     };
   }
@@ -89,16 +103,12 @@ export default function ExportScreen() {
     }
     setBusy(kind);
     setProgress(0);
-    // Length follows the project: one full pass of the progression at its tempo.
-    const beats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
-    // Ceil (not round) so the clip always covers the full final chord — otherwise a
-    // short trailing chord (e.g. a ¼-bar at high tempo) can be dropped, leaving one
-    // fewer dot than chords in the encoded video.
-    const durationSec = Math.max(1, Math.ceil((beats * 60) / Math.max(1, s.tempoBpm)));
-    // Duration is auto-derived (no selector), so report the effective length here.
+    // One exact progression pass. Do not ceil to whole seconds: that would append
+    // silence or the next loop's opening chord after the musical end boundary.
+    const durationSec = cycleDurationSec;
     track('export_duration_selected', { durationSec });
     track('video_export_started', { kind, durationSec });
-    const opts = { durationSec, watermark, onProgress: setProgress };
+    const opts = { watermark, onProgress: setProgress };
     const work =
       kind === 'save'
         ? videoExportService.exportAndSave(exportInput(), opts)
@@ -112,7 +122,8 @@ export default function ExportScreen() {
       })
       .catch((e) => {
         track('video_export_failed', { kind });
-        const msg = e instanceof VideoExportError ? e.userMessage : '動画の書き出しに失敗しました。';
+        const msg =
+          e instanceof VideoExportError ? e.userMessage : '動画の書き出しに失敗しました。';
         Alert.alert('書き出しに失敗', msg, [
           { text: '再試行', onPress: () => runExport(kind) },
           { text: '閉じる', style: 'cancel' },
@@ -121,13 +132,20 @@ export default function ExportScreen() {
       .finally(() => setBusy('idle'));
   }
 
+  async function runMidiExport() {
+    const outcome = await midi.run(s);
+    if (!outcome.ok) Alert.alert('MIDIを書き出せません', outcome.message);
+  }
+
   const idx = usePreviewIndex(s.progression, s.tempoBpm);
   const current = s.progression[idx];
   const accent = current ? functionColor[current.function] : colors.primary;
   const notes = current ? chordMidiNotes(current, s.key, s.octaveShift) : [];
   const totalBeats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
   const bars = Math.max(1, Math.ceil(totalBeats / 4));
-  const autoDurationSec = Math.max(1, Math.ceil((totalBeats * 60) / Math.max(1, s.tempoBpm)));
+  const autoDurationLabel = Number.isInteger(cycleDurationSec)
+    ? String(cycleDurationSec)
+    : cycleDurationSec.toFixed(1);
 
   return (
     <ScreenScaffold>
@@ -227,8 +245,10 @@ export default function ExportScreen() {
       <View style={styles.optRow}>
         <Text style={styles.optLabel}>長さ</Text>
         <View style={styles.formatVal}>
-          <Text style={styles.formatMain}>約{autoDurationSec}秒</Text>
-          <Text style={styles.formatSub}>自動（{bars}小節 · BPM {s.tempoBpm}）</Text>
+          <Text style={styles.formatMain}>約{autoDurationLabel}秒</Text>
+          <Text style={styles.formatSub}>
+            自動（{bars}小節 · BPM {s.tempoBpm}）
+          </Text>
         </View>
       </View>
 
@@ -254,12 +274,33 @@ export default function ExportScreen() {
           {busy === 'share' ? `書き出し中… ${Math.round(progress * 100)}%` : '共有する'}
         </Text>
       </Pressable>
+
+      {/* MIDI — the same performance the app plays, as a Standard MIDI File */}
+      <Pressable
+        style={[styles.midiBtn, (midi.exporting || saving) && styles.saveBtnDisabled]}
+        onPress={runMidiExport}
+        disabled={midi.exporting || saving}
+        accessibilityRole="button"
+        accessibilityLabel="MIDIを書き出す"
+        accessibilityHint="DAWで開けるMIDIファイルを共有します">
+        <Icon name="download" size={16} color={colors.primaryBlue} strokeWidth={2.2} />
+        <Text style={styles.midiBtnText}>
+          {midi.exporting ? 'MIDIを書き出し中…' : 'MIDIを書き出す'}
+        </Text>
+      </Pressable>
+      <Text style={styles.midiNote}>再生と同じ演奏内容をMIDIで書き出します</Text>
     </ScreenScaffold>
   );
 }
 
 const styles = StyleSheet.create({
-  header: { flexDirection: 'row', alignItems: 'center', gap: 10, paddingVertical: 6, paddingBottom: 16 },
+  header: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+    paddingVertical: 6,
+    paddingBottom: 16,
+  },
   backBtn: {
     width: 34,
     height: 34,
@@ -286,15 +327,39 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   pvTop: { alignItems: 'center' },
-  pvTitle: { fontSize: 15, fontFamily: font.extrabold, fontWeight: '800', color: colors.textPrimary, letterSpacing: 0.3 },
-  pvMeta: { fontSize: 10, color: colors.textMuted, marginTop: 3, fontFamily: font.semibold, fontWeight: '600' },
+  pvTitle: {
+    fontSize: 15,
+    fontFamily: font.extrabold,
+    fontWeight: '800',
+    color: colors.textPrimary,
+    letterSpacing: 0.3,
+  },
+  pvMeta: {
+    fontSize: 10,
+    color: colors.textMuted,
+    marginTop: 3,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
 
   pvCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   bigChord: { fontSize: 46, fontFamily: font.black, fontWeight: '900', lineHeight: 50 },
-  degree: { fontSize: 15, color: colors.textSecondary, marginTop: 4, fontFamily: font.bold, fontWeight: '700', letterSpacing: 0.5 },
+  degree: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    marginTop: 4,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    letterSpacing: 0.5,
+  },
   emptyChord: { fontSize: 13, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
 
-  pvStrip: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: 12 },
+  pvStrip: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+  },
 
   pvKeyboard: { alignItems: 'center' },
   pvKeyboardWithWatermark: { marginBottom: 26 },
@@ -325,7 +390,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     marginBottom: 11,
   },
-  optLabel: { fontSize: 13.5, fontFamily: font.semibold, fontWeight: '600', color: colors.textSecondary },
+  optLabel: {
+    fontSize: 13.5,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    color: colors.textSecondary,
+  },
 
   formatVal: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   formatMain: { fontSize: 13, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
@@ -358,5 +428,35 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  shareBtnText: { fontSize: 14, fontFamily: font.bold, fontWeight: '700', color: colors.textSecondary },
+  shareBtnText: {
+    fontSize: 14,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.textSecondary,
+  },
+  midiBtn: {
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    borderRadius: radius['2xl'],
+    paddingVertical: 14,
+    backgroundColor: colors.surface,
+    borderWidth: 1,
+    borderColor: colors.borderSoft,
+  },
+  midiBtnText: {
+    fontSize: 14,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.primaryBlue,
+  },
+  midiNote: {
+    marginTop: 8,
+    textAlign: 'center',
+    fontSize: 11,
+    fontFamily: font.medium,
+    color: colors.textFaint,
+  },
 });

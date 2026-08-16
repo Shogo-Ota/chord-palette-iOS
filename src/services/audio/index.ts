@@ -28,6 +28,22 @@ import type {
  */
 
 let cachedVolumes: VolumeLevels | null = null;
+/** Old native binaries ignore `drumMode` and always play the full kit. Mute the
+ *  drum bus from JS so オフ works without waiting for a new EAS build. */
+let drumBusMuted = false;
+
+function applyDrumBusGain(): void {
+  const stored = cachedVolumes?.drum ?? 1;
+  applyVolumeToNative('drum', drumBusMuted ? 0 : stored);
+}
+
+/**
+ * Serializes overlapping `play` calls (style taps / live re-apply). A newer
+ * request always wins; an older in-flight `play` is ignored after await so a
+ * rapid style switch cannot leave a stale plan sounding.
+ */
+let playGeneration = 0;
+let playChain: Promise<void> = Promise.resolve();
 
 export function isNativeAudioAvailable(): boolean {
   return !!ChordAudioNative && ChordAudioNative.isAvailable();
@@ -132,7 +148,21 @@ export const audioService = {
   },
 
   async play(req: PlaybackRequest): Promise<void> {
-    await ChordAudioNative?.play(req);
+    const gen = ++playGeneration;
+    playChain = playChain
+      .catch(() => undefined)
+      .then(async () => {
+        if (gen !== playGeneration) return;
+        await ChordAudioNative?.play(req);
+        audioService.setDrumMuted(req.drumMode === 'off');
+      });
+    await playChain;
+  },
+
+  /** Silence the native drum bus. Does not change the stored drum volume. */
+  setDrumMuted(muted: boolean): void {
+    drumBusMuted = muted;
+    applyDrumBusGain();
   },
 
   /**
@@ -172,7 +202,7 @@ export const audioService = {
     cachedVolumes = levels;
     applyVolumeToNative('master', levels.master);
     applyVolumeToNative('chord', levels.chord);
-    applyVolumeToNative('drum', levels.drum);
+    applyDrumBusGain();
     return levels;
   },
 
@@ -187,7 +217,8 @@ export const audioService = {
   setVolumeLive(channel: VolumeChannel, value: number): void {
     const v = clampVolume(value);
     cachedVolumes = { ...(cachedVolumes ?? { master: 1, chord: 1, drum: 1 }), [channel]: v };
-    applyVolumeToNative(channel, v);
+    if (channel === 'drum') applyDrumBusGain();
+    else applyVolumeToNative(channel, v);
   },
 
   /** Set a channel volume: apply to native immediately, then persist to SQLite. */

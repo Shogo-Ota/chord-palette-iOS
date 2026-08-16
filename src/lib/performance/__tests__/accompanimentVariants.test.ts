@@ -1,8 +1,9 @@
 import { ACCOMPANIMENT_IDS } from '@/data/labels';
 import type { NoteEvent } from '@/lib/performance/NoteEvent';
 import { generatePerformance, type PerfChord } from '@/lib/performance/PerformanceEngine';
-import { defaultVariantFor, variantsFor } from '@/lib/performance/variants';
-import type { AccompanimentPattern } from '@/types';
+import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
+import { defaultVariantFor, offeredVariantsFor, resolveVariant, variantsFor } from '@/lib/performance/variants';
+import type { AccompanimentPattern, ChordEvent } from '@/types';
 
 const BPM = 100;
 
@@ -13,6 +14,12 @@ function chords(): PerfChord[] {
     bodyMidi: [root, root + 4, root + 7],
     bassMidi: [root - 24],
     arpMidi: [root, root + 4, root + 7, root + 11],
+    harmony: {
+      symbol: `root-${root}`,
+      rootPc: root % 12,
+      quality: 'major',
+      chordIntervals: [0, 4, 7],
+    },
     startBeat: bar * 4,
     durationBeats: 4,
   }));
@@ -23,6 +30,48 @@ function render(pattern: AccompanimentPattern, variantId?: string, bpm = BPM): N
     { chords: chords(), bpm, seed: 7 },
     { styleId: pattern, variantId, drums: false },
   );
+}
+
+/**
+ * Patterns whose readings are Types — a different human take rather than a different
+ * synthetic skeleton. A Type is resolved where the session is turned into a plan, so
+ * these are compared through that path.
+ */
+const TYPED_PATTERNS: readonly AccompanimentPattern[] = ['natural', 'arpeggio'];
+
+function namesTypes(pattern: AccompanimentPattern): boolean {
+  return variantsFor(pattern).some((v) => v.humanTemplateId);
+}
+
+/** The production path: session → plan, the one playback and export both use. */
+function planFor(pattern: AccompanimentPattern, variantId?: string): NoteEvent[] {
+  return buildSessionPerformancePlan({
+    key: 'C',
+    tempoBpm: BPM,
+    grooveId: 'pop8',
+    accompanimentPattern: pattern,
+    accompanimentVariant: variantId,
+    instrumentId: 'piano',
+    accompanimentEnergy: 'build',
+    octaveShift: 1,
+    releaseCut: false,
+    instrumentEffect: 'sustain',
+    drumMode: 'off',
+    progression: [0, 7, 9, 5].map(
+      (rootOffset, i) =>
+        ({
+          id: `v${i}`,
+          chordId: `v${i}`,
+          displayName: `v${i}`,
+          degreeLabel: 'I',
+          function: 'tonic',
+          durationBeats: 4,
+          isPro: false,
+          rootOffset,
+          suffix: '',
+        }) as ChordEvent,
+    ),
+  }).notes;
 }
 
 /** A take's identity: which pitch sounds when, for how long, how hard. */
@@ -47,9 +96,14 @@ describe('the default variant is the sound that shipped', () => {
     }
   });
 
-  it('keeps the Natural rotation the default rather than a fixed template', () => {
-    expect(defaultVariantFor('natural').id).toBe('natural.auto');
-    expect(defaultVariantFor('natural').bank).toHaveLength(3);
+  it('defaults Natural to Type 1 — a real teacher take', () => {
+    expect(defaultVariantFor('natural').id).toBe('natural.type1');
+    expect(defaultVariantFor('natural').humanTemplateId).toBeDefined();
+  });
+
+  it('still resolves the retired Natural rotation for saved projects', () => {
+    expect(resolveVariant('natural', 'natural.auto').id).toBe('natural.auto');
+    expect(resolveVariant('natural', 'natural.auto').bank).toHaveLength(3);
   });
 });
 
@@ -61,6 +115,15 @@ describe('every variant is a real, playable alternative', () => {
     // is the point of pinning; being the same in every context would be a no-op.
     const tempos = [90, 160];
     for (const pattern of ACCOMPANIMENT_IDS) {
+      if (namesTypes(pattern)) {
+        // A Type is a different teacher take: compared through the production path.
+        for (const variant of offeredVariantsFor(pattern).slice(1)) {
+          const notes = planFor(pattern, variant.id);
+          expect(notes.length).toBeGreaterThan(0);
+          expect(signature(notes)).not.toBe(signature(planFor(pattern)));
+        }
+        continue;
+      }
       for (const variant of variantsFor(pattern).slice(1)) {
         const differs = tempos.map((bpm) => {
           const notes = render(pattern, variant.id, bpm);
@@ -99,34 +162,19 @@ describe('every variant is a real, playable alternative', () => {
 });
 
 describe('what the variants actually change', () => {
-  it('Block Half re-strikes twice a bar where Hold strikes once', () => {
-    const perBar = (id: string) =>
-      render('block', id).filter((n) => n.trackId === 'chord' && n.timeBeat < 4).length;
-    // Hold plays the triad once; Half plays it on beats 1 and 3.
-    expect(perBar('block.half')).toBe(perBar('block.hold') * 2);
+  it('each Type of ナチュラル / バリエーション is its own take', () => {
+    for (const pattern of TYPED_PATTERNS) {
+      const takes = offeredVariantsFor(pattern).map((v) => signature(planFor(pattern, v.id)));
+      expect(new Set(takes).size).toBe(takes.length);
+    }
   });
 
-  it('Block Stab shortens the ring instead of holding it', () => {
-    const longest = (id: string) =>
-      Math.max(...render('block', id).filter((n) => n.trackId === 'chord').map((n) => n.durationBeat));
-    expect(longest('block.stab')).toBeLessThan(longest('block.hold'));
-  });
-
-  it('Arpeggio Up only ever climbs within a chord', () => {
-    const first = render('arpeggio', 'arpeggio.up')
-      .filter((n) => n.trackId === 'chord' && n.timeBeat < 4)
-      .sort((a, b) => a.timeBeat - b.timeBeat)
-      .map((n) => n.pitch);
-    // The cycle restarts at the bottom each time it tops out, so a descent of one
-    // step never happens: the line either rises or drops back to the root.
-    const descents = first.filter((p, i) => i > 0 && p < first[i - 1]);
-    expect(descents.every((p) => p === first[0])).toBe(true);
-  });
-
-  it('Arpeggio 8th halves the note count of the 16th default', () => {
-    const count = (id: string) =>
-      render('arpeggio', id).filter((n) => n.trackId === 'chord').length;
-    expect(count('arpeggio.eighth')).toBe(count('arpeggio.upDown') / 2);
+  it('Type 1 is what the pattern played before Types existed', () => {
+    for (const pattern of TYPED_PATTERNS) {
+      expect(signature(planFor(pattern, defaultVariantFor(pattern).id))).toBe(
+        signature(planFor(pattern)),
+      );
+    }
   });
 
   it('Natural Sparse plays fewer bass notes than Dense', () => {
@@ -178,24 +226,54 @@ describe('what the variants actually change', () => {
     expect(longest('reggae')).toBeLessThan(longest('bossa'));
   });
 
-  it('Relaxed Sustain drops the top voice and rings longer', () => {
-    const ballad = render('relaxed', 'relaxed.ballad');
-    const sustain = render('relaxed', 'relaxed.sustain');
-    expect(ballad.some((n) => n.trackId === 'top')).toBe(true);
-    expect(sustain.some((n) => n.trackId === 'top')).toBe(false);
-    const ring = (notes: NoteEvent[]) =>
-      Math.max(...notes.filter((n) => n.trackId === 'chord').map((n) => n.durationBeat));
-    expect(ring(sustain)).toBeGreaterThanOrEqual(ring(ballad));
+  it('block holds every chord tone for the chord and never uses a teacher take', () => {
+    const session = {
+      key: 'C' as const,
+      tempoBpm: BPM,
+      grooveId: 'pop8' as const,
+      accompanimentPattern: 'block' as const,
+      instrumentId: 'piano' as const,
+      accompanimentEnergy: 'build' as const,
+      octaveShift: 1,
+      releaseCut: false,
+      instrumentEffect: 'sustain' as const,
+      drumMode: 'off' as const,
+      progression: [0, 7, 9, 5].map(
+        (rootOffset, i) =>
+          ({
+            id: `b${i}`,
+            chordId: `b${i}`,
+            displayName: `b${i}`,
+            degreeLabel: 'I',
+            function: 'tonic',
+            durationBeats: 4,
+            isPro: false,
+            rootOffset,
+            suffix: '',
+          }) as ChordEvent,
+      ),
+    };
+    const plan = buildSessionPerformancePlan(session);
+    expect(plan.humanTemplateId).toBeUndefined();
+    const chordNotes = plan.notes.filter((n) => n.trackId === 'chord');
+    expect(chordNotes).toHaveLength(12);
+    for (let bar = 0; bar < 4; bar++) {
+      const inBar = chordNotes.filter(
+        (n) => n.timeBeat >= bar * 4 - 0.05 && n.timeBeat < bar * 4 + 0.25,
+      );
+      expect(inBar).toHaveLength(3);
+      expect(new Set(inBar.map((n) => n.timeBeat.toFixed(3))).size).toBe(1);
+      for (const n of inBar) {
+        expect(n.durationBeat).toBeGreaterThanOrEqual(4 * 0.9 - 1e-6);
+      }
+    }
   });
 
-  it('Relaxed Slow Arp spreads the chord one note at a time', () => {
-    const atSameBeat = render('relaxed', 'relaxed.arp')
-      .filter((n) => n.trackId === 'chord')
-      .reduce<Record<string, number>>((acc, n) => {
-        const k = n.timeBeat.toFixed(3);
-        acc[k] = (acc[k] ?? 0) + 1;
-        return acc;
-      }, {});
-    expect(Object.values(atSameBeat).every((c) => c === 1)).toBe(true);
+  it('a Type keeps the pattern recognisable — バラード still rings long', () => {
+    for (const variant of variantsFor('relaxed')) {
+      const chord = planFor('relaxed', variant.id).filter((n) => n.trackId === 'chord');
+      expect(chord.length).toBeGreaterThan(0);
+      expect(Math.max(...chord.map((n) => n.durationBeat))).toBeGreaterThanOrEqual(1);
+    }
   });
 });

@@ -4,13 +4,14 @@
  * and the native module wrapper without pulling in `expo-modules-core`.
  */
 
+import type { NativeMidiEvent } from '@/lib/playback';
+import type { CountInConfig } from '@/lib/playback/countIn';
+
 /* ------------------------------------------------------------------ */
 /* Volume                                                              */
 /* ------------------------------------------------------------------ */
 
 export type VolumeChannel = 'master' | 'chord' | 'drum';
-
-/** Linear volumes, 0.0–1.0. Canonical persistence lives in SQLite (§5.1). */
 export type VolumeLevels = {
   master: number;
   chord: number;
@@ -31,13 +32,7 @@ export const VOLUME_DEFAULTS: VolumeLevels = {
 /* ------------------------------------------------------------------ */
 
 export type PlaybackState =
-  | 'idle'
-  | 'preparing'
-  | 'ready'
-  | 'playing'
-  | 'paused'
-  | 'stopped'
-  | 'failed';
+  'idle' | 'preparing' | 'ready' | 'playing' | 'paused' | 'stopped' | 'failed';
 
 /* ------------------------------------------------------------------ */
 /* Playback request (generic — no hard-coded progression)              */
@@ -83,7 +78,42 @@ export type PlaybackRequest = {
    * top. Used when live-reapplying timbre so the playhead does not rewind.
    */
   startBeat?: number;
+  /**
+   * Drum playback mode. `off` = silent, `clap` = backbeat claps, `full` = full kit.
+   * Omitted / unknown → native treats as `full` (backward compatible).
+   */
+  drumMode?: 'off' | 'clap' | 'full';
+  /**
+   * Optional playback-only pre-roll. Native schedules it before beat zero; it is
+   * never written into Final MIDI and never repeats with the song loop.
+   */
+  countIn?: CountInConfig;
+
+  /* -- Playback v2 (realtime sampler). Omitted ⇒ the v1 pre-rendered path. ------ */
+
+  /**
+   * Which native engine plays this request. `sampled` (default) reads pre-rendered
+   * buffers in a render callback; `sequencer` hands {@link smfBase64} to Apple's
+   * sequencer driving a live `AVAudioUnitSampler`. Diagnostic-only switch — see
+   * `src/services/audio/playbackEngine.ts`.
+   */
+  engine?: PlaybackEngineId;
+  /** The whole plan as SMF Format 1 bytes, base64. Required by `sequencer`. */
+  smfBase64?: string;
+  /** Whether the SMF ends with a drum track (native must not guess the routing). */
+  hasDrums?: boolean;
+  /** GM program the melodic sampler loads (0 = grand piano, 4 = e.piano). */
+  gmProgram?: number;
+  /** Fingerprint of the Final MIDI, so an A/B can prove both engines got the same one. */
+  planSignature?: string;
+  /** Flattened MIDI schedule for the realtime sampler (v2). */
+  midiEvents?: NativeMidiEvent[];
 };
+
+export type { NativeMidiEvent } from '@/lib/playback';
+
+/** Native playback engine selector. */
+export type PlaybackEngineId = 'sampled' | 'sequencer';
 
 /** Single-chord audition (chord-card tap). */
 export type PreviewRequest = {
@@ -107,6 +137,7 @@ export type RenderAudioRequest = {
   durationSec: number;
   /** Mirrors {@link PlaybackRequest.beatsPerBar}. */
   beatsPerBar?: number;
+  drumMode?: 'off' | 'clap' | 'full';
 };
 
 /** Result of an offline audio render: a temp file URI + its sample rate. */
@@ -181,6 +212,53 @@ export type AudioDiagnostics = {
    * should carry a non-trivial peak; a ~0 bucket pinpoints a dead register.
    */
   sampledPeakByOctave?: Record<string, number>;
+
+  /* -- Per-instrument SoundFont resolution (silent-fallback detection) ----- */
+  /**
+   * What each instrument id would actually load, keyed by id (`piano`, `ePiano`).
+   * `found === false` on an entry with `isDedicatedBank === true` means that voice
+   * silently falls back to another sound — the shape of "the timbre is wrong on
+   * device but nothing errored".
+   */
+  instrumentSoundFonts?: Record<
+    string,
+    {
+      soundFontName: string;
+      found: boolean;
+      program: number;
+      isDedicatedBank: boolean;
+      path?: string;
+      sampledLoaded?: boolean;
+      lastLoadError?: string;
+    }
+  >;
+
+  /* -- Playback v2 ------------------------------------------------------- */
+  /** Engine that played the most recent request (`sampled` | `sequencer`). */
+  activeEngine?: string;
+  /** State of the realtime sampler engine (v2), when the binary has it. */
+  realtime?: {
+    attached?: boolean;
+    planLoaded?: boolean;
+    isPlaying?: boolean;
+    looping?: boolean;
+    loopLengthBeats?: number;
+    currentBeat?: number;
+    drumBankLoaded?: boolean;
+    instrument?: string;
+    program?: number;
+    soundFontPath?: string;
+    planSignature?: string;
+    lastError?: string;
+    scheduledEventCount?: number;
+    scheduler?: string;
+    /** Melodic NoteOns actually handed to AVAudioUnitSampler (no 24–84 clamp). */
+    sentNoteOnCount?: number;
+    sentNoteOffCount?: number;
+    sentCc64Count?: number;
+    sentPitchMin?: number;
+    sentPitchMax?: number;
+  };
 };
 
 /* ------------------------------------------------------------------ */

@@ -1,0 +1,4116 @@
+{
+  "id": "P1_A7.relative.v1",
+  "sourceId": "P1_A7",
+  "styleHint": "block_leaning",
+  "patternType": "human_accompaniment_template",
+  "meter": {
+    "beatsPerBar": 4,
+    "beatUnit": 4
+  },
+  "bars": 4,
+  "sourceTempo": 70.0,
+  "recommendedTempoRange": {
+    "min": 60,
+    "max": 90
+  },
+  "instrumentRole": "piano",
+  "transplantStandard": "chord_tone_strict",
+  "designPrinciples": {
+    "noAveraging": true,
+    "noRandomHumanize": true,
+    "listeningIsFinalJudge": true,
+    "singleCompleteTemplate": true,
+    "chordToneStrict": true
+  },
+  "timeline": {
+    "ppq": 480,
+    "musicalOriginTick": 1920,
+    "musicalOriginAbsoluteBar": 2,
+    "firstNoteTick": 1920,
+    "policy": "Musical Bar 1 = first sounding bar boundary. Events not front-packed to first NoteOn=0.",
+    "totalMusicalBars": 8,
+    "loopBars": 4
+  },
+  "sourceChords": {
+    "evidence": "USER_APPROVED_CANDIDATE",
+    "gtStatus": "GT_CONFIRMED",
+    "gtProvenance": "USER_APPROVED_CANDIDATE",
+    "candidateConfidence": "HIGH",
+    "seriesConsistency": "14/14",
+    "approvalDate": "2026-08-13",
+    "progression": "A | F#m | D | E",
+    "loop": [
+      {
+        "musicalBarInLoop": 1,
+        "symbol": "A",
+        "rootPc": 9,
+        "quality": "maj",
+        "chordIntervals": [
+          0,
+          4,
+          7
+        ]
+      },
+      {
+        "musicalBarInLoop": 2,
+        "symbol": "F#m",
+        "rootPc": 6,
+        "quality": "min",
+        "chordIntervals": [
+          0,
+          3,
+          7
+        ]
+      },
+      {
+        "musicalBarInLoop": 3,
+        "symbol": "D",
+        "rootPc": 2,
+        "quality": "maj",
+        "chordIntervals": [
+          0,
+          4,
+          7
+        ]
+      },
+      {
+        "musicalBarInLoop": 4,
+        "symbol": "E",
+        "rootPc": 4,
+        "quality": "maj",
+        "chordIntervals": [
+          0,
+          4,
+          7
+        ]
+      }
+    ],
+    "mapping": "musicalBar -> GT[(musicalBar-1) % 4]; no MIDI chord re-estimation"
+  },
+  "setupMetadata": {
+    "initCc": [
+      {
+        "absoluteTick": 5,
+        "channel": 0,
+        "controller": 7,
+        "value": 127,
+        "track": 1,
+        "beatPosition": 0.010416666666666666,
+        "bar": 1,
+        "beat": 1.0104166666666667
+      },
+      {
+        "absoluteTick": 10,
+        "channel": 0,
+        "controller": 11,
+        "value": 127,
+        "track": 1,
+        "beatPosition": 0.020833333333333332,
+        "bar": 1,
+        "beat": 1.0208333333333333
+      },
+      {
+        "absoluteTick": 15,
+        "channel": 0,
+        "controller": 10,
+        "value": 64,
+        "track": 1,
+        "beatPosition": 0.03125,
+        "bar": 1,
+        "beat": 1.03125
+      },
+      {
+        "absoluteTick": 20,
+        "channel": 0,
+        "controller": 91,
+        "value": 0,
+        "track": 1,
+        "beatPosition": 0.041666666666666664,
+        "bar": 1,
+        "beat": 1.0416666666666667
+      },
+      {
+        "absoluteTick": 25,
+        "channel": 0,
+        "controller": 93,
+        "value": 0,
+        "track": 1,
+        "beatPosition": 0.052083333333333336,
+        "bar": 1,
+        "beat": 1.0520833333333333
+      }
+    ],
+    "note": "CC7/11/10/91/93 separated; not part of performance pattern"
+  },
+  "pedalEvents": [
+    {
+      "absoluteTick": 1930,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "beatInMusicalBar": 0.020833,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 2877,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "beatInMusicalBar": 1.99375,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 3005,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "beatInMusicalBar": 2.260417,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 3834,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "beatInMusicalBar": 3.9875,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 3968,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "beatInMusicalBar": 0.266667,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 4795,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "beatInMusicalBar": 1.989583,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 4917,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "beatInMusicalBar": 2.24375,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 5756,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "beatInMusicalBar": 3.991667,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 5882,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "beatInMusicalBar": 0.254167,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 6712,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "beatInMusicalBar": 1.983333,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 6831,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "beatInMusicalBar": 2.23125,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 7677,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "beatInMusicalBar": 3.99375,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 7764,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "beatInMusicalBar": 0.175,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 8632,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "beatInMusicalBar": 1.983333,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 8728,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "beatInMusicalBar": 2.183333,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 9592,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "beatInMusicalBar": 3.983333,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 9680,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "beatInMusicalBar": 0.166667,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 10551,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "beatInMusicalBar": 1.98125,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 10628,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "beatInMusicalBar": 2.141667,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 11517,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "beatInMusicalBar": 3.99375,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 11644,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "beatInMusicalBar": 0.258333,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 12477,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "beatInMusicalBar": 1.99375,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 12589,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "beatInMusicalBar": 2.227083,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 13433,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "beatInMusicalBar": 3.985417,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 13535,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "beatInMusicalBar": 0.197917,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 14390,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "beatInMusicalBar": 1.979167,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 14486,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "beatInMusicalBar": 2.179167,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 15350,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "beatInMusicalBar": 3.979167,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 15434,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "beatInMusicalBar": 0.154167,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 16318,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "beatInMusicalBar": 1.995833,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 16394,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "beatInMusicalBar": 2.154167,
+      "state": "down",
+      "value": 127,
+      "phase": "musical"
+    },
+    {
+      "absoluteTick": 17270,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "beatInMusicalBar": 3.979167,
+      "state": "up",
+      "value": 0,
+      "phase": "musical"
+    }
+  ],
+  "attacks": [
+    {
+      "absoluteTick": 1920,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 0.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.9412,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 69,
+          "velocity": 36,
+          "relativeVelocity": 0.5294,
+          "durationBeats": 1.595833,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 56,
+          "relativeVelocity": 0.8235,
+          "durationBeats": 0.41875,
+          "gate": 0.4188
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 64,
+          "relativeVelocity": 0.9412,
+          "durationBeats": 0.447917,
+          "gate": 0.4479
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "root",
+          "third"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 2400,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 1.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.8529,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.2875,
+          "gate": 0.2875
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 58,
+          "relativeVelocity": 0.8529,
+          "durationBeats": 0.297917,
+          "gate": 0.2979
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 2880,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 2.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.8382,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 68,
+          "velocity": 38,
+          "relativeVelocity": 0.5588,
+          "durationBeats": 1.30625,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 49,
+          "relativeVelocity": 0.7206,
+          "durationBeats": 0.585417,
+          "gate": 0.5854
+        },
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 57,
+          "relativeVelocity": 0.8382,
+          "durationBeats": 0.554167,
+          "gate": 0.5542
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "seventh",
+          "ninth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 3360,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 3.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.7647,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 46,
+          "relativeVelocity": 0.6765,
+          "durationBeats": 0.214583,
+          "gate": 0.2146
+        },
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 0.229167,
+          "gate": 0.2292
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "ninth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 3840,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 4.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 66,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 1.279167,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 48,
+          "relativeVelocity": 0.7059,
+          "durationBeats": 0.504167,
+          "gate": 0.5042
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.491667,
+          "gate": 0.4917
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 4320,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 5.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 0.252083,
+          "gate": 0.2521
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.2625,
+          "gate": 0.2625
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 4800,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 6.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 64,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 1.2125,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 58,
+          "relativeVelocity": 0.8529,
+          "durationBeats": 0.40625,
+          "gate": 0.4062
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.46875,
+          "gate": 0.4688
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 5280,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 7.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8971,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 57,
+          "relativeVelocity": 0.8382,
+          "durationBeats": 0.216667,
+          "gate": 0.2167
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 61,
+          "relativeVelocity": 0.8971,
+          "durationBeats": 0.245833,
+          "gate": 0.2458
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 5760,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 8.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.9118,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 62,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 1.164583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 0.45625,
+          "gate": 0.4562
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 62,
+          "relativeVelocity": 0.9118,
+          "durationBeats": 0.310417,
+          "gate": 0.3104
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "fifth",
+          "root"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 6240,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 9.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.8088,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.220833,
+          "gate": 0.2208
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 51,
+          "relativeVelocity": 0.75,
+          "durationBeats": 0.1625,
+          "gate": 0.1625
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "root"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 6720,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 10.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 1.0,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 61,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 1.239583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 0.39375,
+          "gate": 0.3937
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 68,
+          "relativeVelocity": 1.0,
+          "durationBeats": 0.445833,
+          "gate": 0.4458
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "fifth",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 7200,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 11.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.8676,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.239583,
+          "gate": 0.2396
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 59,
+          "relativeVelocity": 0.8676,
+          "durationBeats": 0.239583,
+          "gate": 0.2396
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 7680,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 12.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.9118,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": -1,
+          "registerHint": "low",
+          "absolutePitch": 59,
+          "velocity": 30,
+          "relativeVelocity": 0.4412,
+          "durationBeats": 1.114583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.385417,
+          "gate": 0.3854
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 62,
+          "relativeVelocity": 0.9118,
+          "durationBeats": 0.297917,
+          "gate": 0.2979
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "eleventh",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 8160,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 13.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.8088,
+      "notes": [
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.21875,
+          "gate": 0.2188
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.18125,
+          "gate": 0.1812
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "eleventh",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 8640,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 14.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.8235,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 64,
+          "velocity": 42,
+          "relativeVelocity": 0.6176,
+          "durationBeats": 1.147917,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.420833,
+          "gate": 0.4208
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 56,
+          "relativeVelocity": 0.8235,
+          "durationBeats": 0.3375,
+          "gate": 0.3375
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 9120,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 15.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.7353,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 42,
+          "relativeVelocity": 0.6176,
+          "durationBeats": 0.183333,
+          "gate": 0.1833
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.2125,
+          "gate": 0.2125
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    }
+  ],
+  "fullTimelineAttacks": [
+    {
+      "absoluteTick": 1920,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 0.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.9412,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 69,
+          "velocity": 36,
+          "relativeVelocity": 0.5294,
+          "durationBeats": 1.595833,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 56,
+          "relativeVelocity": 0.8235,
+          "durationBeats": 0.41875,
+          "gate": 0.4188
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 64,
+          "relativeVelocity": 0.9412,
+          "durationBeats": 0.447917,
+          "gate": 0.4479
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "root",
+          "third"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 2400,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 1.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.8529,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.2875,
+          "gate": 0.2875
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 58,
+          "relativeVelocity": 0.8529,
+          "durationBeats": 0.297917,
+          "gate": 0.2979
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 2880,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 2.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.8382,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 68,
+          "velocity": 38,
+          "relativeVelocity": 0.5588,
+          "durationBeats": 1.30625,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 49,
+          "relativeVelocity": 0.7206,
+          "durationBeats": 0.585417,
+          "gate": 0.5854
+        },
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 57,
+          "relativeVelocity": 0.8382,
+          "durationBeats": 0.554167,
+          "gate": 0.5542
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "seventh",
+          "ninth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 3360,
+      "absoluteBar": 2,
+      "musicalBar": 1,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 3.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.7647,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 46,
+          "relativeVelocity": 0.6765,
+          "durationBeats": 0.214583,
+          "gate": 0.2146
+        },
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 0.229167,
+          "gate": 0.2292
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "ninth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 3840,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 4.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 66,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 1.279167,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 48,
+          "relativeVelocity": 0.7059,
+          "durationBeats": 0.504167,
+          "gate": 0.5042
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.491667,
+          "gate": 0.4917
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 4320,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 5.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 0.252083,
+          "gate": 0.2521
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.2625,
+          "gate": 0.2625
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 4800,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 6.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 64,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 1.2125,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 58,
+          "relativeVelocity": 0.8529,
+          "durationBeats": 0.40625,
+          "gate": 0.4062
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.46875,
+          "gate": 0.4688
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 5280,
+      "absoluteBar": 3,
+      "musicalBar": 2,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 7.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8971,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 57,
+          "relativeVelocity": 0.8382,
+          "durationBeats": 0.216667,
+          "gate": 0.2167
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 61,
+          "relativeVelocity": 0.8971,
+          "durationBeats": 0.245833,
+          "gate": 0.2458
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 5760,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 8.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.9118,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 62,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 1.164583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 0.45625,
+          "gate": 0.4562
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 62,
+          "relativeVelocity": 0.9118,
+          "durationBeats": 0.310417,
+          "gate": 0.3104
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "fifth",
+          "root"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 6240,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 9.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.8088,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.220833,
+          "gate": 0.2208
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 51,
+          "relativeVelocity": 0.75,
+          "durationBeats": 0.1625,
+          "gate": 0.1625
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "root"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 6720,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 10.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 1.0,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 61,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 1.239583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 0.39375,
+          "gate": 0.3937
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 68,
+          "relativeVelocity": 1.0,
+          "durationBeats": 0.445833,
+          "gate": 0.4458
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "fifth",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 7200,
+      "absoluteBar": 4,
+      "musicalBar": 3,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 11.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.8676,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.239583,
+          "gate": 0.2396
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 59,
+          "relativeVelocity": 0.8676,
+          "durationBeats": 0.239583,
+          "gate": 0.2396
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 7680,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 12.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.9118,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": -1,
+          "registerHint": "low",
+          "absolutePitch": 59,
+          "velocity": 30,
+          "relativeVelocity": 0.4412,
+          "durationBeats": 1.114583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.385417,
+          "gate": 0.3854
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 62,
+          "relativeVelocity": 0.9118,
+          "durationBeats": 0.297917,
+          "gate": 0.2979
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "eleventh",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 8160,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 13.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.8088,
+      "notes": [
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.21875,
+          "gate": 0.2188
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.18125,
+          "gate": 0.1812
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "eleventh",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 8640,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 14.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.8235,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 64,
+          "velocity": 42,
+          "relativeVelocity": 0.6176,
+          "durationBeats": 1.147917,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.420833,
+          "gate": 0.4208
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 56,
+          "relativeVelocity": 0.8235,
+          "durationBeats": 0.3375,
+          "gate": 0.3375
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 9120,
+      "absoluteBar": 5,
+      "musicalBar": 4,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 15.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.7353,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 42,
+          "relativeVelocity": 0.6176,
+          "durationBeats": 0.183333,
+          "gate": 0.1833
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.2125,
+          "gate": 0.2125
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 9600,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 16.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.9706,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 69,
+          "velocity": 40,
+          "relativeVelocity": 0.5882,
+          "durationBeats": 1.304167,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 64,
+          "relativeVelocity": 0.9412,
+          "durationBeats": 0.427083,
+          "gate": 0.4271
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 66,
+          "relativeVelocity": 0.9706,
+          "durationBeats": 0.377083,
+          "gate": 0.3771
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "root",
+          "third"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 10080,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 17.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.7647,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 0.2625,
+          "gate": 0.2625
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 0.247917,
+          "gate": 0.2479
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 10560,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 18.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 68,
+          "velocity": 43,
+          "relativeVelocity": 0.6324,
+          "durationBeats": 1.4125,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 0.404167,
+          "gate": 0.4042
+        },
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.370833,
+          "gate": 0.3708
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "seventh",
+          "ninth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 11040,
+      "absoluteBar": 6,
+      "musicalBar": 5,
+      "musicalBarInLoop": 1,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 19.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "A",
+      "relativeVelocity": 0.7206,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 49,
+          "relativeVelocity": 0.7206,
+          "durationBeats": 0.325,
+          "gate": 0.325
+        },
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 47,
+          "relativeVelocity": 0.6912,
+          "durationBeats": 0.310417,
+          "gate": 0.3104
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "ninth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 11520,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 20.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.9706,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 66,
+          "velocity": 47,
+          "relativeVelocity": 0.6912,
+          "durationBeats": 1.279167,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.441667,
+          "gate": 0.4417
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 66,
+          "relativeVelocity": 0.9706,
+          "durationBeats": 0.397917,
+          "gate": 0.3979
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 12000,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 21.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8676,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 53,
+          "relativeVelocity": 0.7794,
+          "durationBeats": 0.266667,
+          "gate": 0.2667
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 59,
+          "relativeVelocity": 0.8676,
+          "durationBeats": 0.264583,
+          "gate": 0.2646
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 12480,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 22.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.9706,
+      "notes": [
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 64,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 1.229167,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "third",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 0.395833,
+          "gate": 0.3958
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 66,
+          "relativeVelocity": 0.9706,
+          "durationBeats": 0.372917,
+          "gate": 0.3729
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "seventh",
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 12960,
+      "absoluteBar": 7,
+      "musicalBar": 6,
+      "musicalBarInLoop": 2,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 23.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "F#m",
+      "relativeVelocity": 0.8382,
+      "notes": [
+        {
+          "chordRole": "third",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 55,
+          "relativeVelocity": 0.8088,
+          "durationBeats": 0.28125,
+          "gate": 0.2812
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 57,
+          "relativeVelocity": 0.8382,
+          "durationBeats": 0.295833,
+          "gate": 0.2958
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "third",
+          "fifth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 13440,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 24.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.9265,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 62,
+          "velocity": 50,
+          "relativeVelocity": 0.7353,
+          "durationBeats": 1.164583,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 59,
+          "relativeVelocity": 0.8676,
+          "durationBeats": 0.425,
+          "gate": 0.425
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 63,
+          "relativeVelocity": 0.9265,
+          "durationBeats": 0.325,
+          "gate": 0.325
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "root",
+          "fifth",
+          "root"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 13920,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 25.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.8529,
+      "notes": [
+        {
+          "chordRole": "fifth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 58,
+          "relativeVelocity": 0.8529,
+          "durationBeats": 0.341667,
+          "gate": 0.3417
+        },
+        {
+          "chordRole": "root",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 56,
+          "relativeVelocity": 0.8235,
+          "durationBeats": 0.245833,
+          "gate": 0.2458
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "fifth",
+          "root"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 14400,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 26.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.8676,
+      "notes": [
+        {
+          "chordRole": "ninth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 64,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 1.1375,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "thirteenth",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 59,
+          "relativeVelocity": 0.8676,
+          "durationBeats": 0.4625,
+          "gate": 0.4625
+        },
+        {
+          "chordRole": "thirteenth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 59,
+          "relativeVelocity": 0.8676,
+          "durationBeats": 0.4,
+          "gate": 0.4
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "ninth",
+          "thirteenth",
+          "thirteenth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 14880,
+      "absoluteBar": 8,
+      "musicalBar": 7,
+      "musicalBarInLoop": 3,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 27.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "D",
+      "relativeVelocity": 0.7941,
+      "notes": [
+        {
+          "chordRole": "thirteenth",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 80,
+          "velocity": 52,
+          "relativeVelocity": 0.7647,
+          "durationBeats": 0.225,
+          "gate": 0.225
+        },
+        {
+          "chordRole": "thirteenth",
+          "voicingPosition": "top",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 83,
+          "velocity": 54,
+          "relativeVelocity": 0.7941,
+          "durationBeats": 0.241667,
+          "gate": 0.2417
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "thirteenth",
+          "thirteenth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "top"
+        ],
+        "intervalsTicks": [
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 15360,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 0.0,
+      "normalizedPosition": 28.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.9412,
+      "notes": [
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 69,
+          "velocity": 40,
+          "relativeVelocity": 0.5882,
+          "durationBeats": 1.2375,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 64,
+          "relativeVelocity": 0.9412,
+          "durationBeats": 0.410417,
+          "gate": 0.4104
+        },
+        {
+          "chordRole": "seventh",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 86,
+          "velocity": 64,
+          "relativeVelocity": 0.9412,
+          "durationBeats": 0.285417,
+          "gate": 0.2854
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "eleventh",
+          "eleventh",
+          "seventh"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 15840,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 1.0,
+      "normalizedPosition": 29.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "single",
+      "activeChord": "E",
+      "relativeVelocity": 0.8529,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 88,
+          "velocity": 58,
+          "relativeVelocity": 0.8529,
+          "durationBeats": 0.145833,
+          "gate": 0.1458
+        }
+      ],
+      "arpeggio": null
+    },
+    {
+      "absoluteTick": 16320,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 2.0,
+      "normalizedPosition": 30.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "block_chord",
+      "activeChord": "E",
+      "relativeVelocity": 0.8824,
+      "notes": [
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "lowest",
+          "octaveRelation": 0,
+          "registerHint": "mid",
+          "absolutePitch": 69,
+          "velocity": 44,
+          "relativeVelocity": 0.6471,
+          "durationBeats": 0.977083,
+          "gate": 0.9771
+        },
+        {
+          "chordRole": "eleventh",
+          "voicingPosition": "inner",
+          "octaveRelation": 1,
+          "registerHint": "high",
+          "absolutePitch": 81,
+          "velocity": 56,
+          "relativeVelocity": 0.8235,
+          "durationBeats": 1.972917,
+          "gate": 1.0
+        },
+        {
+          "chordRole": "thirteenth",
+          "voicingPosition": "top",
+          "octaveRelation": 2,
+          "registerHint": "high",
+          "absolutePitch": 85,
+          "velocity": 60,
+          "relativeVelocity": 0.8824,
+          "durationBeats": 1.970833,
+          "gate": 1.0
+        }
+      ],
+      "arpeggio": {
+        "direction": "up",
+        "roles": [
+          "eleventh",
+          "eleventh",
+          "thirteenth"
+        ],
+        "voicingPositions": [
+          "lowest",
+          "inner",
+          "top"
+        ],
+        "intervalsTicks": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "absoluteTick": 16800,
+      "absoluteBar": 9,
+      "musicalBar": 8,
+      "musicalBarInLoop": 4,
+      "beatInMusicalBar": 3.0,
+      "normalizedPosition": 31.0,
+      "timingOffsetTicks": 0.0,
+      "timingOffsetBeats": 0.0,
+      "attackType": "single",
+      "activeChord": "E",
+      "relativeVelocity": 0.5735,
+      "notes": [
+        {
+          "chordRole": "root",
+          "voicingPosition": "lowest",
+          "octaveRelation": 1,
+          "registerHint": "mid",
+          "absolutePitch": 76,
+          "velocity": 39,
+          "relativeVelocity": 0.5735,
+          "durationBeats": 0.977083,
+          "gate": 0.9771
+        }
+      ],
+      "arpeggio": null
+    }
+  ],
+  "phraseVariations": {
+    "detected": [
+      {
+        "musicalBar": 7,
+        "musicalBarInLoop": 3,
+        "activeChord": "D",
+        "kind": "pcs_differs_from_first_loop",
+        "firstLoopPcs": [
+          1,
+          2,
+          9
+        ],
+        "thisPcs": [
+          2,
+          4,
+          8,
+          9,
+          11
+        ],
+        "noteCount": 10
+      },
+      {
+        "musicalBar": 8,
+        "musicalBarInLoop": 4,
+        "activeChord": "E",
+        "kind": "pcs_differs_from_first_loop",
+        "firstLoopPcs": [
+          2,
+          4,
+          8,
+          9,
+          11
+        ],
+        "thisPcs": [
+          1,
+          2,
+          4,
+          9
+        ],
+        "noteCount": 8
+      }
+    ],
+    "variationAttacks": [
+      {
+        "absoluteTick": 9600,
+        "absoluteBar": 6,
+        "musicalBar": 5,
+        "musicalBarInLoop": 1,
+        "beatInMusicalBar": 0.0,
+        "normalizedPosition": 16.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "A",
+        "relativeVelocity": 0.9706,
+        "notes": [
+          {
+            "chordRole": "root",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 69,
+            "velocity": 40,
+            "relativeVelocity": 0.5882,
+            "durationBeats": 1.304167,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "root",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 64,
+            "relativeVelocity": 0.9412,
+            "durationBeats": 0.427083,
+            "gate": 0.4271
+          },
+          {
+            "chordRole": "third",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 66,
+            "relativeVelocity": 0.9706,
+            "durationBeats": 0.377083,
+            "gate": 0.3771
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "root",
+            "root",
+            "third"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 10080,
+        "absoluteBar": 6,
+        "musicalBar": 5,
+        "musicalBarInLoop": 1,
+        "beatInMusicalBar": 1.0,
+        "normalizedPosition": 17.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "A",
+        "relativeVelocity": 0.7647,
+        "notes": [
+          {
+            "chordRole": "root",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 52,
+            "relativeVelocity": 0.7647,
+            "durationBeats": 0.2625,
+            "gate": 0.2625
+          },
+          {
+            "chordRole": "third",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 50,
+            "relativeVelocity": 0.7353,
+            "durationBeats": 0.247917,
+            "gate": 0.2479
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "root",
+            "third"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "top"
+          ],
+          "intervalsTicks": [
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 10560,
+        "absoluteBar": 6,
+        "musicalBar": 5,
+        "musicalBarInLoop": 1,
+        "beatInMusicalBar": 2.0,
+        "normalizedPosition": 18.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "A",
+        "relativeVelocity": 0.8824,
+        "notes": [
+          {
+            "chordRole": "seventh",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 68,
+            "velocity": 43,
+            "relativeVelocity": 0.6324,
+            "durationBeats": 1.4125,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "seventh",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 80,
+            "velocity": 54,
+            "relativeVelocity": 0.7941,
+            "durationBeats": 0.404167,
+            "gate": 0.4042
+          },
+          {
+            "chordRole": "ninth",
+            "voicingPosition": "top",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 83,
+            "velocity": 60,
+            "relativeVelocity": 0.8824,
+            "durationBeats": 0.370833,
+            "gate": 0.3708
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "seventh",
+            "seventh",
+            "ninth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 11040,
+        "absoluteBar": 6,
+        "musicalBar": 5,
+        "musicalBarInLoop": 1,
+        "beatInMusicalBar": 3.0,
+        "normalizedPosition": 19.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "A",
+        "relativeVelocity": 0.7206,
+        "notes": [
+          {
+            "chordRole": "seventh",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 80,
+            "velocity": 49,
+            "relativeVelocity": 0.7206,
+            "durationBeats": 0.325,
+            "gate": 0.325
+          },
+          {
+            "chordRole": "ninth",
+            "voicingPosition": "top",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 83,
+            "velocity": 47,
+            "relativeVelocity": 0.6912,
+            "durationBeats": 0.310417,
+            "gate": 0.3104
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "seventh",
+            "ninth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "top"
+          ],
+          "intervalsTicks": [
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 11520,
+        "absoluteBar": 7,
+        "musicalBar": 6,
+        "musicalBarInLoop": 2,
+        "beatInMusicalBar": 0.0,
+        "normalizedPosition": 20.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "F#m",
+        "relativeVelocity": 0.9706,
+        "notes": [
+          {
+            "chordRole": "root",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 66,
+            "velocity": 47,
+            "relativeVelocity": 0.6912,
+            "durationBeats": 1.279167,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "third",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 60,
+            "relativeVelocity": 0.8824,
+            "durationBeats": 0.441667,
+            "gate": 0.4417
+          },
+          {
+            "chordRole": "fifth",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 66,
+            "relativeVelocity": 0.9706,
+            "durationBeats": 0.397917,
+            "gate": 0.3979
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "root",
+            "third",
+            "fifth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 12000,
+        "absoluteBar": 7,
+        "musicalBar": 6,
+        "musicalBarInLoop": 2,
+        "beatInMusicalBar": 1.0,
+        "normalizedPosition": 21.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "F#m",
+        "relativeVelocity": 0.8676,
+        "notes": [
+          {
+            "chordRole": "third",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 53,
+            "relativeVelocity": 0.7794,
+            "durationBeats": 0.266667,
+            "gate": 0.2667
+          },
+          {
+            "chordRole": "fifth",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 59,
+            "relativeVelocity": 0.8676,
+            "durationBeats": 0.264583,
+            "gate": 0.2646
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "third",
+            "fifth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "top"
+          ],
+          "intervalsTicks": [
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 12480,
+        "absoluteBar": 7,
+        "musicalBar": 6,
+        "musicalBarInLoop": 2,
+        "beatInMusicalBar": 2.0,
+        "normalizedPosition": 22.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "F#m",
+        "relativeVelocity": 0.9706,
+        "notes": [
+          {
+            "chordRole": "seventh",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 64,
+            "velocity": 54,
+            "relativeVelocity": 0.7941,
+            "durationBeats": 1.229167,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "third",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 60,
+            "relativeVelocity": 0.8824,
+            "durationBeats": 0.395833,
+            "gate": 0.3958
+          },
+          {
+            "chordRole": "fifth",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 66,
+            "relativeVelocity": 0.9706,
+            "durationBeats": 0.372917,
+            "gate": 0.3729
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "seventh",
+            "third",
+            "fifth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 12960,
+        "absoluteBar": 7,
+        "musicalBar": 6,
+        "musicalBarInLoop": 2,
+        "beatInMusicalBar": 3.0,
+        "normalizedPosition": 23.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "F#m",
+        "relativeVelocity": 0.8382,
+        "notes": [
+          {
+            "chordRole": "third",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 55,
+            "relativeVelocity": 0.8088,
+            "durationBeats": 0.28125,
+            "gate": 0.2812
+          },
+          {
+            "chordRole": "fifth",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 57,
+            "relativeVelocity": 0.8382,
+            "durationBeats": 0.295833,
+            "gate": 0.2958
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "third",
+            "fifth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "top"
+          ],
+          "intervalsTicks": [
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 13440,
+        "absoluteBar": 8,
+        "musicalBar": 7,
+        "musicalBarInLoop": 3,
+        "beatInMusicalBar": 0.0,
+        "normalizedPosition": 24.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "D",
+        "relativeVelocity": 0.9265,
+        "notes": [
+          {
+            "chordRole": "root",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 62,
+            "velocity": 50,
+            "relativeVelocity": 0.7353,
+            "durationBeats": 1.164583,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "fifth",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 59,
+            "relativeVelocity": 0.8676,
+            "durationBeats": 0.425,
+            "gate": 0.425
+          },
+          {
+            "chordRole": "root",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 86,
+            "velocity": 63,
+            "relativeVelocity": 0.9265,
+            "durationBeats": 0.325,
+            "gate": 0.325
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "root",
+            "fifth",
+            "root"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 13920,
+        "absoluteBar": 8,
+        "musicalBar": 7,
+        "musicalBarInLoop": 3,
+        "beatInMusicalBar": 1.0,
+        "normalizedPosition": 25.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "D",
+        "relativeVelocity": 0.8529,
+        "notes": [
+          {
+            "chordRole": "fifth",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 58,
+            "relativeVelocity": 0.8529,
+            "durationBeats": 0.341667,
+            "gate": 0.3417
+          },
+          {
+            "chordRole": "root",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 86,
+            "velocity": 56,
+            "relativeVelocity": 0.8235,
+            "durationBeats": 0.245833,
+            "gate": 0.2458
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "fifth",
+            "root"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "top"
+          ],
+          "intervalsTicks": [
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 14400,
+        "absoluteBar": 8,
+        "musicalBar": 7,
+        "musicalBarInLoop": 3,
+        "beatInMusicalBar": 2.0,
+        "normalizedPosition": 26.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "D",
+        "relativeVelocity": 0.8676,
+        "notes": [
+          {
+            "chordRole": "ninth",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 64,
+            "velocity": 52,
+            "relativeVelocity": 0.7647,
+            "durationBeats": 1.1375,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "thirteenth",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 80,
+            "velocity": 59,
+            "relativeVelocity": 0.8676,
+            "durationBeats": 0.4625,
+            "gate": 0.4625
+          },
+          {
+            "chordRole": "thirteenth",
+            "voicingPosition": "top",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 83,
+            "velocity": 59,
+            "relativeVelocity": 0.8676,
+            "durationBeats": 0.4,
+            "gate": 0.4
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "ninth",
+            "thirteenth",
+            "thirteenth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 14880,
+        "absoluteBar": 8,
+        "musicalBar": 7,
+        "musicalBarInLoop": 3,
+        "beatInMusicalBar": 3.0,
+        "normalizedPosition": 27.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "D",
+        "relativeVelocity": 0.7941,
+        "notes": [
+          {
+            "chordRole": "thirteenth",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 80,
+            "velocity": 52,
+            "relativeVelocity": 0.7647,
+            "durationBeats": 0.225,
+            "gate": 0.225
+          },
+          {
+            "chordRole": "thirteenth",
+            "voicingPosition": "top",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 83,
+            "velocity": 54,
+            "relativeVelocity": 0.7941,
+            "durationBeats": 0.241667,
+            "gate": 0.2417
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "thirteenth",
+            "thirteenth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "top"
+          ],
+          "intervalsTicks": [
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 15360,
+        "absoluteBar": 9,
+        "musicalBar": 8,
+        "musicalBarInLoop": 4,
+        "beatInMusicalBar": 0.0,
+        "normalizedPosition": 28.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "E",
+        "relativeVelocity": 0.9412,
+        "notes": [
+          {
+            "chordRole": "eleventh",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 69,
+            "velocity": 40,
+            "relativeVelocity": 0.5882,
+            "durationBeats": 1.2375,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "eleventh",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 64,
+            "relativeVelocity": 0.9412,
+            "durationBeats": 0.410417,
+            "gate": 0.4104
+          },
+          {
+            "chordRole": "seventh",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 86,
+            "velocity": 64,
+            "relativeVelocity": 0.9412,
+            "durationBeats": 0.285417,
+            "gate": 0.2854
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "eleventh",
+            "eleventh",
+            "seventh"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 15840,
+        "absoluteBar": 9,
+        "musicalBar": 8,
+        "musicalBarInLoop": 4,
+        "beatInMusicalBar": 1.0,
+        "normalizedPosition": 29.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "single",
+        "activeChord": "E",
+        "relativeVelocity": 0.8529,
+        "notes": [
+          {
+            "chordRole": "root",
+            "voicingPosition": "lowest",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 88,
+            "velocity": 58,
+            "relativeVelocity": 0.8529,
+            "durationBeats": 0.145833,
+            "gate": 0.1458
+          }
+        ],
+        "arpeggio": null
+      },
+      {
+        "absoluteTick": 16320,
+        "absoluteBar": 9,
+        "musicalBar": 8,
+        "musicalBarInLoop": 4,
+        "beatInMusicalBar": 2.0,
+        "normalizedPosition": 30.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "block_chord",
+        "activeChord": "E",
+        "relativeVelocity": 0.8824,
+        "notes": [
+          {
+            "chordRole": "eleventh",
+            "voicingPosition": "lowest",
+            "octaveRelation": 0,
+            "registerHint": "mid",
+            "absolutePitch": 69,
+            "velocity": 44,
+            "relativeVelocity": 0.6471,
+            "durationBeats": 0.977083,
+            "gate": 0.9771
+          },
+          {
+            "chordRole": "eleventh",
+            "voicingPosition": "inner",
+            "octaveRelation": 1,
+            "registerHint": "high",
+            "absolutePitch": 81,
+            "velocity": 56,
+            "relativeVelocity": 0.8235,
+            "durationBeats": 1.972917,
+            "gate": 1.0
+          },
+          {
+            "chordRole": "thirteenth",
+            "voicingPosition": "top",
+            "octaveRelation": 2,
+            "registerHint": "high",
+            "absolutePitch": 85,
+            "velocity": 60,
+            "relativeVelocity": 0.8824,
+            "durationBeats": 1.970833,
+            "gate": 1.0
+          }
+        ],
+        "arpeggio": {
+          "direction": "up",
+          "roles": [
+            "eleventh",
+            "eleventh",
+            "thirteenth"
+          ],
+          "voicingPositions": [
+            "lowest",
+            "inner",
+            "top"
+          ],
+          "intervalsTicks": [
+            0,
+            0
+          ]
+        }
+      },
+      {
+        "absoluteTick": 16800,
+        "absoluteBar": 9,
+        "musicalBar": 8,
+        "musicalBarInLoop": 4,
+        "beatInMusicalBar": 3.0,
+        "normalizedPosition": 31.0,
+        "timingOffsetTicks": 0.0,
+        "timingOffsetBeats": 0.0,
+        "attackType": "single",
+        "activeChord": "E",
+        "relativeVelocity": 0.5735,
+        "notes": [
+          {
+            "chordRole": "root",
+            "voicingPosition": "lowest",
+            "octaveRelation": 1,
+            "registerHint": "mid",
+            "absolutePitch": 76,
+            "velocity": 39,
+            "relativeVelocity": 0.5735,
+            "durationBeats": 0.977083,
+            "gate": 0.9771
+          }
+        ],
+        "arpeggio": null
+      }
+    ],
+    "note": "Later loops that differ from loop-1 PCS kept as phraseVariation; not discarded."
+  },
+  "stats": {
+    "bodyAttackCount": 16,
+    "fullAttackCount": 32,
+    "noteCountBody": 40,
+    "noteCountFull": 78,
+    "peakVelocity": 68,
+    "meanRelativeVelocityBody": 0.8631,
+    "attackTypeCounts": {
+      "single": 0,
+      "block_chord": 16,
+      "broken_chord": 0,
+      "arpeggio": 0
+    }
+  },
+  "warnings": []
+}

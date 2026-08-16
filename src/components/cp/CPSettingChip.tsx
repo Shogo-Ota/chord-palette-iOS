@@ -9,6 +9,8 @@ export type CPSettingChipProps = {
   value: string;
   accessibilityLabel: string;
   accessibilityHint?: string;
+  /** Lines the value may wrap onto before it ellipsizes. Default 1. */
+  valueLines?: number;
   onPress: () => void;
 };
 
@@ -22,6 +24,7 @@ export function CPSettingChip({
   value,
   accessibilityLabel,
   accessibilityHint,
+  valueLines = 1,
   onPress,
 }: CPSettingChipProps) {
   return (
@@ -36,7 +39,7 @@ export function CPSettingChip({
         {label}
       </Text>
       <View style={styles.valueRow}>
-        <Text style={styles.value} numberOfLines={1}>
+        <Text style={styles.value} numberOfLines={valueLines}>
           {value}
         </Text>
       </View>

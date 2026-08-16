@@ -1,0 +1,4490 @@
+{
+  "profileVersion": "gmd-drum-v1",
+  "dataClass": "measured",
+  "source": {
+    "datasetName": "Groove MIDI Dataset",
+    "datasetVersion": "v1.0.0-midionly",
+    "officialURL": "https://magenta.withgoogle.com/datasets/groove",
+    "license": "CC BY 4.0",
+    "licensor": "Google LLC",
+    "attribution": "Groove MIDI Dataset © Google LLC, licensed under CC BY 4.0 — https://magenta.withgoogle.com/datasets/groove",
+    "citation": "Jon Gillick, Adam Roberts, Jesse Engel, Douglas Eck, and David Bamman. \"Learning to Groove with Inverse Sequence Transformations.\" ICML 2019."
+  },
+  "analysis": {
+    "gridDivisionsPerBeat": 4,
+    "ghostVelocityMax": 40,
+    "tempoBins": [
+      {
+        "minBpm": 0,
+        "maxBpm": 80,
+        "label": "lt80"
+      },
+      {
+        "minBpm": 80,
+        "maxBpm": 100,
+        "label": "80-100"
+      },
+      {
+        "minBpm": 100,
+        "maxBpm": 120,
+        "label": "100-120"
+      },
+      {
+        "minBpm": 120,
+        "maxBpm": 140,
+        "label": "120-140"
+      },
+      {
+        "minBpm": 140,
+        "maxBpm": 1000000000,
+        "label": "gte140"
+      }
+    ],
+    "filesParsed": 1150,
+    "filesFailed": 0,
+    "totalHits": 446312
+  },
+  "generatedAt": "2026-08-03T00:00:00.000Z",
+  "overall": {
+    "byVoice": {
+      "crash": {
+        "voice": "crash",
+        "velocity": {
+          "count": 5877,
+          "mean": 83.85809086268505,
+          "stdDev": 33.64281459076308,
+          "p10": 33,
+          "p50": 90,
+          "p90": 127,
+          "ghostRate": 0.1260847371107708
+        },
+        "timing": {
+          "count": 5877,
+          "absDeviationMeanBeats": 0.04719209063581028,
+          "absDeviationStdDevBeats": 0.03239181870996917,
+          "signedDeviationMeanBeats": -0.0055268419261531275,
+          "absDeviationMeanMs": 25.861450841318575,
+          "signedDeviationMeanMs": -3.0287310618209373
+        }
+      },
+      "ride": {
+        "voice": "ride",
+        "velocity": {
+          "count": 51671,
+          "mean": 73.04391244605291,
+          "stdDev": 30.42130144672826,
+          "p10": 38,
+          "p50": 68,
+          "p90": 127,
+          "ghostRate": 0.12860211724177972
+        },
+        "timing": {
+          "count": 51671,
+          "absDeviationMeanBeats": 0.041066112197039914,
+          "absDeviationStdDevBeats": 0.03129147474368937,
+          "signedDeviationMeanBeats": -0.009887436860134168,
+          "absDeviationMeanMs": 22.504390619684315,
+          "signedDeviationMeanMs": -5.418354195797554
+        }
+      },
+      "kick": {
+        "voice": "kick",
+        "velocity": {
+          "count": 88127,
+          "mean": 58.092400739841366,
+          "stdDev": 32.28438315886533,
+          "p10": 18,
+          "p50": 53,
+          "p90": 116,
+          "ghostRate": 0.31067663712596594
+        },
+        "timing": {
+          "count": 88127,
+          "absDeviationMeanBeats": 0.04387612006913708,
+          "absDeviationStdDevBeats": 0.03288230752580637,
+          "signedDeviationMeanBeats": -0.012103980618879571,
+          "absDeviationMeanMs": 24.044285959536353,
+          "signedDeviationMeanMs": -6.633028872891175
+        }
+      },
+      "hatClosed": {
+        "voice": "hatClosed",
+        "velocity": {
+          "count": 118926,
+          "mean": 67.16330323058035,
+          "stdDev": 31.3339759784617,
+          "p10": 27,
+          "p50": 65,
+          "p90": 120,
+          "ghostRate": 0.22512318584666094
+        },
+        "timing": {
+          "count": 118926,
+          "absDeviationMeanBeats": 0.04231115007091499,
+          "absDeviationStdDevBeats": 0.03237579636519351,
+          "signedDeviationMeanBeats": -0.019562129671672764,
+          "absDeviationMeanMs": 23.186676259862487,
+          "signedDeviationMeanMs": -10.72012381819707
+        }
+      },
+      "snare": {
+        "voice": "snare",
+        "velocity": {
+          "count": 135269,
+          "mean": 67.14259734307196,
+          "stdDev": 40.1379390927199,
+          "p10": 20,
+          "p50": 56,
+          "p90": 127,
+          "ghostRate": 0.3478698001759457
+        },
+        "timing": {
+          "count": 135269,
+          "absDeviationMeanBeats": 0.046611397166638,
+          "absDeviationStdDevBeats": 0.033509717988906354,
+          "signedDeviationMeanBeats": -0.011682693373943877,
+          "absDeviationMeanMs": 25.54322854168013,
+          "signedDeviationMeanMs": -6.402161809614441
+        }
+      },
+      "tomLow": {
+        "voice": "tomLow",
+        "velocity": {
+          "count": 12279,
+          "mean": 90.66739962537666,
+          "stdDev": 28.931969399482153,
+          "p10": 50,
+          "p50": 92,
+          "p90": 127,
+          "ghostRate": 0.04682791758286505
+        },
+        "timing": {
+          "count": 12279,
+          "absDeviationMeanBeats": 0.044245934793821745,
+          "absDeviationStdDevBeats": 0.03261000855398593,
+          "signedDeviationMeanBeats": -0.017966650378695263,
+          "absDeviationMeanMs": 24.246945879747024,
+          "signedDeviationMeanMs": -9.845794905284503
+        }
+      },
+      "hatOpen": {
+        "voice": "hatOpen",
+        "velocity": {
+          "count": 14152,
+          "mean": 85.02911249293386,
+          "stdDev": 41.0446061638161,
+          "p10": 17,
+          "p50": 93,
+          "p90": 127,
+          "ghostRate": 0.18138778971170152
+        },
+        "timing": {
+          "count": 14152,
+          "absDeviationMeanBeats": 0.03870359902016186,
+          "absDeviationStdDevBeats": 0.030714721598893695,
+          "signedDeviationMeanBeats": -0.014104896834369647,
+          "absDeviationMeanMs": 21.209724128697438,
+          "signedDeviationMeanMs": -7.729538810198921
+        }
+      },
+      "tomHigh": {
+        "voice": "tomHigh",
+        "velocity": {
+          "count": 14733,
+          "mean": 84.8365573881762,
+          "stdDev": 29.451514984695923,
+          "p10": 47,
+          "p50": 82,
+          "p90": 127,
+          "ghostRate": 0.0449331432837847
+        },
+        "timing": {
+          "count": 14733,
+          "absDeviationMeanBeats": 0.04827541347089317,
+          "absDeviationStdDevBeats": 0.03220402606306774,
+          "signedDeviationMeanBeats": -0.008452397113056996,
+          "absDeviationMeanMs": 26.455116005699207,
+          "signedDeviationMeanMs": -4.631946783572992
+        }
+      },
+      "tomMid": {
+        "voice": "tomMid",
+        "velocity": {
+          "count": 5278,
+          "mean": 92.67771883289124,
+          "stdDev": 27.398871202767708,
+          "p10": 54,
+          "p50": 94,
+          "p90": 127,
+          "ghostRate": 0.03296703296703297
+        },
+        "timing": {
+          "count": 5278,
+          "absDeviationMeanBeats": 0.04812981558671235,
+          "absDeviationStdDevBeats": 0.03285744072404208,
+          "signedDeviationMeanBeats": -0.022286693191865676,
+          "absDeviationMeanMs": 26.375327793869385,
+          "signedDeviationMeanMs": -12.213195317937995
+        }
+      }
+    },
+    "fillFileRate": 0.5626086956521739
+  },
+  "byTempoBin": [
+    {
+      "bin": {
+        "minBpm": 0,
+        "maxBpm": 80,
+        "label": "lt80"
+      },
+      "fileCount": 103,
+      "hitCount": 18073,
+      "beatFileCount": 28,
+      "fillFileCount": 75,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 6503,
+            "mean": 60.77241273258496,
+            "stdDev": 32.70624517033832,
+            "p10": 21.200000000000045,
+            "p50": 56,
+            "p90": 110,
+            "ghostRate": 0.3456866061817623
+          },
+          "timing": {
+            "count": 6503,
+            "absDeviationMeanBeats": 0.036346365779896105,
+            "absDeviationStdDevBeats": 0.029264773234494994,
+            "signedDeviationMeanBeats": -0.01777480906248392,
+            "absDeviationMeanMs": 31.01636847828748,
+            "signedDeviationMeanMs": -15.168229771630852
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 3698,
+            "mean": 47.6487290427258,
+            "stdDev": 24.648621517905635,
+            "p10": 18,
+            "p50": 45,
+            "p90": 77,
+            "ghostRate": 0.4261763115197404
+          },
+          "timing": {
+            "count": 3698,
+            "absDeviationMeanBeats": 0.039436294393365545,
+            "absDeviationStdDevBeats": 0.0308920248925455,
+            "signedDeviationMeanBeats": -0.014907269695330762,
+            "absDeviationMeanMs": 33.65317582863837,
+            "signedDeviationMeanMs": -12.721199491458728
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 4179,
+            "mean": 73.92940894950945,
+            "stdDev": 43.87699031300994,
+            "p10": 10,
+            "p50": 82,
+            "p90": 127,
+            "ghostRate": 0.2998324958123953
+          },
+          "timing": {
+            "count": 4179,
+            "absDeviationMeanBeats": 0.046305435909706934,
+            "absDeviationStdDevBeats": 0.035846707536825846,
+            "signedDeviationMeanBeats": -0.006287887851958059,
+            "absDeviationMeanMs": 39.51499501822547,
+            "signedDeviationMeanMs": -5.36580322080928
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 928,
+            "mean": 87.50754310344827,
+            "stdDev": 36.45687029048798,
+            "p10": 37,
+            "p50": 96,
+            "p90": 127,
+            "ghostRate": 0.1336206896551724
+          },
+          "timing": {
+            "count": 928,
+            "absDeviationMeanBeats": 0.027732130028735456,
+            "absDeviationStdDevBeats": 0.024324010661500337,
+            "signedDeviationMeanBeats": -0.0160672593390804,
+            "absDeviationMeanMs": 23.66536365335337,
+            "signedDeviationMeanMs": -13.71108294884243
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 338,
+            "mean": 90.61242603550296,
+            "stdDev": 28.85621505618484,
+            "p10": 49.7,
+            "p50": 93,
+            "p90": 127,
+            "ghostRate": 0.05621301775147929
+          },
+          "timing": {
+            "count": 338,
+            "absDeviationMeanBeats": 0.052064842209073085,
+            "absDeviationStdDevBeats": 0.03509084328103732,
+            "signedDeviationMeanBeats": -0.0037290433925044877,
+            "absDeviationMeanMs": 44.42981563823138,
+            "signedDeviationMeanMs": -3.1821994153103748
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 399,
+            "mean": 91.31328320802005,
+            "stdDev": 28.09587236780101,
+            "p10": 52.800000000000004,
+            "p50": 93,
+            "p90": 127,
+            "ghostRate": 0.040100250626566414
+          },
+          "timing": {
+            "count": 399,
+            "absDeviationMeanBeats": 0.052354845446950946,
+            "absDeviationStdDevBeats": 0.035387203187790595,
+            "signedDeviationMeanBeats": -0.009633458646616298,
+            "absDeviationMeanMs": 44.67729147502856,
+            "signedDeviationMeanMs": -8.220764213765358
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 1565,
+            "mean": 64.60766773162939,
+            "stdDev": 29.22232841419558,
+            "p10": 36,
+            "p50": 57,
+            "p90": 114,
+            "ghostRate": 0.15782747603833866
+          },
+          "timing": {
+            "count": 1565,
+            "absDeviationMeanBeats": 0.04197284345047882,
+            "absDeviationStdDevBeats": 0.033518199018335304,
+            "signedDeviationMeanBeats": -0.004850905218317527,
+            "absDeviationMeanMs": 35.81775373156022,
+            "signedDeviationMeanMs": -4.1395462923504995
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 288,
+            "mean": 77.86111111111111,
+            "stdDev": 39.979354239808536,
+            "p10": 6,
+            "p50": 88,
+            "p90": 127,
+            "ghostRate": 0.1909722222222222
+          },
+          "timing": {
+            "count": 288,
+            "absDeviationMeanBeats": 0.03125723379629667,
+            "absDeviationStdDevBeats": 0.0252438545026126,
+            "signedDeviationMeanBeats": -0.01720920138888911,
+            "absDeviationMeanMs": 26.673530083003786,
+            "signedDeviationMeanMs": -14.685565393998163
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 175,
+            "mean": 92.14285714285714,
+            "stdDev": 26.7596101371802,
+            "p10": 56,
+            "p50": 93,
+            "p90": 127,
+            "ghostRate": 0.02857142857142857
+          },
+          "timing": {
+            "count": 175,
+            "absDeviationMeanBeats": 0.05478571428571445,
+            "absDeviationStdDevBeats": 0.034639064593582576,
+            "signedDeviationMeanBeats": -0.003071428571428677,
+            "absDeviationMeanMs": 46.751686590129154,
+            "signedDeviationMeanMs": -2.621020239081638
+          }
+        }
+      }
+    },
+    {
+      "bin": {
+        "minBpm": 80,
+        "maxBpm": 100,
+        "label": "80-100"
+      },
+      "fileCount": 306,
+      "hitCount": 135081,
+      "beatFileCount": 145,
+      "fillFileCount": 161,
+      "byVoice": {
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 27719,
+            "mean": 61.508459901150836,
+            "stdDev": 31.94975568979707,
+            "p10": 25,
+            "p50": 55,
+            "p90": 123,
+            "ghostRate": 0.252606515386558
+          },
+          "timing": {
+            "count": 27719,
+            "absDeviationMeanBeats": 0.0371936517671389,
+            "absDeviationStdDevBeats": 0.029585740113091796,
+            "signedDeviationMeanBeats": -0.012133374219849367,
+            "absDeviationMeanMs": 24.441656696541404,
+            "signedDeviationMeanMs": -7.973397425692917
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 39218,
+            "mean": 62.792824723341326,
+            "stdDev": 32.5443125379504,
+            "p10": 25,
+            "p50": 57,
+            "p90": 122,
+            "ghostRate": 0.2829313070528839
+          },
+          "timing": {
+            "count": 39218,
+            "absDeviationMeanBeats": 0.0340653526441932,
+            "absDeviationStdDevBeats": 0.028065120310425986,
+            "signedDeviationMeanBeats": -0.015512009791422249,
+            "absDeviationMeanMs": 22.385907675557007,
+            "signedDeviationMeanMs": -10.193654023784406
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 46230,
+            "mean": 68.3728314947004,
+            "stdDev": 40.36330305532471,
+            "p10": 23,
+            "p50": 54,
+            "p90": 127,
+            "ghostRate": 0.34964308890330953
+          },
+          "timing": {
+            "count": 46230,
+            "absDeviationMeanBeats": 0.044885085442352084,
+            "absDeviationStdDevBeats": 0.03279485738464502,
+            "signedDeviationMeanBeats": -0.011349953132886493,
+            "absDeviationMeanMs": 29.496050994007813,
+            "signedDeviationMeanMs": -7.458575450796236
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 4203,
+            "mean": 100.27884844158935,
+            "stdDev": 38.49718941147325,
+            "p10": 33.200000000000045,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0.11824886985486557
+          },
+          "timing": {
+            "count": 4203,
+            "absDeviationMeanBeats": 0.03320247442303094,
+            "absDeviationStdDevBeats": 0.029033012828256512,
+            "signedDeviationMeanBeats": -0.01131235625346954,
+            "absDeviationMeanMs": 21.81887076870497,
+            "signedDeviationMeanMs": -7.433868814692751
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 3459,
+            "mean": 90.90777681410812,
+            "stdDev": 27.098908599757312,
+            "p10": 55,
+            "p50": 90,
+            "p90": 127,
+            "ghostRate": 0.03555941023417172
+          },
+          "timing": {
+            "count": 3459,
+            "absDeviationMeanBeats": 0.04122096945167194,
+            "absDeviationStdDevBeats": 0.029616841923678836,
+            "signedDeviationMeanBeats": -0.026546689794738537,
+            "absDeviationMeanMs": 27.088192101818134,
+            "signedDeviationMeanMs": -17.445049022205506
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 9081,
+            "mean": 72.52923686818632,
+            "stdDev": 34.06139234009379,
+            "p10": 32,
+            "p50": 67,
+            "p90": 127,
+            "ghostRate": 0.20394229710384318
+          },
+          "timing": {
+            "count": 9081,
+            "absDeviationMeanBeats": 0.03185520133612282,
+            "absDeviationStdDevBeats": 0.02658443943931513,
+            "signedDeviationMeanBeats": -0.013310988143743268,
+            "absDeviationMeanMs": 20.93351574971241,
+            "signedDeviationMeanMs": -8.747261617063117
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 2627,
+            "mean": 95.17434335744196,
+            "stdDev": 25.826808535127526,
+            "p10": 59,
+            "p50": 97,
+            "p90": 127,
+            "ghostRate": 0.02169775409212029
+          },
+          "timing": {
+            "count": 2627,
+            "absDeviationMeanBeats": 0.04487216089328783,
+            "absDeviationStdDevBeats": 0.031175200956665837,
+            "signedDeviationMeanBeats": -0.02360741022712858,
+            "absDeviationMeanMs": 29.487557679257115,
+            "signedDeviationMeanMs": -15.513513431764943
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 1156,
+            "mean": 75.63754325259515,
+            "stdDev": 35.73241492423015,
+            "p10": 17,
+            "p50": 79,
+            "p90": 127,
+            "ghostRate": 0.18771626297577854
+          },
+          "timing": {
+            "count": 1156,
+            "absDeviationMeanBeats": 0.04189914936562873,
+            "absDeviationStdDevBeats": 0.02850763920560419,
+            "signedDeviationMeanBeats": -0.018813076701268694,
+            "absDeviationMeanMs": 27.53385526872628,
+            "signedDeviationMeanMs": -12.362936691910708
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 1388,
+            "mean": 96.53890489913545,
+            "stdDev": 23.35333315409028,
+            "p10": 66,
+            "p50": 96,
+            "p90": 127,
+            "ghostRate": 0.012247838616714697
+          },
+          "timing": {
+            "count": 1388,
+            "absDeviationMeanBeats": 0.05028368155619586,
+            "absDeviationStdDevBeats": 0.032394066611524074,
+            "signedDeviationMeanBeats": -0.028642831412103626,
+            "absDeviationMeanMs": 33.04371643121644,
+            "signedDeviationMeanMs": -18.822519944386794
+          }
+        }
+      }
+    },
+    {
+      "bin": {
+        "minBpm": 100,
+        "maxBpm": 120,
+        "label": "100-120"
+      },
+      "fileCount": 329,
+      "hitCount": 144234,
+      "beatFileCount": 154,
+      "fillFileCount": 175,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 37643,
+            "mean": 72.98589379167441,
+            "stdDev": 32.09885869509114,
+            "p10": 32,
+            "p50": 70,
+            "p90": 127,
+            "ghostRate": 0.17222325531971416
+          },
+          "timing": {
+            "count": 37643,
+            "absDeviationMeanBeats": 0.04271821232809906,
+            "absDeviationStdDevBeats": 0.03133364073445075,
+            "signedDeviationMeanBeats": -0.019760867447688447,
+            "absDeviationMeanMs": 23.597523754209472,
+            "signedDeviationMeanMs": -10.915895436333285
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 27506,
+            "mean": 60.165745655493346,
+            "stdDev": 32.436928696384484,
+            "p10": 19,
+            "p50": 55,
+            "p90": 119,
+            "ghostRate": 0.28284737875372645
+          },
+          "timing": {
+            "count": 27506,
+            "absDeviationMeanBeats": 0.044748494267916404,
+            "absDeviationStdDevBeats": 0.03197089132541751,
+            "signedDeviationMeanBeats": -0.010951777188007415,
+            "absDeviationMeanMs": 24.71905070235539,
+            "signedDeviationMeanMs": -6.049757428047191
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 40150,
+            "mean": 66.44221668742216,
+            "stdDev": 40.53815613938782,
+            "p10": 18,
+            "p50": 56,
+            "p90": 127,
+            "ghostRate": 0.36246575342465753
+          },
+          "timing": {
+            "count": 40150,
+            "absDeviationMeanBeats": 0.04567419053549114,
+            "absDeviationStdDevBeats": 0.032981127402214885,
+            "signedDeviationMeanBeats": -0.009652708592776942,
+            "absDeviationMeanMs": 25.23040495790108,
+            "signedDeviationMeanMs": -5.332152444981582
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 4488,
+            "mean": 76.11341354723707,
+            "stdDev": 46.43695837906638,
+            "p10": 10,
+            "p50": 80,
+            "p90": 127,
+            "ghostRate": 0.29500891265597146
+          },
+          "timing": {
+            "count": 4488,
+            "absDeviationMeanBeats": 0.039156732768864715,
+            "absDeviationStdDevBeats": 0.02968261845295216,
+            "signedDeviationMeanBeats": -0.01322554590017822,
+            "absDeviationMeanMs": 21.630163840979137,
+            "signedDeviationMeanMs": -7.305786373849673
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 5940,
+            "mean": 78.59831649831649,
+            "stdDev": 29.386526560547512,
+            "p10": 45,
+            "p50": 71,
+            "p90": 127,
+            "ghostRate": 0.047979797979797977
+          },
+          "timing": {
+            "count": 5940,
+            "absDeviationMeanBeats": 0.04926171436588078,
+            "absDeviationStdDevBeats": 0.03142423644432528,
+            "signedDeviationMeanBeats": 0.006976360830527267,
+            "absDeviationMeanMs": 27.212151716314164,
+            "signedDeviationMeanMs": 3.8537389896350427
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 3317,
+            "mean": 90.92945432619837,
+            "stdDev": 28.269534199498615,
+            "p10": 52,
+            "p50": 91,
+            "p90": 127,
+            "ghostRate": 0.0416038589086524
+          },
+          "timing": {
+            "count": 3317,
+            "absDeviationMeanBeats": 0.04118681539543807,
+            "absDeviationStdDevBeats": 0.03220936017387496,
+            "signedDeviationMeanBeats": -0.015250979801025114,
+            "absDeviationMeanMs": 22.751580688567163,
+            "signedDeviationMeanMs": -8.424635267167643
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 3045,
+            "mean": 81.58916256157636,
+            "stdDev": 33.89802655596493,
+            "p10": 25.400000000000034,
+            "p50": 89,
+            "p90": 125,
+            "ghostRate": 0.1451559934318555
+          },
+          "timing": {
+            "count": 3045,
+            "absDeviationMeanBeats": 0.04916598248494491,
+            "absDeviationStdDevBeats": 0.03317428787776743,
+            "signedDeviationMeanBeats": 0.008246442255062209,
+            "absDeviationMeanMs": 27.15926946279033,
+            "signedDeviationMeanMs": 4.555331470964824
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 20346,
+            "mean": 74.1246928143124,
+            "stdDev": 29.832893031877045,
+            "p10": 39,
+            "p50": 70,
+            "p90": 127,
+            "ghostRate": 0.1181067531701563
+          },
+          "timing": {
+            "count": 20346,
+            "absDeviationMeanBeats": 0.043147199285690684,
+            "absDeviationStdDevBeats": 0.030661459174797814,
+            "signedDeviationMeanBeats": -0.003655407287263394,
+            "absDeviationMeanMs": 23.834495981517673,
+            "signedDeviationMeanMs": -2.019245553395254
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 1799,
+            "mean": 92.017787659811,
+            "stdDev": 28.359886713937968,
+            "p10": 53,
+            "p50": 93,
+            "p90": 127,
+            "ghostRate": 0.03168426903835464
+          },
+          "timing": {
+            "count": 1799,
+            "absDeviationMeanBeats": 0.046914952751528384,
+            "absDeviationStdDevBeats": 0.03305799465233939,
+            "signedDeviationMeanBeats": -0.020198721511950922,
+            "absDeviationMeanMs": 25.9158015199432,
+            "signedDeviationMeanMs": -11.157765849892575
+          }
+        }
+      }
+    },
+    {
+      "bin": {
+        "minBpm": 120,
+        "maxBpm": 140,
+        "label": "120-140"
+      },
+      "fileCount": 283,
+      "hitCount": 109940,
+      "beatFileCount": 137,
+      "fillFileCount": 146,
+      "byVoice": {
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 852,
+            "mean": 96.21948356807512,
+            "stdDev": 25.566032440657924,
+            "p10": 64,
+            "p50": 97,
+            "p90": 127,
+            "ghostRate": 0.022300469483568074
+          },
+          "timing": {
+            "count": 852,
+            "absDeviationMeanBeats": 0.04623190532081334,
+            "absDeviationStdDevBeats": 0.031591752157232804,
+            "signedDeviationMeanBeats": -0.02312940140845028,
+            "absDeviationMeanMs": 22.12127687173924,
+            "signedDeviationMeanMs": -11.067073461140298
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 15836,
+            "mean": 73.67277090174287,
+            "stdDev": 30.28114484193621,
+            "p10": 40,
+            "p50": 67,
+            "p90": 127,
+            "ghostRate": 0.1096236423339227
+          },
+          "timing": {
+            "count": 15836,
+            "absDeviationMeanBeats": 0.03960004104571883,
+            "absDeviationStdDevBeats": 0.03149040299761764,
+            "signedDeviationMeanBeats": -0.014512424223288797,
+            "absDeviationMeanMs": 18.948028769868,
+            "signedDeviationMeanMs": -6.943978451586321
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 22039,
+            "mean": 51.22637143246064,
+            "stdDev": 33.25144354454136,
+            "p10": 11,
+            "p50": 44,
+            "p90": 110,
+            "ghostRate": 0.4416262080856663
+          },
+          "timing": {
+            "count": 22039,
+            "absDeviationMeanBeats": 0.04710305216510151,
+            "absDeviationStdDevBeats": 0.035037185175334114,
+            "signedDeviationMeanBeats": -0.011661902385165644,
+            "absDeviationMeanMs": 22.538107638386553,
+            "signedDeviationMeanMs": -5.580046284558081
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 26276,
+            "mean": 68.13240219211448,
+            "stdDev": 27.50801677579979,
+            "p10": 30,
+            "p50": 70,
+            "p90": 101,
+            "ghostRate": 0.18336124219820368
+          },
+          "timing": {
+            "count": 26276,
+            "absDeviationMeanBeats": 0.05000800794134054,
+            "absDeviationStdDevBeats": 0.03517026048723644,
+            "signedDeviationMeanBeats": -0.026006384152838843,
+            "absDeviationMeanMs": 23.92808563259679,
+            "signedDeviationMeanMs": -12.443666776994492
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 32797,
+            "mean": 63.44757142421563,
+            "stdDev": 38.7804887444165,
+            "p10": 16,
+            "p50": 53,
+            "p90": 127,
+            "ghostRate": 0.3614354971491295
+          },
+          "timing": {
+            "count": 32797,
+            "absDeviationMeanBeats": 0.04643641186693821,
+            "absDeviationStdDevBeats": 0.03357334040414889,
+            "signedDeviationMeanBeats": -0.01377819109471387,
+            "absDeviationMeanMs": 22.21913020262662,
+            "signedDeviationMeanMs": -6.592658855024136
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 2773,
+            "mean": 93.16119725928597,
+            "stdDev": 28.391504247929188,
+            "p10": 54,
+            "p50": 96,
+            "p90": 127,
+            "ghostRate": 0.02740714028128381
+          },
+          "timing": {
+            "count": 2773,
+            "absDeviationMeanBeats": 0.0445741675682179,
+            "absDeviationStdDevBeats": 0.03254066344822782,
+            "signedDeviationMeanBeats": -0.020391573506430574,
+            "absDeviationMeanMs": 21.328074092155997,
+            "signedDeviationMeanMs": -9.757063661036186
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 3263,
+            "mean": 76.67300030646645,
+            "stdDev": 35.02784712137788,
+            "p10": 31,
+            "p50": 76,
+            "p90": 127,
+            "ghostRate": 0.1719276739197058
+          },
+          "timing": {
+            "count": 3263,
+            "absDeviationMeanBeats": 0.04354632751047102,
+            "absDeviationStdDevBeats": 0.03207799986125424,
+            "signedDeviationMeanBeats": -0.019013688834405965,
+            "absDeviationMeanMs": 20.83626796088139,
+            "signedDeviationMeanMs": -9.097766404830312
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 4421,
+            "mean": 83.63922189549875,
+            "stdDev": 29.152220668398208,
+            "p10": 48,
+            "p50": 81,
+            "p90": 127,
+            "ghostRate": 0.054738746889843926
+          },
+          "timing": {
+            "count": 4421,
+            "absDeviationMeanBeats": 0.046383736711151334,
+            "absDeviationStdDevBeats": 0.03205800300764158,
+            "signedDeviationMeanBeats": -0.020304606800874755,
+            "absDeviationMeanMs": 22.19392592654633,
+            "signedDeviationMeanMs": -9.715451390054199
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 1683,
+            "mean": 88.35472370766489,
+            "stdDev": 28.72384992189277,
+            "p10": 49,
+            "p50": 89,
+            "p90": 127,
+            "ghostRate": 0.0540701128936423
+          },
+          "timing": {
+            "count": 1683,
+            "absDeviationMeanBeats": 0.045360467419291825,
+            "absDeviationStdDevBeats": 0.03177475400279881,
+            "signedDeviationMeanBeats": -0.02345513963161062,
+            "absDeviationMeanMs": 21.70430683854863,
+            "signedDeviationMeanMs": -11.22293434059651
+          }
+        }
+      }
+    },
+    {
+      "bin": {
+        "minBpm": 140,
+        "maxBpm": 1000000000,
+        "label": "gte140"
+      },
+      "fileCount": 129,
+      "hitCount": 38984,
+      "beatFileCount": 39,
+      "fillFileCount": 90,
+      "byVoice": {
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 11913,
+            "mean": 72.5207756232687,
+            "stdDev": 39.06873532311346,
+            "p10": 26,
+            "p50": 65,
+            "p90": 127,
+            "ghostRate": 0.2713002602199278
+          },
+          "timing": {
+            "count": 11913,
+            "absDeviationMeanBeats": 0.05705829066286119,
+            "absDeviationStdDevBeats": 0.035112707278605076,
+            "signedDeviationMeanBeats": -0.015938995215310968,
+            "absDeviationMeanMs": 22.550611199476386,
+            "signedDeviationMeanMs": -6.299419064874739
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 9286,
+            "mean": 63.7514538014215,
+            "stdDev": 27.804543707906017,
+            "p10": 30,
+            "p50": 62,
+            "p90": 103,
+            "ghostRate": 0.2291621796252423
+          },
+          "timing": {
+            "count": 9286,
+            "absDeviationMeanBeats": 0.05788373178261193,
+            "absDeviationStdDevBeats": 0.035986084215902166,
+            "signedDeviationMeanBeats": -0.018878329384736808,
+            "absDeviationMeanMs": 22.876842524377874,
+            "signedDeviationMeanMs": -7.4611044443353185
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 7165,
+            "mean": 63.42693649685973,
+            "stdDev": 28.7325249570165,
+            "p10": 33,
+            "p50": 57,
+            "p90": 113,
+            "ghostRate": 0.17976273551988833
+          },
+          "timing": {
+            "count": 7165,
+            "absDeviationMeanBeats": 0.05874505698999786,
+            "absDeviationStdDevBeats": 0.03579372475920786,
+            "signedDeviationMeanBeats": -0.016326471272388846,
+            "absDeviationMeanMs": 23.217255979502827,
+            "signedDeviationMeanMs": -6.45255758008015
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 1270,
+            "mean": 85.7259842519685,
+            "stdDev": 29.817775210760434,
+            "p10": 51,
+            "p50": 82,
+            "p90": 127,
+            "ghostRate": 0.048031496062992125
+          },
+          "timing": {
+            "count": 1270,
+            "absDeviationMeanBeats": 0.0508825459317584,
+            "absDeviationStdDevBeats": 0.03370264224516607,
+            "signedDeviationMeanBeats": -0.01240813648293996,
+            "absDeviationMeanMs": 20.109829734058927,
+            "signedDeviationMeanMs": -4.903950999691345
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 2331,
+            "mean": 86.86057486057486,
+            "stdDev": 32.65366068163714,
+            "p10": 41,
+            "p50": 89,
+            "p90": 127,
+            "ghostRate": 0.09523809523809523
+          },
+          "timing": {
+            "count": 2331,
+            "absDeviationMeanBeats": 0.05130934505934555,
+            "absDeviationStdDevBeats": 0.035519489826148984,
+            "signedDeviationMeanBeats": -0.007640676390676597,
+            "absDeviationMeanMs": 20.27850953632223,
+            "signedDeviationMeanMs": -3.019752617638728
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 536,
+            "mean": 98.05037313432835,
+            "stdDev": 24.333643251486617,
+            "p10": 64,
+            "p50": 100,
+            "p90": 127,
+            "ghostRate": 0.014925373134328358
+          },
+          "timing": {
+            "count": 536,
+            "absDeviationMeanBeats": 0.05748212064676696,
+            "absDeviationStdDevBeats": 0.03527503145564552,
+            "signedDeviationMeanBeats": -0.020860541044776103,
+            "absDeviationMeanMs": 22.718117535027382,
+            "signedDeviationMeanMs": -8.244515302622908
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 4843,
+            "mean": 70.13834400165187,
+            "stdDev": 25.437551561182378,
+            "p10": 42,
+            "p50": 65,
+            "p90": 111,
+            "ghostRate": 0.08403881891389635
+          },
+          "timing": {
+            "count": 4843,
+            "absDeviationMeanBeats": 0.05409525776034159,
+            "absDeviationStdDevBeats": 0.03481587215782027,
+            "signedDeviationMeanBeats": -0.016153899098355212,
+            "absDeviationMeanMs": 21.37955959278206,
+            "signedDeviationMeanMs": -6.384353503945534
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 1407,
+            "mean": 94.24591329068942,
+            "stdDev": 29.261035240911866,
+            "p10": 53,
+            "p50": 98,
+            "p90": 127,
+            "ghostRate": 0.04193319118692253
+          },
+          "timing": {
+            "count": 1407,
+            "absDeviationMeanBeats": 0.055499289267946374,
+            "absDeviationStdDevBeats": 0.035475640859849056,
+            "signedDeviationMeanBeats": -0.009186211798151864,
+            "absDeviationMeanMs": 21.93446175111851,
+            "signedDeviationMeanMs": -3.630580030519578
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 233,
+            "mean": 106.39914163090128,
+            "stdDev": 25.165365516534784,
+            "p10": 69,
+            "p50": 117,
+            "p90": 127,
+            "ghostRate": 0.017167381974248927
+          },
+          "timing": {
+            "count": 233,
+            "absDeviationMeanBeats": 0.05968347639484974,
+            "absDeviationStdDevBeats": 0.036216084523788786,
+            "signedDeviationMeanBeats": -0.006536123032904644,
+            "absDeviationMeanMs": 23.588138648699804,
+            "signedDeviationMeanMs": -2.583210389842828
+          }
+        }
+      }
+    }
+  ],
+  "byPrimaryStyle": {
+    "funk": {
+      "fileCount": 160,
+      "hitCount": 55825,
+      "byVoice": {
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 435,
+            "mean": 70.92413793103448,
+            "stdDev": 43.12101380015766,
+            "p10": 11,
+            "p50": 72,
+            "p90": 127,
+            "ghostRate": 0.3080459770114943
+          },
+          "timing": {
+            "count": 435,
+            "absDeviationMeanBeats": 0.04240900383141767,
+            "absDeviationStdDevBeats": 0.031467755071259824,
+            "signedDeviationMeanBeats": -0.016527777777777745,
+            "absDeviationMeanMs": 23.517007669917376,
+            "signedDeviationMeanMs": -9.165126309303739
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 3497,
+            "mean": 77.46554189305118,
+            "stdDev": 34.819745390902376,
+            "p10": 33,
+            "p50": 73,
+            "p90": 127,
+            "ghostRate": 0.17357735201601374
+          },
+          "timing": {
+            "count": 3497,
+            "absDeviationMeanBeats": 0.033175459918025015,
+            "absDeviationStdDevBeats": 0.027688182274102652,
+            "signedDeviationMeanBeats": -0.016897221427890623,
+            "absDeviationMeanMs": 18.396743022934388,
+            "signedDeviationMeanMs": -9.369993398090918
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 10353,
+            "mean": 60.34762870665507,
+            "stdDev": 30.20206249243422,
+            "p10": 24,
+            "p50": 57,
+            "p90": 109,
+            "ghostRate": 0.24263498502849415
+          },
+          "timing": {
+            "count": 10353,
+            "absDeviationMeanBeats": 0.04043212112431139,
+            "absDeviationStdDevBeats": 0.030750693781986582,
+            "signedDeviationMeanBeats": -0.01145622041920216,
+            "absDeviationMeanMs": 22.42076956985844,
+            "signedDeviationMeanMs": -6.3528024505742104
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 19847,
+            "mean": 61.31506021061117,
+            "stdDev": 31.91896492506694,
+            "p10": 24,
+            "p50": 56,
+            "p90": 115,
+            "ghostRate": 0.3026150047866176
+          },
+          "timing": {
+            "count": 19847,
+            "absDeviationMeanBeats": 0.0328645387212171,
+            "absDeviationStdDevBeats": 0.027823345133786745,
+            "signedDeviationMeanBeats": -0.01785450361935477,
+            "absDeviationMeanMs": 18.224328311210957,
+            "signedDeviationMeanMs": -9.900833800011887
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 17939,
+            "mean": 67.28881208540052,
+            "stdDev": 42.941792979454824,
+            "p10": 19,
+            "p50": 51,
+            "p90": 127,
+            "ghostRate": 0.40972183510786553
+          },
+          "timing": {
+            "count": 17939,
+            "absDeviationMeanBeats": 0.04414938588178466,
+            "absDeviationStdDevBeats": 0.03372594935561912,
+            "signedDeviationMeanBeats": -0.007126001077726409,
+            "absDeviationMeanMs": 24.482099379917553,
+            "signedDeviationMeanMs": -3.9515717621403375
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 499,
+            "mean": 98.76352705410822,
+            "stdDev": 30.105029779437533,
+            "p10": 51.800000000000004,
+            "p50": 108,
+            "p90": 127,
+            "ghostRate": 0.036072144288577156
+          },
+          "timing": {
+            "count": 499,
+            "absDeviationMeanBeats": 0.049110721442886,
+            "absDeviationStdDevBeats": 0.03458253355189011,
+            "signedDeviationMeanBeats": -0.02214011356045423,
+            "absDeviationMeanMs": 27.23330209402181,
+            "signedDeviationMeanMs": -12.277327297848926
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 2399,
+            "mean": 98.52730304293456,
+            "stdDev": 32.16140490826651,
+            "p10": 51,
+            "p50": 110,
+            "p90": 127,
+            "ghostRate": 0.06419341392246769
+          },
+          "timing": {
+            "count": 2399,
+            "absDeviationMeanBeats": 0.03292170348756407,
+            "absDeviationStdDevBeats": 0.026211620493542618,
+            "signedDeviationMeanBeats": -0.021262331527025297,
+            "absDeviationMeanMs": 18.256027811957892,
+            "signedDeviationMeanMs": -11.790572011289443
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 620,
+            "mean": 98.68870967741935,
+            "stdDev": 26.739752965531338,
+            "p10": 61.900000000000006,
+            "p50": 103,
+            "p90": 127,
+            "ghostRate": 0.01935483870967742
+          },
+          "timing": {
+            "count": 620,
+            "absDeviationMeanBeats": 0.04813844086021507,
+            "absDeviationStdDevBeats": 0.03338694594294366,
+            "signedDeviationMeanBeats": -0.017889784946236494,
+            "absDeviationMeanMs": 26.694144654463067,
+            "signedDeviationMeanMs": -9.920398306600642
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 236,
+            "mean": 103.7457627118644,
+            "stdDev": 26.88903325082611,
+            "p10": 63.5,
+            "p50": 114.5,
+            "p90": 127,
+            "ghostRate": 0.029661016949152543
+          },
+          "timing": {
+            "count": 236,
+            "absDeviationMeanBeats": 0.05026483050847513,
+            "absDeviationStdDevBeats": 0.032910840561702834,
+            "signedDeviationMeanBeats": -0.019968220338983277,
+            "absDeviationMeanMs": 27.873288636862362,
+            "signedDeviationMeanMs": -11.07295028039738
+          }
+        }
+      }
+    },
+    "soul": {
+      "fileCount": 63,
+      "hitCount": 11972,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 4616,
+            "mean": 68.20580589254766,
+            "stdDev": 31.30628201891654,
+            "p10": 29,
+            "p50": 66,
+            "p90": 117,
+            "ghostRate": 0.2324523396880416
+          },
+          "timing": {
+            "count": 4616,
+            "absDeviationMeanBeats": 0.034203946418255075,
+            "absDeviationStdDevBeats": 0.028571133464962126,
+            "signedDeviationMeanBeats": -0.018949938619295212,
+            "absDeviationMeanMs": 19.07226987181062,
+            "signedDeviationMeanMs": -10.566568517618514
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 2418,
+            "mean": 45.22911497105046,
+            "stdDev": 18.884099401812875,
+            "p10": 21,
+            "p50": 45,
+            "p90": 65,
+            "ghostRate": 0.35153019023986765
+          },
+          "timing": {
+            "count": 2418,
+            "absDeviationMeanBeats": 0.04367245657568241,
+            "absDeviationStdDevBeats": 0.031937082125045,
+            "signedDeviationMeanBeats": -0.02406086297215338,
+            "absDeviationMeanMs": 24.351952479138443,
+            "signedDeviationMeanMs": -13.41644225324381
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 3191,
+            "mean": 72.15167659041053,
+            "stdDev": 43.42838505151312,
+            "p10": 12,
+            "p50": 81,
+            "p90": 127,
+            "ghostRate": 0.34377937950485743
+          },
+          "timing": {
+            "count": 3191,
+            "absDeviationMeanBeats": 0.04504726835892611,
+            "absDeviationStdDevBeats": 0.033514944949737176,
+            "signedDeviationMeanBeats": -0.01683902642849696,
+            "absDeviationMeanMs": 25.118553532488672,
+            "signedDeviationMeanMs": -9.389514662888113
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 374,
+            "mean": 90.75133689839572,
+            "stdDev": 30.75102164867537,
+            "p10": 44,
+            "p50": 96,
+            "p90": 127,
+            "ghostRate": 0.08021390374331551
+          },
+          "timing": {
+            "count": 374,
+            "absDeviationMeanBeats": 0.046763591800356254,
+            "absDeviationStdDevBeats": 0.03258341170386499,
+            "signedDeviationMeanBeats": -0.037160204991087506,
+            "absDeviationMeanMs": 26.07558297762895,
+            "signedDeviationMeanMs": -20.72069256030547
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 198,
+            "mean": 91.97979797979798,
+            "stdDev": 31.76793370807106,
+            "p10": 40.7,
+            "p50": 99,
+            "p90": 127,
+            "ghostRate": 0.10101010101010101
+          },
+          "timing": {
+            "count": 198,
+            "absDeviationMeanBeats": 0.05057870370370377,
+            "absDeviationStdDevBeats": 0.030505196327467187,
+            "signedDeviationMeanBeats": -0.025852272727272998,
+            "absDeviationMeanMs": 28.20290603333829,
+            "signedDeviationMeanMs": -14.41534015475615
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 161,
+            "mean": 80.7888198757764,
+            "stdDev": 34.834374744276616,
+            "p10": 37,
+            "p50": 83,
+            "p90": 127,
+            "ghostRate": 0.13043478260869565
+          },
+          "timing": {
+            "count": 161,
+            "absDeviationMeanBeats": 0.04472049689441005,
+            "absDeviationStdDevBeats": 0.03110172817837167,
+            "signedDeviationMeanBeats": -0.022722567287784406,
+            "absDeviationMeanMs": 24.93634433705119,
+            "signedDeviationMeanMs": -12.670202736070964
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 74,
+            "mean": 105.89189189189189,
+            "stdDev": 21.926515829487023,
+            "p10": 73.60000000000001,
+            "p50": 115,
+            "p90": 127,
+            "ghostRate": 0.013513513513513514
+          },
+          "timing": {
+            "count": 74,
+            "absDeviationMeanBeats": 0.04574887387387311,
+            "absDeviationStdDevBeats": 0.03005687643125784,
+            "signedDeviationMeanBeats": -0.020748873873873176,
+            "absDeviationMeanMs": 25.509771831131488,
+            "signedDeviationMeanMs": -11.569662670488363
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 133,
+            "mean": 82.69172932330827,
+            "stdDev": 28.295216113402958,
+            "p10": 43,
+            "p50": 86,
+            "p90": 124.8,
+            "ghostRate": 0.09022556390977443
+          },
+          "timing": {
+            "count": 133,
+            "absDeviationMeanBeats": 0.052756892230576356,
+            "absDeviationStdDevBeats": 0.031933879587825585,
+            "signedDeviationMeanBeats": -0.031704260651629006,
+            "absDeviationMeanMs": 29.417473466820866,
+            "signedDeviationMeanMs": -17.678434173647684
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 807,
+            "mean": 60.32342007434944,
+            "stdDev": 33.8405508815392,
+            "p10": 21.60000000000001,
+            "p50": 52,
+            "p90": 120.39999999999998,
+            "ghostRate": 0.322180916976456
+          },
+          "timing": {
+            "count": 807,
+            "absDeviationMeanBeats": 0.04704667492771574,
+            "absDeviationStdDevBeats": 0.031618819538832804,
+            "signedDeviationMeanBeats": -0.033994217265592576,
+            "absDeviationMeanMs": 26.23343136550605,
+            "signedDeviationMeanMs": -18.955323980519243
+          }
+        }
+      }
+    },
+    "hiphop": {
+      "fileCount": 95,
+      "hitCount": 18730,
+      "byVoice": {
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 4130,
+            "mean": 62.81452784503632,
+            "stdDev": 26.832391290299878,
+            "p10": 31,
+            "p50": 62,
+            "p90": 101,
+            "ghostRate": 0.19757869249394674
+          },
+          "timing": {
+            "count": 4130,
+            "absDeviationMeanBeats": 0.037124697336561485,
+            "absDeviationStdDevBeats": 0.028502062297815718,
+            "signedDeviationMeanBeats": -0.01491424535916062,
+            "absDeviationMeanMs": 24.697802849953366,
+            "signedDeviationMeanMs": -9.921941940618058
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 7352,
+            "mean": 69.454162132753,
+            "stdDev": 36.248024509299775,
+            "p10": 24,
+            "p50": 65,
+            "p90": 127,
+            "ghostRate": 0.26713819368879216
+          },
+          "timing": {
+            "count": 7352,
+            "absDeviationMeanBeats": 0.03578051323902766,
+            "absDeviationStdDevBeats": 0.029287614633166953,
+            "signedDeviationMeanBeats": -0.019929384294522918,
+            "absDeviationMeanMs": 23.80356272904501,
+            "signedDeviationMeanMs": -13.258343893415105
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 4498,
+            "mean": 82.77189862160961,
+            "stdDev": 43.75461093147356,
+            "p10": 23,
+            "p50": 99,
+            "p90": 127,
+            "ghostRate": 0.2785682525566919
+          },
+          "timing": {
+            "count": 4498,
+            "absDeviationMeanBeats": 0.04475461316140493,
+            "absDeviationStdDevBeats": 0.03481769779279995,
+            "signedDeviationMeanBeats": -0.0065329961464355435,
+            "absDeviationMeanMs": 29.77372724323157,
+            "signedDeviationMeanMs": -4.346180909743533
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 1225,
+            "mean": 101.72163265306122,
+            "stdDev": 34.63010459518155,
+            "p10": 43,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0.08244897959183674
+          },
+          "timing": {
+            "count": 1225,
+            "absDeviationMeanBeats": 0.02258673469387729,
+            "absDeviationStdDevBeats": 0.019372533558054995,
+            "signedDeviationMeanBeats": -0.011688775510203947,
+            "absDeviationMeanMs": 15.026189047047215,
+            "signedDeviationMeanMs": -7.776146172754726
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 258,
+            "mean": 71.79457364341086,
+            "stdDev": 47.59446389876107,
+            "p10": 6,
+            "p50": 90,
+            "p90": 127,
+            "ghostRate": 0.32945736434108525
+          },
+          "timing": {
+            "count": 258,
+            "absDeviationMeanBeats": 0.03752422480620208,
+            "absDeviationStdDevBeats": 0.027802687408870163,
+            "signedDeviationMeanBeats": -0.0019945090439278503,
+            "absDeviationMeanMs": 24.96359493409802,
+            "signedDeviationMeanMs": -1.3268792659183877
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 279,
+            "mean": 102.28673835125448,
+            "stdDev": 26.331567991181014,
+            "p10": 69,
+            "p50": 109,
+            "p90": 127,
+            "ghostRate": 0.021505376344086023
+          },
+          "timing": {
+            "count": 279,
+            "absDeviationMeanBeats": 0.0521505376344085,
+            "absDeviationStdDevBeats": 0.03512506228758294,
+            "signedDeviationMeanBeats": -0.004077060931899638,
+            "absDeviationMeanMs": 34.69398512093002,
+            "signedDeviationMeanMs": -2.7123304518940166
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 170,
+            "mean": 98.90588235294118,
+            "stdDev": 25.92052265695448,
+            "p10": 61.900000000000006,
+            "p50": 102,
+            "p90": 127,
+            "ghostRate": 0.029411764705882353
+          },
+          "timing": {
+            "count": 170,
+            "absDeviationMeanBeats": 0.05140931372548999,
+            "absDeviationStdDevBeats": 0.036096844409538295,
+            "signedDeviationMeanBeats": -0.016139705882352827,
+            "absDeviationMeanMs": 34.20087397704166,
+            "signedDeviationMeanMs": -10.737199291481222
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 322,
+            "mean": 98.73291925465838,
+            "stdDev": 25.099245927643665,
+            "p10": 62.400000000000006,
+            "p50": 102,
+            "p90": 127,
+            "ghostRate": 0.012422360248447204
+          },
+          "timing": {
+            "count": 322,
+            "absDeviationMeanBeats": 0.05035584886128359,
+            "absDeviationStdDevBeats": 0.033821797431409534,
+            "signedDeviationMeanBeats": -0.012933488612836191,
+            "absDeviationMeanMs": 33.50003950855701,
+            "signedDeviationMeanMs": -8.604211612180938
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 496,
+            "mean": 89.02822580645162,
+            "stdDev": 38.247116822570355,
+            "p10": 33.5,
+            "p50": 100,
+            "p90": 127,
+            "ghostRate": 0.12298387096774194
+          },
+          "timing": {
+            "count": 496,
+            "absDeviationMeanBeats": 0.02650789650537576,
+            "absDeviationStdDevBeats": 0.022333261410313044,
+            "signedDeviationMeanBeats": -0.013327452956988601,
+            "absDeviationMeanMs": 17.634805098114125,
+            "signedDeviationMeanMs": -8.866302737492417
+          }
+        }
+      }
+    },
+    "pop": {
+      "fileCount": 27,
+      "hitCount": 4657,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 1777,
+            "mean": 70.17839054586382,
+            "stdDev": 38.97911111215099,
+            "p10": 20,
+            "p50": 63,
+            "p90": 127,
+            "ghostRate": 0.268992684299381
+          },
+          "timing": {
+            "count": 1777,
+            "absDeviationMeanBeats": 0.046219048958919394,
+            "absDeviationStdDevBeats": 0.032124597986594956,
+            "signedDeviationMeanBeats": -0.03283037891577555,
+            "absDeviationMeanMs": 24.867107045316978,
+            "signedDeviationMeanMs": -17.66363794206456
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 1018,
+            "mean": 84.58546168958743,
+            "stdDev": 42.26738101504898,
+            "p10": 17,
+            "p50": 98,
+            "p90": 127,
+            "ghostRate": 0.2180746561886051
+          },
+          "timing": {
+            "count": 1018,
+            "absDeviationMeanBeats": 0.04824819908316954,
+            "absDeviationStdDevBeats": 0.033855589426509486,
+            "signedDeviationMeanBeats": -0.021995743287491713,
+            "absDeviationMeanMs": 25.9588450729773,
+            "signedDeviationMeanMs": -11.83430890924496
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 908,
+            "mean": 51.992290748898675,
+            "stdDev": 21.29820125481953,
+            "p10": 27,
+            "p50": 51,
+            "p90": 72.30000000000007,
+            "ghostRate": 0.31057268722466963
+          },
+          "timing": {
+            "count": 908,
+            "absDeviationMeanBeats": 0.0499816446402348,
+            "absDeviationStdDevBeats": 0.03408446178187893,
+            "signedDeviationMeanBeats": -0.03112151248164456,
+            "absDeviationMeanMs": 26.891485990428556,
+            "signedDeviationMeanMs": -16.74422126212693
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 100,
+            "mean": 75.13,
+            "stdDev": 42.29199806109898,
+            "p10": 22.900000000000002,
+            "p50": 66,
+            "p90": 127,
+            "ghostRate": 0.3
+          },
+          "timing": {
+            "count": 100,
+            "absDeviationMeanBeats": 0.037416666666666855,
+            "absDeviationStdDevBeats": 0.028139533282080832,
+            "signedDeviationMeanBeats": -0.03170833333333376,
+            "absDeviationMeanMs": 20.131185652607208,
+            "signedDeviationMeanMs": -17.059946861508035
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 74,
+            "mean": 103.14864864864865,
+            "stdDev": 24.91047887201906,
+            "p10": 65.60000000000001,
+            "p50": 107,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 74,
+            "absDeviationMeanBeats": 0.05360360360360335,
+            "absDeviationStdDevBeats": 0.03619361310585979,
+            "signedDeviationMeanBeats": -0.027533783783783492,
+            "absDeviationMeanMs": 28.840198551257863,
+            "signedDeviationMeanMs": -14.813925516349803
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 58,
+            "mean": 91.79310344827586,
+            "stdDev": 29.645467537905745,
+            "p10": 59.10000000000001,
+            "p50": 89,
+            "p90": 127,
+            "ghostRate": 0.05172413793103448
+          },
+          "timing": {
+            "count": 58,
+            "absDeviationMeanBeats": 0.04859913793103449,
+            "absDeviationStdDevBeats": 0.03078773988810721,
+            "signedDeviationMeanBeats": -0.025323275862068995,
+            "absDeviationMeanMs": 26.147659730413775,
+            "signedDeviationMeanMs": -13.624612054650207
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 162,
+            "mean": 80.40123456790124,
+            "stdDev": 35.030579212415596,
+            "p10": 40,
+            "p50": 76.5,
+            "p90": 127,
+            "ghostRate": 0.13580246913580246
+          },
+          "timing": {
+            "count": 162,
+            "absDeviationMeanBeats": 0.04758230452674885,
+            "absDeviationStdDevBeats": 0.032109171344043244,
+            "signedDeviationMeanBeats": -0.023122427983538942,
+            "absDeviationMeanMs": 25.60057566699872,
+            "signedDeviationMeanMs": -12.440495959260408
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 74,
+            "mean": 87.24324324324324,
+            "stdDev": 28.7241356329438,
+            "p10": 45.2,
+            "p50": 90.5,
+            "p90": 127,
+            "ghostRate": 0.04054054054054054
+          },
+          "timing": {
+            "count": 74,
+            "absDeviationMeanBeats": 0.04377815315315325,
+            "absDeviationStdDevBeats": 0.03271615654140015,
+            "signedDeviationMeanBeats": -0.024408783783783035,
+            "absDeviationMeanMs": 23.553838627734393,
+            "signedDeviationMeanMs": -13.132590411733151
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 486,
+            "mean": 63.96707818930041,
+            "stdDev": 30.01074818609759,
+            "p10": 26,
+            "p50": 62.5,
+            "p90": 105,
+            "ghostRate": 0.24691358024691357
+          },
+          "timing": {
+            "count": 486,
+            "absDeviationMeanBeats": 0.04198816872427969,
+            "absDeviationStdDevBeats": 0.03256814002839132,
+            "signedDeviationMeanBeats": -0.02471279149519883,
+            "absDeviationMeanMs": 22.5907782575002,
+            "signedDeviationMeanMs": -13.296154839661941
+          }
+        }
+      }
+    },
+    "rock": {
+      "fileCount": 341,
+      "hitCount": 123570,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 31605,
+            "mean": 73.42373042240152,
+            "stdDev": 33.97738781196143,
+            "p10": 28,
+            "p50": 70,
+            "p90": 127,
+            "ghostRate": 0.18788166429362443
+          },
+          "timing": {
+            "count": 31605,
+            "absDeviationMeanBeats": 0.04455604334757067,
+            "absDeviationStdDevBeats": 0.03334871125459133,
+            "signedDeviationMeanBeats": -0.011868704846279665,
+            "absDeviationMeanMs": 24.51307233029379,
+            "signedDeviationMeanMs": -6.529718496191936
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 24752,
+            "mean": 70.63542340012928,
+            "stdDev": 32.28204729817694,
+            "p10": 34,
+            "p50": 65,
+            "p90": 127,
+            "ghostRate": 0.14596800258564965
+          },
+          "timing": {
+            "count": 24752,
+            "absDeviationMeanBeats": 0.04483139409610025,
+            "absDeviationStdDevBeats": 0.0326420265418549,
+            "signedDeviationMeanBeats": -0.008516820189614189,
+            "absDeviationMeanMs": 24.664560036736965,
+            "signedDeviationMeanMs": -4.685636642004525
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 30203,
+            "mean": 76.64119458331953,
+            "stdDev": 42.063349673407224,
+            "p10": 23,
+            "p50": 74,
+            "p90": 127,
+            "ghostRate": 0.29225573618514716
+          },
+          "timing": {
+            "count": 30203,
+            "absDeviationMeanBeats": 0.046455029301724474,
+            "absDeviationStdDevBeats": 0.033224073357988465,
+            "signedDeviationMeanBeats": -0.0039795301791211305,
+            "absDeviationMeanMs": 25.557823536886787,
+            "signedDeviationMeanMs": -2.189388998489293
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 5106,
+            "mean": 66.22777124951038,
+            "stdDev": 45.19252479453301,
+            "p10": 8,
+            "p50": 62,
+            "p90": 127,
+            "ghostRate": 0.35409322365844104
+          },
+          "timing": {
+            "count": 5106,
+            "absDeviationMeanBeats": 0.04691539365452383,
+            "absDeviationStdDevBeats": 0.03449676994924433,
+            "signedDeviationMeanBeats": -0.005513121817469443,
+            "absDeviationMeanMs": 25.811098824156538,
+            "signedDeviationMeanMs": -3.033113888123499
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 3673,
+            "mean": 87.88320174244487,
+            "stdDev": 28.398197743033112,
+            "p10": 50,
+            "p50": 88,
+            "p90": 127,
+            "ghostRate": 0.044105635720119794
+          },
+          "timing": {
+            "count": 3673,
+            "absDeviationMeanBeats": 0.040776726563209784,
+            "absDeviationStdDevBeats": 0.03196045138788109,
+            "signedDeviationMeanBeats": -0.01685214175515061,
+            "absDeviationMeanMs": 22.43383327014096,
+            "signedDeviationMeanMs": -9.271419514113889
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 3460,
+            "mean": 85.55982658959537,
+            "stdDev": 32.46699798797912,
+            "p10": 35,
+            "p50": 91,
+            "p90": 127,
+            "ghostRate": 0.11329479768786127
+          },
+          "timing": {
+            "count": 3460,
+            "absDeviationMeanBeats": 0.04857598747591265,
+            "absDeviationStdDevBeats": 0.033088433456681984,
+            "signedDeviationMeanBeats": 0.005731575144508058,
+            "absDeviationMeanMs": 26.7246955754974,
+            "signedDeviationMeanMs": 3.153298756531094
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 17075,
+            "mean": 72.48327964860908,
+            "stdDev": 29.1530780629942,
+            "p10": 38,
+            "p50": 70,
+            "p90": 120,
+            "ghostRate": 0.12281112737920936
+          },
+          "timing": {
+            "count": 17075,
+            "absDeviationMeanBeats": 0.044246461688628586,
+            "absDeviationStdDevBeats": 0.03168395757298791,
+            "signedDeviationMeanBeats": 0.007653001464129267,
+            "absDeviationMeanMs": 24.34275205435319,
+            "signedDeviationMeanMs": 4.210395814786222
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 6380,
+            "mean": 77.98009404388715,
+            "stdDev": 28.75090422986736,
+            "p10": 46,
+            "p50": 70,
+            "p90": 127,
+            "ghostRate": 0.031661442006269594
+          },
+          "timing": {
+            "count": 6380,
+            "absDeviationMeanBeats": 0.0480009143155691,
+            "absDeviationStdDevBeats": 0.03161405805769996,
+            "signedDeviationMeanBeats": 0.0056060606060603065,
+            "absDeviationMeanMs": 26.40831178296119,
+            "signedDeviationMeanMs": 3.084245341364217
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 1316,
+            "mean": 92.30775075987842,
+            "stdDev": 27.855144746741136,
+            "p10": 54,
+            "p50": 92.5,
+            "p90": 127,
+            "ghostRate": 0.015957446808510637
+          },
+          "timing": {
+            "count": 1316,
+            "absDeviationMeanBeats": 0.04489298378926063,
+            "absDeviationStdDevBeats": 0.03382627531298024,
+            "signedDeviationMeanBeats": -0.014444022289767343,
+            "absDeviationMeanMs": 24.698444387541276,
+            "signedDeviationMeanMs": -7.946562049225304
+          }
+        }
+      }
+    },
+    "jazz": {
+      "fileCount": 101,
+      "hitCount": 36919,
+      "byVoice": {
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 11543,
+            "mean": 58.19119812873603,
+            "stdDev": 34.39494338986231,
+            "p10": 20,
+            "p50": 48,
+            "p90": 127,
+            "ghostRate": 0.38438880706921946
+          },
+          "timing": {
+            "count": 11543,
+            "absDeviationMeanBeats": 0.05504688988997674,
+            "absDeviationStdDevBeats": 0.03474624115934723,
+            "signedDeviationMeanBeats": -0.015515355626786756,
+            "absDeviationMeanMs": 25.61696764961289,
+            "signedDeviationMeanMs": -7.220323690548898
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 6529,
+            "mean": 67.55490886812682,
+            "stdDev": 27.502941446361543,
+            "p10": 27,
+            "p50": 70,
+            "p90": 102,
+            "ghostRate": 0.18808393322101394
+          },
+          "timing": {
+            "count": 6529,
+            "absDeviationMeanBeats": 0.06168696073926545,
+            "absDeviationStdDevBeats": 0.03503859857952953,
+            "signedDeviationMeanBeats": -0.023375197835298702,
+            "absDeviationMeanMs": 28.707032873594585,
+            "signedDeviationMeanMs": -10.878029402696217
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 1453,
+            "mean": 86.64831383344804,
+            "stdDev": 32.25945753405559,
+            "p10": 42.20000000000002,
+            "p50": 89,
+            "p90": 127,
+            "ghostRate": 0.08671713695801789
+          },
+          "timing": {
+            "count": 1453,
+            "absDeviationMeanBeats": 0.054636958017894435,
+            "absDeviationStdDevBeats": 0.034725785624134635,
+            "signedDeviationMeanBeats": -0.0007713925212202157,
+            "absDeviationMeanMs": 25.426199169746607,
+            "signedDeviationMeanMs": -0.3589800859003615
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 679,
+            "mean": 88.10309278350516,
+            "stdDev": 32.293909462510626,
+            "p10": 51,
+            "p50": 79,
+            "p90": 127,
+            "ghostRate": 0.041237113402061855
+          },
+          "timing": {
+            "count": 679,
+            "absDeviationMeanBeats": 0.05234720176730451,
+            "absDeviationStdDevBeats": 0.032919535490528215,
+            "signedDeviationMeanBeats": -0.005237481590575108,
+            "absDeviationMeanMs": 24.360623768228024,
+            "signedDeviationMeanMs": -2.437347445775239
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 2226,
+            "mean": 82.28706199460916,
+            "stdDev": 32.835575338497705,
+            "p10": 40,
+            "p50": 81,
+            "p90": 127,
+            "ghostRate": 0.1096136567834681
+          },
+          "timing": {
+            "count": 2226,
+            "absDeviationMeanBeats": 0.054365079365079866,
+            "absDeviationStdDevBeats": 0.03544302222827804,
+            "signedDeviationMeanBeats": -0.01039794848757106,
+            "absDeviationMeanMs": 25.299676006172938,
+            "signedDeviationMeanMs": -4.838854848309063
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 5647,
+            "mean": 67.23357534974323,
+            "stdDev": 30.655586648433633,
+            "p10": 36,
+            "p50": 59,
+            "p90": 127,
+            "ghostRate": 0.1556578714361608
+          },
+          "timing": {
+            "count": 5647,
+            "absDeviationMeanBeats": 0.05666172303878142,
+            "absDeviationStdDevBeats": 0.035377891219349596,
+            "signedDeviationMeanBeats": -0.016207351986305255,
+            "absDeviationMeanMs": 26.368456582323407,
+            "signedDeviationMeanMs": -7.54235547819151
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 402,
+            "mean": 88.82587064676616,
+            "stdDev": 29.961327102690447,
+            "p10": 50,
+            "p50": 89,
+            "p90": 127,
+            "ghostRate": 0.03980099502487562
+          },
+          "timing": {
+            "count": 402,
+            "absDeviationMeanBeats": 0.05966003316749457,
+            "absDeviationStdDevBeats": 0.035450941724488816,
+            "signedDeviationMeanBeats": -0.020626036484245505,
+            "absDeviationMeanMs": 27.7637690827075,
+            "signedDeviationMeanMs": -9.59866234791336
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 8185,
+            "mean": 69.26780696395846,
+            "stdDev": 24.626591820545894,
+            "p10": 42,
+            "p50": 65,
+            "p90": 106,
+            "ghostRate": 0.08222357971899817
+          },
+          "timing": {
+            "count": 8185,
+            "absDeviationMeanBeats": 0.05225870494807582,
+            "absDeviationStdDevBeats": 0.0342686015808346,
+            "signedDeviationMeanBeats": -0.021261453879047106,
+            "absDeviationMeanMs": 24.31944033062045,
+            "signedDeviationMeanMs": -9.894364191907961
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 255,
+            "mean": 99.5764705882353,
+            "stdDev": 28.235303921566906,
+            "p10": 56,
+            "p50": 108,
+            "p90": 127,
+            "ghostRate": 0.03137254901960784
+          },
+          "timing": {
+            "count": 255,
+            "absDeviationMeanBeats": 0.054893790849673205,
+            "absDeviationStdDevBeats": 0.03344342961363665,
+            "signedDeviationMeanBeats": 0.00776960784313736,
+            "absDeviationMeanMs": 25.545720515206547,
+            "signedDeviationMeanMs": 3.615713679113224
+          }
+        }
+      }
+    },
+    "neworleans": {
+      "fileCount": 53,
+      "hitCount": 21479,
+      "byVoice": {
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 10783,
+            "mean": 64.05434480200316,
+            "stdDev": 38.415320149847254,
+            "p10": 21,
+            "p50": 50,
+            "p90": 127,
+            "ghostRate": 0.35500324584994897
+          },
+          "timing": {
+            "count": 10783,
+            "absDeviationMeanBeats": 0.044886627098210244,
+            "absDeviationStdDevBeats": 0.033878480465174395,
+            "signedDeviationMeanBeats": -0.004710346533123138,
+            "absDeviationMeanMs": 29.5649283704036,
+            "signedDeviationMeanMs": -3.102506622893865
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 4226,
+            "mean": 63.74775201135826,
+            "stdDev": 30.717369936525756,
+            "p10": 27,
+            "p50": 60,
+            "p90": 115,
+            "ghostRate": 0.27756743965925224
+          },
+          "timing": {
+            "count": 4226,
+            "absDeviationMeanBeats": 0.03976277804070026,
+            "absDeviationStdDevBeats": 0.02991156611760296,
+            "signedDeviationMeanBeats": -0.014961941946679052,
+            "absDeviationMeanMs": 26.190065072375067,
+            "signedDeviationMeanMs": -9.85480020514486
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 4307,
+            "mean": 46.26793591827258,
+            "stdDev": 26.971133180938327,
+            "p10": 12,
+            "p50": 42,
+            "p90": 87,
+            "ghostRate": 0.4580914789876945
+          },
+          "timing": {
+            "count": 4307,
+            "absDeviationMeanBeats": 0.04222486649640092,
+            "absDeviationStdDevBeats": 0.03233978404778172,
+            "signedDeviationMeanBeats": -0.0014143642132962632,
+            "absDeviationMeanMs": 27.811738910222644,
+            "signedDeviationMeanMs": -0.9315820626102148
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 588,
+            "mean": 108.30442176870748,
+            "stdDev": 23.910423413124764,
+            "p10": 69.7,
+            "p50": 126,
+            "p90": 127,
+            "ghostRate": 0.006802721088435374
+          },
+          "timing": {
+            "count": 588,
+            "absDeviationMeanBeats": 0.03324829931972737,
+            "absDeviationStdDevBeats": 0.02684311260967304,
+            "signedDeviationMeanBeats": -0.01504393424036279,
+            "absDeviationMeanMs": 21.89925265880966,
+            "signedDeviationMeanMs": -9.90880507132429
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 532,
+            "mean": 82.6109022556391,
+            "stdDev": 26.38959327122192,
+            "p10": 53,
+            "p50": 77,
+            "p90": 127,
+            "ghostRate": 0.03007518796992481
+          },
+          "timing": {
+            "count": 532,
+            "absDeviationMeanBeats": 0.030392387218045273,
+            "absDeviationStdDevBeats": 0.02372218115304548,
+            "signedDeviationMeanBeats": -0.017900219298246117,
+            "absDeviationMeanMs": 20.01818379316155,
+            "signedDeviationMeanMs": -11.790119587494335
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 416,
+            "mean": 92.3798076923077,
+            "stdDev": 28.186023131385852,
+            "p10": 51,
+            "p50": 97.5,
+            "p90": 127,
+            "ghostRate": 0.036057692307692304
+          },
+          "timing": {
+            "count": 416,
+            "absDeviationMeanBeats": 0.03526642628205106,
+            "absDeviationStdDevBeats": 0.02759506315676798,
+            "signedDeviationMeanBeats": -0.0071314102564103655,
+            "absDeviationMeanMs": 23.228507783123938,
+            "signedDeviationMeanMs": -4.69715919954121
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 76,
+            "mean": 93.42105263157895,
+            "stdDev": 22.195461341344647,
+            "p10": 75,
+            "p50": 96.5,
+            "p90": 121,
+            "ghostRate": 0.039473684210526314
+          },
+          "timing": {
+            "count": 76,
+            "absDeviationMeanBeats": 0.04558662280701711,
+            "absDeviationStdDevBeats": 0.02968479155324407,
+            "signedDeviationMeanBeats": -0.03352521929824627,
+            "absDeviationMeanMs": 30.025986024505887,
+            "signedDeviationMeanMs": -22.08164817075873
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 400,
+            "mean": 105.2675,
+            "stdDev": 31.727605389471375,
+            "p10": 56.900000000000006,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0.0575
+          },
+          "timing": {
+            "count": 400,
+            "absDeviationMeanBeats": 0.033208333333333326,
+            "absDeviationStdDevBeats": 0.024997517237829104,
+            "signedDeviationMeanBeats": -0.019208333333333192,
+            "absDeviationMeanMs": 21.87292874896437,
+            "signedDeviationMeanMs": -12.651719138359477
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 151,
+            "mean": 102.94039735099338,
+            "stdDev": 26.370320409839714,
+            "p10": 69,
+            "p50": 109,
+            "p90": 127,
+            "ghostRate": 0.033112582781456956
+          },
+          "timing": {
+            "count": 151,
+            "absDeviationMeanBeats": 0.036313465783665407,
+            "absDeviationStdDevBeats": 0.029091188538936,
+            "signedDeviationMeanBeats": -0.005187637969095145,
+            "absDeviationMeanMs": 23.91814854847887,
+            "signedDeviationMeanMs": -3.416878364068468
+          }
+        }
+      }
+    },
+    "dance": {
+      "fileCount": 7,
+      "hitCount": 11338,
+      "byVoice": {
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 32,
+            "mean": 100.875,
+            "stdDev": 20.680229084804647,
+            "p10": 75.30000000000001,
+            "p50": 104,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 32,
+            "absDeviationMeanBeats": 0.06041666666666923,
+            "absDeviationStdDevBeats": 0.030724752507816994,
+            "signedDeviationMeanBeats": -0.05677083333333566,
+            "absDeviationMeanMs": 26.05236139630501,
+            "signedDeviationMeanMs": -24.480236139631394
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 5163,
+            "mean": 69.0426108851443,
+            "stdDev": 30.28606149918053,
+            "p10": 31,
+            "p50": 65,
+            "p90": 125,
+            "ghostRate": 0.18400154948673253
+          },
+          "timing": {
+            "count": 5163,
+            "absDeviationMeanBeats": 0.040205952611530885,
+            "absDeviationStdDevBeats": 0.0323692185676918,
+            "signedDeviationMeanBeats": -0.019026405836400112,
+            "absDeviationMeanMs": 17.33726909326794,
+            "signedDeviationMeanMs": -8.20440498078855
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 2284,
+            "mean": 80.54159369527146,
+            "stdDev": 33.63301902503862,
+            "p10": 44,
+            "p50": 70,
+            "p90": 127,
+            "ghostRate": 0.07005253940455342
+          },
+          "timing": {
+            "count": 2284,
+            "absDeviationMeanBeats": 0.03393169877408108,
+            "absDeviationStdDevBeats": 0.027220285092438214,
+            "signedDeviationMeanBeats": -0.017124562171628648,
+            "absDeviationMeanMs": 14.631738691082193,
+            "signedDeviationMeanMs": -7.3843081232895615
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 792,
+            "mean": 90.88762626262626,
+            "stdDev": 33.693977048055096,
+            "p10": 37,
+            "p50": 99,
+            "p90": 127,
+            "ghostRate": 0.11868686868686869
+          },
+          "timing": {
+            "count": 792,
+            "absDeviationMeanBeats": 0.03938867845117895,
+            "absDeviationStdDevBeats": 0.028038068460894284,
+            "signedDeviationMeanBeats": -0.027583122895622997,
+            "absDeviationMeanMs": 16.98485107751043,
+            "signedDeviationMeanMs": -11.894159770186508
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 2384,
+            "mean": 75.84521812080537,
+            "stdDev": 43.7264408546837,
+            "p10": 19,
+            "p50": 77,
+            "p90": 127,
+            "ghostRate": 0.3250838926174497
+          },
+          "timing": {
+            "count": 2384,
+            "absDeviationMeanBeats": 0.041022616051454734,
+            "absDeviationStdDevBeats": 0.03130189926964284,
+            "signedDeviationMeanBeats": -0.021171525447427637,
+            "absDeviationMeanMs": 17.6894237593542,
+            "signedDeviationMeanMs": -9.129405223736764
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 108,
+            "mean": 93.79629629629629,
+            "stdDev": 25.600115472561924,
+            "p10": 56.7,
+            "p50": 95,
+            "p90": 127,
+            "ghostRate": 0.009259259259259259
+          },
+          "timing": {
+            "count": 108,
+            "absDeviationMeanBeats": 0.04637345679012414,
+            "absDeviationStdDevBeats": 0.02987640969322697,
+            "signedDeviationMeanBeats": -0.04340277777777919,
+            "absDeviationMeanMs": 19.996767815043267,
+            "signedDeviationMeanMs": -18.71577686516146
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 59,
+            "mean": 114.44067796610169,
+            "stdDev": 23.19210209403974,
+            "p10": 70.4,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 59,
+            "absDeviationMeanBeats": 0.05490819209039329,
+            "absDeviationStdDevBeats": 0.03383660227074703,
+            "signedDeviationMeanBeats": -0.048693502824857404,
+            "absDeviationMeanMs": 23.677043817212716,
+            "signedDeviationMeanMs": -20.99719834336767
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 502,
+            "mean": 84.56772908366534,
+            "stdDev": 26.89425941838996,
+            "p10": 52,
+            "p50": 81,
+            "p90": 125,
+            "ghostRate": 0.0398406374501992
+          },
+          "timing": {
+            "count": 502,
+            "absDeviationMeanBeats": 0.04158781540504681,
+            "absDeviationStdDevBeats": 0.027370761436528758,
+            "signedDeviationMeanBeats": -0.031694057104914006,
+            "absDeviationMeanMs": 17.93314421983538,
+            "signedDeviationMeanMs": -13.666841872755528
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 14,
+            "mean": 103.57142857142857,
+            "stdDev": 18.34087661760039,
+            "p10": 77.3,
+            "p50": 103,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 14,
+            "absDeviationMeanBeats": 0.05178571428571642,
+            "absDeviationStdDevBeats": 0.030013814846378443,
+            "signedDeviationMeanBeats": -0.050000000000002744,
+            "absDeviationMeanMs": 22.330595482547125,
+            "signedDeviationMeanMs": -21.56057494866648
+          }
+        }
+      }
+    },
+    "latin": {
+      "fileCount": 97,
+      "hitCount": 97607,
+      "byVoice": {
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 20518,
+            "mean": 39.356418754264546,
+            "stdDev": 25.531193123026632,
+            "p10": 11,
+            "p50": 36,
+            "p90": 67,
+            "ghostRate": 0.60697923774247
+          },
+          "timing": {
+            "count": 20518,
+            "absDeviationMeanBeats": 0.04631634418559319,
+            "absDeviationStdDevBeats": 0.034058522309095327,
+            "signedDeviationMeanBeats": -0.012342922474575175,
+            "absDeviationMeanMs": 25.991815944475206,
+            "signedDeviationMeanMs": -6.9266038763887305
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 20933,
+            "mean": 63.83022022643673,
+            "stdDev": 26.10724860800721,
+            "p10": 30,
+            "p50": 64,
+            "p90": 95,
+            "ghostRate": 0.20579945540534084
+          },
+          "timing": {
+            "count": 20933,
+            "absDeviationMeanBeats": 0.046816330674055426,
+            "absDeviationStdDevBeats": 0.03283932678906602,
+            "signedDeviationMeanBeats": -0.027221870571187412,
+            "absDeviationMeanMs": 26.272398469096768,
+            "signedDeviationMeanMs": -15.276375154209887
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 34330,
+            "mean": 56.814651907952225,
+            "stdDev": 33.74502568993205,
+            "p10": 18,
+            "p50": 47,
+            "p90": 116,
+            "ghostRate": 0.38496941450626276
+          },
+          "timing": {
+            "count": 34330,
+            "absDeviationMeanBeats": 0.04859379551412669,
+            "absDeviationStdDevBeats": 0.03279553022074403,
+            "signedDeviationMeanBeats": -0.02094778619283413,
+            "absDeviationMeanMs": 27.269876568529295,
+            "signedDeviationMeanMs": -11.755483139744927
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 777,
+            "mean": 88.4066924066924,
+            "stdDev": 39.68650453832339,
+            "p10": 33,
+            "p50": 98,
+            "p90": 127,
+            "ghostRate": 0.13513513513513514
+          },
+          "timing": {
+            "count": 777,
+            "absDeviationMeanBeats": 0.034676640926641446,
+            "absDeviationStdDevBeats": 0.025097893185604164,
+            "signedDeviationMeanBeats": -0.02436990561990608,
+            "absDeviationMeanMs": 19.459844778040036,
+            "signedDeviationMeanMs": -13.675908852362682
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 3062,
+            "mean": 90.96603527106467,
+            "stdDev": 24.745276239488202,
+            "p10": 59.10000000000002,
+            "p50": 90,
+            "p90": 127,
+            "ghostRate": 0.022207707380796866
+          },
+          "timing": {
+            "count": 3062,
+            "absDeviationMeanBeats": 0.04282876115828433,
+            "absDeviationStdDevBeats": 0.03020429225440525,
+            "signedDeviationMeanBeats": -0.026888743740474303,
+            "absDeviationMeanMs": 24.034653354663465,
+            "signedDeviationMeanMs": -15.089430968041697
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 3461,
+            "mean": 87.83906385437734,
+            "stdDev": 27.375930933955058,
+            "p10": 49,
+            "p50": 90,
+            "p90": 127,
+            "ghostRate": 0.04911875180583646
+          },
+          "timing": {
+            "count": 3461,
+            "absDeviationMeanBeats": 0.04650390060676141,
+            "absDeviationStdDevBeats": 0.030996767527153336,
+            "signedDeviationMeanBeats": -0.026307425599537825,
+            "absDeviationMeanMs": 26.097068897054424,
+            "signedDeviationMeanMs": -14.763206729274915
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 11505,
+            "mean": 71.0013037809648,
+            "stdDev": 30.772930106360896,
+            "p10": 37,
+            "p50": 64,
+            "p90": 127,
+            "ghostRate": 0.15758365927857454
+          },
+          "timing": {
+            "count": 11505,
+            "absDeviationMeanBeats": 0.0337248297841521,
+            "absDeviationStdDevBeats": 0.027443522479742542,
+            "signedDeviationMeanBeats": -0.017084238736781235,
+            "absDeviationMeanMs": 18.925707197354665,
+            "signedDeviationMeanMs": -9.587336751332252
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 440,
+            "mean": 83.42727272727272,
+            "stdDev": 24.599134903823934,
+            "p10": 50.70000000000002,
+            "p50": 86,
+            "p90": 111,
+            "ghostRate": 0.0659090909090909
+          },
+          "timing": {
+            "count": 440,
+            "absDeviationMeanBeats": 0.04401041666666566,
+            "absDeviationStdDevBeats": 0.028497485193019707,
+            "signedDeviationMeanBeats": -0.032495265151514886,
+            "absDeviationMeanMs": 24.697775045800224,
+            "signedDeviationMeanMs": -18.235699853612637
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 2581,
+            "mean": 87.95350639287098,
+            "stdDev": 26.41895944870366,
+            "p10": 51,
+            "p50": 89,
+            "p90": 127,
+            "ghostRate": 0.0449438202247191
+          },
+          "timing": {
+            "count": 2581,
+            "absDeviationMeanBeats": 0.049840178225493956,
+            "absDeviationStdDevBeats": 0.032038562548101626,
+            "signedDeviationMeanBeats": -0.032254939945757434,
+            "absDeviationMeanMs": 27.96932188529311,
+            "signedDeviationMeanMs": -18.100834103202033
+          }
+        }
+      }
+    },
+    "afrocuban": {
+      "fileCount": 60,
+      "hitCount": 17453,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 4129,
+            "mean": 63.36401065633325,
+            "stdDev": 22.686293927898127,
+            "p10": 27,
+            "p50": 67,
+            "p90": 87,
+            "ghostRate": 0.18309518043109713
+          },
+          "timing": {
+            "count": 4129,
+            "absDeviationMeanBeats": 0.05731109227415861,
+            "absDeviationStdDevBeats": 0.03330111873448247,
+            "signedDeviationMeanBeats": -0.0419361023653832,
+            "absDeviationMeanMs": 29.68632117798144,
+            "signedDeviationMeanMs": -21.722297628112162
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 3109,
+            "mean": 43.0739787713091,
+            "stdDev": 26.440140887278595,
+            "p10": 11,
+            "p50": 40,
+            "p90": 76,
+            "ghostRate": 0.5098102283692506
+          },
+          "timing": {
+            "count": 3109,
+            "absDeviationMeanBeats": 0.05561541760480347,
+            "absDeviationStdDevBeats": 0.035731973771442896,
+            "signedDeviationMeanBeats": -0.019486437225259938,
+            "absDeviationMeanMs": 28.807986097452158,
+            "signedDeviationMeanMs": -10.093694102292918
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 4475,
+            "mean": 61.01653631284916,
+            "stdDev": 33.979569202660436,
+            "p10": 19,
+            "p50": 57,
+            "p90": 112,
+            "ghostRate": 0.3472625698324022
+          },
+          "timing": {
+            "count": 4475,
+            "absDeviationMeanBeats": 0.05225698324022365,
+            "absDeviationStdDevBeats": 0.03329329983258002,
+            "signedDeviationMeanBeats": -0.021732774674115198,
+            "absDeviationMeanMs": 27.068365419396425,
+            "signedDeviationMeanMs": -11.2572645793978
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 937,
+            "mean": 88.80576307363927,
+            "stdDev": 24.558962414496037,
+            "p10": 55,
+            "p50": 90,
+            "p90": 124,
+            "ghostRate": 0.021344717182497332
+          },
+          "timing": {
+            "count": 937,
+            "absDeviationMeanBeats": 0.05502490217004624,
+            "absDeviationStdDevBeats": 0.03423800332438366,
+            "signedDeviationMeanBeats": -0.028601921024546225,
+            "absDeviationMeanMs": 28.502107598872875,
+            "signedDeviationMeanMs": -14.815383552282936
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 99,
+            "mean": 95.26262626262626,
+            "stdDev": 18.557900579290354,
+            "p10": 73.2,
+            "p50": 97,
+            "p90": 115,
+            "ghostRate": 0.010101010101010102
+          },
+          "timing": {
+            "count": 99,
+            "absDeviationMeanBeats": 0.04734848484848577,
+            "absDeviationStdDevBeats": 0.029250448123698782,
+            "signedDeviationMeanBeats": -0.030555555555553424,
+            "absDeviationMeanMs": 24.525833878352344,
+            "signedDeviationMeanMs": -15.827338129495299
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 190,
+            "mean": 67.21578947368421,
+            "stdDev": 28.07922556957825,
+            "p10": 15,
+            "p50": 72,
+            "p90": 95,
+            "ghostRate": 0.17894736842105263
+          },
+          "timing": {
+            "count": 190,
+            "absDeviationMeanBeats": 0.05788377192982347,
+            "absDeviationStdDevBeats": 0.029728360474036174,
+            "signedDeviationMeanBeats": -0.042642543859648954,
+            "absDeviationMeanMs": 29.98296099962079,
+            "signedDeviationMeanMs": -22.088224157516006
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 455,
+            "mean": 93.89010989010988,
+            "stdDev": 27.98313878091379,
+            "p10": 54,
+            "p50": 98,
+            "p90": 127,
+            "ghostRate": 0.03736263736263736
+          },
+          "timing": {
+            "count": 455,
+            "absDeviationMeanBeats": 0.05182234432234447,
+            "absDeviationStdDevBeats": 0.03354981491315325,
+            "signedDeviationMeanBeats": -0.018223443223443308,
+            "absDeviationMeanMs": 26.843228713732387,
+            "signedDeviationMeanMs": -9.43948138192747
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 3901,
+            "mean": 69.28172263522174,
+            "stdDev": 31.00287087129078,
+            "p10": 36,
+            "p50": 59,
+            "p90": 127,
+            "ghostRate": 0.1653422199436042
+          },
+          "timing": {
+            "count": 3901,
+            "absDeviationMeanBeats": 0.04792414338203899,
+            "absDeviationStdDevBeats": 0.03323669605559082,
+            "signedDeviationMeanBeats": -0.02389932068700357,
+            "absDeviationMeanMs": 24.824016715876315,
+            "signedDeviationMeanMs": -12.379504240750052
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 158,
+            "mean": 94.9367088607595,
+            "stdDev": 24.674253363411424,
+            "p10": 62,
+            "p50": 100,
+            "p90": 125,
+            "ghostRate": 0.0379746835443038
+          },
+          "timing": {
+            "count": 158,
+            "absDeviationMeanBeats": 0.049103375527428134,
+            "absDeviationStdDevBeats": 0.032592781700638,
+            "signedDeviationMeanBeats": -0.014899789029536705,
+            "absDeviationMeanMs": 25.43484199981889,
+            "signedDeviationMeanMs": -7.717876331846351
+          }
+        }
+      }
+    },
+    "reggae": {
+      "fileCount": 20,
+      "hitCount": 4934,
+      "byVoice": {
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 1558,
+            "mean": 54.68806161745828,
+            "stdDev": 37.13062324080195,
+            "p10": 9,
+            "p50": 49,
+            "p90": 108,
+            "ghostRate": 0.4306803594351733
+          },
+          "timing": {
+            "count": 1558,
+            "absDeviationMeanBeats": 0.05570710312366334,
+            "absDeviationStdDevBeats": 0.03515289624119297,
+            "signedDeviationMeanBeats": -0.016754920838682335,
+            "absDeviationMeanMs": 40.34310425370912,
+            "signedDeviationMeanMs": -12.133919738333617
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 440,
+            "mean": 65.10227272727273,
+            "stdDev": 27.149434856300932,
+            "p10": 32,
+            "p50": 62,
+            "p90": 102,
+            "ghostRate": 0.2409090909090909
+          },
+          "timing": {
+            "count": 440,
+            "absDeviationMeanBeats": 0.040279356060605113,
+            "absDeviationStdDevBeats": 0.027075299040747867,
+            "signedDeviationMeanBeats": -0.023044507575757513,
+            "absDeviationMeanMs": 29.17032424425235,
+            "signedDeviationMeanMs": -16.68884073078396
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 1926,
+            "mean": 54.48390446521287,
+            "stdDev": 26.012827343766908,
+            "p10": 24,
+            "p50": 50,
+            "p90": 91,
+            "ghostRate": 0.3587746625129803
+          },
+          "timing": {
+            "count": 1926,
+            "absDeviationMeanBeats": 0.042937651436483135,
+            "absDeviationStdDevBeats": 0.03235367043673099,
+            "signedDeviationMeanBeats": -0.01752444617514685,
+            "absDeviationMeanMs": 31.095462718032447,
+            "signedDeviationMeanMs": -12.691210265646482
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 783,
+            "mean": 37.911877394636015,
+            "stdDev": 17.341322928032074,
+            "p10": 22,
+            "p50": 33,
+            "p90": 62.80000000000007,
+            "ghostRate": 0.6526181353767561
+          },
+          "timing": {
+            "count": 783,
+            "absDeviationMeanBeats": 0.03513197105151124,
+            "absDeviationStdDevBeats": 0.027111908374272183,
+            "signedDeviationMeanBeats": -0.018710089399744383,
+            "absDeviationMeanMs": 25.442586156797518,
+            "signedDeviationMeanMs": -13.549853518221642
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 121,
+            "mean": 80.23140495867769,
+            "stdDev": 30.434799658573347,
+            "p10": 38,
+            "p50": 86,
+            "p90": 117,
+            "ghostRate": 0.1322314049586777
+          },
+          "timing": {
+            "count": 121,
+            "absDeviationMeanBeats": 0.05742079889807134,
+            "absDeviationStdDevBeats": 0.03560695977465438,
+            "signedDeviationMeanBeats": -0.017510330578511937,
+            "absDeviationMeanMs": 41.58416335406495,
+            "signedDeviationMeanMs": -12.680987745452219
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 42,
+            "mean": 82.57142857142857,
+            "stdDev": 34.80910038176447,
+            "p10": 36.4,
+            "p50": 78.5,
+            "p90": 127,
+            "ghostRate": 0.14285714285714285
+          },
+          "timing": {
+            "count": 42,
+            "absDeviationMeanBeats": 0.06111111111111414,
+            "absDeviationStdDevBeats": 0.031036528373425222,
+            "signedDeviationMeanBeats": 0.015079365079365277,
+            "absDeviationMeanMs": 44.25668879501326,
+            "signedDeviationMeanMs": 10.92048165071716
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 2,
+            "mean": 7.5,
+            "stdDev": 0.5,
+            "p10": 7.1,
+            "p50": 7.5,
+            "p90": 7.9,
+            "ghostRate": 1
+          },
+          "timing": {
+            "count": 2,
+            "absDeviationMeanBeats": 0.020833333333336146,
+            "absDeviationStdDevBeats": 0.0041666666666695384,
+            "signedDeviationMeanBeats": -0.020833333333336146,
+            "absDeviationMeanMs": 15.08750754375581,
+            "signedDeviationMeanMs": -15.08750754375581
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 37,
+            "mean": 97.10810810810811,
+            "stdDev": 25.55310716155541,
+            "p10": 70.8,
+            "p50": 100,
+            "p90": 127,
+            "ghostRate": 0.08108108108108109
+          },
+          "timing": {
+            "count": 37,
+            "absDeviationMeanBeats": 0.06199324324324486,
+            "absDeviationStdDevBeats": 0.037501268138613715,
+            "signedDeviationMeanBeats": -0.0064752252252220244,
+            "absDeviationMeanMs": 44.89552920452253,
+            "signedDeviationMeanMs": -4.689360452786017
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 25,
+            "mean": 112.24,
+            "stdDev": 19.938465337131635,
+            "p10": 85.4,
+            "p50": 121,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 25,
+            "absDeviationMeanBeats": 0.0703333333333356,
+            "absDeviationStdDevBeats": 0.03515975445496317,
+            "signedDeviationMeanBeats": -0.020500000000004945,
+            "absDeviationMeanMs": 50.935425467714374,
+            "signedDeviationMeanMs": -14.846107423057294
+          }
+        }
+      }
+    },
+    "country": {
+      "fileCount": 29,
+      "hitCount": 2688,
+      "byVoice": {
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 411,
+            "mean": 55.900243309002434,
+            "stdDev": 15.792519555369799,
+            "p10": 43,
+            "p50": 52,
+            "p90": 75,
+            "ghostRate": 0.0413625304136253
+          },
+          "timing": {
+            "count": 411,
+            "absDeviationMeanBeats": 0.031848134630980685,
+            "absDeviationStdDevBeats": 0.022711870072903356,
+            "signedDeviationMeanBeats": -0.027478710462286508,
+            "absDeviationMeanMs": 18.145302638476224,
+            "signedDeviationMeanMs": -15.655846825271292
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 1539,
+            "mean": 58.03833658219623,
+            "stdDev": 34.459728151707345,
+            "p10": 23,
+            "p50": 43,
+            "p90": 112,
+            "ghostRate": 0.4567901234567901
+          },
+          "timing": {
+            "count": 1539,
+            "absDeviationMeanBeats": 0.03487789690275054,
+            "absDeviationStdDevBeats": 0.02568874037894127,
+            "signedDeviationMeanBeats": -0.020171377517868672,
+            "absDeviationMeanMs": 19.8714933237675,
+            "signedDeviationMeanMs": -11.492533359885885
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 49,
+            "mean": 102.34693877551021,
+            "stdDev": 24.78359482120294,
+            "p10": 58.00000000000001,
+            "p50": 106,
+            "p90": 127,
+            "ghostRate": 0.02040816326530612
+          },
+          "timing": {
+            "count": 49,
+            "absDeviationMeanBeats": 0.0342261904761887,
+            "absDeviationStdDevBeats": 0.022759588445601407,
+            "signedDeviationMeanBeats": -0.02946428571428394,
+            "absDeviationMeanMs": 19.500187108241107,
+            "signedDeviationMeanMs": -16.78711759752916
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 465,
+            "mean": 70.01935483870967,
+            "stdDev": 22.861190563756118,
+            "p10": 36,
+            "p50": 77,
+            "p90": 90,
+            "ghostRate": 0.11827956989247312
+          },
+          "timing": {
+            "count": 465,
+            "absDeviationMeanBeats": 0.049592293906809706,
+            "absDeviationStdDevBeats": 0.028607868928504563,
+            "signedDeviationMeanBeats": -0.04560483870967728,
+            "absDeviationMeanMs": 28.25494151861457,
+            "signedDeviationMeanMs": -25.983110463273892
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 81,
+            "mean": 92.50617283950618,
+            "stdDev": 29.24782294601151,
+            "p10": 53,
+            "p50": 102,
+            "p90": 127,
+            "ghostRate": 0.04938271604938271
+          },
+          "timing": {
+            "count": 81,
+            "absDeviationMeanBeats": 0.03616255144032924,
+            "absDeviationStdDevBeats": 0.023477537572004516,
+            "signedDeviationMeanBeats": -0.027572016460904774,
+            "absDeviationMeanMs": 20.60341830588503,
+            "signedDeviationMeanMs": -15.70900741387502
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 93,
+            "mean": 51.365591397849464,
+            "stdDev": 9.093049391205009,
+            "p10": 42,
+            "p50": 51,
+            "p90": 63.8,
+            "ghostRate": 0.053763440860215055
+          },
+          "timing": {
+            "count": 93,
+            "absDeviationMeanBeats": 0.030510752688170925,
+            "absDeviationStdDevBeats": 0.018444203799413035,
+            "signedDeviationMeanBeats": -0.02553763440860119,
+            "absDeviationMeanMs": 17.38333650210131,
+            "signedDeviationMeanMs": -14.549929230833685
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 13,
+            "mean": 58.07692307692308,
+            "stdDev": 22.652768682747876,
+            "p10": 32.8,
+            "p50": 51,
+            "p90": 82.80000000000001,
+            "ghostRate": 0.23076923076923078
+          },
+          "timing": {
+            "count": 13,
+            "absDeviationMeanBeats": 0.028846153846152935,
+            "absDeviationStdDevBeats": 0.02531645537111155,
+            "signedDeviationMeanBeats": -0.026923076923076304,
+            "absDeviationMeanMs": 16.434940305273773,
+            "signedDeviationMeanMs": -15.339277618255654
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 27,
+            "mean": 80.22222222222223,
+            "stdDev": 31.211742013322052,
+            "p10": 44.4,
+            "p50": 84,
+            "p90": 117.8,
+            "ghostRate": 0.1111111111111111
+          },
+          "timing": {
+            "count": 27,
+            "absDeviationMeanBeats": 0.034799382716051146,
+            "absDeviationStdDevBeats": 0.016770651835674933,
+            "signedDeviationMeanBeats": -0.03325617283950723,
+            "absDeviationMeanMs": 19.826760290088078,
+            "signedDeviationMeanMs": -18.9475248005051
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 10,
+            "mean": 100.2,
+            "stdDev": 19.85346317396539,
+            "p10": 79.89999999999999,
+            "p50": 106.5,
+            "p90": 121.60000000000001,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 10,
+            "absDeviationMeanBeats": 0.05041666666666607,
+            "absDeviationStdDevBeats": 0.030259296092275158,
+            "signedDeviationMeanBeats": -0.05041666666666607,
+            "absDeviationMeanMs": 28.724623444662395,
+            "signedDeviationMeanMs": -28.724623444662395
+          }
+        }
+      }
+    },
+    "gospel": {
+      "fileCount": 19,
+      "hitCount": 1890,
+      "byVoice": {
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 499,
+            "mean": 58.44088176352705,
+            "stdDev": 21.09188819236168,
+            "p10": 27,
+            "p50": 67,
+            "p90": 80,
+            "ghostRate": 0.2625250501002004
+          },
+          "timing": {
+            "count": 499,
+            "absDeviationMeanBeats": 0.06330577822311328,
+            "absDeviationStdDevBeats": 0.03546542587254969,
+            "signedDeviationMeanBeats": -0.03674432197728826,
+            "absDeviationMeanMs": 31.652889111556643,
+            "signedDeviationMeanMs": -18.37216098864413
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 473,
+            "mean": 82.23044397463002,
+            "stdDev": 30.851066970312317,
+            "p10": 34,
+            "p50": 86,
+            "p90": 121,
+            "ghostRate": 0.1522198731501057
+          },
+          "timing": {
+            "count": 473,
+            "absDeviationMeanBeats": 0.03349630021141635,
+            "absDeviationStdDevBeats": 0.02510769792320969,
+            "signedDeviationMeanBeats": -0.013640768146582324,
+            "absDeviationMeanMs": 16.748150105708174,
+            "signedDeviationMeanMs": -6.820384073291162
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 323,
+            "mean": 51.752321981424146,
+            "stdDev": 10.356820602795798,
+            "p10": 40,
+            "p50": 51,
+            "p90": 65,
+            "ghostRate": 0.10526315789473684
+          },
+          "timing": {
+            "count": 323,
+            "absDeviationMeanBeats": 0.039512383900928816,
+            "absDeviationStdDevBeats": 0.025827128514669125,
+            "signedDeviationMeanBeats": -0.021594427244581788,
+            "absDeviationMeanMs": 19.75619195046441,
+            "signedDeviationMeanMs": -10.797213622290894
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 61,
+            "mean": 63.40983606557377,
+            "stdDev": 21.2389813663773,
+            "p10": 41,
+            "p50": 58,
+            "p90": 92,
+            "ghostRate": 0.09836065573770492
+          },
+          "timing": {
+            "count": 61,
+            "absDeviationMeanBeats": 0.0365437158469953,
+            "absDeviationStdDevBeats": 0.026909577584788607,
+            "signedDeviationMeanBeats": -0.010587431693989211,
+            "absDeviationMeanMs": 18.27185792349765,
+            "signedDeviationMeanMs": -5.293715846994606
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 406,
+            "mean": 61.56896551724138,
+            "stdDev": 22.117218453770718,
+            "p10": 40,
+            "p50": 57,
+            "p90": 93,
+            "ghostRate": 0.11330049261083744
+          },
+          "timing": {
+            "count": 406,
+            "absDeviationMeanBeats": 0.03337951559934357,
+            "absDeviationStdDevBeats": 0.02400052963201092,
+            "signedDeviationMeanBeats": -0.006706691297208686,
+            "absDeviationMeanMs": 16.689757799671785,
+            "signedDeviationMeanMs": -3.353345648604343
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 63,
+            "mean": 106.93650793650794,
+            "stdDev": 19.307760604262835,
+            "p10": 80,
+            "p50": 110,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 63,
+            "absDeviationMeanBeats": 0.03835978835978722,
+            "absDeviationStdDevBeats": 0.026843501907617563,
+            "signedDeviationMeanBeats": -0.022817460317459598,
+            "absDeviationMeanMs": 19.17989417989361,
+            "signedDeviationMeanMs": -11.4087301587298
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 51,
+            "mean": 97.3529411764706,
+            "stdDev": 24.043117746193484,
+            "p10": 64,
+            "p50": 99,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 51,
+            "absDeviationMeanBeats": 0.03774509803921537,
+            "absDeviationStdDevBeats": 0.02623140700464885,
+            "signedDeviationMeanBeats": -0.00604575163398706,
+            "absDeviationMeanMs": 18.872549019607685,
+            "signedDeviationMeanMs": -3.02287581699353
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 14,
+            "mean": 89.14285714285714,
+            "stdDev": 16.34388108680407,
+            "p10": 72.6,
+            "p50": 84.5,
+            "p90": 110.7,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 14,
+            "absDeviationMeanBeats": 0.047172619047618776,
+            "absDeviationStdDevBeats": 0.032107357490854194,
+            "signedDeviationMeanBeats": -0.039434523809526514,
+            "absDeviationMeanMs": 23.586309523809387,
+            "signedDeviationMeanMs": -19.71726190476326
+          }
+        }
+      }
+    },
+    "punk": {
+      "fileCount": 58,
+      "hitCount": 5161,
+      "byVoice": {
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 1402,
+            "mean": 51.94793152639087,
+            "stdDev": 19.896221460092235,
+            "p10": 34,
+            "p50": 46,
+            "p90": 81,
+            "ghostRate": 0.2810271041369472
+          },
+          "timing": {
+            "count": 1402,
+            "absDeviationMeanBeats": 0.04730147408464089,
+            "absDeviationStdDevBeats": 0.034311866950515454,
+            "signedDeviationMeanBeats": -0.013379695672848226,
+            "absDeviationMeanMs": 20.878885060191564,
+            "signedDeviationMeanMs": -5.905801742961926
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 650,
+            "mean": 99.1923076923077,
+            "stdDev": 22.630373107446758,
+            "p10": 66.9,
+            "p50": 103,
+            "p90": 127,
+            "ghostRate": 0.003076923076923077
+          },
+          "timing": {
+            "count": 650,
+            "absDeviationMeanBeats": 0.0322339743589747,
+            "absDeviationStdDevBeats": 0.02759017866906177,
+            "signedDeviationMeanBeats": -0.0079647435897439,
+            "absDeviationMeanMs": 14.2280860945246,
+            "signedDeviationMeanMs": -3.5156402450924364
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 1646,
+            "mean": 90.75334143377886,
+            "stdDev": 43.500868391369295,
+            "p10": 13,
+            "p50": 111,
+            "p90": 127,
+            "ghostRate": 0.22174969623329283
+          },
+          "timing": {
+            "count": 1646,
+            "absDeviationMeanBeats": 0.04460814094775224,
+            "absDeviationStdDevBeats": 0.03161987161203454,
+            "signedDeviationMeanBeats": -0.019504353989469116,
+            "absDeviationMeanMs": 19.690046993680593,
+            "signedDeviationMeanMs": -8.609227788350141
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 449,
+            "mean": 69.21826280623608,
+            "stdDev": 25.355495191439143,
+            "p10": 36,
+            "p50": 68,
+            "p90": 103,
+            "ghostRate": 0.1403118040089087
+          },
+          "timing": {
+            "count": 449,
+            "absDeviationMeanBeats": 0.030683927245731452,
+            "absDeviationStdDevBeats": 0.02552401258917756,
+            "signedDeviationMeanBeats": -0.015984595397179287,
+            "absDeviationMeanMs": 13.543894826882985,
+            "signedDeviationMeanMs": -7.055605274249609
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 355,
+            "mean": 89.2,
+            "stdDev": 24.38198365106013,
+            "p10": 57,
+            "p50": 90,
+            "p90": 124.60000000000002,
+            "ghostRate": 0.0028169014084507044
+          },
+          "timing": {
+            "count": 355,
+            "absDeviationMeanBeats": 0.037059859154929264,
+            "absDeviationStdDevBeats": 0.024930251619931516,
+            "signedDeviationMeanBeats": -0.027634976525822086,
+            "absDeviationMeanMs": 16.358233112525856,
+            "signedDeviationMeanMs": -12.198087050971695
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 26,
+            "mean": 102.26923076923077,
+            "stdDev": 19.089984672411326,
+            "p10": 80,
+            "p50": 102.5,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 26,
+            "absDeviationMeanBeats": 0.05192307692307416,
+            "absDeviationStdDevBeats": 0.028872850893834165,
+            "signedDeviationMeanBeats": -0.018910256410256343,
+            "absDeviationMeanMs": 22.91886195995663,
+            "signedDeviationMeanMs": -8.346992936034002
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 174,
+            "mean": 107.2816091954023,
+            "stdDev": 23.024874249213575,
+            "p10": 69.30000000000001,
+            "p50": 115.5,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 174,
+            "absDeviationMeanBeats": 0.0525383141762455,
+            "absDeviationStdDevBeats": 0.03429079476272577,
+            "signedDeviationMeanBeats": -0.023922413793103538,
+            "absDeviationMeanMs": 23.190427870793293,
+            "signedDeviationMeanMs": -10.559360730593646
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 459,
+            "mean": 67.17647058823529,
+            "stdDev": 17.43089098491532,
+            "p10": 47,
+            "p50": 65,
+            "p90": 90,
+            "ghostRate": 0.02832244008714597
+          },
+          "timing": {
+            "count": 459,
+            "absDeviationMeanBeats": 0.03318355119825711,
+            "absDeviationStdDevBeats": 0.024404875554116235,
+            "signedDeviationMeanBeats": -0.014156681190995064,
+            "absDeviationMeanMs": 14.647229600448343,
+            "signedDeviationMeanMs": -6.248763387197212
+          }
+        }
+      }
+    },
+    "afrobeat": {
+      "fileCount": 13,
+      "hitCount": 23037,
+      "byVoice": {
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 6659,
+            "mean": 85.08349602042348,
+            "stdDev": 41.57311280980448,
+            "p10": 30,
+            "p50": 99,
+            "p90": 127,
+            "ghostRate": 0.22015317615257546
+          },
+          "timing": {
+            "count": 6659,
+            "absDeviationMeanBeats": 0.035820255794163244,
+            "absDeviationStdDevBeats": 0.03078898037950232,
+            "signedDeviationMeanBeats": -0.003531248435701009,
+            "absDeviationMeanMs": 21.862127949489306,
+            "signedDeviationMeanMs": -2.1552220499583625
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 6893,
+            "mean": 69.45219788190919,
+            "stdDev": 31.134805380457415,
+            "p10": 32,
+            "p50": 65,
+            "p90": 127,
+            "ghostRate": 0.20063832873930074
+          },
+          "timing": {
+            "count": 6893,
+            "absDeviationMeanBeats": 0.032433265631800504,
+            "absDeviationStdDevBeats": 0.025745335834701368,
+            "signedDeviationMeanBeats": -0.020320131534406982,
+            "absDeviationMeanMs": 19.79495085508951,
+            "signedDeviationMeanMs": -12.40195821348783
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 5037,
+            "mean": 79.93289656541592,
+            "stdDev": 33.40789750124163,
+            "p10": 47,
+            "p50": 70,
+            "p90": 127,
+            "ghostRate": 0.0730593607305936
+          },
+          "timing": {
+            "count": 5037,
+            "absDeviationMeanBeats": 0.026718532856859233,
+            "absDeviationStdDevBeats": 0.022968132113970766,
+            "signedDeviationMeanBeats": -0.013105932764211318,
+            "absDeviationMeanMs": 16.30708578118169,
+            "signedDeviationMeanMs": -7.998926100222871
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 1083,
+            "mean": 117.67313019390582,
+            "stdDev": 22.239697482793275,
+            "p10": 84,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0.020313942751615882
+          },
+          "timing": {
+            "count": 1083,
+            "absDeviationMeanBeats": 0.022429978454908694,
+            "absDeviationStdDevBeats": 0.020197862151917965,
+            "signedDeviationMeanBeats": -0.007333025546321274,
+            "absDeviationMeanMs": 13.689658211916104,
+            "signedDeviationMeanMs": -4.475555497754768
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 213,
+            "mean": 101.55399061032864,
+            "stdDev": 27.136122618047217,
+            "p10": 67.2,
+            "p50": 105,
+            "p90": 127,
+            "ghostRate": 0.023474178403755867
+          },
+          "timing": {
+            "count": 213,
+            "absDeviationMeanBeats": 0.03476134585289532,
+            "absDeviationStdDevBeats": 0.024649474729667196,
+            "signedDeviationMeanBeats": -0.01052425665101735,
+            "absDeviationMeanMs": 21.215844886743625,
+            "signedDeviationMeanMs": -6.423255233015285
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 316,
+            "mean": 72.63291139240506,
+            "stdDev": 35.88983750071304,
+            "p10": 28,
+            "p50": 66,
+            "p90": 127,
+            "ghostRate": 0.18670886075949367
+          },
+          "timing": {
+            "count": 316,
+            "absDeviationMeanBeats": 0.03233122362869239,
+            "absDeviationStdDevBeats": 0.021891910681454036,
+            "signedDeviationMeanBeats": -0.01607331223628735,
+            "absDeviationMeanMs": 19.732671698262962,
+            "signedDeviationMeanMs": -9.810002773320917
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 2553,
+            "mean": 92.10497453975715,
+            "stdDev": 34.63656003925167,
+            "p10": 42,
+            "p50": 101,
+            "p90": 127,
+            "ghostRate": 0.08930669800235018
+          },
+          "timing": {
+            "count": 2553,
+            "absDeviationMeanBeats": 0.024751109805457982,
+            "absDeviationStdDevBeats": 0.01950511059731063,
+            "signedDeviationMeanBeats": -0.014307514035774918,
+            "absDeviationMeanMs": 15.10631114887107,
+            "signedDeviationMeanMs": -8.73228556174056
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 151,
+            "mean": 116.3907284768212,
+            "stdDev": 19.140461463408705,
+            "p10": 84,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 151,
+            "absDeviationMeanBeats": 0.034947571743929005,
+            "absDeviationStdDevBeats": 0.02749691871140383,
+            "signedDeviationMeanBeats": -0.019743377483443632,
+            "absDeviationMeanMs": 21.329503881271226,
+            "signedDeviationMeanMs": -12.049948698815363
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 132,
+            "mean": 117.18181818181819,
+            "stdDev": 19.02264128723191,
+            "p10": 86.1,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 132,
+            "absDeviationMeanBeats": 0.037547348484848544,
+            "absDeviationStdDevBeats": 0.028757348265251042,
+            "signedDeviationMeanBeats": -0.021038510101008705,
+            "absDeviationMeanMs": 22.91622207995451,
+            "signedDeviationMeanMs": -12.840405225967755
+          }
+        }
+      }
+    },
+    "blues": {
+      "fileCount": 4,
+      "hitCount": 2692,
+      "byVoice": {
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 65,
+            "mean": 106.83076923076923,
+            "stdDev": 25.641054358958264,
+            "p10": 76.80000000000001,
+            "p50": 117,
+            "p90": 127,
+            "ghostRate": 0.046153846153846156
+          },
+          "timing": {
+            "count": 65,
+            "absDeviationMeanBeats": 0.07262820512820575,
+            "absDeviationStdDevBeats": 0.03771639296761786,
+            "signedDeviationMeanBeats": -0.001923076923076718,
+            "absDeviationMeanMs": 38.563648740640225,
+            "signedDeviationMeanMs": -1.0211027910141866
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 795,
+            "mean": 51.00503144654088,
+            "stdDev": 44.430851934386425,
+            "p10": 7,
+            "p50": 34,
+            "p90": 124,
+            "ghostRate": 0.5345911949685535
+          },
+          "timing": {
+            "count": 795,
+            "absDeviationMeanBeats": 0.057403039832284744,
+            "absDeviationStdDevBeats": 0.03886748423465905,
+            "signedDeviationMeanBeats": 0.006213312368973283,
+            "absDeviationMeanMs": 30.47949017643438,
+            "signedDeviationMeanMs": 3.299103912729177
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 632,
+            "mean": 30.3876582278481,
+            "stdDev": 16.02095264427265,
+            "p10": 11,
+            "p50": 30.5,
+            "p90": 49,
+            "ghostRate": 0.7958860759493671
+          },
+          "timing": {
+            "count": 632,
+            "absDeviationMeanBeats": 0.061435258438818544,
+            "absDeviationStdDevBeats": 0.03702857266543312,
+            "signedDeviationMeanBeats": -0.016505142405062918,
+            "absDeviationMeanMs": 32.62049120645232,
+            "signedDeviationMeanMs": -8.763792427467036
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 456,
+            "mean": 73.65350877192982,
+            "stdDev": 27.98430224070359,
+            "p10": 44.5,
+            "p50": 63,
+            "p90": 119.5,
+            "ghostRate": 0.07236842105263158
+          },
+          "timing": {
+            "count": 456,
+            "absDeviationMeanBeats": 0.0598547149122805,
+            "absDeviationStdDevBeats": 0.03891838943075176,
+            "signedDeviationMeanBeats": 0.0007629751461980384,
+            "absDeviationMeanMs": 31.781264555193186,
+            "signedDeviationMeanMs": 0.4051195466538257
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 40,
+            "mean": 105.575,
+            "stdDev": 14.734122810673188,
+            "p10": 87.8,
+            "p50": 103,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 40,
+            "absDeviationMeanBeats": 0.04218750000000043,
+            "absDeviationStdDevBeats": 0.0263718649400588,
+            "signedDeviationMeanBeats": -0.02687499999999937,
+            "absDeviationMeanMs": 22.400442477876336,
+            "signedDeviationMeanMs": -14.269911504424446
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 572,
+            "mean": 55.76923076923077,
+            "stdDev": 26.203264705499315,
+            "p10": 25,
+            "p50": 49,
+            "p90": 91.79999999999995,
+            "ghostRate": 0.3688811188811189
+          },
+          "timing": {
+            "count": 572,
+            "absDeviationMeanBeats": 0.061046765734266435,
+            "absDeviationStdDevBeats": 0.03760756117416836,
+            "signedDeviationMeanBeats": -0.0008340617715614635,
+            "absDeviationMeanMs": 32.41421189430076,
+            "signedDeviationMeanMs": -0.4428646574662638
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 31,
+            "mean": 84.35483870967742,
+            "stdDev": 38.07594142364134,
+            "p10": 35,
+            "p50": 91,
+            "p90": 127,
+            "ghostRate": 0.25806451612903225
+          },
+          "timing": {
+            "count": 31,
+            "absDeviationMeanBeats": 0.05235215053763438,
+            "absDeviationStdDevBeats": 0.03460584323573471,
+            "signedDeviationMeanBeats": 0.015524193548386186,
+            "absDeviationMeanMs": 27.797602055381088,
+            "signedDeviationMeanMs": 8.242934627461691
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 47,
+            "mean": 84.51063829787235,
+            "stdDev": 19.34773871049527,
+            "p10": 61,
+            "p50": 84,
+            "p90": 113.39999999999999,
+            "ghostRate": 0.02127659574468085
+          },
+          "timing": {
+            "count": 47,
+            "absDeviationMeanBeats": 0.06644503546099394,
+            "absDeviationStdDevBeats": 0.03404665081352662,
+            "signedDeviationMeanBeats": 0.021586879432623603,
+            "absDeviationMeanMs": 35.280549802297664,
+            "signedDeviationMeanMs": 11.462059875729347
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 54,
+            "mean": 86.79629629629629,
+            "stdDev": 27.87962194176801,
+            "p10": 49.60000000000001,
+            "p50": 91.5,
+            "p90": 121.7,
+            "ghostRate": 0.018518518518518517
+          },
+          "timing": {
+            "count": 54,
+            "absDeviationMeanBeats": 0.0609567901234574,
+            "absDeviationStdDevBeats": 0.03308934913096431,
+            "signedDeviationMeanBeats": -0.010956790123454456,
+            "absDeviationMeanMs": 32.36643723369419,
+            "signedDeviationMeanMs": -5.81776466732095
+          }
+        }
+      }
+    },
+    "middleeastern": {
+      "fileCount": 1,
+      "hitCount": 2354,
+      "byVoice": {
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 46,
+            "mean": 88.5,
+            "stdDev": 35.85098992023609,
+            "p10": 32.5,
+            "p50": 105,
+            "p90": 123,
+            "ghostRate": 0.2608695652173913
+          },
+          "timing": {
+            "count": 46,
+            "absDeviationMeanBeats": 0.02069746376811359,
+            "absDeviationStdDevBeats": 0.015336418233860012,
+            "signedDeviationMeanBeats": 0.0014945652173918953,
+            "absDeviationMeanMs": 9.855935127673138,
+            "signedDeviationMeanMs": 0.7116977225675692
+          }
+        },
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 487,
+            "mean": 30.073921971252567,
+            "stdDev": 12.93589777917457,
+            "p10": 11,
+            "p50": 35,
+            "p90": 43,
+            "ghostRate": 0.7761806981519507
+          },
+          "timing": {
+            "count": 487,
+            "absDeviationMeanBeats": 0.047634325804243614,
+            "absDeviationStdDevBeats": 0.036527850688559446,
+            "signedDeviationMeanBeats": -0.013958761122518582,
+            "absDeviationMeanMs": 22.683012287735057,
+            "signedDeviationMeanMs": -6.64702910596123
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 843,
+            "mean": 60.93119810201661,
+            "stdDev": 27.7802341786398,
+            "p10": 27,
+            "p50": 57,
+            "p90": 101.80000000000007,
+            "ghostRate": 0.2941874258600237
+          },
+          "timing": {
+            "count": 843,
+            "absDeviationMeanBeats": 0.0351102214313962,
+            "absDeviationStdDevBeats": 0.029044411380744664,
+            "signedDeviationMeanBeats": -0.00808867141162429,
+            "absDeviationMeanMs": 16.71915306256962,
+            "signedDeviationMeanMs": -3.8517482912496623
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 748,
+            "mean": 52.161764705882355,
+            "stdDev": 34.38978027350779,
+            "p10": 10,
+            "p50": 45,
+            "p90": 98,
+            "ghostRate": 0.42914438502673796
+          },
+          "timing": {
+            "count": 748,
+            "absDeviationMeanBeats": 0.034422348484848604,
+            "absDeviationStdDevBeats": 0.029802191483625944,
+            "signedDeviationMeanBeats": -0.005901849376114163,
+            "absDeviationMeanMs": 16.391594516594573,
+            "signedDeviationMeanMs": -2.8104044648162683
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 14,
+            "mean": 104,
+            "stdDev": 23.895606290697042,
+            "p10": 76.1,
+            "p50": 110,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 14,
+            "absDeviationMeanBeats": 0.02366071428571535,
+            "absDeviationStdDevBeats": 0.02128392400188924,
+            "signedDeviationMeanBeats": -0.013541666666668815,
+            "absDeviationMeanMs": 11.267006802721596,
+            "signedDeviationMeanMs": -6.448412698413722
+          }
+        },
+        "crash": {
+          "voice": "crash",
+          "velocity": {
+            "count": 22,
+            "mean": 107.4090909090909,
+            "stdDev": 26.97247602297419,
+            "p10": 71.4,
+            "p50": 121,
+            "p90": 127,
+            "ghostRate": 0.045454545454545456
+          },
+          "timing": {
+            "count": 22,
+            "absDeviationMeanBeats": 0.03967803030303039,
+            "absDeviationStdDevBeats": 0.02075246875077307,
+            "signedDeviationMeanBeats": -0.037215909090907544,
+            "absDeviationMeanMs": 18.894300144300185,
+            "signedDeviationMeanMs": -17.721861471860734
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 17,
+            "mean": 103.17647058823529,
+            "stdDev": 27.89103860744659,
+            "p10": 60.599999999999994,
+            "p50": 117,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 17,
+            "absDeviationMeanBeats": 0.02561274509804267,
+            "absDeviationStdDevBeats": 0.017485473456755343,
+            "signedDeviationMeanBeats": -0.006495098039216466,
+            "absDeviationMeanMs": 12.196545284782225,
+            "signedDeviationMeanMs": -3.092903828198317
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 14,
+            "mean": 113.78571428571429,
+            "stdDev": 16.058725138105594,
+            "p10": 94.1,
+            "p50": 120.5,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 14,
+            "absDeviationMeanBeats": 0.03467261904762405,
+            "absDeviationStdDevBeats": 0.023100012546502523,
+            "signedDeviationMeanBeats": -0.030803571428575895,
+            "absDeviationMeanMs": 16.510770975059074,
+            "signedDeviationMeanMs": -14.668367346940903
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 163,
+            "mean": 80.71779141104294,
+            "stdDev": 28.263117200605123,
+            "p10": 45,
+            "p50": 76,
+            "p90": 127,
+            "ghostRate": 0.03067484662576687
+          },
+          "timing": {
+            "count": 163,
+            "absDeviationMeanBeats": 0.026661554192228504,
+            "absDeviationStdDevBeats": 0.017241739506917732,
+            "signedDeviationMeanBeats": 0.0026840490797556474,
+            "absDeviationMeanMs": 12.695978186775479,
+            "signedDeviationMeanMs": 1.2781186094074513
+          }
+        }
+      }
+    },
+    "highlife": {
+      "fileCount": 2,
+      "hitCount": 4006,
+      "byVoice": {
+        "kick": {
+          "voice": "kick",
+          "velocity": {
+            "count": 626,
+            "mean": 75.64217252396166,
+            "stdDev": 29.669420543851835,
+            "p10": 46,
+            "p50": 67,
+            "p90": 127,
+            "ghostRate": 0.07987220447284345
+          },
+          "timing": {
+            "count": 626,
+            "absDeviationMeanBeats": 0.0243776624068156,
+            "absDeviationStdDevBeats": 0.01967794928845742,
+            "signedDeviationMeanBeats": -0.006000399361021572,
+            "absDeviationMeanMs": 11.60841066991219,
+            "signedDeviationMeanMs": -2.8573330290578913
+          }
+        },
+        "snare": {
+          "voice": "snare",
+          "velocity": {
+            "count": 1487,
+            "mean": 64.64357767316746,
+            "stdDev": 35.70331961764081,
+            "p10": 24,
+            "p50": 56,
+            "p90": 127,
+            "ghostRate": 0.3187626092804304
+          },
+          "timing": {
+            "count": 1487,
+            "absDeviationMeanBeats": 0.038259358888141616,
+            "absDeviationStdDevBeats": 0.03175125915599924,
+            "signedDeviationMeanBeats": -0.007616005379959806,
+            "absDeviationMeanMs": 18.218742327686485,
+            "signedDeviationMeanMs": -3.626669228552289
+          }
+        },
+        "hatClosed": {
+          "voice": "hatClosed",
+          "velocity": {
+            "count": 1102,
+            "mean": 68.38475499092559,
+            "stdDev": 21.294513831356685,
+            "p10": 40,
+            "p50": 71,
+            "p90": 91,
+            "ghostRate": 0.10617059891107078
+          },
+          "timing": {
+            "count": 1102,
+            "absDeviationMeanBeats": 0.030981548699334956,
+            "absDeviationStdDevBeats": 0.02476269505904457,
+            "signedDeviationMeanBeats": -0.017914398064126008,
+            "absDeviationMeanMs": 14.75311842825474,
+            "signedDeviationMeanMs": -8.530665744821908
+          }
+        },
+        "tomMid": {
+          "voice": "tomMid",
+          "velocity": {
+            "count": 34,
+            "mean": 112.41176470588235,
+            "stdDev": 25.540184769540815,
+            "p10": 71.30000000000001,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0.029411764705882353
+          },
+          "timing": {
+            "count": 34,
+            "absDeviationMeanBeats": 0.022487745098037963,
+            "absDeviationStdDevBeats": 0.01724471990271878,
+            "signedDeviationMeanBeats": -0.004840686274508719,
+            "absDeviationMeanMs": 10.708450046684744,
+            "signedDeviationMeanMs": -2.305088702147009
+          }
+        },
+        "hatOpen": {
+          "voice": "hatOpen",
+          "velocity": {
+            "count": 67,
+            "mean": 102.94029850746269,
+            "stdDev": 29.77221012006467,
+            "p10": 61,
+            "p50": 119,
+            "p90": 127,
+            "ghostRate": 0.029850746268656716
+          },
+          "timing": {
+            "count": 67,
+            "absDeviationMeanBeats": 0.021268656716418397,
+            "absDeviationStdDevBeats": 0.017628266142306392,
+            "signedDeviationMeanBeats": -0.0008706467661678852,
+            "absDeviationMeanMs": 10.127931769723046,
+            "signedDeviationMeanMs": -0.41459369817518343
+          }
+        },
+        "tomLow": {
+          "voice": "tomLow",
+          "velocity": {
+            "count": 18,
+            "mean": 112.55555555555556,
+            "stdDev": 17.404412665956688,
+            "p10": 83.69999999999999,
+            "p50": 121,
+            "p90": 127,
+            "ghostRate": 0
+          },
+          "timing": {
+            "count": 18,
+            "absDeviationMeanBeats": 0.028356481481482534,
+            "absDeviationStdDevBeats": 0.013593009662843653,
+            "signedDeviationMeanBeats": 0.0008101851851891853,
+            "absDeviationMeanMs": 13.503086419753588,
+            "signedDeviationMeanMs": 0.3858024691377073
+          }
+        },
+        "ride": {
+          "voice": "ride",
+          "velocity": {
+            "count": 553,
+            "mean": 106.27305605786619,
+            "stdDev": 25.730336460090708,
+            "p10": 67,
+            "p50": 127,
+            "p90": 127,
+            "ghostRate": 0.0018083182640144665
+          },
+          "timing": {
+            "count": 553,
+            "absDeviationMeanBeats": 0.022878993369499705,
+            "absDeviationStdDevBeats": 0.016783005269449976,
+            "signedDeviationMeanBeats": 0.00035789632308601797,
+            "absDeviationMeanMs": 10.894758747380813,
+            "signedDeviationMeanMs": 0.1704268205171514
+          }
+        },
+        "tomHigh": {
+          "voice": "tomHigh",
+          "velocity": {
+            "count": 119,
+            "mean": 60.76470588235294,
+            "stdDev": 40.4012866677448,
+            "p10": 24,
+            "p50": 37,
+            "p90": 127,
+            "ghostRate": 0.5630252100840336
+          },
+          "timing": {
+            "count": 119,
+            "absDeviationMeanBeats": 0.03221288515406149,
+            "absDeviationStdDevBeats": 0.023724139927482263,
+            "signedDeviationMeanBeats": -0.01764705882352879,
+            "absDeviationMeanMs": 15.339469120981661,
+            "signedDeviationMeanMs": -8.403361344537519
+          }
+        }
+      }
+    }
+  }
+}

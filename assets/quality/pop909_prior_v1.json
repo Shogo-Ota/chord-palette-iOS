@@ -1,0 +1,552 @@
+{
+  "version": 1,
+  "dataset": "POP909-CL + POP909 PIANO track",
+  "metadata": {
+    "analyzerVersion": "pop909-prior-v1.0.0",
+    "date": "2026-08-15",
+    "gitCommit": "1b154de",
+    "songCount": 200,
+    "includedSampleCount": 22440,
+    "excludedSampleCount": 0,
+    "exclusionReasons": {},
+    "pocSongLimit": 200
+  },
+  "voiceLeading": {
+    "meanVoiceMovement": {
+      "count": 22440,
+      "mean": 2.9577028690264875,
+      "std": 2.701511749671563,
+      "p10": 0,
+      "p25": 1.3333333333333333,
+      "median": 2,
+      "p75": 4,
+      "p90": 6,
+      "p95": 7.5
+    },
+    "totalVoiceMovement": {
+      "count": 22440,
+      "mean": 9.129634581105169,
+      "std": 7.858093835380667,
+      "p10": 0,
+      "p25": 4,
+      "median": 7,
+      "p75": 13,
+      "p90": 19,
+      "p95": 24
+    },
+    "maxVoiceMovement": {
+      "count": 22440,
+      "mean": 4.582798573975045,
+      "std": 4.0336605116716076,
+      "p10": 0,
+      "p25": 2,
+      "median": 4,
+      "p75": 7,
+      "p90": 9,
+      "p95": 12
+    },
+    "topMovement": {
+      "count": 22440,
+      "mean": 0.007442067736185384,
+      "std": 4.405685018264475,
+      "p10": -5,
+      "p25": -2,
+      "median": 0,
+      "p75": 2,
+      "p90": 5,
+      "p95": 7
+    },
+    "bassMovement": {
+      "count": 22440,
+      "mean": -0.002049910873440285,
+      "std": 8.541614357574076,
+      "p10": -10,
+      "p25": -4,
+      "median": 0,
+      "p75": 5,
+      "p90": 12,
+      "p95": 15
+    },
+    "commonToneRate": {
+      "count": 22440,
+      "mean": 0.18828712545624074,
+      "std": 0.2840069331740512,
+      "p10": 0,
+      "p25": 0,
+      "median": 0,
+      "p75": 0.3333333333333333,
+      "p90": 0.6666666666666666,
+      "p95": 0.8
+    },
+    "voiceCrossing": {
+      "count": 22440,
+      "mean": 0,
+      "std": 0,
+      "p10": 0,
+      "p25": 0,
+      "median": 0,
+      "p75": 0,
+      "p90": 0,
+      "p95": 0
+    }
+  },
+  "register": {
+    "center": {
+      "count": 22440,
+      "mean": 56.344429590017825,
+      "std": 5.26549535573788,
+      "p10": 50.5,
+      "p25": 52.5,
+      "median": 56,
+      "p75": 59.5,
+      "p90": 63.05000000000109,
+      "p95": 65.5
+    },
+    "centerDelta": {
+      "count": 22440,
+      "mean": 0.002696078431372549,
+      "std": 5.411683928784658,
+      "p10": -6.5,
+      "p25": -3,
+      "median": 0,
+      "p75": 3,
+      "p90": 6.5,
+      "p95": 8.5
+    },
+    "span": {
+      "count": 22440,
+      "mean": 17.8698752228164,
+      "std": 8.07366936783187,
+      "p10": 7,
+      "p25": 12,
+      "median": 19,
+      "p75": 24,
+      "p90": 28,
+      "p95": 31
+    },
+    "spanDelta": {
+      "count": 22440,
+      "mean": 0.00949197860962567,
+      "std": 8.221507212615174,
+      "p10": -11,
+      "p25": -4,
+      "median": 0,
+      "p75": 4,
+      "p90": 10,
+      "p95": 15
+    },
+    "lowest": {
+      "count": 22440,
+      "mean": 47.40949197860962,
+      "std": 7.999571563306504,
+      "p10": 38,
+      "p25": 42,
+      "median": 46,
+      "p75": 53,
+      "p90": 59,
+      "p95": 62
+    },
+    "highest": {
+      "count": 22440,
+      "mean": 65.27936720142603,
+      "std": 4.904060156306961,
+      "p10": 60,
+      "p25": 62,
+      "median": 65,
+      "p75": 68,
+      "p90": 71,
+      "p95": 73
+    }
+  },
+  "bass": {
+    "degreeProbability": {
+      "1": {
+        "count": 15351,
+        "probability": 0.6840909090909091
+      },
+      "3": {
+        "count": 1227,
+        "probability": 0.05467914438502674
+      },
+      "5": {
+        "count": 1668,
+        "probability": 0.07433155080213903
+      },
+      "7": {
+        "count": 187,
+        "probability": 0.008333333333333333
+      },
+      "9": {
+        "count": 739,
+        "probability": 0.03293226381461675
+      },
+      "11": {
+        "count": 950,
+        "probability": 0.04233511586452763
+      },
+      "13": {
+        "count": 339,
+        "probability": 0.015106951871657753
+      },
+      "#11": {
+        "count": 30,
+        "probability": 0.001336898395721925
+      },
+      "b13": {
+        "count": 300,
+        "probability": 0.013368983957219251
+      },
+      "b3": {
+        "count": 975,
+        "probability": 0.04344919786096257
+      },
+      "b7": {
+        "count": 581,
+        "probability": 0.02589126559714795
+      },
+      "b9": {
+        "count": 93,
+        "probability": 0.004144385026737968
+      }
+    },
+    "inversionProbability": {
+      "first": {
+        "count": 2202,
+        "probability": 0.0981283422459893
+      },
+      "other": {
+        "count": 3219,
+        "probability": 0.14344919786096258
+      },
+      "root": {
+        "count": 15351,
+        "probability": 0.6840909090909091
+      },
+      "second": {
+        "count": 1668,
+        "probability": 0.07433155080213903
+      }
+    }
+  },
+  "top": {
+    "degreeProbability": {
+      "1": {
+        "count": 5215,
+        "probability": 0.23239750445632798
+      },
+      "3": {
+        "count": 3480,
+        "probability": 0.15508021390374332
+      },
+      "5": {
+        "count": 7273,
+        "probability": 0.32410873440285204
+      },
+      "7": {
+        "count": 494,
+        "probability": 0.022014260249554368
+      },
+      "9": {
+        "count": 815,
+        "probability": 0.03631907308377896
+      },
+      "11": {
+        "count": 780,
+        "probability": 0.034759358288770054
+      },
+      "13": {
+        "count": 633,
+        "probability": 0.02820855614973262
+      },
+      "#11": {
+        "count": 247,
+        "probability": 0.011007130124777184
+      },
+      "b13": {
+        "count": 207,
+        "probability": 0.009224598930481283
+      },
+      "b3": {
+        "count": 2498,
+        "probability": 0.11131907308377896
+      },
+      "b7": {
+        "count": 730,
+        "probability": 0.03253119429590018
+      },
+      "b9": {
+        "count": 68,
+        "probability": 0.0030303030303030303
+      }
+    },
+    "movement": {
+      "count": 22440,
+      "mean": 0.007442067736185384,
+      "std": 4.405685018264475,
+      "p10": -5,
+      "p25": -2,
+      "median": 0,
+      "p75": 2,
+      "p90": 5,
+      "p95": 7
+    }
+  },
+  "extensions": {
+    "7": {
+      "roleProbability": {
+        "BASS": {
+          "count": 187,
+          "probability": 0.176248821866164
+        },
+        "INNER": {
+          "count": 269,
+          "probability": 0.2535344015080113
+        },
+        "TOP": {
+          "count": 494,
+          "probability": 0.4655984919886899
+        },
+        "UPPER": {
+          "count": 111,
+          "probability": 0.10461828463713478
+        }
+      },
+      "relativeRegister": {
+        "count": 1061,
+        "mean": 0.6443561779094293,
+        "std": 0.3853910287386131,
+        "p10": 0,
+        "p25": 0.3333333333333333,
+        "median": 0.75,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.4655984919886899
+    },
+    "9": {
+      "roleProbability": {
+        "BASS": {
+          "count": 739,
+          "probability": 0.2834675872650556
+        },
+        "INNER": {
+          "count": 767,
+          "probability": 0.2942079018028385
+        },
+        "TOP": {
+          "count": 815,
+          "probability": 0.3126198695818949
+        },
+        "UPPER": {
+          "count": 286,
+          "probability": 0.10970464135021098
+        }
+      },
+      "relativeRegister": {
+        "count": 2607,
+        "mean": 0.506413136792885,
+        "std": 0.39866803487127217,
+        "p10": 0,
+        "p25": 0,
+        "median": 0.5,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.3126198695818949
+    },
+    "11": {
+      "roleProbability": {
+        "BASS": {
+          "count": 950,
+          "probability": 0.3418495861820799
+        },
+        "INNER": {
+          "count": 707,
+          "probability": 0.25440806045340053
+        },
+        "TOP": {
+          "count": 780,
+          "probability": 0.28067650233897085
+        },
+        "UPPER": {
+          "count": 342,
+          "probability": 0.12306585102554876
+        }
+      },
+      "relativeRegister": {
+        "count": 2779,
+        "mean": 0.46700851625285034,
+        "std": 0.40479313950917356,
+        "p10": 0,
+        "p25": 0,
+        "median": 0.5,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.28067650233897085
+    },
+    "13": {
+      "roleProbability": {
+        "BASS": {
+          "count": 339,
+          "probability": 0.20533010296789825
+        },
+        "INNER": {
+          "count": 441,
+          "probability": 0.26711084191399154
+        },
+        "TOP": {
+          "count": 633,
+          "probability": 0.38340399757722593
+        },
+        "UPPER": {
+          "count": 238,
+          "probability": 0.1441550575408843
+        }
+      },
+      "relativeRegister": {
+        "count": 1651,
+        "mean": 0.5909751665657181,
+        "std": 0.3860779909794125,
+        "p10": 0,
+        "p25": 0.3333333333333333,
+        "median": 0.6666666666666666,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.38340399757722593
+    },
+    "#11": {
+      "roleProbability": {
+        "BASS": {
+          "count": 30,
+          "probability": 0.062111801242236024
+        },
+        "INNER": {
+          "count": 96,
+          "probability": 0.19875776397515527
+        },
+        "TOP": {
+          "count": 247,
+          "probability": 0.5113871635610766
+        },
+        "UPPER": {
+          "count": 110,
+          "probability": 0.2277432712215321
+        }
+      },
+      "relativeRegister": {
+        "count": 483,
+        "mean": 0.746687370600414,
+        "std": 0.31255725884874336,
+        "p10": 0.2666666666666669,
+        "p25": 0.5,
+        "median": 1,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.5113871635610766
+    },
+    "b13": {
+      "roleProbability": {
+        "BASS": {
+          "count": 300,
+          "probability": 0.31315240083507306
+        },
+        "INNER": {
+          "count": 275,
+          "probability": 0.2870563674321503
+        },
+        "TOP": {
+          "count": 207,
+          "probability": 0.2160751565762004
+        },
+        "UPPER": {
+          "count": 176,
+          "probability": 0.1837160751565762
+        }
+      },
+      "relativeRegister": {
+        "count": 958,
+        "mean": 0.45886022467442006,
+        "std": 0.3787463979193532,
+        "p10": 0,
+        "p25": 0,
+        "median": 0.5,
+        "p75": 0.75,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.2160751565762004
+    },
+    "b7": {
+      "roleProbability": {
+        "BASS": {
+          "count": 581,
+          "probability": 0.23399113975030206
+        },
+        "INNER": {
+          "count": 763,
+          "probability": 0.3072895690696738
+        },
+        "TOP": {
+          "count": 730,
+          "probability": 0.29399919452275475
+        },
+        "UPPER": {
+          "count": 409,
+          "probability": 0.16472009665726944
+        }
+      },
+      "relativeRegister": {
+        "count": 2483,
+        "mean": 0.5392564677905011,
+        "std": 0.37624871091465256,
+        "p10": 0,
+        "p25": 0.25,
+        "median": 0.5,
+        "p75": 1,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.29399919452275475
+    },
+    "b9": {
+      "roleProbability": {
+        "BASS": {
+          "count": 93,
+          "probability": 0.3309608540925267
+        },
+        "INNER": {
+          "count": 74,
+          "probability": 0.26334519572953735
+        },
+        "TOP": {
+          "count": 68,
+          "probability": 0.24199288256227758
+        },
+        "UPPER": {
+          "count": 46,
+          "probability": 0.16370106761565836
+        }
+      },
+      "relativeRegister": {
+        "count": 281,
+        "mean": 0.4684290798169798,
+        "std": 0.3879772469026199,
+        "p10": 0,
+        "p25": 0,
+        "median": 0.5,
+        "p75": 0.75,
+        "p90": 1,
+        "p95": 1
+      },
+      "isHighestRate": 0.24199288256227758
+    }
+  }
+}

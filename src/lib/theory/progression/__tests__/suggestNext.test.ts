@@ -29,6 +29,11 @@ describe('suggestNext — start (empty progression)', () => {
   it('caps to maxResults (default 4)', () => {
     expect(out.length).toBeLessThanOrEqual(4);
   });
+
+  it('opens with I / IV / vi only — never V, even when more results are allowed', () => {
+    const wide = suggestNext([], KEY, { allowPro: true, maxResults: 8 });
+    expect(wide.map((s) => s.rootOffset).sort((a, b) => a - b)).toEqual([0, 5, 9]);
+  });
 });
 
 describe('suggestNext — functional pull', () => {

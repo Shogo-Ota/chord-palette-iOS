@@ -43,11 +43,12 @@ export const BALLAD: StylePreset = {
     chord: { min: -4, max: 4 },
   },
   velocity: {
-    center: { chord: 66, bass: 74, kick: 86, snare: 80, hat: 54 },
-    accentDepth: 26,
-    phraseDepth: 6,
+    center: { chord: 68, bass: 72, kick: 86, snare: 80, hat: 54 },
+    // v1.01 listen pass: slightly more contour so chords don't sit under the bass.
+    accentDepth: 30,
+    phraseDepth: 8,
     humanizeMin: 4,
-    humanizeMax: 6,
+    humanizeMax: 7,
     ghostMin: 20,
     ghostMax: 40,
   },

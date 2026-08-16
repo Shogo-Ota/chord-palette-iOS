@@ -27,6 +27,14 @@ import type { VariationProfile } from '../variation/types';
 export type RhythmSource =
   | { kind: 'feel'; feelId: FeelId }
   | {
+      /**
+       * A self-contained accompaniment realizer selected through the independent
+       * style registry. It owns notes, but still shares the common Final MIDI path.
+       */
+      kind: 'independent';
+      beatsPerBar: number;
+    }
+  | {
       kind: 'style';
       style: StylePreset;
       /**

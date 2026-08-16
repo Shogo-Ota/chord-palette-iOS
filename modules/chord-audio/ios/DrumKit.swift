@@ -19,7 +19,7 @@ enum DrumKit {
   /// All groove ids the providers pre-resolve at init. `pop8-min` is a pop8 alias.
   static let grooveIds = [
     "pop8", "pop8-min", "pop16", "rock8", "rock16", "soul16", "clap", "bossaNova",
-    "shuffle", "swing", "reggae", "sixEight", "waltz",
+    "shuffle", "swing", "reggae", "sixEight", "waltz", "beat4",
   ]
 
   /// Straight hats every `step` beats, with heel-toe dynamics (audit P2-1):
@@ -72,6 +72,14 @@ enum DrumKit {
         DrumHit(beat: 0, voice: .kick, vel: 0.9), DrumHit(beat: 2, voice: .kick, vel: 0.85),
         DrumHit(beat: 1, voice: .snare, vel: 0.9), DrumHit(beat: 3, voice: .snare, vel: 0.9),
       ] + hats(.hatClosed, step: 0.5, vel: 0.45, accent: 0.6, barLength: 4.0)
+
+    case "beat4":
+      // Quarter-note kit: one kick on the downbeat, backbeat snare, quarter hats.
+      // In `kick` mode this leaves a single hit per bar — the sparsest reading.
+      return [
+        DrumHit(beat: 0, voice: .kick, vel: 0.9),
+        DrumHit(beat: 1, voice: .snare, vel: 0.9), DrumHit(beat: 3, voice: .snare, vel: 0.9),
+      ] + hats(.hatClosed, step: 1.0, vel: 0.44, accent: 0.58, barLength: 4.0)
 
     case "pop16":
       return [
@@ -173,6 +181,19 @@ enum DrumKit {
     case .ride: return 51 // Ride Cymbal 1
     case .rim: return 37 // Side Stick / cross-stick
     case .clap: return 39 // Hand Clap
+    }
+  }
+
+  /// Which voices a playback mode is allowed to trigger.
+  /// `kick` is the old sparse mode and is treated as clap.
+  static func voiceAllowed(_ voice: DrumVoice, drumMode: String) -> Bool {
+    switch drumMode {
+    case "off":
+      return false
+    case "clap", "kick":
+      return voice == .clap
+    default:
+      return true
     }
   }
 }

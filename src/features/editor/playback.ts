@@ -9,24 +9,19 @@
  * chosen rhythm owns the meter or hop, in which case the drum pattern follows it.
  */
 
-import { generatePerformance } from '@/lib/performance/PerformanceEngine';
-import { remeterChords } from '@/lib/performance/meter';
-import { progressionToPerfChords } from '@/lib/performance/progressionInput';
-import { applyReleaseCut } from '@/lib/performance/releaseCut';
-import { beatsPerBarFor, drumPatternFor } from '@/lib/performance/rhythms';
-import { tierProfile, type Tier } from '@/lib/performance/tier';
-import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
+import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
+import { countInForStart } from '@/lib/playback';
 import { buildPresetProgression } from '@/lib/presets';
 import { chordMidiNotes } from '@/lib/voicing';
-import {
-  mapPerfNotesToPlaybackRequest,
-  performanceSeedFromSession,
-} from '@/services/audio/performanceMapper';
+import { mapPerfNotesToPlaybackRequest } from '@/services/audio/performanceMapper';
+import { withNativePlaybackPlan } from '@/services/audio/playbackEngine';
 import type { PlaybackRequest, PreviewRequest } from '@/services/audio/types';
 import type { ChordEvent, MajorKey, Preset } from '@/types';
+import type { Tier } from '@/lib/performance/tier';
 import type { EditorSession } from './session';
 
 export { beatsPerBarFor } from '@/lib/performance/rhythms';
+export { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
 
 /**
  * Build the full playback request for the current session.
@@ -40,51 +35,32 @@ export function sessionToPlaybackRequest(
   loop: boolean,
   tier: Tier = 'free',
 ): PlaybackRequest {
-  const beatsPerBar = beatsPerBarFor(session.accompanimentPattern);
-  const authored = progressionToPerfChords(
-    session.progression,
-    session.key,
-    session.octaveShift,
-    voicingAestheticFor(session.accompanimentPattern, tier),
-  );
-  // Waltz / 6/8 store chords in 4/4 beats; remeter so one stored bar = one musical bar.
-  const chords = remeterChords(authored, beatsPerBar);
-  const totalBeats = chords.reduce(
-    (max, c) => Math.max(max, c.startBeat + c.durationBeats),
-    0,
-  );
-  const seed = performanceSeedFromSession({
-    key: session.key,
-    tempoBpm: session.tempoBpm,
-    grooveId: session.grooveId,
-    accompanimentPattern: session.accompanimentPattern,
-    accompanimentVariant: session.accompanimentVariant,
-    instrumentId: session.instrumentId,
-    progression: session.progression,
-  });
-  const strength = tierProfile(tier);
-  const raw = generatePerformance(
-    { chords, bpm: session.tempoBpm, seed },
-    {
-      styleId: session.accompanimentPattern,
-      variantId: session.accompanimentVariant,
-      grooveId: session.grooveId,
-      drums: false,
-      humanizeBoost: strength.humanizeBoost,
-      strumScale: strength.strumScale,
-    },
-  );
-  const notes = applyReleaseCut(raw, session.releaseCut);
-  const request = mapPerfNotesToPlaybackRequest(notes, {
-    bpm: session.tempoBpm,
-    totalBeats,
+  const plan = buildSessionPerformancePlan(session, tier);
+  const request = mapPerfNotesToPlaybackRequest(plan.notes, {
+    bpm: plan.bpm,
+    totalBeats: plan.totalBeats,
     loop,
-    drumPatternId: drumPatternFor(session.grooveId, session.accompanimentPattern),
-    instrument: session.instrumentId,
-    beatsPerBar,
+    drumPatternId: plan.drumPatternId,
+    instrument: plan.instrumentId,
+    beatsPerBar: plan.beatsPerBar,
+    drumMode: plan.drumMode,
   });
+  // The only place both the plan and the request exist, so the realtime engine's
+  // payload is derived here rather than rebuilt from the request downstream.
+  // Returns `request` untouched unless the diagnostic engine switch is on.
+  return withNativePlaybackPlan(request, plan);
+}
 
-  return request;
+/** Normal editor transport starts with one four-count; all other callers stay unchanged. */
+export function editorPlaybackRequest(
+  session: EditorSession,
+  loop: boolean,
+  tier: Tier = 'free',
+): PlaybackRequest {
+  return {
+    ...sessionToPlaybackRequest(session, loop, tier),
+    countIn: countInForStart(),
+  };
 }
 
 /**

@@ -39,12 +39,19 @@
 さらに、`verified` であっても `derivativeUseAllowed`（派生利用可否）が false の素材は
 内部聴取参考に留め、パイプラインへ登録しない。
 
-## 推奨入手先
+## 推奨入手先（2026-08-03 更新）
 
-`docs/midi_sources.md`（オーナー制定 2026-08-02）に従う。無差別な Web 検索は行わず、
-Toontrack（EZkeys / EZbass / Drum MIDI）、Groove Monkee、PG Music、
-ヤマハ ミュージックデータショップ、自作の順で検討する。
-アプリ搭載用の最終データは自作または正式許諾素材を優先する。
+**初期前提はユーザー自作 MIDI ではない。** 公式配布され、ライセンス上
+商用利用・解析・派生データ生成が可能な人間演奏データセットを優先する。
+
+1. Groove MIDI Dataset（ドラム）— `docs/data_collection/gmd_acquisition.md`
+2. ピアノ／エレピ／ベースの公開候補 — `docs/data_collection/public_accompaniment_datasets.md`
+3. **正規購入・許諾済みの市販楽曲 MIDI**（ユーザー提供・内部分析のみ）—
+   `docs/song_analysis/`（受領前は文書・スキーマ準備のみ。曲分析は MIDI 到着後）
+4. ライセンス不明・NC・著作権混入リスクがあるデータは使用しない
+5. 適切な公開データが無い場合に限り、商用ライブラリ購入・演奏依頼・自作を代替案とする
+
+従来の `docs/midi_sources.md`（Toontrack 等）は代替経路として残す。
 
 ## スタイル別ロードマップ（オーナー指示 2026-08-02）
 

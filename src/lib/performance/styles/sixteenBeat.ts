@@ -50,15 +50,16 @@ export const SIXTEEN_BEAT: StylePreset = {
     chord: { min: -3, max: 3 },
   },
   velocity: {
-    center: { chord: 76, bass: 86, kick: 102, snare: 96, hat: 62 },
-    accentDepth: 36,
-    phraseDepth: 8,
+    center: { chord: 78, bass: 84, kick: 100, snare: 94, hat: 60 },
+    // v1.01 listen: keep the polished lattice, lift the body slightly above bass.
+    accentDepth: 34,
+    phraseDepth: 9,
     humanizeMin: 3,
     humanizeMax: 5,
     ghostMin: 20,
     ghostMax: 45,
   },
-  gate: { min: 0.72, max: 0.92, sustain: 'normal' },
+  gate: { min: 0.7, max: 0.9, sustain: 'normal' },
   roundRobin: 4,
   // The "a" pushes lean into the following chord a 16th–8th early.
   anticipation: { maxLeadBeats: 0.5 },

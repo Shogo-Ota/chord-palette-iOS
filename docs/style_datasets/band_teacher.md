@@ -8,6 +8,9 @@
 > - 曲目一覧は本ファイルのテキストを正とする。URL は参照情報であり、教師データ本体として扱わない。
 > - MIDI・音声素材の無断取得・収録はしない（`docs/product_vision_v1.01.md` §9 / `docs/implementation_v1.01.md` 作業原則）。
 > - 曲は「伴奏の傾向を言語化するための参考」であり、コピーの対象ではない。
+> - **本リストは Reference Songs 登録のみ。曲別の伴奏分析は 0 件。** 聴取の観点は
+>   [`listening_analysis_guide.md`](./listening_analysis_guide.md)、1曲フォーマットは
+>   [`song_analysis_template.md`](./song_analysis_template.md)。表の「未記入」は未分析を意味する。
 
 ## 曲目一覧
 
@@ -53,4 +56,10 @@
 
 ## スタイル全体のメモ
 
-（例: 8ビートの刻み方、ギターとピアノの役割分担、ベースのドライブ感、ドラムのフィル頻度 など。解析着手時に記入する）
+> ラベル: **HYPOTHESIS**（暫定の方向性メモ。曲別聴取分析は未実施＝0件。MEASURED ではない。観点は `listening_analysis_guide.md`）
+
+- テンポ帯の想定: おおむね 90–130 BPM、8ビートで前へ進む
+- キック／スネアの裏拍が骨格。コードはオン／オフのアクセント差がドライブ
+- ベースはルート＋5度＋時折オクターブ。アプローチでコードチェンジを押す
+- 余白より推進。bass-only バーは基本使わない
+- Chord Palette への翻訳: `driving` + rock8、EIGHT_BEAT の食い、BAND_LINE

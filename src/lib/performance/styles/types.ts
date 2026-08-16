@@ -208,6 +208,11 @@ export interface StylePreset {
    */
   arpeggio?: ArpeggioSpec;
   /**
+   * Strike every chord tone (arpMidi, else body) together and hold them. Used by
+   * the Block pattern — no human-template figuration.
+   */
+  holdAllChordTones?: boolean;
+  /**
    * Optional swing feel (see {@link SwingSpec}). Set by the groove-lock for swing
    * grooves; absent = straight 8ths. Only the comp (chord/top) swings — the bass keeps
    * the pulse — so the walking/root feel stays on the beat.

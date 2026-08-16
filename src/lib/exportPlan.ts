@@ -65,9 +65,10 @@ export function buildSegments(
     slot <= 0 ? colors.textFaint : keyTintSolids[(slot - 1) % keyTintSolids.length];
   let t = 0;
   let i = 0;
+  const endEpsilon = 1e-9;
   // Guard against pathological zero-length events causing an infinite loop.
   const maxSegments = 10_000;
-  while (t < durationSec && segments.length < maxSegments) {
+  while (t < durationSec - endEpsilon && segments.length < maxSegments) {
     const ev = progression[i % progression.length];
     const full = Math.max(0.001, ev.durationBeats * meterScale * spb);
     const clipped = Math.min(full, durationSec - t);

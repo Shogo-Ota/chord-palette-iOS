@@ -2,21 +2,19 @@ import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordVideoExportNative } from '@modules/chord-video-export';
 import { buildExportPlan } from '@/lib/exportPlan';
-import { generatePerformance } from '@/lib/performance/PerformanceEngine';
-import { remeterChords } from '@/lib/performance/meter';
-import { progressionToPerfChords } from '@/lib/performance/progressionInput';
-import { applyReleaseCut } from '@/lib/performance/releaseCut';
-import { beatsPerBarFor, drumPatternFor } from '@/lib/performance/rhythms';
-import { tierProfile, type Tier } from '@/lib/performance/tier';
-import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
+import { normalizeAccompaniment } from '@/lib/accompaniment';
+import { normalizeDrumBeat, type DrumBeat } from '@/lib/drum/drumBeat';
+import { normalizeDrumMode, type DrumMode } from '@/lib/drum/drumMode';
+import { cycleDurationSec } from '@/lib/exportCycleTiming';
+import type { InstrumentEffect } from '@/lib/performance/effect';
+import { normalizeEnergy } from '@/lib/performance/energy';
+import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
+import { type Tier } from '@/lib/performance/tier';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
-import {
-  mapPerfNotesToPlaybackRequest,
-  performanceSeedFromSession,
-} from '@/services/audio/performanceMapper';
-import type { ChordEvent, MajorKey } from '@/types';
+import { mapPerfNotesToPlaybackRequest } from '@/services/audio/performanceMapper';
+import type { ChordEvent, InstrumentId, MajorKey } from '@/types';
 
 /** Minimal snapshot the exporter needs (decoupled from the editor feature layer). */
 export type VideoExportInput = {
@@ -37,13 +35,19 @@ export type VideoExportInput = {
   releaseCut?: boolean;
   /** Whole-arrangement octave offset — mirrors playback so export matches audition. */
   octaveShift?: number;
+  /** Style × Energy — mirrors playback so export matches audition. Default build. */
+  accompanimentEnergy?: string;
+  /** Drum mode — mirrors playback so a silenced kit stays silent in the clip. */
+  drumMode?: DrumMode;
+  /** Drum subdivision — mirrors playback so the clip uses the kit the user heard. */
+  drumBeat?: DrumBeat;
+  /** Piano effect — mirrors playback so the clip rings exactly as the app did. */
+  instrumentEffect?: InstrumentEffect;
   /** Monetization tier — mirrors playback humanize/strum strength (default free). */
   tier?: Tier;
 };
 
 export type VideoExportOptions = {
-  /** Clip length in seconds (15 | 30 | 60). */
-  durationSec: number;
   watermark: boolean;
   /** Optional 0..1 encode progress. */
   onProgress?: (progress: number) => void;
@@ -66,54 +70,41 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     );
   }
 
-  const octaveShift = input.octaveShift ?? 0;
-  const beatsPerBar = beatsPerBarFor(input.accompaniment);
-  const authored = progressionToPerfChords(
-    input.progression,
-    input.key,
-    octaveShift,
-    voicingAestheticFor(input.accompaniment, input.tier ?? 'free'),
+  // One generation pipeline for playback, MIDI and video: the clip is encoded from
+  // exactly the notes the user auditioned, Human MIDI Template and Harmonic Gate
+  // included.
+  const performance = buildSessionPerformancePlan(
+    {
+      key: input.key,
+      tempoBpm: input.bpm,
+      grooveId: input.grooveId,
+      accompanimentPattern: normalizeAccompaniment(input.accompaniment),
+      accompanimentVariant: input.accompanimentVariant,
+      instrumentId: input.instrumentId as InstrumentId,
+      accompanimentEnergy: normalizeEnergy(input.accompanimentEnergy),
+      octaveShift: input.octaveShift ?? 0,
+      releaseCut: input.releaseCut !== false,
+      drumMode: normalizeDrumMode(input.drumMode),
+      drumBeat: normalizeDrumBeat(input.drumBeat),
+      instrumentEffect: input.instrumentEffect,
+      progression: input.progression,
+    },
+    input.tier ?? 'free',
   );
-  const chords = remeterChords(authored, beatsPerBar);
-  const totalBeats = chords.reduce(
-    (max, c) => Math.max(max, c.startBeat + c.durationBeats),
-    0,
-  );
-  if (totalBeats <= 0) {
+  if (performance.totalBeats <= 0) {
     throw new VideoExportError('コードがありません。動画を書き出す前に進行を作成してください。');
   }
-  const seed = performanceSeedFromSession({
-    key: input.key,
-    tempoBpm: input.bpm,
-    grooveId: input.grooveId,
-    accompanimentPattern: input.accompaniment,
-    accompanimentVariant: input.accompanimentVariant,
-    instrumentId: input.instrumentId,
-    progression: input.progression,
-  });
-  const strength = tierProfile(input.tier ?? 'free');
-  const raw = generatePerformance(
-    { chords, bpm: input.bpm, seed },
-    // Keep in sync with playback: same Feel resolution context (grooveId) and the
-    // same sub-variation, so the exported audio matches what the user auditioned.
-    {
-      styleId: input.accompaniment,
-      variantId: input.accompanimentVariant,
-      grooveId: input.grooveId,
-      drums: false,
-      humanizeBoost: strength.humanizeBoost,
-      strumScale: strength.strumScale,
-    },
-  );
-  const notes = applyReleaseCut(raw, input.releaseCut !== false);
-  const drumPatternId = drumPatternFor(input.grooveId, input.accompaniment);
-  const playback = mapPerfNotesToPlaybackRequest(notes, {
-    bpm: input.bpm,
-    totalBeats,
+  // Performance output is authoritative. Recompute here instead of accepting a UI
+  // duration so remetered audio, visual segments and native muxing share one boundary.
+  const durationSec = cycleDurationSec(performance.totalBeats, performance.bpm);
+  const playback = mapPerfNotesToPlaybackRequest(performance.notes, {
+    bpm: performance.bpm,
+    totalBeats: performance.totalBeats,
     loop: true,
-    drumPatternId,
-    instrument: input.instrumentId,
-    beatsPerBar,
+    drumPatternId: performance.drumPatternId,
+    instrument: performance.instrumentId,
+    beatsPerBar: performance.beatsPerBar,
+    drumMode: performance.drumMode,
   });
   const audio = await audioService.renderAudioFile({
     bpm: playback.bpm,
@@ -122,8 +113,9 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     drumPatternId: playback.drumPatternId,
     accompaniment: playback.accompaniment,
     instrument: playback.instrument,
-    durationSec: opts.durationSec,
+    durationSec,
     beatsPerBar: playback.beatsPerBar,
+    drumMode: playback.drumMode,
   });
   if (!audio) {
     throw new VideoExportError('音声のレンダリングに失敗しました。');
@@ -134,11 +126,11 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     key: input.key,
     bpm: input.bpm,
     title: input.title,
-    durationSec: opts.durationSec,
+    durationSec,
     audioUri: audio.uri,
     watermark: opts.watermark,
-    octaveShift,
-    beatsPerBar,
+    octaveShift: input.octaveShift ?? 0,
+    beatsPerBar: performance.beatsPerBar,
   });
 
   let sub: EventSubscription | null = null;

@@ -10,9 +10,18 @@ const RELEASE_CUT_KEY = 'release_cut';
 const ADMIN_MODE_KEY = 'admin_mode';
 const OCTAVE_SHIFT_KEY = 'octave_shift';
 const EDITOR_TUTORIAL_KEY = 'editor_tutorial_seen';
+const DRUM_MODE_KEY = 'drum_mode';
+const DRUM_BEAT_KEY = 'drum_beat';
+const INSTRUMENT_EFFECT_KEY = 'instrument_effect';
 
-/** Default: cut piano release for tight accompaniment. */
-export const DEFAULT_RELEASE_CUT = true;
+/** Default drum playback: backbeat claps (2 & 4). */
+export const DEFAULT_DRUM_MODE_PREF = 'clap' as const;
+
+/** Default drum subdivision: the 8th-note kit the app has always played. */
+export const DEFAULT_DRUM_BEAT_PREF = '8' as const;
+
+/** Default: sustain (release cut off). */
+export const DEFAULT_RELEASE_CUT = false;
 
 /**
  * Default whole-arrangement register: raised one octave (bass floor C3). C2 felt
@@ -118,5 +127,75 @@ export async function setEditorTutorialSeen(): Promise<void> {
   await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);`, [
     EDITOR_TUTORIAL_KEY,
     '1',
+  ]);
+}
+
+/** Drum mode preference (device-level): off | clap | full. Stored `kick` → clap. */
+export async function getDrumMode(): Promise<'off' | 'clap' | 'full'> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM app_meta WHERE key = ?;`,
+    [DRUM_MODE_KEY],
+  );
+  const v = row?.value;
+  if (v === 'off' || v === 'clap' || v === 'full') return v;
+  if (v === 'kick') return 'clap';
+  return DEFAULT_DRUM_MODE_PREF;
+}
+
+export async function setDrumModePref(mode: 'off' | 'clap' | 'full'): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);`, [
+    DRUM_MODE_KEY,
+    mode,
+  ]);
+}
+
+/**
+ * Piano effect preference (device-level): sustain | releaseCut.
+ * Stored `off` is treated as sustain — off is no longer a product option.
+ */
+export async function getInstrumentEffect(): Promise<'sustain' | 'releaseCut'> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM app_meta WHERE key = ?;`,
+    [INSTRUMENT_EFFECT_KEY],
+  );
+  const v = row?.value;
+  if (v === 'releaseCut') return 'releaseCut';
+  if (v === 'sustain' || v === 'off') return 'sustain';
+  return (await getReleaseCut()) ? 'releaseCut' : 'sustain';
+}
+
+export async function setInstrumentEffectPref(
+  effect: 'off' | 'sustain' | 'releaseCut',
+): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);`, [
+    INSTRUMENT_EFFECT_KEY,
+    effect,
+  ]);
+  // Keep the legacy flag in step for anything still reading it.
+  await setReleaseCutPref(effect !== 'sustain');
+}
+
+/** Drum subdivision preference (device-level): 8 | 16 | 3. Stored `4` → 8. */
+export async function getDrumBeat(): Promise<'8' | '16' | '3'> {
+  const db = await getDb();
+  const row = await db.getFirstAsync<{ value: string }>(
+    `SELECT value FROM app_meta WHERE key = ?;`,
+    [DRUM_BEAT_KEY],
+  );
+  const v = row?.value;
+  if (v === '8' || v === '16' || v === '3') return v;
+  if (v === '4') return '8';
+  return DEFAULT_DRUM_BEAT_PREF;
+}
+
+export async function setDrumBeatPref(beat: '8' | '16' | '3'): Promise<void> {
+  const db = await getDb();
+  await db.runAsync(`INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);`, [
+    DRUM_BEAT_KEY,
+    beat,
   ]);
 }

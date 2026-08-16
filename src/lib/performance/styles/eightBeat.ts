@@ -51,16 +51,16 @@ export const EIGHT_BEAT: StylePreset = {
     chord: { min: -4, max: 4 },
   },
   velocity: {
-    center: { chord: 78, bass: 88, kick: 104, snare: 98, hat: 66 },
-    // Band Engine v1: deeper accent range — the widened accents above land harder.
-    accentDepth: 38,
-    phraseDepth: 7,
+    center: { chord: 80, bass: 86, kick: 102, snare: 96, hat: 64 },
+    // Band Engine v1 + v1.01 listen: chord a touch forward of the kit/bass.
+    accentDepth: 40,
+    phraseDepth: 8,
     humanizeMin: 4,
     humanizeMax: 7,
     ghostMin: 20,
     ghostMax: 45,
   },
-  gate: { min: 0.72, max: 0.95, sustain: 'normal' },
+  gate: { min: 0.7, max: 0.92, sustain: 'normal' },
   roundRobin: 4,
   // The off-beat stabs (&of2 / &of4) pull the next chord in a half-beat early.
   anticipation: { maxLeadBeats: 0.5 },

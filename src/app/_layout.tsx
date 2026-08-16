@@ -17,7 +17,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import * as session from '@/features/editor/session';
 import { logger } from '@/lib/logger';
-import { getOctaveShift, getReleaseCut } from '@/repositories/sessionPrefsRepository';
+import {
+  getDrumBeat,
+  getDrumMode,
+  getInstrumentEffect,
+  getOctaveShift,
+} from '@/repositories/sessionPrefsRepository';
 import { track, initAnalytics } from '@/services/analytics';
 import { billingService } from '@/services/billing';
 import { initMonitoring } from '@/services/monitoring';
@@ -57,17 +62,21 @@ export default function RootLayout() {
       .catch((e) => logger.error('Billing init failed', { error: String(e) }));
   }, []);
 
-  // Restore the device-level release-cut preference at boot so the FIRST
-  // playback (from the editor, before /groove is ever opened) honors it.
-  // Previously this only loaded on the Groove screen, so a saved OFF played as
-  // the default ON until the user visited /groove.
+  // Read legacy effect preferences at boot. The editor's public release policy
+  // normalizes unapproved releaseCut values to sustain before first playback.
   useEffect(() => {
-    getReleaseCut()
-      .then((enabled) => session.setReleaseCut(enabled))
-      .catch((e) => logger.error('Release-cut restore failed', { error: String(e) }));
+    getInstrumentEffect()
+      .then((effect) => session.setInstrumentEffect(effect))
+      .catch((e) => logger.error('Instrument-effect restore failed', { error: String(e) }));
     getOctaveShift()
       .then((octaves) => session.setOctaveShift(octaves))
       .catch((e) => logger.error('Octave-shift restore failed', { error: String(e) }));
+    getDrumMode()
+      .then((mode) => session.setDrumMode(mode))
+      .catch((e) => logger.error('Drum-mode restore failed', { error: String(e) }));
+    getDrumBeat()
+      .then((beat) => session.setDrumBeat(beat))
+      .catch((e) => logger.error('Drum-beat restore failed', { error: String(e) }));
   }, []);
 
   return (
@@ -76,17 +85,20 @@ export default function RootLayout() {
         <SafeAreaProvider>
           <StatusBar style="light" />
           <Stack
-          screenOptions={{
-            headerShown: false,
-            contentStyle: { backgroundColor: colors.screenBg },
-            animation: 'slide_from_right',
-          }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="editor" />
-          <Stack.Screen name="presets" options={{ animation: 'slide_from_bottom' }} />
-          <Stack.Screen name="groove" options={{ animation: 'slide_from_bottom' }} />
-          <Stack.Screen name="export" options={{ animation: 'slide_from_bottom' }} />
-          <Stack.Screen name="paywall" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
+            screenOptions={{
+              headerShown: false,
+              contentStyle: { backgroundColor: colors.screenBg },
+              animation: 'slide_from_right',
+            }}>
+            <Stack.Screen name="index" />
+            <Stack.Screen name="editor" />
+            <Stack.Screen name="presets" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="groove" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen name="export" options={{ animation: 'slide_from_bottom' }} />
+            <Stack.Screen
+              name="paywall"
+              options={{ presentation: 'modal', animation: 'slide_from_bottom' }}
+            />
           </Stack>
         </SafeAreaProvider>
       </ErrorBoundary>

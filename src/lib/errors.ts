@@ -31,6 +31,8 @@ export class ProjectStorageError extends AppError {}
 export class AudioEngineError extends AppError {}
 /** Native video export failure. */
 export class VideoExportError extends AppError {}
+/** Standard MIDI File export failure. */
+export class MidiExportError extends AppError {}
 /** Billing (RevenueCat) failure. */
 export class BillingError extends AppError {}
 /** Backend / network (Convex) failure. */

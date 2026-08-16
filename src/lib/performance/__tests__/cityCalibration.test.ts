@@ -36,7 +36,7 @@ describe('16-beat skeleton (spec §7/§9: polish = grains lining up)', () => {
     expect(SIXTEEN_BEAT.microtiming.chord).toEqual({ min: -3, max: 3 });
     expect(SIXTEEN_BEAT.velocity.humanizeMin).toBe(3);
     expect(SIXTEEN_BEAT.velocity.humanizeMax).toBe(5);
-    expect(SIXTEEN_BEAT.velocity.accentDepth).toBe(36);
+    expect(SIXTEEN_BEAT.velocity.accentDepth).toBe(34);
   });
 });
 

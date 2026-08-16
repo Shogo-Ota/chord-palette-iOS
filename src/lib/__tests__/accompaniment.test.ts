@@ -1,4 +1,5 @@
 import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
+import { CORE_PATTERNS } from '@/lib/performance/model/styleCards';
 
 describe('normalizeAccompaniment', () => {
   it('migrates the retired 8beat id → natural', () => {
@@ -20,14 +21,15 @@ describe('normalizeAccompaniment', () => {
     }
   });
 
-  it('falls back to natural for unknown or non-string input', () => {
-    expect(DEFAULT_ACCOMPANIMENT).toBe('natural');
-    expect(normalizeAccompaniment('bogus')).toBe('natural');
-    expect(normalizeAccompaniment('')).toBe('natural');
-    expect(normalizeAccompaniment(undefined)).toBe('natural');
-    expect(normalizeAccompaniment(null)).toBe('natural');
-    expect(normalizeAccompaniment(42)).toBe('natural');
-    expect(normalizeAccompaniment({})).toBe('natural');
+  it('defaults to a pattern the Style screen actually offers', () => {
+    expect(DEFAULT_ACCOMPANIMENT).toBe('block');
+    expect(CORE_PATTERNS).toContain(DEFAULT_ACCOMPANIMENT);
+  });
+
+  it('falls back to the default for unknown or non-string input', () => {
+    for (const raw of ['bogus', '', undefined, null, 42, {}]) {
+      expect(normalizeAccompaniment(raw)).toBe(DEFAULT_ACCOMPANIMENT);
+    }
   });
 
   it('is idempotent (normalizing a normalized value is a no-op)', () => {

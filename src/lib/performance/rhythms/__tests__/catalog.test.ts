@@ -34,7 +34,8 @@ describe('the catalog is the one list', () => {
   it('offers variants for every rhythm, the first being its default', () => {
     for (const r of RHYTHMS) {
       const variants = variantsFor(r.id);
-      expect(variants.length).toBeGreaterThan(1);
+      // Block and City Type1 each have one approved public reading.
+      expect(variants.length).toBeGreaterThan(r.id === 'block' || r.id === 'city' ? 0 : 1);
       expect(defaultVariantFor(r.id)).toBe(variants[0]);
       // The default is the reading the rhythm was authored as, never a bend of it.
       expect(variants[0].refine).toBeUndefined();
@@ -60,6 +61,10 @@ describe('promoting the branch to a table kept each kind on its old path', () =>
       expect(source.grooveLock).toBeFalsy();
       expect(source.humanizeScale).toBeUndefined();
     }
+  });
+
+  it('routes City through its independent attack-group realizer', () => {
+    expect(rhythmFor('city')?.source).toEqual({ kind: 'independent', beatsPerBar: 4 });
   });
 });
 

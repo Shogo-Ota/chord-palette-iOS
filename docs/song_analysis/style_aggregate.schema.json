@@ -1,0 +1,62 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chordpalette.local/schemas/style_aggregate.schema.json",
+  "title": "StyleAggregate",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "aggregateId",
+    "style",
+    "evidence",
+    "songIds",
+    "songCount",
+    "generatedAt",
+    "trends",
+    "excludedSongSpecific"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "style-aggregate-v1" },
+    "aggregateId": { "type": "string", "minLength": 1 },
+    "style": {
+      "type": "string",
+      "enum": ["ballad", "band", "city", "dance", "rnb"]
+    },
+    "evidence": { "const": "MEASURED_AGGREGATE" },
+    "songIds": {
+      "type": "array",
+      "minItems": 2,
+      "items": { "type": "string" }
+    },
+    "songCount": { "type": "integer", "minimum": 2 },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "trends": {
+      "type": "object",
+      "description": "Central tendencies only; never a single-song dump.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["p50"],
+        "properties": {
+          "p25": { "type": "number" },
+          "p50": { "type": "number" },
+          "p75": { "type": "number" },
+          "mean": { "type": "number" },
+          "unit": { "type": "string" },
+          "n": { "type": "integer", "minimum": 1 }
+        }
+      }
+    },
+    "categoricalTrends": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": { "type": "number", "minimum": 0, "maximum": 1 }
+      }
+    },
+    "excludedSongSpecific": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  }
+}

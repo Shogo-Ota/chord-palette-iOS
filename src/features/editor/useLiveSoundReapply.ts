@@ -15,15 +15,33 @@ import type { PlaybackState } from '@/services/audio/types';
  * because those controls only exist on `/groove`, and the editor may be frozen
  * while this screen is focused.
  *
- * The `sound` argument is the source of truth to audition — on the Groove screen
- * this is the committed session merged with the local style draft, so previewing
- * never mutates the session until the user confirms.
+ * The `sound` argument is the source of truth. On the Groove screen this is
+ * the committed session — style taps write through immediately.
  *
  * Instrument-only: prefer native hot-swap (`setInstrument`). If the installed
  * binary lacks it, rebuild via `play` at the current beat so the playhead does
  * not jump to the first chord. Groove / accompaniment / releaseCut always
  * rebuild the note plan.
  */
+/**
+ * Everything except the instrument that changes the rendered note plan. Kept as one
+ * string so a new sound control (drum subdivision, instrument effect, …) joins the
+ * live re-apply by being listed here once.
+ */
+function planSignature(s: EditorSession): string {
+  return [
+    s.grooveId,
+    s.accompanimentPattern,
+    s.accompanimentVariant,
+    s.accompanimentEnergy,
+    s.releaseCut,
+    s.instrumentEffect,
+    s.octaveShift,
+    s.drumMode,
+    s.drumBeat,
+  ].join('|');
+}
+
 export function useLiveSoundReapply(
   playbackState: PlaybackState,
   loop: boolean,
@@ -34,37 +52,25 @@ export function useLiveSoundReapply(
   const didMountRef = useRef(false);
   const prevRef = useRef({
     instrumentId: sound.instrumentId,
-    grooveId: sound.grooveId,
     accompanimentPattern: sound.accompanimentPattern,
-    accompanimentVariant: sound.accompanimentVariant,
-    releaseCut: sound.releaseCut,
-    octaveShift: sound.octaveShift,
+    plan: planSignature(sound),
   });
 
   useEffect(() => {
     const prev = prevRef.current;
     const instrumentChanged = prev.instrumentId !== sound.instrumentId;
-    const grooveChanged = prev.grooveId !== sound.grooveId;
-    const accompChanged =
-      prev.accompanimentPattern !== sound.accompanimentPattern ||
-      prev.accompanimentVariant !== sound.accompanimentVariant;
-    const releaseCutChanged = prev.releaseCut !== sound.releaseCut;
-    const octaveChanged = prev.octaveShift !== sound.octaveShift;
+    const planChanged = prev.plan !== planSignature(sound);
     prevRef.current = {
       instrumentId: sound.instrumentId,
-      grooveId: sound.grooveId,
       accompanimentPattern: sound.accompanimentPattern,
-      accompanimentVariant: sound.accompanimentVariant,
-      releaseCut: sound.releaseCut,
-      octaveShift: sound.octaveShift,
+      plan: planSignature(sound),
     };
 
     if (!didMountRef.current) {
       didMountRef.current = true;
       return;
     }
-    if (!instrumentChanged && !grooveChanged && !accompChanged && !releaseCutChanged && !octaveChanged)
-      return;
+    if (!instrumentChanged && !planChanged) return;
 
     // Prefer the native transport state — the Groove screen can mount while the
     // editor is already playing and miss the initial 'playing' React state.
@@ -72,7 +78,7 @@ export function useLiveSoundReapply(
     const transportLive = nativeState === 'playing' || nativeState === 'paused';
     void playbackState; // kept in the signature so callers stay in sync with UI
 
-    if (instrumentChanged && !grooveChanged && !accompChanged && !releaseCutChanged && !octaveChanged) {
+    if (instrumentChanged && !planChanged) {
       if (transportLive) {
         void (async () => {
           try {
@@ -115,13 +121,6 @@ export function useLiveSoundReapply(
         startBeat,
       })
       .catch((e) => logger.error('Audio re-apply failed', { error: String(e) }));
-  }, [
-    sound.instrumentId,
-    sound.grooveId,
-    sound.accompanimentPattern,
-    sound.accompanimentVariant,
-    sound.releaseCut,
-    sound.octaveShift,
-    playbackState,
-  ]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sound.instrumentId, planSignature(sound), playbackState]);
 }

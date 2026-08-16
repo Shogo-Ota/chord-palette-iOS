@@ -13,6 +13,9 @@ import { resolveFeelTemplate } from '@/lib/performance/feel/templates';
 import type { NoteEvent } from '@/lib/performance/NoteEvent';
 import { generatePerformance, type PerfChord } from '@/lib/performance/PerformanceEngine';
 import { BALLAD } from '@/lib/performance/styles/ballad';
+import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
+import { variantsFor } from '@/lib/performance/variants';
+import type { ChordEvent } from '@/types';
 
 const CTX = { tempoBpm: 72, grooveId: 'pop8' };
 
@@ -50,9 +53,9 @@ describe('feel template (spec §7–8: laid-back, legato, soft)', () => {
   });
 
   it('keeps the soft velocity centers of the ballad base', () => {
-    expect(BALLAD.velocity.center.chord).toBe(66);
-    expect(BALLAD.velocity.center.bass).toBe(74);
-    expect(BALLAD.velocity.accentDepth).toBe(26);
+    expect(BALLAD.velocity.center.chord).toBe(68);
+    expect(BALLAD.velocity.center.bass).toBe(72);
+    expect(BALLAD.velocity.accentDepth).toBe(30);
   });
 
   it('answers with a single top-voice third on beat 3', () => {
@@ -66,7 +69,7 @@ describe('variation profile (spec §9: the phrase breathes at its end)', () => {
     expect(RELAXED_VARIATION.twoFourBar).toEqual({ probability: 0.45, maxPerPhrase: 1 });
     expect(RELAXED_VARIATION.phraseFill).toEqual({
       sustainFinal: true,
-      extraStabProbability: 0.2,
+      extraStabProbability: 0.22,
     });
   });
 });
@@ -81,44 +84,54 @@ describe('bass profile (spec §4: BALLAD_WARM)', () => {
   });
 });
 
-describe('relaxed.arpSlow variant (spec §3: rise, then hold)', () => {
-  it('spreads the chord one note at a time', () => {
-    const attacks = render('relaxed.arpSlow')
-      .filter((n) => n.trackId === 'chord')
-      .reduce<Record<string, number>>((acc, n) => {
-        const k = n.timeBeat.toFixed(3);
-        acc[k] = (acc[k] ?? 0) + 1;
-        return acc;
-      }, {});
-    expect(Object.values(attacks).every((c) => c === 1)).toBe(true);
-  });
+describe('ballad Types (real teacher takes, not synthetic readings)', () => {
+  function balladPlan(variantId: string) {
+    return buildSessionPerformancePlan({
+      key: 'C',
+      tempoBpm: 72,
+      grooveId: 'pop8',
+      accompanimentPattern: 'relaxed',
+      accompanimentVariant: variantId,
+      instrumentId: 'piano',
+      accompanimentEnergy: 'build',
+      octaveShift: 1,
+      releaseCut: true,
+      drumMode: 'off',
+      progression: [0, 7, 9, 5].map(
+        (rootOffset, i) =>
+          ({
+            id: `b${i}`,
+            chordId: `b${i}`,
+            displayName: `b${i}`,
+            degreeLabel: 'I',
+            function: 'tonic',
+            durationBeats: 4,
+            isPro: false,
+            rootOffset,
+            suffix: '',
+          }) as ChordEvent,
+      ),
+    });
+  }
 
-  it('some bar climbs through beats 1–2 and rings a longer note after', () => {
-    const notes = render('relaxed.arpSlow')
-      .filter((n) => n.trackId === 'chord')
-      .sort((a, b) => a.timeBeat - b.timeBeat);
-    let sawRise = false;
-    let sawHold = false;
-    for (let bar = 0; bar < 8; bar++) {
-      const inBar = notes.filter(
-        (n) => n.timeBeat >= bar * 4 - 0.25 && n.timeBeat < (bar + 1) * 4 - 0.25,
-      );
-      const firstHalf = inBar.filter((n) => n.timeBeat < bar * 4 + 2 - 0.25);
-      if (
-        firstHalf.length >= 3 &&
-        firstHalf.every((n, i) => i === 0 || n.pitch > firstHalf[i - 1].pitch)
-      ) {
-        sawRise = true;
-      }
-      if (inBar.some((n) => n.durationBeat >= 1.2)) sawHold = true;
+  const sig = (notes: NoteEvent[]) =>
+    notes.map((n) => `${n.timeBeat.toFixed(4)}:${n.pitch}:${n.velocity}`).join('|');
+
+  it('every Type plays, and no two Types play the same take', () => {
+    const types = variantsFor('relaxed');
+    expect(types.length).toBeGreaterThan(1);
+    const takes = new Set<string>();
+    for (const t of types) {
+      const notes = balladPlan(t.id).notes;
+      expect(notes.length).toBeGreaterThan(0);
+      takes.add(sig(notes));
     }
-    expect(sawRise).toBe(true);
-    expect(sawHold).toBe(true);
+    expect(takes.size).toBe(types.length);
   });
 
-  it('is deterministic for a given seed', () => {
-    const sig = (notes: NoteEvent[]) =>
-      notes.map((n) => `${n.timeBeat.toFixed(4)}:${n.pitch}:${n.velocity}`).join('|');
-    expect(sig(render('relaxed.arpSlow', 11))).toBe(sig(render('relaxed.arpSlow', 11)));
+  it('is deterministic for a given Type', () => {
+    for (const t of variantsFor('relaxed')) {
+      expect(sig(balladPlan(t.id).notes)).toBe(sig(balladPlan(t.id).notes));
+    }
   });
 });

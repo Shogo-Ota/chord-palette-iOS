@@ -40,6 +40,9 @@ yarn-error.*
 # temporary export / verification output
 dist-check/
 
+# off-device audition output (.mid + metrics report) — regenerate with `npm run audition`
+audition-out/
+
 # Reference performances are third-party material: analyse them locally and
 # commit only the extracted features (see project/docs/music/GroundTruthMidi.md).
 *.mid
@@ -48,6 +51,20 @@ dist-check/
 # Teacher MIDI files stay local (rights ledger: docs/style_datasets/midi_registry.json,
 # policy: docs/midi_dataset_policy.md). Only relativized LibraryPattern JSON is committed.
 assets_dev/midi_teacher/
+
+# Groove MIDI Dataset raw files (CC BY 4.0) — analyse locally; commit stats only.
+# Acquisition: docs/data_collection/gmd_acquisition.md
+assets_dev/gmd/
+
+# Local source / analysis data
+LocalDatasets/
+LocalAnalysis/
+
+# EAS build logs — read locally, never a repo artifact
+eas-build-*.log
+
+# App Store submission screenshots (regenerated per release)
+スクリーンショット/
 
 # typescript
 *.tsbuildinfo

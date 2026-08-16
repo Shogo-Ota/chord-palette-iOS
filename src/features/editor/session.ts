@@ -1,24 +1,36 @@
 import { useSyncExternalStore } from 'react';
 
-import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
+import { normalizeAccompaniment } from '@/lib/accompaniment';
+import { normalizeInstrumentId } from '@/data/labels';
+import { DEFAULT_DRUM_BEAT, normalizeDrumBeat, type DrumBeat } from '@/lib/drum/drumBeat';
 import {
-  defaultVariantFor,
-  normalizeVariant,
-  type AccompanimentVariantId,
-} from '@/lib/performance/variants';
+  DEFAULT_PUBLIC_INSTRUMENT_EFFECT,
+  normalizePublicInstrumentEffect,
+  type InstrumentEffect,
+} from '@/lib/performance/effect';
+import { DEFAULT_DRUM_MODE, normalizeDrumMode, type DrumMode } from '@/lib/drum/drumMode';
+import {
+  DEFAULT_ENERGY,
+  normalizeEnergy,
+  type AccompanimentEnergy,
+} from '@/lib/performance/energy';
+import {
+  DEFAULT_PUBLIC_ACCOMPANIMENT,
+  DEFAULT_PUBLIC_VARIANT,
+  normalizePublicAccompanimentSelection,
+} from '@/lib/performance/publicAccompaniment';
+import { defaultVariantFor, type AccompanimentVariantId } from '@/lib/performance/variants';
+import {
+  buildV101ListeningChords,
+  type ListeningPatternPreset,
+  V101_LISTENING_PATTERNS,
+} from '@/lib/performance/humanTemplate/listeningProgression';
+import { PHASE3C_CASES, type Phase3cCaseId } from '@/lib/playback/phase3cCases';
 import { buildPresetProgression } from '@/lib/presets';
 import { appendWithinCap, canAdd, canSetDuration } from '@/lib/progression';
 import { rebaseProgression, relabelDegreesForKey, transposeProgression } from '@/lib/transpose';
-import {
-  createProject,
-  getProject,
-  saveProject,
-} from '@/repositories/projectRepository';
-import {
-  DEFAULT_OCTAVE_SHIFT,
-  DEFAULT_RELEASE_CUT,
-  setLastProjectId,
-} from '@/repositories/sessionPrefsRepository';
+import { createProject, getProject, saveProject } from '@/repositories/projectRepository';
+import { DEFAULT_OCTAVE_SHIFT, setLastProjectId } from '@/repositories/sessionPrefsRepository';
 import type {
   AccompanimentPattern,
   ChordDuration,
@@ -47,6 +59,8 @@ export type EditorSession = {
   accompanimentPattern: AccompanimentPattern;
   /** Sub-variation of the accompaniment; always one the current pattern offers. */
   accompanimentVariant: AccompanimentVariantId;
+  /** Style × Energy 「盛り上がり」— independent of Style. Default build. */
+  accompanimentEnergy: AccompanimentEnergy;
   /**
    * When true (default), chord-voice notes end at the gate (tight cut).
    * When false, chord/bass/top durations are extended so the piano rings.
@@ -54,12 +68,22 @@ export type EditorSession = {
    */
   releaseCut: boolean;
   /**
+   * Piano / E.Piano effect — sustain (default) or releaseCut. Supersedes the
+   * boolean above, which is kept so anything reading the old flag still works.
+   * Device preference — not part of the Project document.
+   */
+  instrumentEffect: InstrumentEffect;
+  /**
    * Whole-arrangement register offset in octaves (device preference, not part of
    * the Project). 0 = original (bass floor C2); 1 = raised one octave (bass floor
    * C3, body in the middle-C comping band). Applied uniformly to playback,
    * preview and export so the bass always stays an octave below the body.
    */
   octaveShift: number;
+  /** Device-level drum mode (off / clap / full). Not part of Project. */
+  drumMode: DrumMode;
+  /** Device-level drum subdivision (4 / 8 / 16 Beat). Not part of Project. */
+  drumBeat: DrumBeat;
   progression: ChordEvent[];
   history: ChordEvent[][];
   selected: number;
@@ -76,10 +100,14 @@ function initialState(): EditorSession {
     tempoBpm: 100,
     instrumentId: 'piano',
     grooveId: 'pop8',
-    accompanimentPattern: DEFAULT_ACCOMPANIMENT,
-    accompanimentVariant: defaultVariantFor(DEFAULT_ACCOMPANIMENT).id,
-    releaseCut: DEFAULT_RELEASE_CUT,
+    accompanimentPattern: DEFAULT_PUBLIC_ACCOMPANIMENT,
+    accompanimentVariant: DEFAULT_PUBLIC_VARIANT,
+    accompanimentEnergy: DEFAULT_ENERGY,
+    releaseCut: false,
+    instrumentEffect: DEFAULT_PUBLIC_INSTRUMENT_EFFECT,
     octaveShift: DEFAULT_OCTAVE_SHIFT,
+    drumMode: DEFAULT_DRUM_MODE,
+    drumBeat: DEFAULT_DRUM_BEAT,
     progression: [],
     history: [],
     selected: -1,
@@ -127,6 +155,27 @@ export function getSession(): EditorSession {
   return state;
 }
 
+/* ---- editor handoff ----------------------------------------------- */
+
+let seededForEditor = false;
+
+/**
+ * Declare that the state was prepared for the editor by the caller (a preset tap,
+ * for instance) right before navigating there. The editor screen starts a blank
+ * composition only when nothing was handed to it, so a seeded progression cannot
+ * be wiped on mount.
+ */
+export function markSeededForEditor(): void {
+  seededForEditor = true;
+}
+
+/** Take ownership of a seeded session. False when nothing was handed over. */
+export function consumeSeededForEditor(): boolean {
+  const seeded = seededForEditor;
+  seededForEditor = false;
+  return seeded;
+}
+
 /* ---- lifecycle ---------------------------------------------------- */
 
 /**
@@ -134,15 +183,18 @@ export function getSession(): EditorSession {
  * from scratch — no auto-filled starter chords.
  */
 export function startNew(): void {
-  const { releaseCut, octaveShift } = state;
+  const { octaveShift, drumMode, drumBeat } = state;
   state = {
     ...initialState(),
-    releaseCut,
+    releaseCut: false,
+    instrumentEffect: DEFAULT_PUBLIC_INSTRUMENT_EFFECT,
     octaveShift,
+    drumMode,
+    drumBeat,
     title: 'はじめての進行',
     tempoBpm: 100,
-    accompanimentPattern: DEFAULT_ACCOMPANIMENT,
-    accompanimentVariant: defaultVariantFor(DEFAULT_ACCOMPANIMENT).id,
+    accompanimentPattern: DEFAULT_PUBLIC_ACCOMPANIMENT,
+    accompanimentVariant: DEFAULT_PUBLIC_VARIANT,
     progression: [],
     selected: -1,
     dirty: true,
@@ -151,21 +203,28 @@ export function startNew(): void {
 }
 
 function applyProject(p: Project): void {
-  const { releaseCut, octaveShift } = state;
-  const accompanimentPattern = normalizeAccompaniment(p.accompanimentPattern);
+  const { octaveShift, drumMode, drumBeat } = state;
+  const publicAccompaniment = normalizePublicAccompanimentSelection(
+    normalizeAccompaniment(p.accompanimentPattern),
+    p.accompanimentVariant,
+  );
   state = {
     ...initialState(),
-    releaseCut,
+    releaseCut: false,
+    instrumentEffect: DEFAULT_PUBLIC_INSTRUMENT_EFFECT,
     octaveShift,
+    drumMode,
+    drumBeat,
     projectId: p.id,
     title: p.title,
     key: p.key,
     tempoBpm: p.tempoBpm,
-    instrumentId: p.instrumentId,
+    instrumentId: normalizeInstrumentId(p.instrumentId),
     grooveId: p.grooveId,
     // Migrate any legacy persisted id (eightBeat/sixteenthBeat) on read.
-    accompanimentPattern,
-    accompanimentVariant: normalizeVariant(accompanimentPattern, p.accompanimentVariant),
+    accompanimentPattern: publicAccompaniment.accompanimentPattern,
+    accompanimentVariant: publicAccompaniment.accompanimentVariant,
+    accompanimentEnergy: normalizeEnergy(p.accompanimentEnergy),
     // Respell for the project's own key — a no-op for names, but canonicalizes any
     // legacy slash-chord degree labels ("I/E") to the degree denominator ("I/III").
     // Preserve any saved per-chord keyContext; legacy events fall back to the key.
@@ -198,6 +257,7 @@ function toProject(id: string): Project {
     grooveId: state.grooveId,
     accompanimentPattern: state.accompanimentPattern,
     accompanimentVariant: state.accompanimentVariant,
+    accompanimentEnergy: state.accompanimentEnergy,
     chordEvents: state.progression,
     createdAt: state.createdAt || Date.now(),
     updatedAt: Date.now(),
@@ -223,6 +283,7 @@ export async function save(): Promise<void> {
       grooveId: state.grooveId,
       accompanimentPattern: state.accompanimentPattern,
       accompanimentVariant: state.accompanimentVariant,
+      accompanimentEnergy: state.accompanimentEnergy,
       chordEvents: state.progression,
     });
     set({ projectId: created.id, createdAt: created.createdAt, dirty: false });
@@ -364,7 +425,7 @@ export function setTempo(bpm: number): void {
 }
 
 export function setInstrument(instrumentId: InstrumentId): void {
-  set({ instrumentId, dirty: true });
+  set({ instrumentId: normalizeInstrumentId(instrumentId), dirty: true });
 }
 
 export function setGroove(grooveId: GrooveId): void {
@@ -372,34 +433,55 @@ export function setGroove(grooveId: GrooveId): void {
 }
 
 /**
- * Switch accompaniment. The variant travels with it: an id belonging to the previous
- * pattern means nothing to the new one, so `normalizeVariant` lands on the new
- * pattern's default reading rather than leaving a dangling choice behind.
+ * Switch the release-facing accompaniment. Hidden/internal patterns fall back at
+ * this boundary so a saved or stale selection cannot keep sounding behind the UI.
  */
 export function setAccompaniment(
   accompanimentPattern: AccompanimentPattern,
   variant?: AccompanimentVariantId,
 ): void {
+  const publicAccompaniment = normalizePublicAccompanimentSelection(accompanimentPattern, variant);
   set({
-    accompanimentPattern,
-    accompanimentVariant: normalizeVariant(accompanimentPattern, variant),
+    accompanimentPattern: publicAccompaniment.accompanimentPattern,
+    accompanimentVariant: publicAccompaniment.accompanimentVariant,
     dirty: true,
   });
 }
 
 export function setAccompanimentVariant(variant: AccompanimentVariantId): void {
+  const publicAccompaniment = normalizePublicAccompanimentSelection(
+    state.accompanimentPattern,
+    variant,
+  );
   set({
-    accompanimentVariant: normalizeVariant(state.accompanimentPattern, variant),
+    accompanimentPattern: publicAccompaniment.accompanimentPattern,
+    accompanimentVariant: publicAccompaniment.accompanimentVariant,
     dirty: true,
   });
+}
+
+/** Style × Energy — independent of Style; kept across style/instrument changes. */
+export function setAccompanimentEnergy(energy: AccompanimentEnergy): void {
+  set({ accompanimentEnergy: normalizeEnergy(energy), dirty: true });
 }
 
 /**
  * Toggle piano release cut. Device preference — does not mark the project dirty.
  */
 export function setReleaseCut(releaseCut: boolean): void {
-  if (releaseCut === state.releaseCut) return;
-  set({ releaseCut });
+  const instrumentEffect = normalizePublicInstrumentEffect(releaseCut ? 'releaseCut' : 'sustain');
+  if (!state.releaseCut && instrumentEffect === state.instrumentEffect) return;
+  set({ releaseCut: false, instrumentEffect });
+}
+
+/**
+ * Set the piano effect. Device preference — does not mark the project dirty. Keeps the
+ * legacy `releaseCut` flag in step so there is only ever one writer of the two.
+ */
+export function setInstrumentEffect(effect: InstrumentEffect): void {
+  const next = normalizePublicInstrumentEffect(effect);
+  if (!state.releaseCut && next === state.instrumentEffect) return;
+  set({ instrumentEffect: next, releaseCut: false });
 }
 
 /**
@@ -410,6 +492,84 @@ export function setOctaveShift(octaveShift: number): void {
   if (octaveShift === state.octaveShift) return;
   set({ octaveShift });
 }
+
+/** Device-level drum mode (Groove screen). Does not mark the project dirty. */
+export function setDrumMode(drumMode: DrumMode): void {
+  const next = normalizeDrumMode(drumMode);
+  if (next === state.drumMode) return;
+  set({ drumMode: next });
+}
+
+/** Device-level drum subdivision (4 / 8 / 16 Beat). Not part of the Project. */
+export function setDrumBeat(drumBeat: DrumBeat): void {
+  const next = normalizeDrumBeat(drumBeat);
+  if (next === state.drumBeat) return;
+  set({ drumBeat: next });
+}
+
+/* ---- listening lab (v1.01 QA) ------------------------------------ */
+
+let listeningIdCounter = 0;
+
+/** QA: load v1.01 human-template listening progression into the editor session. */
+export function loadV101ListeningLab(
+  pattern: ListeningPatternPreset = V101_LISTENING_PATTERNS[0]!,
+): void {
+  const progression = buildV101ListeningChords(
+    () => `listen-${Date.now().toString(36)}-${listeningIdCounter++}`,
+  ).map((e) => ({ ...e, keyContext: 'C' as const }));
+
+  set({
+    projectId: null,
+    title: 'v1.01 Listening QA',
+    key: 'C',
+    tempoBpm: 72,
+    instrumentId: 'piano',
+    grooveId: pattern.grooveId,
+    accompanimentPattern: pattern.accompanimentPattern,
+    accompanimentVariant: defaultVariantFor(pattern.accompanimentPattern).id,
+    accompanimentEnergy: DEFAULT_ENERGY,
+    releaseCut: false,
+    instrumentEffect: 'sustain',
+    progression,
+    history: [],
+    selected: 0,
+    dirty: true,
+  });
+}
+
+/** QA: load a Phase 3C A/B case (same Final MIDI for sampled vs sequencer). */
+export function loadPhase3cListeningCase(id: Phase3cCaseId): void {
+  const c = PHASE3C_CASES[id];
+  const progression = c.session.progression.map((e) => ({
+    ...e,
+    id: `p3c-${Date.now().toString(36)}-${listeningIdCounter++}`,
+    keyContext: c.key,
+  }));
+
+  set({
+    projectId: null,
+    title: `Phase 3C ${c.label}`,
+    key: c.key,
+    tempoBpm: c.session.tempoBpm,
+    instrumentId: 'piano',
+    grooveId: 'pop8',
+    accompanimentPattern: c.session.accompanimentPattern,
+    accompanimentVariant: c.session.accompanimentVariant!,
+    accompanimentEnergy: DEFAULT_ENERGY,
+    releaseCut: true,
+    instrumentEffect: 'off',
+    octaveShift: 0,
+    drumMode: 'off',
+    progression,
+    history: [],
+    selected: 0,
+    dirty: true,
+  });
+}
+
+export { V101_LISTENING_PATTERNS };
+export type { ListeningPatternPreset, Phase3cCaseId };
 
 /* ---- presets ------------------------------------------------------ */
 
@@ -424,19 +584,24 @@ export function startFromPreset(preset: Preset, targetKey: MajorKey = state.key)
     id: nextEventId(),
     keyContext: targetKey,
   }));
-  const { releaseCut, octaveShift } = state;
+  const { octaveShift, drumMode, drumBeat } = state;
   state = {
     ...initialState(),
-    releaseCut,
+    releaseCut: false,
+    instrumentEffect: DEFAULT_PUBLIC_INSTRUMENT_EFFECT,
     octaveShift,
+    drumMode,
+    drumBeat,
     title: preset.name,
     key: targetKey,
     tempoBpm: 100,
-    accompanimentPattern: DEFAULT_ACCOMPANIMENT,
+    accompanimentPattern: DEFAULT_PUBLIC_ACCOMPANIMENT,
+    accompanimentVariant: DEFAULT_PUBLIC_VARIANT,
     progression: events,
     selected: events.length > 0 ? 0 : -1,
     dirty: true,
   };
+  markSeededForEditor();
   emit();
 }
 

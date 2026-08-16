@@ -29,6 +29,13 @@ enum VideoWriter {
       .appendingPathComponent("chord-video-\(UUID().uuidString).mp4")
 
     do {
+      guard durationSec.isFinite, durationSec > 0, fps > 0 else {
+        throw VideoExportError.setup("invalid duration or frame rate")
+      }
+      // This one CMTime is the authoritative media boundary for both tracks.
+      // A high timescale keeps non-integer cycle lengths (for example 100 BPM)
+      // precise while endSession clips the final frame/AAC packet to the same instant.
+      let endTime = CMTime(seconds: durationSec, preferredTimescale: 600_000)
       let writer = try AVAssetWriter(outputURL: outURL, fileType: .mp4)
 
       // --- Video input ---
@@ -56,6 +63,7 @@ enum VideoWriter {
       var audioInput: AVAssetWriterInput?
       if let track = asset.tracks(withMediaType: .audio).first {
         let r = try AVAssetReader(asset: asset)
+        r.timeRange = CMTimeRange(start: .zero, duration: endTime)
         let ro = AVAssetReaderTrackOutput(
           track: track, outputSettings: [AVFormatIDKey: kAudioFormatLinearPCM])
         if r.canAdd(ro) { r.add(ro) }
@@ -82,7 +90,9 @@ enum VideoWriter {
       writer.startSession(atSourceTime: .zero)
       reader?.startReading()
 
-      let totalFrames = max(1, Int((durationSec * Double(fps)).rounded()))
+      // Draw enough frames to cover the musical boundary. The writer session is
+      // still ended at `endTime`, so a fractional final frame cannot lengthen the MP4.
+      let totalFrames = max(1, Int((durationSec * Double(fps)).rounded(.up)))
       let videoQueue = DispatchQueue(label: "app.chord-palette.video")
       let audioQueue = DispatchQueue(label: "app.chord-palette.audio")
       let group = DispatchGroup()
@@ -141,6 +151,7 @@ enum VideoWriter {
       }
 
       group.notify(queue: videoQueue) {
+        writer.endSession(atSourceTime: endTime)
         writer.finishWriting {
           if writer.status == .completed {
             completion(.success(outURL))

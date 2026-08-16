@@ -127,7 +127,7 @@ describe('PerformanceEngine — Natural phrase rotation', () => {
       if (t0.id === t1.id) continue;
       const events = generatePerformance(
         { chords: EIGHT_BARS, bpm: 108, seed },
-        { styleId: 'natural', grooveId: 'pop8', drums: false },
+        { styleId: 'natural', variantId: 'natural.auto', grooveId: 'pop8', drums: false },
       );
       expect(bassStepsInPhrase(events, 0)).not.toEqual(bassStepsInPhrase(events, 1));
       checked = true;
@@ -145,7 +145,7 @@ describe('PerformanceEngine — Natural phrase rotation', () => {
       if (isDense0 === isDense1) continue; // need exactly one dense phrase
       const events = generatePerformance(
         { chords: EIGHT_BARS, bpm: 108, seed },
-        { styleId: 'natural', grooveId: 'pop8', drums: false },
+        { styleId: 'natural', variantId: 'natural.auto', grooveId: 'pop8', drums: false },
       );
       const beat2InPhrase = (phrase: number) => bassStepsInPhrase(events, phrase).includes(2);
       expect(beat2InPhrase(0)).toBe(isDense0);

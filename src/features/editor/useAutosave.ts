@@ -1,10 +1,8 @@
 /**
- * useAutosave — debounced Auto-save for the editor (sprint-7 §4, Phase C).
+ * useAutosave — debounced updates for projects already added to Memory.
  *
- * The "Save" button was removed in favor of Auto-save. This hook extracts the
- * debounce that previously lived inline in `editor.tsx`. The actual persistence
- * is unchanged: it simply calls the existing `session.save()` (which writes via
- * the project repository). No Data Model or business logic changes here.
+ * A new session remains local until the user presses the editor Save icon. Once
+ * `projectId` exists, edits keep the existing debounce so saved work is protected.
  *
  * The debounce itself is a PURE, React-free `createAutosaveScheduler` so it can
  * be unit tested with fake timers, while the hook is a thin lifecycle wrapper.
@@ -34,6 +32,11 @@ export type AutosaveScheduler = {
   /** Cancel a pending save without firing it. */
   cancel: () => void;
 };
+
+/** New sessions must not create a Memory row without an explicit Save-icon action. */
+export function shouldAutosave(projectId: string | null, dirty: boolean): boolean {
+  return projectId !== null && dirty;
+}
 
 /**
  * Pure debounce scheduler: each `schedule(true)` restarts the timer; the save
@@ -67,9 +70,8 @@ export function createAutosaveScheduler(
 }
 
 /**
- * Auto-save the editor session whenever it becomes dirty, debounced. Persists
- * through the existing `session.save()` (unchanged). Mount this once in the
- * editor screen; it self-manages the debounce lifecycle.
+ * Auto-update a saved editor session whenever it becomes dirty, debounced.
+ * Unsaved sessions stay in memory until the explicit Save icon calls `session.save()`.
  */
 export function useAutosave(debounceMs: number = AUTOSAVE_DEBOUNCE_MS): void {
   const s = useEditorSession();
@@ -83,11 +85,12 @@ export function useAutosave(debounceMs: number = AUTOSAVE_DEBOUNCE_MS): void {
 
   useEffect(() => {
     const scheduler = schedulerRef.current!;
-    scheduler.schedule(s.dirty);
+    scheduler.schedule(shouldAutosave(s.projectId, s.dirty));
     return () => scheduler.cancel();
     // Re-arm on any persisted field change so edits within the window keep
     // pushing the save out (same deps set as the previous inline effect).
   }, [
+    s.projectId,
     s.dirty,
     s.progression,
     s.key,

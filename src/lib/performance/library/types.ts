@@ -1,6 +1,6 @@
 /**
  * Accompaniment pattern library — internal registration format
- * (implementation_v1.01 Phase 12).
+ * (implementation_v1.01 Phase 12 + accompaniment MIDI retarget).
  *
  * This is NOT a raw-MIDI store. A pattern is registered fully RELATIVE — beat
  * position inside the pattern, degree into the chord's tones, octave offset from
@@ -9,8 +9,7 @@
  * commercial recordings must never be stored here; `sourceType`/`license` exist
  * so every entry carries its provenance (design v1.01 §9).
  *
- * v1.01 defines the format and its validator only; nothing renders from the
- * library yet.
+ * Extraction whitelist / blacklist: docs/performance/accompaniment_midi_retarget.md
  */
 
 import type { Articulation } from '../NoteEvent';
@@ -46,6 +45,26 @@ export interface ProfileSummary {
   stdDev: number;
 }
 
+/**
+ * Phrase-end patch: replace the loop body on this bar within each 4-bar phrase.
+ * `barInPhrase` is 0-based (3 = fourth bar).
+ */
+export interface PhraseVariation {
+  barInPhrase: number;
+  notes: RelativeNote[];
+}
+
+/**
+ * Author-declared progression behaviour. Not inferred from commercial song form.
+ * Realize may use these with the existing voice-leading / bass planner.
+ */
+export interface ProgressionHints {
+  preferCommonTones?: boolean;
+  /** Max semitone step for the highest voice between adjacent chords. */
+  topVoiceMaxStep?: number;
+  bassMotion?: 'root' | 'rootFifth' | 'approach';
+}
+
 /** One registered accompaniment pattern. */
 export interface LibraryPattern {
   id: string;
@@ -65,6 +84,10 @@ export interface LibraryPattern {
   durationProfile?: ProfileSummary;
   /** Per-beat accent weights (0..1), one per beat of the pattern. */
   accentMap?: number[];
+  /** Optional fourth-bar (phrase-end) replacement notes. */
+  phraseVariation?: PhraseVariation;
+  /** Optional VL / bass motion hints for realize. */
+  progressionHints?: ProgressionHints;
   tags: string[];
   /** Curator's 1 (rough sketch) … 5 (ship-ready) quality grade. */
   qualityRating?: 1 | 2 | 3 | 4 | 5;

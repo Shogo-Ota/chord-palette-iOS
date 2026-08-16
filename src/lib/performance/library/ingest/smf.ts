@@ -34,6 +34,14 @@ export interface SmfTimeSignature {
   denominator: number;
 }
 
+export interface SmfControlChange {
+  tick: number;
+  channel: number;
+  controller: number;
+  value: number;
+  track: number;
+}
+
 export interface SmfSong {
   format: number;
   /** Pulses (ticks) per quarter note. */
@@ -41,6 +49,12 @@ export interface SmfSong {
   notes: SmfNote[];
   tempos: SmfTempo[];
   timeSignatures: SmfTimeSignature[];
+  /**
+   * Controller messages in file order. Read so pedal (CC64) can be verified against
+   * what produced the file — a teacher take's pedal on ingest, and the realtime
+   * playback payload on the way out.
+   */
+  controlChanges: SmfControlChange[];
   /** Non-fatal oddities found while reading (e.g. unterminated notes). */
   warnings: string[];
 }
@@ -73,7 +87,7 @@ class ByteReader {
 
   u32(): number {
     // >>> 0 keeps the value unsigned when the top bit is set.
-    return (((this.u8() << 24) | (this.u8() << 16) | (this.u8() << 8) | this.u8()) >>> 0);
+    return ((this.u8() << 24) | (this.u8() << 16) | (this.u8() << 8) | this.u8()) >>> 0;
   }
 
   ascii(n: number): string {
@@ -128,6 +142,7 @@ export function parseSmf(bytes: Uint8Array): SmfSong {
   const notes: SmfNote[] = [];
   const tempos: SmfTempo[] = [];
   const timeSignatures: SmfTimeSignature[] = [];
+  const controlChanges: SmfControlChange[] = [];
   const warnings: string[] = [];
 
   for (let track = 0; track < trackCount; track += 1) {
@@ -210,6 +225,10 @@ export function parseSmf(bytes: Uint8Array): SmfSong {
         const pitch = r.u8();
         r.skip(1); // release velocity
         closeNote(channel, pitch, tick);
+      } else if (kind === 0xb0) {
+        const controller = r.u8();
+        const value = r.u8();
+        controlChanges.push({ tick, channel, controller, value, track });
       } else {
         r.skip(channelDataBytes(status));
       }
@@ -235,5 +254,5 @@ export function parseSmf(bytes: Uint8Array): SmfSong {
   }
 
   notes.sort((a, b) => a.tick - b.tick || a.pitch - b.pitch);
-  return { format, ppq, notes, tempos, timeSignatures, warnings };
+  return { format, ppq, notes, tempos, timeSignatures, controlChanges, warnings };
 }

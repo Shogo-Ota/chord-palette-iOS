@@ -1,4 +1,19 @@
-import { AUTOSAVE_DEBOUNCE_MS, createAutosaveScheduler } from '@/features/editor/useAutosave';
+import {
+  AUTOSAVE_DEBOUNCE_MS,
+  createAutosaveScheduler,
+  shouldAutosave,
+} from '@/features/editor/useAutosave';
+
+describe('shouldAutosave', () => {
+  it('does not create a Memory row for a new unsaved session', () => {
+    expect(shouldAutosave(null, true)).toBe(false);
+  });
+
+  it('updates only an existing dirty Memory row', () => {
+    expect(shouldAutosave('p-1', true)).toBe(true);
+    expect(shouldAutosave('p-1', false)).toBe(false);
+  });
+});
 
 describe('createAutosaveScheduler', () => {
   beforeEach(() => jest.useFakeTimers());

@@ -59,12 +59,15 @@ export interface SuggestOptions {
   maxResults?: number;
 }
 
-/** Degrees to open a blank progression with, best first (I, then vi / IV / V). */
+/**
+ * Degrees to open a blank progression with, best first. Limited to I / IV / vi:
+ * the three openers that leave every standard progression reachable. V is a poor
+ * first chord (it wants to resolve before anything has been established).
+ */
 const START_DEGREES: { degree: number; score: number }[] = [
   { degree: 0, score: 1.0 }, // I
   { degree: 5, score: 0.7 }, // vi
   { degree: 3, score: 0.66 }, // IV
-  { degree: 4, score: 0.6 }, // V
 ];
 
 /**

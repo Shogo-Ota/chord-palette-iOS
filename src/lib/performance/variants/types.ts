@@ -35,6 +35,19 @@ export interface AccompanimentVariant {
    * one from tempo and drum groove. Only meaningful for the feel-based accompaniments.
    */
   forcedBase?: StylePreset;
+  /**
+   * The Human MIDI Template this reading plays — a real teacher take from the approved
+   * pattern pool. When set it owns the piano chord/top voices (the groove, gate and
+   * dynamics come from the take; the pitches are rebuilt from the user's chord), so
+   * `bank` and the chord half of `refine` no longer apply.
+   */
+  humanTemplateId?: string;
+  /**
+   * When `false`, the reading stays in the catalog so a saved project can still
+   * resolve it, but the Style screen and MIDI QA do not offer it. Omitted means
+   * offered.
+   */
+  offered?: boolean;
   /** The difference from the resolved base. */
   refine?: StyleRefinement;
 }

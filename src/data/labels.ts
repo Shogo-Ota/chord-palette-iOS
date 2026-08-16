@@ -20,7 +20,7 @@ export const INSTRUMENT_IS_PRO: Record<InstrumentId, boolean> = {
 };
 
 /** Free instruments, in selector order. */
-export const FREE_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
+export const FREE_INSTRUMENTS: InstrumentId[] = ['piano'];
 /** Pro instruments, in selector order. */
 export const PRO_INSTRUMENTS: InstrumentId[] = ['acousticGuitar', 'electricGuitar', 'strings'];
 
@@ -28,10 +28,24 @@ export const PRO_INSTRUMENTS: InstrumentId[] = ['acousticGuitar', 'electricGuita
  * Instruments actually selectable in the app right now. Kept as a single switch
  * so more voices can be enabled later without touching the UI: the bundled
  * SoundFont already contains all GM programs and native maps every id to one
- * (see AudioEngineController.programForInstrument). To add e.g. strings later,
- * just append 'strings' here (and revisit Pro gating if it should be paid).
+ * (see AudioEngineController.programForInstrument). ePiano is retired from the
+ * product UI (the Rhodes SF2 read as cheap on device).
  */
-export const ENABLED_INSTRUMENTS: InstrumentId[] = ['piano', 'ePiano'];
+export const ENABLED_INSTRUMENTS: InstrumentId[] = ['piano'];
+
+/** Map a stored / retired id onto a voice the UI still offers. */
+export function normalizeInstrumentId(raw: unknown): InstrumentId {
+  if (raw === 'ePiano') return 'piano';
+  if (
+    raw === 'piano' ||
+    raw === 'acousticGuitar' ||
+    raw === 'electricGuitar' ||
+    raw === 'strings'
+  ) {
+    return raw;
+  }
+  return 'piano';
+}
 
 /**
  * Drum grooves (all free — requirements §6). The selector now shows single choices

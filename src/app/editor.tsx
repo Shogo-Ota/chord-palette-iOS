@@ -26,7 +26,7 @@ import { SegTrack } from '@/components/controls';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
 import { Wordmark } from '@/components/Wordmark';
-import { GROOVE_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
+import { styleSummaryText } from '@/features/editor/styleSummary';
 import {
   chromaticBassNotes,
   degreeIndexFromRootOffset,
@@ -43,7 +43,7 @@ import { loadAdminMode, useAdminMode } from '@/features/admin/adminMode';
 import {
   beatsPerBarFor,
   chordPreviewRequest,
-  sessionToPlaybackRequest,
+  editorPlaybackRequest,
 } from '@/features/editor/playback';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
@@ -64,12 +64,25 @@ import {
   totalBars as calcTotalBars,
 } from '@/lib/progression';
 import type { ProgressionSuggestion } from '@/lib/theory/progression/suggestNext';
-import { getEditorTutorialSeen, setEditorTutorialSeen } from '@/repositories/sessionPrefsRepository';
+import {
+  getEditorTutorialSeen,
+  setEditorTutorialSeen,
+} from '@/repositories/sessionPrefsRepository';
 import { track } from '@/services/analytics';
 import { audioService } from '@/services/audio';
 import type { PlaybackState } from '@/services/audio/types';
 import { useEntitlements } from '@/services/billing';
-import { colors, font, functionColor, keyTintSolids, motion, playNeonColor, radius, spacing, typeSize } from '@/theme/tokens';
+import {
+  colors,
+  font,
+  functionColor,
+  keyTintSolids,
+  motion,
+  playNeonColor,
+  radius,
+  spacing,
+  typeSize,
+} from '@/theme/tokens';
 import type { ChordDuration, ChordFunction, LibraryChord, MajorKey } from '@/types';
 
 const H_PAD = 16;
@@ -146,12 +159,16 @@ export default function EditorScreen() {
     );
   }, []);
 
+  // Runs once per target so a re-mount (or a StrictMode double-invoke) cannot
+  // discard a session that a caller seeded for us.
+  const initializedFor = useRef<string | null | undefined>(undefined);
   useEffect(() => {
+    const target = id ?? null;
+    if (initializedFor.current === target) return;
+    initializedFor.current = target;
     if (id) {
-      session
-        .load(id)
-        .catch((e) => logger.error('Failed to load project', { error: String(e) }));
-    } else {
+      session.load(id).catch((e) => logger.error('Failed to load project', { error: String(e) }));
+    } else if (!session.consumeSeededForEditor()) {
       session.startNew();
     }
   }, [id]);
@@ -248,9 +265,7 @@ export default function EditorScreen() {
     });
     const posSub = audioService.addPositionListener((e) => {
       const meter = beatsPerBarFor(accompanimentRef.current);
-      setPlayingIndex(
-        chordIndexAtBeat(progressionRef.current, authoringBeats(e.beat, meter)),
-      );
+      setPlayingIndex(chordIndexAtBeat(progressionRef.current, authoringBeats(e.beat, meter)));
     });
     return () => {
       stateSub?.remove();
@@ -303,9 +318,9 @@ export default function EditorScreen() {
      Groove screen; live re-apply lives in `useLiveSoundReapply` there so it
      still runs while this screen may be frozen underneath the stack. */
 
-  /* ---- Auto-save (sprint-7 Phase C: Remove Save button) ----------
-     Debounce + persistence live in the useAutosave hook (§4); it calls the
-     existing session.save() only — Data Model unchanged. */
+  /* ---- Saved-memory auto-update ----------------------------------
+     A new session is added only by the Save icon. Once it has a projectId,
+     the hook debounces subsequent updates through the existing session.save(). */
   useAutosave();
 
   /* ---- derived library ------------------------------------------ */
@@ -371,7 +386,7 @@ export default function EditorScreen() {
     if (s.progression.length === 0) return;
     track('playback_started', { chords: s.progression.length, loop });
     audioService
-      .play(sessionToPlaybackRequest(s, loop, ent.palettePro ? 'pro' : 'free'))
+      .play(editorPlaybackRequest(s, loop, ent.palettePro ? 'pro' : 'free'))
       .catch((e) => logger.error('Audio play failed', { error: String(e) }));
   }
 
@@ -410,7 +425,9 @@ export default function EditorScreen() {
       if (!isPlaying) {
         const s2 = getSession();
         audioService
-          .previewChord(chordPreviewRequest(c, s2.key, s2.tempoBpm, s2.instrumentId, s2.octaveShift))
+          .previewChord(
+            chordPreviewRequest(c, s2.key, s2.tempoBpm, s2.instrumentId, s2.octaveShift),
+          )
           .catch(() => undefined);
       }
       upsell.show('高度なコードは Palette Pro。無料版は試聴のみ可能です');
@@ -514,627 +531,650 @@ export default function EditorScreen() {
   /* ---- render --------------------------------------------------- */
   return (
     <View style={styles.screenRoot}>
-    <ScreenScaffold padH={H_PAD}>
-      {/* ── Compact header ─────────────────────────────── */}
-      <View style={styles.header}>
-        <Wordmark size={14} withIcon iconSize={26} />
-        <View style={styles.headerActions}>
-          {isAdmin && progression.length > 0 ? (
-            <IconBtn icon="bookmark" onPress={() => router.push('/admin-preset')} />
-          ) : null}
-          <IconBtn icon="share" onPress={() => router.push('/export')} />
-          <IconBtn
-            icon="save"
-            onPress={() => {
-              session
-                .save()
-                .then(() => {
-                  hapticSuccess();
-                  showSaveToast();
-                })
-                .catch((e) => {
-                  logger.error('Failed to save project', { error: String(e) });
-                  hapticError();
-                });
-            }}
-          />
-          <IconBtn icon="close" onPress={close} />
-        </View>
-      </View>
-      {saveToast ? (
-        <View style={styles.saveToast} accessibilityLiveRegion="polite">
-          <Icon name="check" size={14} color={colors.successText} strokeWidth={2.6} />
-          <Text style={styles.saveToastText}>メモリーに保存しました</Text>
-        </View>
-      ) : null}
-      <View style={styles.titleRow}>
-        <Icon name="pencil" size={14} color={colors.textFaint} strokeWidth={2.2} />
-        <TextInput
-          value={title}
-          onChangeText={(t) => session.setTitle(t)}
-          placeholder="進行の名前"
-          placeholderTextColor={colors.textFaint}
-          style={styles.projectTitle}
-          accessibilityLabel="進行の名前"
-          accessibilityHint="タップして名前を編集"
-          returnKeyType="done"
-          maxLength={60}
-        />
-      </View>
-
-      {/* ── Session settings: independent Key / Tempo / Style chips ─ */}
-      <View style={styles.settingChips}>
-        <CPSettingChip
-          label="KEY"
-          value={`${key} Major`}
-          accessibilityLabel="キー"
-          accessibilityHint="タップしてキーを変更"
-          onPress={() => setKeyPickerOpen(true)}
-        />
-        <CPSettingChip
-          label="TEMPO"
-          value={`${bpm} BPM`}
-          accessibilityLabel="テンポ"
-          accessibilityHint="タップしてテンポを変更"
-          onPress={() => setBpmPickerOpen(true)}
-        />
-        <CPSettingChip
-          label="STYLE"
-          value={`${GROOVE_LABELS[s.grooveId]} / ${INSTRUMENT_LABELS[s.instrumentId]}`}
-          accessibilityLabel="スタイル"
-          accessibilityHint="タップしてグルーヴと音色を変更"
-          onPress={() => router.push('/groove')}
-        />
-      </View>
-
-      {/* ── Transport (Undo · Play · Loop) ──────────────── */}
-      <CPTransportBar
-        playing={isPlaying}
-        loading={visibleActions.play.state === 'loading'}
-        showUndo={visibleActions.undo.state === 'ready'}
-        showLoop={visibleActions.loop.state === 'ready'}
-        loopOn={loop}
-        onPlayPause={actions.onPlayPause}
-        onUndo={undo}
-        onLoop={() => setLoop((v) => !v)}
-      />
-      {audioError ? (
-        <View style={styles.audioErrorBanner} accessibilityRole="alert">
-          <Text style={styles.audioErrorText}>{audioError}</Text>
-          <Pressable
-            onPress={prepareAudio}
-            hitSlop={8}
-            style={styles.audioErrorRetry}
-            accessibilityRole="button"
-            accessibilityLabel="音源の再試行">
-            <Text style={styles.audioErrorRetryText}>再試行</Text>
-          </Pressable>
-        </View>
-      ) : null}
-
-      {/* ── Progression strip (main stage) ─────────────── */}
-      <View style={styles.stripStage}>
-        <View style={styles.stripHeader}>
-          <View style={styles.stripTitleRow}>
-            <Text style={styles.stripTitle}>コード進行</Text>
-            <Pressable
-              onPress={() => router.push('/append-progression')}
-              hitSlop={6}
-              accessibilityRole="button"
-              accessibilityLabel="保存した進行を末尾に追加"
-              style={styles.addProgBtn}>
-              <Icon name="plus" size={12} color={colors.primary} strokeWidth={2.6} />
-              <Text style={styles.addProgBtnText}>追加</Text>
-            </Pressable>
-            {progression.length > 0 ? (
-              <Pressable
-                onPress={() => session.clearProgression()}
-                hitSlop={6}
-                accessibilityRole="button"
-                accessibilityLabel="コードをすべて削除"
-                style={styles.resetBtn}>
-                <Icon name="trash" size={12} color={colors.textFaint} strokeWidth={2} />
-                <Text style={styles.resetBtnText}>リセット</Text>
-              </Pressable>
+      <ScreenScaffold padH={H_PAD}>
+        {/* ── Compact header ─────────────────────────────── */}
+        <View style={styles.header}>
+          <Wordmark size={14} withIcon iconSize={26} />
+          <View style={styles.headerActions}>
+            {isAdmin && progression.length > 0 ? (
+              <IconBtn icon="bookmark" onPress={() => router.push('/admin-preset')} />
             ) : null}
-          </View>
-          <View style={styles.stripMeta}>
-            <Text style={styles.stripKey}>KEY {key}</Text>
-            <Text style={styles.barCount}>
-              {totalBars} / {MAX_BARS}小節
-            </Text>
+            <IconBtn icon="share" onPress={() => router.push('/export')} />
+            <IconBtn
+              icon="save"
+              onPress={() => {
+                session
+                  .save()
+                  .then(() => {
+                    hapticSuccess();
+                    showSaveToast();
+                  })
+                  .catch((e) => {
+                    logger.error('Failed to save project', { error: String(e) });
+                    hapticError();
+                  });
+              }}
+            />
+            <IconBtn icon="close" onPress={close} />
           </View>
         </View>
-
-        {multiKey && (
-          <View style={styles.keyLegend}>
-            {keyLegend.map((k, i) => (
-              <View key={k} style={styles.keyLegendItem}>
-                <View style={[styles.keyLegendDot, { backgroundColor: slotColor(i) }]} />
-                <Text style={styles.keyLegendText}>
-                  {k}
-                  {i === 0 ? '（基準）' : ''}
-                </Text>
-              </View>
-            ))}
-          </View>
-        )}
-
-        {progression.length === 0 ? (
-          <View style={styles.emptyStrip}>
-            <Text style={styles.emptyHint}>① 下のライブラリを開いてコードをタップ</Text>
-            <Text style={styles.emptyHintSub}>② ▶ で再生 — これだけで完成</Text>
-          </View>
-        ) : (
-          <ScrollView
-            ref={stripScrollRef}
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            style={styles.stripScroll}
-            contentContainerStyle={styles.stripScrollContent}
-            onLayout={(e) => {
-              stripViewportW.current = e.nativeEvent.layout.width;
-            }}>
-            <View style={styles.stripRow}>
-              {progression.map((ev, i) => {
-                const isActivePlay = i === playingIndex;
-                const fn = functionColor[ev.function];
-                const neon = playNeonColor[ev.function];
-                return (
-                  <React.Fragment key={ev.id}>
-                    <Pressable
-                      onPress={() => setSelected(i)}
-                      onLongPress={() => openChordMenu(i)}
-                      delayLongPress={350}
-                      accessibilityRole="button"
-                      accessibilityLabel={`${ev.displayName} ${ev.degreeLabel}`}
-                      accessibilityHint="長押しで編集メニュー"
-                      accessibilityState={{ selected: i === selected }}
-                      onLayout={(e) => {
-                        const { x, width } = e.nativeEvent.layout;
-                        cardLayoutsRef.current[i] = { x, width };
-                        // First layout after play starts may race the effect — center here too.
-                        if (i === playingIndex && stripViewportW.current > 0) {
-                          const targetX = x + width / 2 - stripViewportW.current / 2;
-                          stripScrollRef.current?.scrollTo({
-                            x: Math.max(0, targetX),
-                            animated: true,
-                          });
-                        }
-                      }}>
-                      <Animated.View
-                        style={[
-                          styles.timeCard,
-                          { borderLeftColor: fn, backgroundColor: rgba(fn, 0.1) },
-                          i === selected && !isActivePlay && styles.timeCardSelected,
-                          isActivePlay && styles.timeCardPlaying,
-                          isActivePlay && {
-                            backgroundColor: rgba(neon, 0.38),
-                            borderColor: neon,
-                            borderLeftColor: neon,
-                            shadowColor: neon,
-                          },
-                          isActivePlay &&
-                            !reduceMotion && {
-                              transform: [
-                                {
-                                  translateY: playLift.interpolate({
-                                    inputRange: [0, 1],
-                                    outputRange: [0, -6],
-                                  }),
-                                },
-                              ],
-                            },
-                          isActivePlay &&
-                            reduceMotion && {
-                              opacity: 0.96,
-                            },
-                        ]}>
-                        <View style={styles.timeTop}>
-                          <Text style={[styles.timeName, isActivePlay && styles.timeNamePlaying]}>
-                            {ev.displayName}
-                          </Text>
-                          <Text style={[styles.timeDegree, { color: isActivePlay ? neon : fn }]}>
-                            {ev.degreeLabel}
-                          </Text>
-                        </View>
-                        <View style={styles.timeDur}>
-                          <Text
-                            style={[
-                              styles.timeDurText,
-                              isActivePlay && styles.timeDurTextPlaying,
-                            ]}>
-                            {durationLabel(ev.durationBeats)}
-                          </Text>
-                        </View>
-                        {multiKey && (
-                          <View
-                            style={[
-                              styles.keyBar,
-                              { backgroundColor: slotColor(keySlots.get(eventKey(ev, key)) ?? 0) },
-                            ]}
-                          />
-                        )}
-                      </Animated.View>
-                    </Pressable>
-                    {i < progression.length - 1 && <Text style={styles.arrow}>→</Text>}
-                  </React.Fragment>
-                );
-              })}
-            </View>
-          </ScrollView>
-        )}
-
-        {/* Selected chord length switch (1 / 1/2 / 1/4 bar) */}
-        {selectedEvent ? (
-          <View style={styles.durationBar}>
-            <Text style={styles.durationBarLabel}>
-              長さ<Text style={styles.durationBarChord}> · {selectedEvent.displayName}</Text>
-            </Text>
-            <SegTrack
-              options={DURATION_OPTIONS}
-              value={String(selectedEvent.durationBeats)}
-              onChange={(k) => {
-                hapticSelection();
-                const beats = Number(k) as ChordDuration;
-                actions.setDuration(beats);
-                track('chord_duration_changed', { beats });
-              }}
-              style={styles.durationSeg}
-            />
+        {saveToast ? (
+          <View style={styles.saveToast} accessibilityLiveRegion="polite">
+            <Icon name="check" size={14} color={colors.successText} strokeWidth={2.6} />
+            <Text style={styles.saveToastText}>メモリーに保存しました</Text>
           </View>
         ) : null}
-      </View>
-
-      {/* ── 続き候補（ワンタップ提案・末尾に追加。編集中は非表示） ── */}
-      {selected < 0 ? (
-        <CPSuggestionBar suggestions={chordSuggestions.suggestions} onPick={pickSuggestion} />
-      ) : null}
-
-      {/* ── Chord library (collapsible; collapsed by default) ── */}
-      <View style={styles.libHeader}>
-        <Text style={styles.libTitle}>コードライブラリ</Text>
-        <Pressable onPress={() => setLibOpen((o) => !o)} hitSlop={10} style={styles.chevronBtn}>
-          <View style={{ transform: [{ rotate: libOpen ? '0deg' : '-90deg' }] }}>
-            <Icon name="chevronDown" size={18} color={colors.textMuted} strokeWidth={2.4} />
-          </View>
-        </Pressable>
-      </View>
-      {progression.length === 0 ? (
-        <Text style={styles.libPlayHint}>コードを追加すると再生できます</Text>
-      ) : null}
-
-      {libOpen && (
-        <>
-          <SegTrack
-            options={[
-              { key: 'diatonic', label: 'ダイアトニック' },
-              { key: 'advanced', label: '応用' },
-              { key: 'slash', label: 'オンコード' },
-            ]}
-            value={tab}
-            onChange={(k) => setTab(k as LibraryTab)}
-            style={styles.tabTrack}
+        <View style={styles.titleRow}>
+          <Icon name="pencil" size={14} color={colors.textFaint} strokeWidth={2.2} />
+          <TextInput
+            value={title}
+            onChangeText={(t) => session.setTitle(t)}
+            placeholder="進行の名前"
+            placeholderTextColor={colors.textFaint}
+            style={styles.projectTitle}
+            accessibilityLabel="進行の名前"
+            accessibilityHint="タップして名前を編集"
+            returnKeyType="done"
+            maxLength={60}
           />
+        </View>
 
-          {tab === 'diatonic' && (
-            <View>
-              <SegTrack
-                options={[
-                  { key: 'triad', label: '3和音' },
-                  { key: 'seventh', label: 'セブンス (4和音)' },
-                ]}
-                value={chordSize}
-                onChange={(k) => setChordSize(k as 'triad' | 'seventh')}
-                style={styles.tabTrack}
-              />
-              {selectedEvent ? (
-                <Text style={styles.editBanner}>
-                  編集中：{selectedEvent.displayName}（{selectedEvent.degreeLabel}）—
-                  タップで差し替え／もう一度カードをタップで解除→末尾に追加
-                </Text>
-              ) : (
-                <Text style={styles.subHint}>未選択：ライブラリのタップで進行の末尾に追加</Text>
-              )}
-              <View style={styles.grid}>
-                {diatonicGrid.map((c) => (
-                  <LibraryCard
-                    key={c.id}
-                    chord={c}
-                    width={wDia}
-                    unlocked={ent.palettePro}
-                    onPress={() => pickChord(c)}
-                  />
-                ))}
-              </View>
+        {/* ── Session settings: Key / Tempo side by side, Style on its own
+          row so the accompaniment + instrument names read in full ───── */}
+        <View style={styles.settingChips}>
+          <CPSettingChip
+            label="KEY"
+            value={`${key} Major`}
+            accessibilityLabel="キー"
+            accessibilityHint="タップしてキーを変更"
+            onPress={() => setKeyPickerOpen(true)}
+          />
+          <CPSettingChip
+            label="TEMPO"
+            value={`${bpm} BPM`}
+            accessibilityLabel="テンポ"
+            accessibilityHint="タップしてテンポを変更"
+            onPress={() => setBpmPickerOpen(true)}
+          />
+        </View>
+        <View style={styles.settingChips}>
+          <CPSettingChip
+            label="STYLE"
+            value={styleSummaryText(s)}
+            valueLines={2}
+            accessibilityLabel="スタイル"
+            accessibilityHint="タップして伴奏パターンと音色を変更"
+            onPress={() => router.push('/groove')}
+          />
+        </View>
 
-              <Text style={styles.subHint}>バリエーション（飾り付け）— 選んだ進行コードに適用</Text>
-              {!selectedEvent ? (
-                <Text style={styles.varEmptyHint}>
-                  上のコード進行でカードをタップしてから、飾り付けを選んでください
-                </Text>
-              ) : selectedDegree < 0 ? (
-                <Text style={styles.varEmptyHint}>
-                  このコードはダイアトニック以外のため、ここでの飾り付けは使えません（差し替えは上のグリッドから）
-                </Text>
-              ) : corePills.length === 0 && moreTensionCount === 0 ? (
-                <Text style={styles.varEmptyHint}>
-                  この度数（{selectedEvent.degreeLabel}）に足せるテンションはありません
-                </Text>
-              ) : (
-                <>
-                  <Text style={styles.varApplyTo}>
-                    適用先： {selectedEvent.displayName}（{selectedEvent.degreeLabel}）
+        {/* ── Transport (Undo · Play · Loop) ──────────────── */}
+        <CPTransportBar
+          playing={isPlaying}
+          loading={visibleActions.play.state === 'loading'}
+          showUndo={visibleActions.undo.state === 'ready'}
+          showLoop={visibleActions.loop.state === 'ready'}
+          loopOn={loop}
+          onPlayPause={actions.onPlayPause}
+          onUndo={undo}
+          onLoop={() => setLoop((v) => !v)}
+        />
+        {audioError ? (
+          <View style={styles.audioErrorBanner} accessibilityRole="alert">
+            <Text style={styles.audioErrorText}>{audioError}</Text>
+            <Pressable
+              onPress={prepareAudio}
+              hitSlop={8}
+              style={styles.audioErrorRetry}
+              accessibilityRole="button"
+              accessibilityLabel="音源の再試行">
+              <Text style={styles.audioErrorRetryText}>再試行</Text>
+            </Pressable>
+          </View>
+        ) : null}
+
+        {/* ── Progression strip (main stage) ─────────────── */}
+        <View style={styles.stripStage}>
+          <View style={styles.stripHeader}>
+            <View style={styles.stripTitleRow}>
+              <Text style={styles.stripTitle}>コード進行</Text>
+              <Pressable
+                onPress={() => router.push('/append-progression')}
+                hitSlop={6}
+                accessibilityRole="button"
+                accessibilityLabel="保存した進行を末尾に追加"
+                style={styles.addProgBtn}>
+                <Icon name="plus" size={12} color={colors.primary} strokeWidth={2.6} />
+                <Text style={styles.addProgBtnText}>追加</Text>
+              </Pressable>
+              {progression.length > 0 ? (
+                <Pressable
+                  onPress={() => session.clearProgression()}
+                  hitSlop={6}
+                  accessibilityRole="button"
+                  accessibilityLabel="コードをすべて削除"
+                  style={styles.resetBtn}>
+                  <Icon name="trash" size={12} color={colors.textFaint} strokeWidth={2} />
+                  <Text style={styles.resetBtnText}>リセット</Text>
+                </Pressable>
+              ) : null}
+            </View>
+            <View style={styles.stripMeta}>
+              <Text style={styles.stripKey}>KEY {key}</Text>
+              <Text style={styles.barCount}>
+                {totalBars} / {MAX_BARS}小節
+              </Text>
+            </View>
+          </View>
+
+          {multiKey && (
+            <View style={styles.keyLegend}>
+              {keyLegend.map((k, i) => (
+                <View key={k} style={styles.keyLegendItem}>
+                  <View style={[styles.keyLegendDot, { backgroundColor: slotColor(i) }]} />
+                  <Text style={styles.keyLegendText}>
+                    {k}
+                    {i === 0 ? '（基準）' : ''}
                   </Text>
-                  {corePills.length > 0 && (
-                    <CPVariationPills pills={corePills} onPress={pickVariation} />
-                  )}
-                  {moreTensionCount > 0 && (
-                    <>
-                      <Pressable
-                        accessibilityRole="button"
-                        accessibilityState={{ expanded: showMoreTensions }}
-                        style={styles.varMoreToggle}
-                        onPress={() => setShowMoreTensions((v) => !v)}>
-                        <Text style={styles.varMoreText}>
-                          {showMoreTensions ? '色づけを閉じる' : `もっと色づけ（${moreTensionCount}）`}
-                        </Text>
-                        <View style={showMoreTensions && styles.varMoreChevronOpen}>
-                          <Icon
-                            name="chevronDown"
-                            size={12}
-                            color={colors.pinkText}
-                            strokeWidth={2.4}
-                          />
-                        </View>
-                      </Pressable>
-                      {showMoreTensions && extendedPills.length > 0 && (
-                        <CPVariationPills pills={extendedPills} onPress={pickVariation} />
-                      )}
-                      {showMoreTensions && alteredPills.length > 0 && (
-                        <>
-                          <Text style={styles.varTierTitle}>オルタード</Text>
-                          <Text style={styles.varTierHint}>
-                            スケール外の音や、隣とぶつかる音を含む強い響きです
-                          </Text>
-                          <CPVariationPills pills={alteredPills} onPress={pickVariation} />
-                        </>
-                      )}
-                    </>
-                  )}
-                </>
-              )}
+                </View>
+              ))}
             </View>
           )}
 
-          {tab === 'advanced' && (
-            <View>
-              {selectedEvent ? (
-                <Text style={styles.editBanner}>
-                  編集中：{selectedEvent.displayName} — タップで差し替え
-                </Text>
-              ) : (
-                <Text style={styles.subHint}>未選択時は末尾に追加</Text>
-              )}
-              <Text style={styles.groupTitle}>SECONDARY DOMINANT</Text>
-              <View style={styles.grid}>
-                {secDoms.map((c) => (
-                  <LibraryCard
-                    key={c.id}
-                    chord={c}
-                    width={wAdv}
-                    unlocked={ent.palettePro}
-                    onPress={() => pickChord(c)}
-                  />
-                ))}
+          {progression.length === 0 ? (
+            <View style={styles.emptyStrip}>
+              <Text style={styles.emptyHint}>① 下のライブラリを開いてコードをタップ</Text>
+              <Text style={styles.emptyHintSub}>② ▶ で再生 — これだけで完成</Text>
+            </View>
+          ) : (
+            <ScrollView
+              ref={stripScrollRef}
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              style={styles.stripScroll}
+              contentContainerStyle={styles.stripScrollContent}
+              onLayout={(e) => {
+                stripViewportW.current = e.nativeEvent.layout.width;
+              }}>
+              <View style={styles.stripRow}>
+                {progression.map((ev, i) => {
+                  const isActivePlay = i === playingIndex;
+                  const fn = functionColor[ev.function];
+                  const neon = playNeonColor[ev.function];
+                  return (
+                    <React.Fragment key={ev.id}>
+                      <Pressable
+                        onPress={() => setSelected(i)}
+                        onLongPress={() => openChordMenu(i)}
+                        delayLongPress={350}
+                        accessibilityRole="button"
+                        accessibilityLabel={`${ev.displayName} ${ev.degreeLabel}`}
+                        accessibilityHint="長押しで編集メニュー"
+                        accessibilityState={{ selected: i === selected }}
+                        onLayout={(e) => {
+                          const { x, width } = e.nativeEvent.layout;
+                          cardLayoutsRef.current[i] = { x, width };
+                          // First layout after play starts may race the effect — center here too.
+                          if (i === playingIndex && stripViewportW.current > 0) {
+                            const targetX = x + width / 2 - stripViewportW.current / 2;
+                            stripScrollRef.current?.scrollTo({
+                              x: Math.max(0, targetX),
+                              animated: true,
+                            });
+                          }
+                        }}>
+                        <Animated.View
+                          style={[
+                            styles.timeCard,
+                            { borderLeftColor: fn, backgroundColor: rgba(fn, 0.1) },
+                            i === selected && !isActivePlay && styles.timeCardSelected,
+                            isActivePlay && styles.timeCardPlaying,
+                            isActivePlay && {
+                              backgroundColor: rgba(neon, 0.38),
+                              borderColor: neon,
+                              borderLeftColor: neon,
+                              shadowColor: neon,
+                            },
+                            isActivePlay &&
+                              !reduceMotion && {
+                                transform: [
+                                  {
+                                    translateY: playLift.interpolate({
+                                      inputRange: [0, 1],
+                                      outputRange: [0, -6],
+                                    }),
+                                  },
+                                ],
+                              },
+                            isActivePlay &&
+                              reduceMotion && {
+                                opacity: 0.96,
+                              },
+                          ]}>
+                          <View style={styles.timeTop}>
+                            <Text style={[styles.timeName, isActivePlay && styles.timeNamePlaying]}>
+                              {ev.displayName}
+                            </Text>
+                            <Text style={[styles.timeDegree, { color: isActivePlay ? neon : fn }]}>
+                              {ev.degreeLabel}
+                            </Text>
+                          </View>
+                          <View style={styles.timeDur}>
+                            <Text
+                              style={[
+                                styles.timeDurText,
+                                isActivePlay && styles.timeDurTextPlaying,
+                              ]}>
+                              {durationLabel(ev.durationBeats)}
+                            </Text>
+                          </View>
+                          {multiKey && (
+                            <View
+                              style={[
+                                styles.keyBar,
+                                {
+                                  backgroundColor: slotColor(keySlots.get(eventKey(ev, key)) ?? 0),
+                                },
+                              ]}
+                            />
+                          )}
+                        </Animated.View>
+                      </Pressable>
+                      {i < progression.length - 1 && <Text style={styles.arrow}>→</Text>}
+                    </React.Fragment>
+                  );
+                })}
               </View>
-              <Text style={[styles.groupTitle, { marginTop: 8 }]}>MODAL INTERCHANGE</Text>
-              <View style={styles.grid}>
-                {modals.map((c) => (
-                  <LibraryCard
-                    key={c.id}
-                    chord={c}
-                    width={wAdv}
-                    unlocked={ent.palettePro}
-                    onPress={() => pickChord(c)}
-                  />
-                ))}
-              </View>
+            </ScrollView>
+          )}
 
-              {/*
+          {/* Selected chord length switch (1 / 1/2 / 1/4 bar) */}
+          {selectedEvent ? (
+            <View style={styles.durationBar}>
+              <Text style={styles.durationBarLabel}>
+                長さ<Text style={styles.durationBarChord}> · {selectedEvent.displayName}</Text>
+              </Text>
+              <SegTrack
+                options={DURATION_OPTIONS}
+                value={String(selectedEvent.durationBeats)}
+                onChange={(k) => {
+                  hapticSelection();
+                  const beats = Number(k) as ChordDuration;
+                  actions.setDuration(beats);
+                  track('chord_duration_changed', { beats });
+                }}
+                style={styles.durationSeg}
+              />
+            </View>
+          ) : null}
+        </View>
+
+        {/* ── 続き候補（ワンタップ提案・末尾に追加。編集中は非表示） ── */}
+        {selected < 0 ? (
+          <CPSuggestionBar suggestions={chordSuggestions.suggestions} onPick={pickSuggestion} />
+        ) : null}
+
+        {/* ── Chord library (collapsible; collapsed by default) ── */}
+        <View style={styles.libHeader}>
+          <Text style={styles.libTitle}>コードライブラリ</Text>
+          <Pressable onPress={() => setLibOpen((o) => !o)} hitSlop={10} style={styles.chevronBtn}>
+            <View style={{ transform: [{ rotate: libOpen ? '0deg' : '-90deg' }] }}>
+              <Icon name="chevronDown" size={18} color={colors.textMuted} strokeWidth={2.4} />
+            </View>
+          </Pressable>
+        </View>
+        {progression.length === 0 ? (
+          <Text style={styles.libPlayHint}>コードを追加すると再生できます</Text>
+        ) : null}
+
+        {libOpen && (
+          <>
+            <SegTrack
+              options={[
+                { key: 'diatonic', label: 'ダイアトニック' },
+                { key: 'advanced', label: '応用' },
+                { key: 'slash', label: 'オンコード' },
+              ]}
+              value={tab}
+              onChange={(k) => setTab(k as LibraryTab)}
+              style={styles.tabTrack}
+            />
+
+            {tab === 'diatonic' && (
+              <View>
+                <SegTrack
+                  options={[
+                    { key: 'triad', label: '3和音' },
+                    { key: 'seventh', label: 'セブンス (4和音)' },
+                  ]}
+                  value={chordSize}
+                  onChange={(k) => setChordSize(k as 'triad' | 'seventh')}
+                  style={styles.tabTrack}
+                />
+                {selectedEvent ? (
+                  <Text style={styles.editBanner}>
+                    編集中：{selectedEvent.displayName}（{selectedEvent.degreeLabel}）—
+                    タップで差し替え／もう一度カードをタップで解除→末尾に追加
+                  </Text>
+                ) : (
+                  <Text style={styles.subHint}>未選択：ライブラリのタップで進行の末尾に追加</Text>
+                )}
+                <View style={styles.grid}>
+                  {diatonicGrid.map((c) => (
+                    <LibraryCard
+                      key={c.id}
+                      chord={c}
+                      width={wDia}
+                      unlocked={ent.palettePro}
+                      onPress={() => pickChord(c)}
+                    />
+                  ))}
+                </View>
+
+                <Text style={styles.subHint}>
+                  バリエーション（飾り付け）— 選んだ進行コードに適用
+                </Text>
+                {!selectedEvent ? (
+                  <Text style={styles.varEmptyHint}>
+                    上のコード進行でカードをタップしてから、飾り付けを選んでください
+                  </Text>
+                ) : selectedDegree < 0 ? (
+                  <Text style={styles.varEmptyHint}>
+                    このコードはダイアトニック以外のため、ここでの飾り付けは使えません（差し替えは上のグリッドから）
+                  </Text>
+                ) : corePills.length === 0 && moreTensionCount === 0 ? (
+                  <Text style={styles.varEmptyHint}>
+                    この度数（{selectedEvent.degreeLabel}）に足せるテンションはありません
+                  </Text>
+                ) : (
+                  <>
+                    <Text style={styles.varApplyTo}>
+                      適用先： {selectedEvent.displayName}（{selectedEvent.degreeLabel}）
+                    </Text>
+                    {corePills.length > 0 && (
+                      <CPVariationPills pills={corePills} onPress={pickVariation} />
+                    )}
+                    {moreTensionCount > 0 && (
+                      <>
+                        <Pressable
+                          accessibilityRole="button"
+                          accessibilityState={{ expanded: showMoreTensions }}
+                          style={styles.varMoreToggle}
+                          onPress={() => setShowMoreTensions((v) => !v)}>
+                          <Text style={styles.varMoreText}>
+                            {showMoreTensions
+                              ? '色づけを閉じる'
+                              : `もっと色づけ（${moreTensionCount}）`}
+                          </Text>
+                          <View style={showMoreTensions && styles.varMoreChevronOpen}>
+                            <Icon
+                              name="chevronDown"
+                              size={12}
+                              color={colors.pinkText}
+                              strokeWidth={2.4}
+                            />
+                          </View>
+                        </Pressable>
+                        {showMoreTensions && extendedPills.length > 0 && (
+                          <CPVariationPills pills={extendedPills} onPress={pickVariation} />
+                        )}
+                        {showMoreTensions && alteredPills.length > 0 && (
+                          <>
+                            <Text style={styles.varTierTitle}>オルタード</Text>
+                            <Text style={styles.varTierHint}>
+                              スケール外の音や、隣とぶつかる音を含む強い響きです
+                            </Text>
+                            <CPVariationPills pills={alteredPills} onPress={pickVariation} />
+                          </>
+                        )}
+                      </>
+                    )}
+                  </>
+                )}
+              </View>
+            )}
+
+            {tab === 'advanced' && (
+              <View>
+                {selectedEvent ? (
+                  <Text style={styles.editBanner}>
+                    編集中：{selectedEvent.displayName} — タップで差し替え
+                  </Text>
+                ) : (
+                  <Text style={styles.subHint}>未選択時は末尾に追加</Text>
+                )}
+                <Text style={styles.groupTitle}>SECONDARY DOMINANT</Text>
+                <View style={styles.grid}>
+                  {secDoms.map((c) => (
+                    <LibraryCard
+                      key={c.id}
+                      chord={c}
+                      width={wAdv}
+                      unlocked={ent.palettePro}
+                      onPress={() => pickChord(c)}
+                    />
+                  ))}
+                </View>
+                <Text style={[styles.groupTitle, { marginTop: 8 }]}>MODAL INTERCHANGE</Text>
+                <View style={styles.grid}>
+                  {modals.map((c) => (
+                    <LibraryCard
+                      key={c.id}
+                      chord={c}
+                      width={wAdv}
+                      unlocked={ent.palettePro}
+                      onPress={() => pickChord(c)}
+                    />
+                  ))}
+                </View>
+
+                {/*
                 Future harmony techniques (diminished passing, augmented, …) are not
                 advertised until they ship — App Store Guideline 2.3.x discourages
                 "coming soon" placeholders. Re-add a functional section here when live.
               */}
-            </View>
-          )}
+              </View>
+            )}
 
-          {tab === 'slash' && (
-            <View>
-              <Text style={styles.subHint}>オンコード — 選んだ進行コードにベースを付ける</Text>
-              {!selectedEvent ? (
-                <Text style={styles.varEmptyHint}>
-                  上のコード進行でカードをタップしてから、ベース音を選んでください
-                </Text>
-              ) : (
-                <>
-                  <View style={styles.slashPreviewBox}>
-                    <Text style={styles.slashPreview}>
-                      {selectedEvent.displayName.split('/')[0]}
-                      <Text style={styles.slashPreviewDim}>/ベース</Text>
-                    </Text>
-                    <Text style={styles.slashPreviewNote}>ベース音を選ぶと、その場で差し替え</Text>
-                  </View>
+            {tab === 'slash' && (
+              <View>
+                <Text style={styles.subHint}>オンコード — 選んだ進行コードにベースを付ける</Text>
+                {!selectedEvent ? (
+                  <Text style={styles.varEmptyHint}>
+                    上のコード進行でカードをタップしてから、ベース音を選んでください
+                  </Text>
+                ) : (
+                  <>
+                    <View style={styles.slashPreviewBox}>
+                      <Text style={styles.slashPreview}>
+                        {selectedEvent.displayName.split('/')[0]}
+                        <Text style={styles.slashPreviewDim}>/ベース</Text>
+                      </Text>
+                      <Text style={styles.slashPreviewNote}>
+                        ベース音を選ぶと、その場で差し替え
+                      </Text>
+                    </View>
 
-                  <Text style={styles.subHint}>ベース音</Text>
-                  <View style={styles.grid}>
-                    {bassNotes.map((n) => {
-                      const body: LibraryChord = {
-                        id: selectedEvent.chordId,
-                        displayName: selectedEvent.displayName.split('/')[0],
-                        degreeLabel: selectedEvent.degreeLabel.split('/')[0],
-                        function: selectedEvent.function,
-                        rootOffset: selectedEvent.rootOffset,
-                        suffix: selectedEvent.suffix,
-                        category: selectedEvent.category ?? 'diatonic',
-                        variation: selectedEvent.variation,
-                        isPro: selectedEvent.isPro,
-                      };
-                      const preview = slashChord(key, body, n);
-                      return (
-                        <Pressable
-                          key={n}
-                          style={[styles.bassChip, { width: wBass }]}
-                          onPress={() => pickChord(preview)}>
-                          <Text style={styles.bassChipText}>/{n}</Text>
-                        </Pressable>
-                      );
-                    })}
-                  </View>
-                </>
-              )}
-            </View>
-          )}
-        </>
-      )}
+                    <Text style={styles.subHint}>ベース音</Text>
+                    <View style={styles.grid}>
+                      {bassNotes.map((n) => {
+                        const body: LibraryChord = {
+                          id: selectedEvent.chordId,
+                          displayName: selectedEvent.displayName.split('/')[0],
+                          degreeLabel: selectedEvent.degreeLabel.split('/')[0],
+                          function: selectedEvent.function,
+                          rootOffset: selectedEvent.rootOffset,
+                          suffix: selectedEvent.suffix,
+                          category: selectedEvent.category ?? 'diatonic',
+                          variation: selectedEvent.variation,
+                          isPro: selectedEvent.isPro,
+                        };
+                        const preview = slashChord(key, body, n);
+                        return (
+                          <Pressable
+                            key={n}
+                            style={[styles.bassChip, { width: wBass }]}
+                            onPress={() => pickChord(preview)}>
+                            <Text style={styles.bassChipText}>/{n}</Text>
+                          </Pressable>
+                        );
+                      })}
+                    </View>
+                  </>
+                )}
+              </View>
+            )}
+          </>
+        )}
 
-      {/*
+        {/*
         Melody presets are a planned feature. Not advertised on the shipping build
         (App Store Guideline 2.3.x — no "coming soon" placeholders). Restore this
         section with a functional entry point when the feature is live.
       */}
 
-      {/* ── Chord Context Menu (Long Press → 編集) ───────── */}
-      {chordContext.visible && selectedEvent && (
-        <CPChordContextMenu
-          visible={contextMenuOpen}
-          chordLabel={selectedEvent.displayName}
-          degreeLabel={selectedEvent.degreeLabel}
-          durationBeats={selectedEvent.durationBeats}
-          context={chordContext}
-          onRequestClose={() => setContextMenuOpen(false)}
-          onDuplicate={() => {
-            actions.duplicateSelected();
-            setContextMenuOpen(false);
-          }}
-          onMoveLeft={actions.moveSelectedLeft}
-          onMoveRight={actions.moveSelectedRight}
-          onDelete={() => {
-            actions.deleteSelected();
-            track('chord_removed');
-            setContextMenuOpen(false);
-          }}
-          onSetDuration={(beats) => {
-            actions.setDuration(beats);
-            track('chord_duration_changed', { beats });
-          }}
-        />
-      )}
+        {/* ── Chord Context Menu (Long Press → 編集) ───────── */}
+        {chordContext.visible && selectedEvent && (
+          <CPChordContextMenu
+            visible={contextMenuOpen}
+            chordLabel={selectedEvent.displayName}
+            degreeLabel={selectedEvent.degreeLabel}
+            durationBeats={selectedEvent.durationBeats}
+            context={chordContext}
+            onRequestClose={() => setContextMenuOpen(false)}
+            onDuplicate={() => {
+              actions.duplicateSelected();
+              setContextMenuOpen(false);
+            }}
+            onMoveLeft={actions.moveSelectedLeft}
+            onMoveRight={actions.moveSelectedRight}
+            onDelete={() => {
+              actions.deleteSelected();
+              track('chord_removed');
+              setContextMenuOpen(false);
+            }}
+            onSetDuration={(beats) => {
+              actions.setDuration(beats);
+              track('chord_duration_changed', { beats });
+            }}
+          />
+        )}
 
-      {/* ── BPM picker modal ───────────────────────────── */}
-      <Modal
-        visible={bpmPickerOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setBpmPickerOpen(false)}>
-        <Pressable style={styles.modalBackdrop} onPress={() => setBpmPickerOpen(false)}>
-          <View style={styles.keyPicker}>
-            <Text style={styles.keyPickerTitle}>テンポ（BPM）</Text>
-            <View style={styles.keyGrid}>
-              {BPM_PRESETS.map((b) => (
-                <Pressable
-                  key={b}
-                  onPress={() => {
-                    changeTempo(b);
-                    setBpmPickerOpen(false);
-                  }}
-                  style={[styles.keyOption, b === bpm && styles.keyOptionActive]}>
-                  <Text style={[styles.keyOptionText, b === bpm && styles.keyOptionTextActive]}>
-                    {b}
-                  </Text>
-                </Pressable>
-              ))}
-            </View>
-            <View style={styles.bpmFineRow}>
-              <Pressable style={styles.bpmFineBtn} onPress={() => changeTempo(bpm - 1)} hitSlop={6}>
-                <Text style={styles.bpmFineText}>− 1</Text>
-              </Pressable>
-              <Text style={styles.bpmFineValue}>{bpm} BPM</Text>
-              <Pressable style={styles.bpmFineBtn} onPress={() => changeTempo(bpm + 1)} hitSlop={6}>
-                <Text style={styles.bpmFineText}>+ 1</Text>
-              </Pressable>
-            </View>
-            <Pressable
-              style={styles.sessionTap}
-              onPress={tapTempo}
-              accessibilityRole="button"
-              accessibilityLabel="タップテンポ"
-              accessibilityHint="ボタンを一定間隔で連打してテンポを設定">
-              <Text style={styles.sessionTapText}>TAP TEMPO</Text>
-            </Pressable>
-          </View>
-        </Pressable>
-      </Modal>
-
-      {/* ── Key picker modal ───────────────────────────── */}
-      <Modal
-        visible={keyPickerOpen}
-        transparent
-        animationType="fade"
-        onRequestClose={() => setKeyPickerOpen(false)}>
-        <Pressable style={styles.modalBackdrop} onPress={() => setKeyPickerOpen(false)}>
-          <View style={styles.keyPicker}>
-            <Text style={styles.keyPickerTitle}>キーを選択</Text>
-            <SegTrack
-              options={[
-                { key: 'change', label: 'キー変更' },
-                { key: 'transpose', label: '移調' },
-              ]}
-              value={keyMode}
-              onChange={(k) => setKeyMode(k as 'change' | 'transpose')}
-              style={styles.keyModeTrack}
-            />
-            <Text style={styles.keyModeHint}>
-              {keyMode === 'transpose'
-                ? '曲全体を選んだキーへ移調します（配置済みコードも動きます）'
-                : '配置済みコードはそのまま。ライブラリ／スケールの基準キーだけ変えます'}
-            </Text>
-            <View style={styles.keyGrid}>
-              {MAJOR_KEYS.map((k) => {
-                const locked = isKeyLocked(k, ent);
-                return (
+        {/* ── BPM picker modal ───────────────────────────── */}
+        <Modal
+          visible={bpmPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setBpmPickerOpen(false)}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setBpmPickerOpen(false)}>
+            <View style={styles.keyPicker}>
+              <Text style={styles.keyPickerTitle}>テンポ（BPM）</Text>
+              <View style={styles.keyGrid}>
+                {BPM_PRESETS.map((b) => (
                   <Pressable
-                    key={k}
-                    onPress={() => changeKey(k)}
-                    style={[
-                      styles.keyOption,
-                      k === key && styles.keyOptionActive,
-                      locked && styles.keyOptionLocked,
-                    ]}>
-                    <Text
-                      style={[
-                        styles.keyOptionText,
-                        k === key && styles.keyOptionTextActive,
-                        locked && styles.keyOptionTextLocked,
-                      ]}>
-                      {k}
+                    key={b}
+                    onPress={() => {
+                      changeTempo(b);
+                      setBpmPickerOpen(false);
+                    }}
+                    style={[styles.keyOption, b === bpm && styles.keyOptionActive]}>
+                    <Text style={[styles.keyOptionText, b === bpm && styles.keyOptionTextActive]}>
+                      {b}
                     </Text>
-                    {locked && (
-                      <Icon name="lock" size={11} color={colors.textFaint} style={styles.keyOptionLock} />
-                    )}
                   </Pressable>
-                );
-              })}
+                ))}
+              </View>
+              <View style={styles.bpmFineRow}>
+                <Pressable
+                  style={styles.bpmFineBtn}
+                  onPress={() => changeTempo(bpm - 1)}
+                  hitSlop={6}>
+                  <Text style={styles.bpmFineText}>− 1</Text>
+                </Pressable>
+                <Text style={styles.bpmFineValue}>{bpm} BPM</Text>
+                <Pressable
+                  style={styles.bpmFineBtn}
+                  onPress={() => changeTempo(bpm + 1)}
+                  hitSlop={6}>
+                  <Text style={styles.bpmFineText}>+ 1</Text>
+                </Pressable>
+              </View>
+              <Pressable
+                style={styles.sessionTap}
+                onPress={tapTempo}
+                accessibilityRole="button"
+                accessibilityLabel="タップテンポ"
+                accessibilityHint="ボタンを一定間隔で連打してテンポを設定">
+                <Text style={styles.sessionTapText}>TAP TEMPO</Text>
+              </Pressable>
             </View>
-            {!ent.palettePro && (
-              <Text style={styles.keyFreeHint}>
-                無料版はCメジャーのみ。他のキーは Palette Pro で解放されます。
+          </Pressable>
+        </Modal>
+
+        {/* ── Key picker modal ───────────────────────────── */}
+        <Modal
+          visible={keyPickerOpen}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setKeyPickerOpen(false)}>
+          <Pressable style={styles.modalBackdrop} onPress={() => setKeyPickerOpen(false)}>
+            <View style={styles.keyPicker}>
+              <Text style={styles.keyPickerTitle}>キーを選択</Text>
+              <SegTrack
+                options={[
+                  { key: 'change', label: 'キー変更' },
+                  { key: 'transpose', label: '移調' },
+                ]}
+                value={keyMode}
+                onChange={(k) => setKeyMode(k as 'change' | 'transpose')}
+                style={styles.keyModeTrack}
+              />
+              <Text style={styles.keyModeHint}>
+                {keyMode === 'transpose'
+                  ? '曲全体を選んだキーへ移調します（配置済みコードも動きます）'
+                  : '配置済みコードはそのまま。ライブラリ／スケールの基準キーだけ変えます'}
               </Text>
-            )}
-          </View>
-        </Pressable>
-      </Modal>
-    </ScreenScaffold>
+              <View style={styles.keyGrid}>
+                {MAJOR_KEYS.map((k) => {
+                  const locked = isKeyLocked(k, ent);
+                  return (
+                    <Pressable
+                      key={k}
+                      onPress={() => changeKey(k)}
+                      style={[
+                        styles.keyOption,
+                        k === key && styles.keyOptionActive,
+                        locked && styles.keyOptionLocked,
+                      ]}>
+                      <Text
+                        style={[
+                          styles.keyOptionText,
+                          k === key && styles.keyOptionTextActive,
+                          locked && styles.keyOptionTextLocked,
+                        ]}>
+                        {k}
+                      </Text>
+                      {locked && (
+                        <Icon
+                          name="lock"
+                          size={11}
+                          color={colors.textFaint}
+                          style={styles.keyOptionLock}
+                        />
+                      )}
+                    </Pressable>
+                  );
+                })}
+              </View>
+              {!ent.palettePro && (
+                <Text style={styles.keyFreeHint}>
+                  無料版はCメジャーのみ。他のキーは Palette Pro で解放されます。
+                </Text>
+              )}
+            </View>
+          </Pressable>
+        </Modal>
+      </ScreenScaffold>
       <UpsellToast message={upsell.message} onPress={() => router.push('/paywall')} />
       <CPCoachMarks visible={showTutorial} onDismiss={dismissTutorial} />
     </View>
@@ -1164,7 +1204,7 @@ function IconBtn({
       <Icon
         name={icon}
         size={18}
-        color={disabled ? colors.textFaintest : tint ?? colors.textMuted}
+        color={disabled ? colors.textFaintest : (tint ?? colors.textMuted)}
         strokeWidth={2.2}
       />
     </Pressable>
@@ -1327,8 +1367,18 @@ const styles = StyleSheet.create({
     paddingVertical: 10,
     paddingHorizontal: 18,
   },
-  bpmFineText: { fontSize: 14, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
-  bpmFineValue: { fontSize: 15, color: colors.textPrimary, fontFamily: font.bold, fontWeight: '700' },
+  bpmFineText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontFamily: font.bold,
+    fontWeight: '700',
+  },
+  bpmFineValue: {
+    fontSize: 15,
+    color: colors.textPrimary,
+    fontFamily: font.bold,
+    fontWeight: '700',
+  },
 
   /* progression strip — main stage */
   stripStage: {
@@ -1408,7 +1458,12 @@ const styles = StyleSheet.create({
   },
   keyLegendItem: { flexDirection: 'row', alignItems: 'center', gap: 5 },
   keyLegendDot: { width: 9, height: 9, borderRadius: 3 },
-  keyLegendText: { fontSize: 10.5, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
+  keyLegendText: {
+    fontSize: 10.5,
+    color: colors.textDim,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   keyBar: {
     position: 'absolute',
     left: 8,
@@ -1461,7 +1516,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     backgroundColor: rgba(colors.primary, 0.06),
   },
-  emptyHint: { fontSize: typeSize.label, color: colors.textSecondary, fontFamily: font.semibold, fontWeight: '600' },
+  emptyHint: {
+    fontSize: typeSize.label,
+    color: colors.textSecondary,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   emptyHintSub: {
     fontSize: 12,
     color: colors.textFaint,
@@ -1604,7 +1664,13 @@ const styles = StyleSheet.create({
   },
   libCardLocked: { backgroundColor: colors.surfaceLocked, borderColor: colors.borderFaint },
   libTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  libDegree: { flexShrink: 1, fontSize: 9.5, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
+  libDegree: {
+    flexShrink: 1,
+    fontSize: 9.5,
+    color: colors.textDim,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   libDot: { width: 7, height: 7, borderRadius: 4 },
   libName: {
     fontSize: typeSize.body,
@@ -1622,7 +1688,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 5,
     paddingVertical: 2,
   },
-  libPillText: { fontSize: 8.5, color: colors.textTertiary, fontFamily: font.semibold, fontWeight: '600' },
+  libPillText: {
+    fontSize: 8.5,
+    color: colors.textTertiary,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   libBadge: { marginLeft: 'auto', borderRadius: 5, paddingHorizontal: 5, paddingVertical: 2 },
   libBadgeText: { fontSize: 8.5, fontFamily: font.bold, fontWeight: '700' },
   libLock: { position: 'absolute', top: 6, right: 7 },
@@ -1716,7 +1787,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.s12,
   },
   degreeChipActive: { backgroundColor: rgba(colors.primary, 0.2), borderColor: colors.primary },
-  degreeChipText: { fontSize: 12, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
+  degreeChipText: {
+    fontSize: 12,
+    color: colors.textMuted,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   degreeChipTextActive: { color: colors.textBright, fontFamily: font.bold, fontWeight: '700' },
   targetChip: {
     minHeight: 44,
@@ -1796,8 +1872,18 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 14,
   },
-  slashPreview: { fontSize: 22, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
-  slashPreviewDim: { fontSize: 15, color: colors.textFaint, fontFamily: font.semibold, fontWeight: '600' },
+  slashPreview: {
+    fontSize: 22,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.textPrimary,
+  },
+  slashPreviewDim: {
+    fontSize: 15,
+    color: colors.textFaint,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   slashPreviewNote: { fontSize: 10.5, color: colors.textFaint, marginTop: 4 },
   bassChip: {
     minHeight: 44,
@@ -1809,7 +1895,12 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.s12,
     alignItems: 'center',
   },
-  bassChipText: { fontSize: typeSize.label, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
+  bassChipText: {
+    fontSize: typeSize.label,
+    color: colors.textSecondary,
+    fontFamily: font.bold,
+    fontWeight: '700',
+  },
 
   /* key picker modal */
   modalBackdrop: {
@@ -1856,7 +1947,12 @@ const styles = StyleSheet.create({
   },
   keyOptionActive: { backgroundColor: rgba(colors.primary, 0.22), borderColor: colors.primary },
   keyOptionLocked: { opacity: 0.55 },
-  keyOptionText: { fontSize: 14, color: colors.textSecondary, fontFamily: font.bold, fontWeight: '700' },
+  keyOptionText: {
+    fontSize: 14,
+    color: colors.textSecondary,
+    fontFamily: font.bold,
+    fontWeight: '700',
+  },
   keyOptionTextActive: { color: colors.textBright },
   keyOptionTextLocked: { color: colors.textFaint },
   keyOptionLock: { position: 'absolute', top: 4, right: 4 },

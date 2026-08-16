@@ -20,6 +20,12 @@ function authored(): PerfChord[] {
     bodyMidi: [root, root + 4, root + 7],
     bassMidi: [root - 24],
     arpMidi: [root, root + 4, root + 7, root + 11],
+    harmony: {
+      symbol: `root-${root}`,
+      rootPc: root % 12,
+      quality: 'major',
+      chordIntervals: [0, 4, 7],
+    },
     startBeat: bar * 4,
     durationBeats: 4,
   }));

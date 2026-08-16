@@ -1,0 +1,85 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chordpalette.local/schemas/app_profile_manifest.schema.json",
+  "title": "AppProfileManifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "profileId",
+    "evidence",
+    "style",
+    "generatedAt",
+    "sources",
+    "rules",
+    "compliance",
+    "doesNotInclude"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "app-profile-v1" },
+    "profileId": { "type": "string", "minLength": 1 },
+    "evidence": { "const": "DESIGN_TARGET" },
+    "style": {
+      "type": "string",
+      "enum": ["ballad", "band", "city", "dance", "rnb"]
+    },
+    "generatedAt": { "type": "string", "format": "date-time" },
+    "sources": {
+      "type": "object",
+      "required": ["aggregateIds", "listeningNotes"],
+      "properties": {
+        "aggregateIds": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "listeningNotes": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "USER_LISTENING refs; empty array if none"
+        },
+        "hypotheses": {
+          "type": "array",
+          "items": { "type": "string" }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "description": "Chord Palette-owned generation rules (portable, non-reconstructive).",
+      "items": {
+        "type": "object",
+        "required": ["id", "description", "engineTouchpoints", "transformFromAggregate"],
+        "properties": {
+          "id": { "type": "string" },
+          "description": { "type": "string" },
+          "engineTouchpoints": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "transformFromAggregate": { "type": "string" },
+          "parameters": {
+            "type": "object",
+            "additionalProperties": true
+          }
+        }
+      }
+    },
+    "compliance": {
+      "type": "object",
+      "required": ["checklistVersion", "allPassed", "reviewedAt"],
+      "properties": {
+        "checklistVersion": { "type": "string" },
+        "allPassed": { "type": "boolean" },
+        "reviewedAt": { "type": "string", "format": "date-time" },
+        "reviewer": { "type": "string" }
+      }
+    },
+    "doesNotInclude": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "type": "string" },
+      "description": "Explicit non-goals, e.g. source MIDI, song-title mapping, melodies."
+    },
+    "notes": { "type": "string" }
+  }
+}

@@ -1,8 +1,8 @@
 import type { NoteEvent as PerfNote } from '@/lib/performance/NoteEvent';
 import {
-  mapPerfNotesToPlaybackRequest,
-  performanceSeedFromSession,
-  type PlaybackSessionSnapshot,
+    mapPerfNotesToPlaybackRequest,
+    performanceSeedFromSession,
+    type PlaybackSessionSnapshot,
 } from '@/services/audio/performanceMapper';
 
 function note(partial: Partial<PerfNote> & Pick<PerfNote, 'pitch' | 'trackId'>): PerfNote {
@@ -54,7 +54,7 @@ describe('performanceSeedFromSession', () => {
     // the default reading contributes nothing to the fingerprint.
     const natural = { ...baseSession, accompanimentPattern: 'natural' };
     const before = performanceSeedFromSession(natural);
-    for (const variant of [undefined, '', 'natural.auto', 'nonsense']) {
+    for (const variant of [undefined, '', 'natural.type1', 'nonsense']) {
       expect(performanceSeedFromSession({ ...natural, accompanimentVariant: variant })).toBe(
         before,
       );

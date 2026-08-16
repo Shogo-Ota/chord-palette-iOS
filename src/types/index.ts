@@ -34,6 +34,7 @@ export type AccompanimentPattern =
   | 'block'
   | 'arpeggio'
   | 'natural'
+  | 'city'
   | 'driving'
   | 'relaxed'
   | 'beat8'
@@ -223,6 +224,11 @@ export type Project = {
    * read path normalizes it against whichever variants the accompaniment offers.
    */
   accompanimentVariant: string;
+  /**
+   * Style × Energy 「盛り上がり」(`verse` / `build` / `chorus`). Independent of
+   * Style. Default `build` preserves pre-Energy projects.
+   */
+  accompanimentEnergy: string;
   chordEvents: ChordEvent[];
   /** epoch millis */
   createdAt: number;
@@ -242,6 +248,7 @@ export type NewProjectInput = Partial<
     | 'grooveId'
     | 'accompanimentPattern'
     | 'accompanimentVariant'
+    | 'accompanimentEnergy'
     | 'chordEvents'
   >
 >;

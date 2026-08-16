@@ -1,0 +1,144 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://chordpalette.local/schemas/song_analysis.schema.json",
+  "title": "MeasuredSongFeatures",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schemaVersion",
+    "songId",
+    "style",
+    "evidence",
+    "source",
+    "measuredAt",
+    "timing",
+    "chord",
+    "bass",
+    "drums",
+    "phrase",
+    "songSpecific",
+    "portableCandidates"
+  ],
+  "properties": {
+    "schemaVersion": { "const": "song-features-v1" },
+    "songId": { "type": "string", "minLength": 1 },
+    "title": { "type": "string" },
+    "artist": { "type": "string" },
+    "style": {
+      "type": "string",
+      "enum": ["ballad", "band", "city", "dance", "rnb"]
+    },
+    "evidence": { "const": "MEASURED_SONG" },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "registryId",
+        "localRelativePath",
+        "verificationStatus",
+        "derivativeUseAllowed",
+        "commercialUseAllowed"
+      ],
+      "properties": {
+        "registryId": { "type": "string" },
+        "localRelativePath": { "type": "string" },
+        "verificationStatus": { "const": "verified" },
+        "derivativeUseAllowed": { "const": true },
+        "commercialUseAllowed": { "type": "boolean" },
+        "licenseType": { "type": "string" },
+        "sha256": { "type": "string" }
+      }
+    },
+    "measuredAt": { "type": "string", "format": "date-time" },
+    "tempoBpm": { "type": "number", "exclusiveMinimum": 0 },
+    "timeSignature": {
+      "type": "object",
+      "required": ["beatsPerBar", "beatUnit"],
+      "properties": {
+        "beatsPerBar": { "type": "integer", "minimum": 1 },
+        "beatUnit": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "timing": {
+      "type": "object",
+      "description": "Grid-relative onset stats (beats / ms at file BPM).",
+      "properties": {
+        "gridDivisionsPerBeat": { "type": "integer", "minimum": 1 },
+        "overallSignedDeviationMeanMs": { "type": "number" },
+        "overallAbsDeviationMeanMs": { "type": "number" },
+        "byPartSignedDeviationMeanMs": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        }
+      }
+    },
+    "chord": {
+      "type": "object",
+      "properties": {
+        "noteCount": { "type": "integer", "minimum": 0 },
+        "durationBeatsMean": { "type": "number" },
+        "durationBeatsP50": { "type": "number" },
+        "velocityMean": { "type": "number" },
+        "velocityStdDev": { "type": "number" },
+        "pitchMin": { "type": "integer" },
+        "pitchMax": { "type": "integer" },
+        "meanVoiceCount": { "type": "number" },
+        "syncopationRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "voicingMotionSemitonesMean": { "type": "number" }
+      }
+    },
+    "bass": {
+      "type": "object",
+      "properties": {
+        "noteCount": { "type": "integer", "minimum": 0 },
+        "rootRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "kickCoincidenceRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "approachNoteRate": { "type": "number", "minimum": 0, "maximum": 1 },
+        "durationBeatsMean": { "type": "number" },
+        "velocityMean": { "type": "number" }
+      }
+    },
+    "drums": {
+      "type": "object",
+      "properties": {
+        "inferredGrid": {
+          "type": "string",
+          "enum": ["quarter", "eighth", "sixteenth", "halfTime", "fourOnFloor", "unknown"]
+        },
+        "kickNoteCount": { "type": "integer", "minimum": 0 },
+        "snareNoteCount": { "type": "integer", "minimum": 0 },
+        "hatNoteCount": { "type": "integer", "minimum": 0 },
+        "fillBarCandidates": {
+          "type": "array",
+          "items": { "type": "integer", "minimum": 0 }
+        }
+      }
+    },
+    "phrase": {
+      "type": "object",
+      "properties": {
+        "densityByBar": {
+          "type": "array",
+          "items": { "type": "number", "minimum": 0 }
+        },
+        "bar4ChangeScore": { "type": "number" },
+        "bar8ChangeScore": { "type": "number" },
+        "sectionDensityDelta": {
+          "type": "object",
+          "additionalProperties": { "type": "number" }
+        }
+      }
+    },
+    "songSpecific": {
+      "type": "array",
+      "description": "Do not promote these into Style Aggregate or App Profile.",
+      "items": { "type": "string" }
+    },
+    "portableCandidates": {
+      "type": "array",
+      "description": "Candidates that may feed aggregation (still MEASURED_SONG until aggregated).",
+      "items": { "type": "string" }
+    },
+    "notes": { "type": "string" }
+  }
+}

@@ -8,7 +8,7 @@
  *   - `eightBeat`     → `natural`   (the standard J-POP comp)
  *   - `sixteenthBeat` → `driving`   (busier, forward-motion 16-feel)
  *   - any id in the rhythm catalog → unchanged
- *   - anything else   → `natural`   (safe, musical default)
+ *   - anything else   → {@link DEFAULT_ACCOMPANIMENT} (offered by the Style screen)
  *
  * The retired "beat" ids keep pointing at the feels they were migrated to when the
  * UI first dropped them, NOT at the named rhythms added later: a project saved under
@@ -34,8 +34,13 @@ const LEGACY_MIGRATION: Readonly<Record<string, AccompanimentPattern>> = {
   sixteenthBeat: 'driving',
 };
 
-/** The default used for new sessions and any unknown/legacy input. */
-export const DEFAULT_ACCOMPANIMENT: AccompanimentPattern = 'natural';
+/**
+ * The default used for new sessions and any unknown/legacy input.
+ *
+ * It has to be one of the three the Style screen offers (`CORE_PATTERNS`), or a
+ * brand-new session opens that screen with no pattern selected at all.
+ */
+export const DEFAULT_ACCOMPANIMENT: AccompanimentPattern = 'block';
 
 /**
  * Normalize any raw accompaniment id to a current {@link AccompanimentPattern}.

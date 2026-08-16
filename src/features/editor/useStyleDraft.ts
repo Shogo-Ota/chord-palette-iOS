@@ -3,6 +3,11 @@ import { useCallback, useState } from 'react';
 import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
 import {
+  DEFAULT_ENERGY,
+  normalizeEnergy,
+  type AccompanimentEnergy,
+} from '@/lib/performance/energy';
+import {
   defaultVariantFor,
   type AccompanimentVariantId,
 } from '@/lib/performance/variants';
@@ -14,14 +19,15 @@ import type { AccompanimentPattern, GrooveId, InstrumentId } from '@/types';
  * editor's play button). Keeping the session untouched until commit means the
  * editor reflects only the confirmed style.
  *
- * Scope: project-level style (音色 / ドラム / 伴奏). Device-level prefs
- * (release-cut, volume) stay immediate and are intentionally NOT drafted.
+ * Scope: project-level style (音色 / ドラム / 伴奏 / 盛り上がり). Device-level
+ * prefs (release-cut, volume) stay immediate and are intentionally NOT drafted.
  */
 export type StyleDraft = {
   instrumentId: InstrumentId;
   grooveId: GrooveId;
   accompanimentPattern: AccompanimentPattern;
   accompanimentVariant: AccompanimentVariantId;
+  accompanimentEnergy: AccompanimentEnergy;
 };
 
 export type UseStyleDraft = {
@@ -32,6 +38,7 @@ export type UseStyleDraft = {
   setGroove: (id: GrooveId) => void;
   setAccompaniment: (pattern: AccompanimentPattern) => void;
   setAccompanimentVariant: (id: AccompanimentVariantId) => void;
+  setEnergy: (energy: AccompanimentEnergy) => void;
   /** Write the draft into the shared session (reflects to the editor). */
   commit: () => void;
   /** Drop edits, restoring the draft to the committed session values. */
@@ -45,6 +52,7 @@ function snapshot(): StyleDraft {
     grooveId: cur.grooveId,
     accompanimentPattern: cur.accompanimentPattern,
     accompanimentVariant: cur.accompanimentVariant,
+    accompanimentEnergy: cur.accompanimentEnergy ?? DEFAULT_ENERGY,
   };
 }
 
@@ -62,6 +70,7 @@ export function useStyleDraft(): UseStyleDraft {
   );
   // Switching accompaniment resets the variant: the ids are scoped per pattern, so
   // carrying the old one over would leave the chip row with nothing selected.
+  // Energy is KEPT across style changes (§13).
   const setAccompaniment = useCallback(
     (accompanimentPattern: AccompanimentPattern) =>
       setDraft((d) => ({
@@ -74,6 +83,11 @@ export function useStyleDraft(): UseStyleDraft {
   const setAccompanimentVariant = useCallback(
     (accompanimentVariant: AccompanimentVariantId) =>
       setDraft((d) => ({ ...d, accompanimentVariant })),
+    [],
+  );
+  const setEnergy = useCallback(
+    (accompanimentEnergy: AccompanimentEnergy) =>
+      setDraft((d) => ({ ...d, accompanimentEnergy: normalizeEnergy(accompanimentEnergy) })),
     [],
   );
 
@@ -98,6 +112,7 @@ export function useStyleDraft(): UseStyleDraft {
     setGroove,
     setAccompaniment,
     setAccompanimentVariant,
+    setEnergy,
     commit,
     reset,
   };

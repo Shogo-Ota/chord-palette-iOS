@@ -1,4 +1,37 @@
 {
   "version": 1,
-  "entries": []
+  "entries": [
+    {
+      "id": "ballad.piano.brokenHold.v1",
+      "name": "Ballad piano broken hold v1",
+      "style": "ballad",
+      "instrumentRole": "piano",
+      "sourceType": "original",
+      "usage": "伴奏用オリジナル相対パターン（製品カタログ BALLAD_PIANO_BROKEN_HOLD_V1）。生MIDIは同梱せず、相対形を src/lib/performance/library/catalog.ts に保持。",
+      "rights": {
+        "sourceName": "オーナー伴奏用打ち込み",
+        "sourceURL": "",
+        "productName": "",
+        "purchaseDate": "",
+        "licenseType": "自作",
+        "allowedUsage": "無制限（オーナー打ち込み）",
+        "redistributionAllowed": true,
+        "commercialUseAllowed": true,
+        "derivativeUseAllowed": true,
+        "verificationStatus": "verified",
+        "notes": "相対パターンのみ登録。曲構成・Energy解析の教師には使わない。"
+      },
+      "file": "assets_dev/midi_teacher/ballad/broken-hold-v1.mid",
+      "annotation": {
+        "rootPc": 0,
+        "chordIntervals": [0, 4, 7],
+        "rhythmFeel": "straight",
+        "timeSignature": { "beatsPerBar": 4, "beatUnit": 4 },
+        "bars": 1,
+        "bpmRange": { "min": 60, "max": 100 },
+        "tags": ["ballad", "piano", "broken", "hold", "accompaniment"]
+      },
+      "notes": "製品パスは libraryPatternId=ballad.piano.brokenHold.v1。file は将来の再ingest用プレースホルダ（git外）。"
+    }
+  ]
 }

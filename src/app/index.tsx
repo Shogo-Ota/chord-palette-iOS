@@ -8,8 +8,14 @@ import { MetaPill } from '@/components/controls';
 import { PrimaryButton } from '@/components/PrimaryButton';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { Wordmark } from '@/components/Wordmark';
-import { loadAdminMode, setAdminMode, toggleAdminMode, useAdminMode } from '@/features/admin/adminMode';
+import {
+  loadAdminMode,
+  setAdminMode,
+  toggleAdminMode,
+  useAdminMode,
+} from '@/features/admin/adminMode';
 import { startNew } from '@/features/editor/session';
+import { clearProjectMemory } from '@/features/projects/clearProjectMemory';
 import { logger } from '@/lib/logger';
 import { toSummary } from '@/lib/projectSummary';
 import { deleteProject, duplicateProject, listProjects } from '@/repositories/projectRepository';
@@ -20,6 +26,7 @@ import type { Project, ProjectSummary } from '@/types';
 export default function ProjectListScreen() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[] | null>(null);
+  const [clearingMemory, setClearingMemory] = useState(false);
   const isAdmin = useAdminMode();
   const [adminToast, setAdminToast] = useState<string | null>(null);
 
@@ -86,17 +93,21 @@ export default function ProjectListScreen() {
   };
 
   const confirmDelete = (project: Project) => {
-    Alert.alert('プロジェクトを削除', `「${project.title}」を削除しますか？この操作は取り消せません。`, [
-      {
-        text: '削除',
-        style: 'destructive',
-        onPress: () =>
-          deleteProject(project.id)
-            .then(refresh)
-            .catch((e) => logger.error('Failed to delete project', { error: String(e) })),
-      },
-      { text: 'キャンセル', style: 'cancel' },
-    ]);
+    Alert.alert(
+      'プロジェクトを削除',
+      `「${project.title}」を削除しますか？この操作は取り消せません。`,
+      [
+        {
+          text: '削除',
+          style: 'destructive',
+          onPress: () =>
+            deleteProject(project.id)
+              .then(refresh)
+              .catch((e) => logger.error('Failed to delete project', { error: String(e) })),
+        },
+        { text: 'キャンセル', style: 'cancel' },
+      ],
+    );
   };
 
   const confirmActions = (project: Project) => {
@@ -118,6 +129,28 @@ export default function ProjectListScreen() {
   };
 
   const summaries: ProjectSummary[] = (projects ?? []).map((p) => toSummary(p));
+
+  const confirmClearMemory = () => {
+    if (summaries.length === 0 || clearingMemory) return;
+    Alert.alert(
+      'メモリーを一括削除',
+      `${summaries.length}件のメモリーをすべて削除しますか？この操作は取り消せません。`,
+      [
+        {
+          text: 'すべて削除',
+          style: 'destructive',
+          onPress: () => {
+            setClearingMemory(true);
+            clearProjectMemory()
+              .then(() => setProjects([]))
+              .catch((e) => logger.error('Failed to clear project memory', { error: String(e) }))
+              .finally(() => setClearingMemory(false));
+          },
+        },
+        { text: 'キャンセル', style: 'cancel' },
+      ],
+    );
+  };
 
   return (
     <ScreenScaffold>
@@ -148,6 +181,18 @@ export default function ProjectListScreen() {
       <Text style={styles.heroHint}>コードを並べて、すぐに鳴らす</Text>
       <PrimaryButton label="新しい進行を作る" icon="plus" onPress={createNew} />
 
+      {isAdmin ? (
+        <Pressable
+          onPress={() => router.push('/listening-v101')}
+          style={styles.listeningLink}
+          hitSlop={6}
+          accessibilityRole="button"
+          accessibilityLabel="v1.01 実機リスニング">
+          <Icon name="play" size={15} color={colors.primaryBlue} strokeWidth={2} />
+          <Text style={styles.listeningLinkText}>v1.01 実機リスニング（Human MIDI）</Text>
+        </Pressable>
+      ) : null}
+
       <Pressable onPress={() => router.push('/presets')} style={styles.presetLink} hitSlop={6}>
         <Icon name="dots" size={15} color={colors.purpleSoft} strokeWidth={2} />
         <Text style={styles.presetLinkText}>プリセットから選ぶ</Text>
@@ -155,7 +200,25 @@ export default function ProjectListScreen() {
 
       <View style={styles.listHeader}>
         <Text style={styles.listHeaderTitle}>メモリー</Text>
-        <Text style={styles.listHeaderCount}>{summaries.length}件</Text>
+        <View style={styles.listHeaderActions}>
+          <Text style={styles.listHeaderCount}>{summaries.length}件</Text>
+          {summaries.length > 0 ? (
+            <Pressable
+              onPress={confirmClearMemory}
+              disabled={clearingMemory}
+              hitSlop={6}
+              accessibilityRole="button"
+              accessibilityLabel="メモリーを一括削除"
+              style={({ pressed }) => [
+                styles.clearMemoryButton,
+                pressed && styles.pressed,
+                clearingMemory && styles.clearMemoryButtonDisabled,
+              ]}>
+              <Icon name="trash" size={13} color={colors.danger} strokeWidth={2} />
+              <Text style={styles.clearMemoryText}>一括削除</Text>
+            </Pressable>
+          ) : null}
+        </View>
       </View>
 
       {projects === null ? null : summaries.length === 0 ? (
@@ -182,7 +245,6 @@ export default function ProjectListScreen() {
           ))}
         </View>
       )}
-
     </ScreenScaffold>
   );
 }
@@ -275,7 +337,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 11,
     marginBottom: 12,
   },
-  adminToastText: { fontSize: 12.5, fontFamily: font.bold, fontWeight: '700', color: colors.successText },
+  adminToastText: {
+    fontSize: 12.5,
+    fontFamily: font.bold,
+    fontWeight: '700',
+    color: colors.successText,
+  },
 
   heroHint: {
     fontSize: 13.5,
@@ -295,6 +362,22 @@ const styles = StyleSheet.create({
     gap: 7,
     paddingVertical: 12,
     marginTop: 10,
+  },
+  listeningLink: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 7,
+    paddingVertical: 10,
+    marginTop: 4,
+    marginBottom: 4,
+  },
+  listeningLinkText: {
+    fontSize: 13.5,
+    lineHeight: 20,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    color: colors.primaryBlue,
   },
   presetLinkText: {
     fontSize: 13.5,
@@ -320,7 +403,31 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.textHeading,
   },
+  listHeaderActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
   listHeaderCount: { fontSize: 12.5, lineHeight: 18, color: colors.textFaint },
+  clearMemoryButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    paddingVertical: 5,
+    paddingHorizontal: 8,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: 'rgba(239,68,68,0.32)',
+    backgroundColor: 'rgba(239,68,68,0.08)',
+  },
+  clearMemoryButtonDisabled: { opacity: 0.45 },
+  clearMemoryText: {
+    fontSize: 11.5,
+    lineHeight: 16,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    color: colors.danger,
+  },
 
   card: {
     position: 'relative',

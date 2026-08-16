@@ -19,6 +19,11 @@ const ADDED_COLUMNS: readonly { table: string; column: string; definition: strin
     column: 'accompaniment_variant',
     definition: "TEXT NOT NULL DEFAULT ''",
   },
+  {
+    table: 'projects',
+    column: 'accompaniment_energy',
+    definition: "TEXT NOT NULL DEFAULT 'build'",
+  },
 ];
 
 async function addColumns(db: SQLite.SQLiteDatabase): Promise<void> {

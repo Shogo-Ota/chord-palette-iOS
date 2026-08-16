@@ -1,13 +1,13 @@
 {
   "name": "expoinit",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "dependencies": {
     "@expo-google-fonts/noto-sans-jp": "^0.4.3",
     "@react-native-async-storage/async-storage": "2.2.0",
     "@react-native-masked-view/masked-view": "0.3.2",
     "@sentry/react-native": "~7.2.0",
-    "expo": "~54.0.0",
+    "expo": "~54.0.36",
     "expo-application": "~7.0.8",
     "expo-constants": "~18.0.13",
     "expo-dev-client": "~6.0.21",
@@ -65,7 +65,23 @@
     "format:check": "prettier --check .",
     "typecheck": "tsc --noEmit",
     "test": "jest",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "audition": "jest -c scripts/audition/jest.audition.config.js --testPathPattern audition.harness",
+    "audition:playback": "jest -c scripts/audition/jest.audition.config.js --testPathPattern playbackRegression.harness",
+    "audition:isolate": "jest -c scripts/audition/jest.audition.config.js --testPathPattern qualityIsolation.harness",
+    "midi:qa": "jest -c scripts/midiQa/jest.midiQa.config.js --testPathPattern midiQa.harness",
+    "pop909:poc": "jest -c scripts/pop909/jest.pop909.config.js --testPathPattern runPoc.harness",
+    "preference:collect": "jest -c scripts/preference/jest.preference.config.js --testPathPattern collect.harness",
+    "preference:analyze": "jest -c scripts/preference/jest.preference.config.js --testPathPattern analyze.harness",
+    "groove:collect": "jest -c scripts/groovePreference/jest.groovePreference.config.js --testPathPattern collect.harness",
+    "groove:analyze": "jest -c scripts/groovePreference/jest.groovePreference.config.js --testPathPattern analyze.harness",
+    "city:forensic": "jest -c scripts/city/jest.city.config.js --testPathPattern cityForensic.harness",
+    "city:poc": "jest -c scripts/city/jest.city.config.js --testPathPattern cityPoc.harness",
+    "city:qa": "jest -c scripts/city/jest.city.config.js --testPathPattern cityQa.harness",
+    "city:listening": "jest -c scripts/city/jest.city.config.js --testPathPattern cityListening.harness",
+    "quality:audit": "jest -c scripts/quality/jest.quality.config.js --testPathPattern architectureAudit.harness",
+    "quality:gate01": "jest -c scripts/quality/jest.quality.config.js --testPathPattern gate01Sustain.harness",
+    "quality:localAnalysis": "jest -c scripts/quality/jest.localAnalysis.config.js"
   },
   "private": true
 }

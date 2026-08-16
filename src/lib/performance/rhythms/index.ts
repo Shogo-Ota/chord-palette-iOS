@@ -36,5 +36,6 @@ export function isRhythmId(id: unknown): id is AccompanimentPattern {
 export function beatsPerBarFor(accompanimentId: string): number {
   const rhythm = rhythmFor(accompanimentId);
   if (rhythm?.source.kind === 'style') return rhythm.source.style.beatsPerBar;
+  if (rhythm?.source.kind === 'independent') return rhythm.source.beatsPerBar;
   return 4;
 }

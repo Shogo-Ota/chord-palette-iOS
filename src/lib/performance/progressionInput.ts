@@ -7,6 +7,7 @@
  */
 
 import { chordArpeggioNotes, progressionToChordSpecs } from '@/lib/voicing';
+import { chordHarmonyFromEvent } from './humanTemplate/chordHarmony';
 import type { ChordEvent, MajorKey } from '@/types';
 import type { PerfChord } from './PerformanceEngine';
 import type { VoiceLeadingOptions } from './voiceLeading';
@@ -38,6 +39,7 @@ export function progressionToPerfChords(
     const chord: PerfChord = {
       bassMidi: spec.midiNotes.filter((n) => n < 48).map((n) => n + semis),
       bodyMidi: spec.midiNotes.filter((n) => n >= 48).map((n) => n + semis),
+      harmony: chordHarmonyFromEvent(progression[i]!, key),
       // Root-position source for the arpeggio style (1-3-5-7 up/down, tensions incl.).
       arpMidi: chordArpeggioNotes(progression[i], key).map((n) => n + semis),
       startBeat: beat,

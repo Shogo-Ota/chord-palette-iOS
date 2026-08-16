@@ -2,7 +2,7 @@
   "expo": {
     "name": "Chord Palette",
     "slug": "chord-palette",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/icon/app-icon.png",
     "scheme": "chordpalette",
@@ -15,7 +15,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "5"
+      "buildNumber": "8"
     },
     "android": {
       "package": "app.chordpalette",

@@ -11,7 +11,7 @@ import type { TrackId } from '@/lib/performance/NoteEvent';
 import { rhythmFor, beatsPerBarFor } from '@/lib/performance/rhythms';
 
 describe('every rhythm resolves to a full triple', () => {
-  it('covers all thirteen selector ids', () => {
+  it('covers every catalogued rhythm id', () => {
     for (const id of ACCOMPANIMENT_IDS) {
       const axes = axesFor(id);
       expect(axes).toBeDefined();

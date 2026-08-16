@@ -14,12 +14,26 @@ import { isAccompanimentPattern } from '@/lib/accompaniment';
 
 import { pickArticulation, computeGate } from './articulation';
 import { planBassLine } from './bass';
+import { bassProfileFor } from './bass/profiles';
+import {
+  applyEnergyProfile,
+  bassProfileWithEnergy,
+  DEFAULT_ENERGY,
+  energyProfileFor,
+  normalizeEnergy,
+  type AccompanimentEnergy,
+} from './energy';
+import { libraryPatternById, realizeLibraryPattern } from './library';
+import { humanTemplateById, realizeHumanTemplate } from './humanTemplate';
+import { realizeIndependentStyle } from './independentStyles';
 import { ensureChordAudible } from './ensureChordAudible';
 import { pickNaturalTemplate } from './feel/naturalBank';
 import { resolveFeel } from './feel/resolve';
 import { profileFor } from './groove/drumProfiles';
 import { lockToGroove } from './groove/lockToGroove';
 import { msToBeat, swingDelayBeats, tempoTimingScale, trackOffsetMs } from './microtiming';
+import type { AccompanimentStyle } from './model/types';
+import { axesFor } from './model/axes';
 import { clampVelocity, type NoteEvent, type TrackId } from './NoteEvent';
 import { drumPatternFor, rhythmFor } from './rhythms';
 import { RoundRobinPicker } from './roundRobin';
@@ -33,12 +47,19 @@ import { resolveVariant } from './variants';
 import { avoidFiveInARow, computeVelocity } from './velocity';
 import { applyVariation, type VariationContext, type VariationProfile } from './variation';
 
+import type { ChordHarmonyInput } from './strictV2';
+
 /** A single voice-led chord placed on the timeline (bass anchored + re-voiced body). */
 export interface PerfChord {
   /** Re-voiced chord body notes (MIDI). */
   bodyMidi: number[];
   /** Anchored bass notes (MIDI), lowest → highest. May be empty. */
   bassMidi: number[];
+  /**
+   * User chord harmony for strict-v2 human templates (symbol + allowed tones).
+   * Omitted for legacy/tests that only need MIDI voicing.
+   */
+  harmony?: ChordHarmonyInput;
   /**
    * Optional root-position arpeggio source (root, 3rd, 5th, 7th, tensions…)
    * ascending. When present, the `arpeggio` style spreads THESE notes so the
@@ -110,6 +131,16 @@ export interface PerformanceOptions {
   /** Emit kick/snare/hat tracks (default true). */
   drums?: boolean;
   /**
+   * Style × Energy 「盛り上がり」. Default `build` preserves pre-Energy takes.
+   * Does NOT enter the playback seed fingerprint (Energy A/B compares share a seed).
+   */
+  energy?: AccompanimentEnergy;
+  /**
+   * Long-term style axis for Energy profile lookup. When omitted, derived from
+   * `styleId` via {@link axesFor}.
+   */
+  accompanimentStyle?: AccompanimentStyle;
+  /**
    * Micro-humanization window multiplier (monetization tier — see `tier.ts`). Applied
    * on top of the tempo × feel scale. Default 1 = unchanged (free tier / callers that
    * don't set it), so the pre-tier output is reproduced byte-for-byte.
@@ -120,6 +151,23 @@ export interface PerformanceOptions {
    * style's own spread unchanged. Only affects the block `chord` track's roll width.
    */
   strumScale?: number;
+  /**
+   * Opt-in accompaniment LibraryPattern id (Ballad only). When set and the style
+   * axis is ballad, piano chord/top strikes come from realizeLibraryPattern instead
+   * of the hand-authored skeleton. Bass/drums keep the existing path. Omit for
+   * migration-compatible default behaviour.
+   */
+  libraryPatternId?: string;
+  /**
+   * Human MIDI Template (strict v2). When set, replaces chord/top skeleton with
+   * degree-generalized teacher groove. Takes precedence over libraryPatternId.
+   */
+  humanTemplateId?: string;
+  /**
+   * Human Template pitch path. Omitted = production (`userChord`).
+   * `teacherFidelity` is the Phase 1 / 2 regression path only.
+   */
+  humanTemplatePitchMode?: 'userChord' | 'teacherFidelity';
 }
 
 /** General-MIDI-style pitches for the synthesized drum voices. */
@@ -276,6 +324,8 @@ function collectStrikes(
           const bodyIndex = arpOrder[arpIndex % arpOrder.length] % source.length;
           pitches = [source[bodyIndex]];
           arpIndex++;
+        } else if (style.holdAllChordTones && chord.arpMidi && chord.arpMidi.length > 0) {
+          pitches = chord.arpMidi;
         } else {
           pitches = chord.bodyMidi;
         }
@@ -527,10 +577,10 @@ function resolvePlan(options: PerformanceOptions, bpm: number): ResolvedPlan {
 }
 
 /** The tracks to render for a style: `top` is added only when the style defines it. */
-function tracksFor(style: StylePreset, drums: boolean): TrackId[] {
+function tracksFor(style: StylePreset, drums: boolean, omitLegacyBass: boolean): TrackId[] {
   const tracks: TrackId[] = ['chord'];
   if (style.top) tracks.push('top');
-  tracks.push('bass');
+  if (!omitLegacyBass) tracks.push('bass');
   if (drums) tracks.push('kick', 'snare', 'hat');
   return tracks;
 }
@@ -561,20 +611,65 @@ export function generatePerformance(
 ): NoteEvent[] {
   if (input.chords.length === 0) return [];
 
-  const { style, variation, humanizeScale, bank } = resolvePlan(options, input.bpm);
+  const independent = realizeIndependentStyle(options.styleId, input);
+  if (independent) return independent;
+
+  const energy = normalizeEnergy(options.energy ?? DEFAULT_ENERGY);
+  const accompanimentStyle: AccompanimentStyle =
+    options.accompanimentStyle ??
+    axesFor(String(options.styleId))?.style ??
+    'band';
+  const energyProfile = energyProfileFor(accompanimentStyle, energy);
+  // Human MIDI Template (strict v2) — production path for natural / variation.
+  const humanTemplate = options.humanTemplateId
+    ? humanTemplateById(options.humanTemplateId)
+    : undefined;
+  // Ballad-only opt-in: legacy LibraryPattern (superseded when humanTemplate is set).
+  const libraryPattern =
+    !humanTemplate && accompanimentStyle === 'ballad' && options.libraryPatternId
+      ? libraryPatternById(options.libraryPatternId)
+      : undefined;
+
+  let { style, variation, humanizeScale, bank } = resolvePlan(options, input.bpm);
+  const energized = applyEnergyProfile(style, variation, energyProfile);
+  style = energized.style;
+  variation = energized.variation;
+  // Bank templates get the same Energy bend so phrase rotation stays consistent.
+  if (bank) {
+    bank = bank.map((t) => applyEnergyProfile(t, undefined, energyProfile).style);
+  }
+
   const totalBeats = totalBeatsOf(input.chords);
   const bars = Math.max(1, Math.ceil(totalBeats / style.beatsPerBar - EPSILON));
   const picker = new RoundRobinPicker(input.seed, style.roundRobin);
-  const tracks = tracksFor(style, options.drums !== false);
+  const tracks = tracksFor(style, options.drums !== false, !!humanTemplate);
 
   // 1) Groove Template: collect the deterministic grid strikes for every track. The
   // Natural feel rotates its comp bank per 4-bar phrase; every other path uses a
   // single template across the whole progression.
   const strikesByTrack: StrikesByTrack = {};
   for (const track of tracks) {
+    // Human/library path owns piano chord/top; leave empty so Variation cannot rewrite them.
+    if ((humanTemplate || libraryPattern) && (track === 'chord' || track === 'top')) {
+      strikesByTrack[track] = [];
+      continue;
+    }
     strikesByTrack[track] = bank
       ? collectBankStrikes(track, bank, input.chords, bars, totalBeats, input.seed)
       : collectStrikes(track, patternFor(style, track), style, input.chords, 0, bars, totalBeats);
+  }
+
+  // Energy register: raise/lower chord + top only (bass stays to avoid mud).
+  // Block holds the user's chord tones — a non-octave shift would leave the chord.
+  const reg = energized.registerOffsetSemitones;
+  if (reg !== 0 && !style.holdAllChordTones) {
+    for (const track of ['chord', 'top'] as const) {
+      const list = strikesByTrack[track];
+      if (!list) continue;
+      for (const s of list) {
+        s.pitches = s.pitches.map((p) => Math.max(0, Math.min(127, p + reg)));
+      }
+    }
   }
 
   // 1b) Bass-line planning (v1.01 Phase 7): re-pitch the collected bass strikes
@@ -582,9 +677,12 @@ export function generatePerformance(
   // profile. Grid, velocity and timing are untouched; root-only profiles (the
   // textures, ballad feel, legacy ids) return the strikes unchanged.
   if (strikesByTrack.bass) {
+    const baseBass = bassProfileFor(String(options.styleId));
+    const bassProfile = bassProfileWithEnergy(baseBass, energized.bassApproachProbability);
     strikesByTrack.bass = planBassLine(strikesByTrack.bass, {
       seed: input.seed,
       styleId: String(options.styleId),
+      bassProfile,
       chordOf: (s) => chordForStrike(input.chords, s.gridBeat, style, 'bass'),
     });
   }
@@ -617,6 +715,28 @@ export function generatePerformance(
     const strikes: Strike[] = varied[track] ?? [];
     const drafts = toDrafts(strikes, totalBeats);
     events.push(...renderTrack(track, drafts, style, input, picker, timingScale, strumScale));
+  }
+
+  if (humanTemplate) {
+    const realized = realizeHumanTemplate(humanTemplate, input.chords, {
+      seed: input.seed,
+      trackId: 'chord',
+      pitchMode: options.humanTemplatePitchMode ?? 'userChord',
+    });
+    const drumsOnly = events.filter(
+      (e) => e.trackId === 'kick' || e.trackId === 'snare' || e.trackId === 'hat',
+    );
+    events.length = 0;
+    events.push(...drumsOnly, ...realized);
+  } else if (libraryPattern) {
+    const realized = realizeLibraryPattern(libraryPattern, input.chords, {
+      seed: input.seed,
+      velocityCenter: style.velocity.center.chord,
+      trackId: 'chord',
+    });
+    const kept = events.filter((e) => e.trackId !== 'chord' && e.trackId !== 'top');
+    events.length = 0;
+    events.push(...kept, ...realized);
   }
 
   events.sort((a, b) => a.timeBeat - b.timeBeat || a.pitch - b.pitch);

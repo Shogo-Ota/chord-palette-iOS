@@ -69,6 +69,7 @@ export function mapPerfNotesToPlaybackRequest(
     drumPatternId: string;
     instrument: string;
     beatsPerBar?: number;
+    drumMode?: PlaybackRequest['drumMode'];
   },
 ): PlaybackRequest {
   const chordEvents: NoteEvent[] = notes
@@ -89,5 +90,6 @@ export function mapPerfNotesToPlaybackRequest(
     accompaniment: 'performance',
     instrument: opts.instrument,
     beatsPerBar: opts.beatsPerBar,
+    drumMode: opts.drumMode,
   };
 }

@@ -45,5 +45,21 @@ export function validateLibraryPattern(p: LibraryPattern): string[] {
     if (p.accentMap.some((a) => a < 0 || a > 1)) problems.push('accentMap values must be 0..1');
   }
 
+  if (p.phraseVariation) {
+    const pv = p.phraseVariation;
+    if (!Number.isInteger(pv.barInPhrase) || pv.barInPhrase < 0 || pv.barInPhrase > 3) {
+      problems.push('phraseVariation.barInPhrase must be an integer 0..3');
+    }
+    if (!pv.notes.length) problems.push('phraseVariation.notes is empty');
+    pv.notes.forEach((n, i) => {
+      if (n.posBeats < 0 || n.posBeats >= p.patternLengthBeats) {
+        problems.push(`phraseVariation note ${i}: posBeats outside pattern`);
+      }
+      if (!(n.durationBeats > 0)) {
+        problems.push(`phraseVariation note ${i}: durationBeats must be > 0`);
+      }
+    });
+  }
+
   return problems;
 }

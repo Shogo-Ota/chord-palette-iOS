@@ -7,15 +7,32 @@ import {
 } from '@/lib/performance/PerformanceEngine';
 
 /* A plain 4-chord × 4-beat progression (16 beats = 4 bars). */
-function chord(body: number[], bass: number[], startBeat: number): PerfChord {
-  return { bodyMidi: body, bassMidi: bass, startBeat, durationBeats: 4 };
+function chord(
+  body: number[],
+  bass: number[],
+  startBeat: number,
+  rootPc: number,
+  intervals: readonly number[],
+): PerfChord {
+  return {
+    bodyMidi: body,
+    bassMidi: bass,
+    harmony: {
+      symbol: `root-${rootPc}`,
+      rootPc,
+      quality: 'test',
+      chordIntervals: intervals,
+    },
+    startBeat,
+    durationBeats: 4,
+  };
 }
 
 const PROG: PerfChord[] = [
-  chord([60, 64, 67], [36, 48], 0), // C
-  chord([62, 65, 69], [38, 50], 4), // Dm
-  chord([64, 67, 71], [40, 52], 8), // Em
-  chord([59, 62, 65], [35, 47], 12), // Bdim-ish
+  chord([60, 64, 67], [36, 48], 0, 0, [0, 4, 7]), // C
+  chord([62, 65, 69], [38, 50], 4, 2, [0, 3, 7]), // Dm
+  chord([64, 67, 71], [40, 52], 8, 4, [0, 3, 7]), // Em
+  chord([59, 62, 65], [35, 47], 12, 11, [0, 3, 6]), // Bdim-ish
 ];
 
 const INPUT: PerformanceInput = { chords: PROG, bpm: 108, seed: 20260719 };

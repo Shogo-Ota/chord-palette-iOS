@@ -39,11 +39,13 @@ export const DRIVING_VARIATION: VariationProfile = {
 // end (twoFourBar up) while mid-phrase stabs stay scarce (extraStab down) — the
 // phrase-end "呼吸" comes from thinning bar 4, not from adding notes.
 export const RELAXED_VARIATION: VariationProfile = {
-  rests: { probability: 0.26, maxPerPhrase: 2 },
-  ties: { probability: 0.38, maxPerPhrase: 2 },
+  rests: { probability: 0.24, maxPerPhrase: 2 },
+  ties: { probability: 0.36, maxPerPhrase: 2 },
   twoFourBar: { probability: 0.45, maxPerPhrase: 1 },
-  phraseFill: { sustainFinal: true, extraStabProbability: 0.2 },
-  bassOnly: { probability: 0.1, maxPerPhrase: 1 },
+  phraseFill: { sustainFinal: true, extraStabProbability: 0.22 },
+  // v1.01 listen pass: bass-only bars made Ballad feel thin / "low notes only".
+  // Keep the breath, but rarely drop the chord body entirely.
+  bassOnly: { probability: 0.04, maxPerPhrase: 1 },
 };
 
 export const VARIATION_BY_FEEL: Record<FeelId, VariationProfile> = {

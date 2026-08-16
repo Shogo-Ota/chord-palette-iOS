@@ -8,6 +8,9 @@
 > - 曲目一覧は本ファイルのテキストを正とする。URL は参照情報であり、教師データ本体として扱わない。
 > - MIDI・音声素材の無断取得・収録はしない（`docs/product_vision_v1.01.md` §9 / `docs/implementation_v1.01.md` 作業原則）。
 > - 曲は「伴奏の傾向を言語化するための参考」であり、コピーの対象ではない。
+> - **本リストは Reference Songs 登録のみ。曲別の伴奏分析は 0 件。** 聴取の観点は
+>   [`listening_analysis_guide.md`](./listening_analysis_guide.md)、1曲フォーマットは
+>   [`song_analysis_template.md`](./song_analysis_template.md)。表の「未記入」は未分析を意味する。
 
 ## 曲目一覧
 
@@ -49,4 +52,10 @@
 
 ## スタイル全体のメモ
 
-（例: 16ビートのカッティング感、テンションの使い方、ベースのシンコペーション、コードの繋ぎ方 など。解析着手時に記入する）
+> ラベル: **HYPOTHESIS**（暫定の方向性メモ。曲別聴取分析は未実施＝0件。MEASURED ではない。観点は `listening_analysis_guide.md`）
+
+- テンポ帯の想定: おおむね 95–120 BPM、16ビートの細かい格子
+- コードは詰めすぎず、休符とシンコペが都会的な余白を作る
+- ベースは滑らか（5度中心）。オクターブポンプは避ける
+- 高域のコードワーク・高めレジスタが「洗練」を担う
+- Chord Palette への翻訳: `beat16` + soul16、CITY_LINE、octaveShift=1

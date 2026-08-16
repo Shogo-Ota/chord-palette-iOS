@@ -24,6 +24,7 @@ const STYLE_OF: Record<string, AccompanimentStyle> = {
   block: 'ballad',
   arpeggio: 'ballad',
   natural: 'band',
+  city: 'city',
   driving: 'band',
   relaxed: 'ballad',
   beat8: 'band',

@@ -9,6 +9,13 @@ struct NoteEventRecord: Record {
   @Field var velocity: Int = 100
 }
 
+struct CountInRecord: Record {
+  @Field var beats: Int = 0
+  @Field var midiNote: Int = 37
+  @Field var velocity: Int = 82
+  @Field var finalVelocity: Int = 104
+}
+
 /// JS-facing generic playback request (no hard-coded progression — §3).
 struct PlaybackRequestRecord: Record {
   @Field var bpm: Double = 120
@@ -22,6 +29,34 @@ struct PlaybackRequestRecord: Record {
   @Field var startBeat: Double = 0
   /// Beats per bar for drum groove folding (default 4/4).
   @Field var beatsPerBar: Double = 4
+  /// off | clap | full
+  @Field var drumMode: String = "full"
+  /// Optional playback-only pre-roll. Never joins the loop or exported MIDI.
+  @Field var countIn: CountInRecord?
+
+  /* -- Playback v2 (realtime sampler). Absent ⇒ the v1 pre-rendered path. ------ */
+
+  /// `sampled` (v1, default) | `sequencer` (v2 realtime sampler).
+  @Field var engine: String = "sampled"
+  /// The whole plan as SMF Format 1 bytes, base64. Required by `sequencer`.
+  @Field var smfBase64: String?
+  /// Whether the SMF ends with a drum track (told, so native never guesses).
+  @Field var hasDrums: Bool = false
+  /// GM program the melodic sampler must load (0 = grand, 4 = e.piano).
+  @Field var gmProgram: Int = 0
+  /// Fingerprint of the Final MIDI, logged so an A/B can prove both engines got it.
+  @Field var planSignature: String?
+  /// Flattened MIDI schedule (note on/off + CC). Native plays this, not the SMF.
+  @Field var midiEvents: [MidiEventRecord] = []
+}
+
+struct MidiEventRecord: Record {
+  @Field var beat: Double = 0
+  @Field var kind: String = "on"
+  @Field var channel: Int = 0
+  @Field var a: Int = 0
+  @Field var b: Int = 0
+  @Field var drum: Bool = false
 }
 
 /// JS-facing single-chord audition request.
@@ -121,17 +156,60 @@ public class ChordAudioModule: Module {
           velocity: event.velocity
         )
       }
-      self.controller.play(
-        bpm: req.bpm,
-        totalBeats: req.totalBeats,
-        loop: req.loop,
-        events: events,
-        drumPattern: req.drumPatternId,
-        accompaniment: req.accompaniment,
-        instrument: req.instrument,
-        startBeat: req.startBeat,
-        beatsPerBar: req.beatsPerBar
-      )
+      let startPlayback = { [weak self] in
+        guard let self else { return }
+        // v2 needs the flattened MIDI schedule. Without it the request falls through
+        // to v1, so an older JS bundle on a newer binary still plays.
+        if req.engine == "sequencer", !req.midiEvents.isEmpty {
+          let midi = req.midiEvents.map { ev in
+            ScheduledMidiEvent(
+              beat: ev.beat,
+              kind: ev.kind,
+              channel: UInt8(max(0, min(15, ev.channel))),
+              a: UInt8(max(0, min(127, ev.a))), // MIDI range only — not sampled 24–84
+              b: UInt8(max(0, min(127, ev.b))),
+              drum: ev.drum
+            )
+          }
+          self.controller.playRealtime(
+            midiEvents: midi,
+            bpm: req.bpm,
+            totalBeats: req.totalBeats,
+            loop: req.loop,
+            hasDrums: req.hasDrums,
+            gmProgram: req.gmProgram,
+            instrument: req.instrument,
+            startBeat: req.startBeat,
+            planSignature: req.planSignature,
+            chordEvents: events
+          )
+          return
+        }
+        self.controller.play(
+          bpm: req.bpm,
+          totalBeats: req.totalBeats,
+          loop: req.loop,
+          events: events,
+          drumPattern: req.drumPatternId,
+          accompaniment: req.accompaniment,
+          instrument: req.instrument,
+          startBeat: req.startBeat,
+          beatsPerBar: req.beatsPerBar,
+          drumMode: req.drumMode
+        )
+      }
+
+      if let countIn = req.countIn, countIn.beats > 0, req.startBeat <= 0 {
+        let config = CountInConfigValue(
+          beats: max(1, min(8, countIn.beats)),
+          midiNote: UInt8(max(0, min(127, countIn.midiNote))),
+          velocity: UInt8(max(1, min(127, countIn.velocity))),
+          finalVelocity: UInt8(max(1, min(127, countIn.finalVelocity)))
+        )
+        self.controller.playAfterCountIn(config: config, bpm: req.bpm, start: startPlayback)
+      } else {
+        startPlayback()
+      }
     }
 
     AsyncFunction("renderAudioFile") { (req: RenderAudioRequestRecord) -> [String: Any] in

@@ -36,8 +36,8 @@ function render(pattern: string, seed = 7): NoteEvent[] {
 describe('8-beat skeleton (spec §11-1: accent contrast IS the drive)', () => {
   it('keeps the widened on/off contrast', () => {
     expect(EIGHT_BEAT.chord.accent).toEqual([1.0, 0.5, 0.5, 0.66, 0.9, 0.5, 0.5, 0.7]);
-    expect(EIGHT_BEAT.velocity.accentDepth).toBe(38);
-    expect(EIGHT_BEAT.velocity.center.chord).toBe(78);
+    expect(EIGHT_BEAT.velocity.accentDepth).toBe(40);
+    expect(EIGHT_BEAT.velocity.center.chord).toBe(80);
   });
 
   it('keeps the half-beat 食い', () => {
@@ -72,7 +72,7 @@ describe('driving feel (the Band card rides it over the rock kit)', () => {
     expect(humanizeScale).toBeCloseTo(0.82);
     expect(template.anticipation).toEqual({ maxLeadBeats: 0.5 });
     // accentDepthDelta +9 lands on the widened 8-beat base.
-    expect(template.velocity.accentDepth).toBe(38 + 9);
+    expect(template.velocity.accentDepth).toBe(40 + 9);
     expect(template.gate.min).toBeGreaterThanOrEqual(0.68);
   });
 });

@@ -39,8 +39,8 @@ export const RHYTHMS: readonly RhythmDefinition[] = [
   },
   {
     id: 'arpeggio',
-    label: 'アルペジオ',
-    hint: '和音を 1 音ずつ分散させる',
+    label: 'バリエーション',
+    hint: '実演奏から起こした、動きのある伴奏',
     source: { kind: 'style', style: ARPEGGIO },
   },
   {
@@ -48,6 +48,12 @@ export const RHYTHMS: readonly RhythmDefinition[] = [
     label: 'ナチュラル',
     hint: '実演奏から起こした、自然なポップスの伴奏',
     source: { kind: 'feel', feelId: 'natural' },
+  },
+  {
+    id: 'city',
+    label: 'シティ',
+    hint: '短いコードと休符で、タイトに刻む伴奏',
+    source: { kind: 'independent', beatsPerBar: 4 },
   },
   {
     id: 'driving',
