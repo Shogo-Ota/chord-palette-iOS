@@ -3,8 +3,11 @@ import type { PerfChord } from '../PerformanceEngine';
 import { teacherVelocity } from '../humanTemplate/losslessTone';
 import type { HumanMidiTemplate } from '../humanTemplate/types';
 import type { FinalMidiControlChange } from '../finalMidi/types';
+import { fitNaturalGate, mapNaturalSourceOnset, naturalDurationPolicy } from './durationPolicy';
 import { type1MaskSequence } from './masks';
 import type { AtomicGrooveAttack, FullVoicing } from './types';
+
+const EPS = 1e-9;
 
 function mean(values: readonly number[]): number {
   return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
@@ -24,16 +27,26 @@ export function atomicPedalEvents(
   const events: FinalMidiControlChange[] = [];
   chords.forEach((chord, chordIndex) => {
     const barInLoop = (chordIndex % template.loopBars) + 1;
-    const scale = chord.durationBeats / template.meter.beatsPerBar;
+    const policy = naturalDurationPolicy(chord.durationBeats, template.meter.beatsPerBar);
+    let pedalDown = false;
     for (const pedal of template.pedalEvents ?? []) {
       if (pedal.musicalBar !== barInLoop) continue;
-      const startBeat = chord.startBeat + pedal.beatInMusicalBar * scale;
-      if (startBeat < chord.startBeat || startBeat >= chord.startBeat + chord.durationBeats)
-        continue;
+      const mappedOnset = mapNaturalSourceOnset(pedal.beatInMusicalBar, policy);
+      if (mappedOnset == null) continue;
+      const value = pedal.state === 'down' ? Math.max(0, Math.min(127, pedal.value)) : 0;
       events.push({
-        startBeat,
+        startBeat: chord.startBeat + mappedOnset,
         controller: 64,
-        value: pedal.state === 'down' ? Math.max(0, Math.min(127, pedal.value)) : 0,
+        value,
+        channel: 0,
+      });
+      pedalDown = value >= 64;
+    }
+    if (pedalDown) {
+      events.push({
+        startBeat: chord.startBeat + chord.durationBeats,
+        controller: 64,
+        value: 0,
         channel: 0,
       });
     }
@@ -60,22 +73,29 @@ export function extractAtomicType1Timeline(
 
   chords.forEach((chord, chordIndex) => {
     const barInLoop = (chordIndex % template.loopBars) + 1;
-    const scale = chord.durationBeats / template.meter.beatsPerBar;
+    const policy = naturalDurationPolicy(chord.durationBeats, template.meter.beatsPerBar);
     const sourceAttacks = template.attacks.filter(
       (attack) => attack.musicalBarInLoop === barInLoop && attack.notes.length > 0,
     );
     for (const source of sourceAttacks) {
       const sounding = source.notes.filter((note) => (note.durationBeats ?? 0.5) > 0);
       if (sounding.length === 0) continue;
-      const onsetBeat =
-        chord.startBeat + (source.beatInMusicalBar + (source.timingOffsetBeats ?? 0)) * scale;
+      const mappedOnset = mapNaturalSourceOnset(
+        source.beatInMusicalBar + (source.timingOffsetBeats ?? 0),
+        policy,
+      );
+      if (mappedOnset == null) continue;
+      const durationBeat = fitNaturalGate(
+        Math.max(1 / 64, median(sounding.map((note) => note.durationBeats ?? 0.5))),
+        mappedOnset,
+        policy,
+      );
+      if (durationBeat <= EPS) continue;
+      const onsetBeat = chord.startBeat + mappedOnset;
       groups.push({
         chordIndex,
         onsetBeat,
-        durationBeat: Math.max(
-          1 / 64,
-          median(sounding.map((note) => note.durationBeats ?? 0.5)) * scale,
-        ),
+        durationBeat,
         velocity: clampVelocity(Math.round(mean(sounding.map(teacherVelocity)))),
         gapToNextAttack: null,
         pedalDown: pedalDownAt(pedalEvents, onsetBeat),

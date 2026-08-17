@@ -50,6 +50,7 @@ final class RealtimeSamplerEngine {
   private var playGeneration: UInt64 = 0
   private var lastEvents: [ScheduledMidiEvent] = []
   private var pausedBeat: Double = 0
+  private var firstNoteOnSent = false
 
   private let midiQueue = DispatchQueue(
     label: "app.chord-palette.realtime-midi",
@@ -66,6 +67,8 @@ final class RealtimeSamplerEngine {
   private(set) var sentCc64Count = 0
   private(set) var sentPitchMin = 0
   private(set) var sentPitchMax = 0
+  /// Control-thread diagnostic hook. The callback must stay lightweight.
+  var onFirstChordNoteOn: ((Int, Double) -> Void)?
 
   init(engine: AVAudioEngine) {
     self.engine = engine
@@ -106,6 +109,10 @@ final class RealtimeSamplerEngine {
       os_log("v2 instrument load failed: %{public}@", log: log, type: .error, lastError ?? "")
       return false
     }
+  }
+
+  func isInstrumentLoaded(_ instrumentId: String, program: UInt8) -> Bool {
+    return loadedInstrument == instrumentId && loadedProgram == program
   }
 
   @discardableResult
@@ -175,6 +182,7 @@ final class RealtimeSamplerEngine {
     sentCc64Count = events.filter { $0.kind == "cc" && $0.a == 64 }.count
     sentPitchMin = chordOns.map { Int($0.a) }.min() ?? 0
     sentPitchMax = chordOns.map { Int($0.a) }.max() ?? 0
+    firstNoteOnSent = false
     hostStartNanos = DispatchTime.now().uptimeNanoseconds
     playingFlag = true
     lastError = nil
@@ -295,6 +303,7 @@ final class RealtimeSamplerEngine {
       "sentCc64Count": sentCc64Count,
       "sentPitchMin": sentPitchMin,
       "sentPitchMax": sentPitchMax,
+      "firstChordNoteOnSent": firstNoteOnSent,
       "samePitchActiveKeys": gate.activeKeys,
       "samePitchSuppressedNoteOffs": gate.suppressedNoteOffs,
       "samePitchPeakDepth": gate.peakDepth,
@@ -358,6 +367,10 @@ final class RealtimeSamplerEngine {
       // MIDI legal range only (0–127 at the bridge). Do not fold 85–90 to 84.
       if !ev.drum {
         samePitchGate.noteOn(channel: ev.channel, note: ev.a)
+        if !firstNoteOnSent {
+          firstNoteOnSent = true
+          onFirstChordNoteOn?(Int(ev.a), ev.beat)
+        }
       }
       sampler.startNote(ev.a, withVelocity: max(1, ev.b), onChannel: ev.channel)
     case "off":

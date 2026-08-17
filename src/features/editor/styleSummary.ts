@@ -4,10 +4,10 @@
  * two can never disagree about what is playing.
  */
 
-import { ACCOMPANIMENT_LABELS, INSTRUMENT_LABELS } from '@/data/labels';
+import { INSTRUMENT_LABELS } from '@/data/labels';
+import { groupForSelection, typeForSelection } from '@/features/editor/accompanimentGroups';
 import { DRUM_BEAT_LABELS, type DrumBeat } from '@/lib/drum/drumBeat';
 import { DRUM_MODE_LABELS, type DrumMode } from '@/lib/drum/drumMode';
-import { offeredVariantsFor, resolveVariant } from '@/lib/performance/variants';
 import type { AccompanimentPattern, InstrumentId } from '@/types';
 
 export type StyleSummaryInput = {
@@ -26,10 +26,12 @@ export function drumSummaryText(drumMode: DrumMode, drumBeat: DrumBeat): string 
 }
 
 export function styleSummaryParts(s: StyleSummaryInput): string[] {
-  const parts = [ACCOMPANIMENT_LABELS[s.accompanimentPattern]];
-  // A pattern with a single real take has no Type to show.
-  if (offeredVariantsFor(s.accompanimentPattern).length > 1) {
-    parts.push(resolveVariant(s.accompanimentPattern, s.accompanimentVariant).label);
+  const group = groupForSelection(s.accompanimentPattern, s.accompanimentVariant);
+  const type = typeForSelection(s.accompanimentPattern, s.accompanimentVariant);
+  const parts = [group.label];
+  // A group with a single real take has no Type to show.
+  if ((group.types.length > 1 || group.id === 'variation') && type) {
+    parts.push(type.label);
   }
   parts.push(INSTRUMENT_LABELS[s.instrumentId], drumSummaryText(s.drumMode, s.drumBeat));
   return parts;

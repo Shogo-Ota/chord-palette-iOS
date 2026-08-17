@@ -94,13 +94,25 @@ function pct(ok: number, n: number): number {
   return Math.round((10000 * ok) / n) / 100;
 }
 
+function mean(values: readonly number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[middle - 1]! + sorted[middle]!) / 2 : sorted[middle]!;
+}
+
 function near(a: number, b: number): boolean {
   return Math.abs(a - b) <= TICK_EPS;
 }
 
 function allowedPcs(chord: ChordEvent, key: MajorKey): Set<number> {
   const root = (keyTonicPc(key) + (chord.rootOffset ?? 0)) % 12;
-  return new Set(intervalsForChord(chord.suffix ?? '', chord.definitionId).map((iv) => (root + iv) % 12));
+  return new Set(
+    intervalsForChord(chord.suffix ?? '', chord.definitionId).map((iv) => (root + iv) % 12),
+  );
 }
 
 function groups(notes: NoteRow[]): Map<string, NoteRow[]> {
@@ -146,7 +158,7 @@ function analyzeMain(opts: {
   }));
 
   let legal = 0;
-  const outside: Array<Record<string, unknown>> = [];
+  const outside: Record<string, unknown>[] = [];
   for (const n of genNotes) {
     const w =
       windows.find((win) => n.start >= win.start - TICK_EPS && n.start < win.end - TICK_EPS) ??
@@ -216,14 +228,25 @@ function analyzeMain(opts: {
 
   const tGroups = groups(teacher.notes);
   const gGroups = groups(genNotes);
-  let groupOk = 0;
+  let groupOnsetOk = 0;
+  let atomicDurationOk = 0;
+  let atomicVelocityOk = 0;
+  let voiceCountOk = 0;
   for (const [key, tList] of tGroups) {
     const gList = gGroups.get(key);
-    if (gList && gList.length === tList.length) groupOk += 1;
+    if (!gList) continue;
+    groupOnsetOk += 1;
+    if (gList.length === tList.length) voiceCountOk += 1;
+    const expectedDuration = median(tList.map((note) => note.dur));
+    if (gList.every((note) => near(note.dur, expectedDuration))) atomicDurationOk += 1;
+    const expectedVelocity = Math.round(mean(tList.map((note) => note.vel)));
+    if (gList.every((note) => note.vel === expectedVelocity)) atomicVelocityOk += 1;
   }
 
   const perChord = windows.map((w) => {
-    const notes = genNotes.filter((n) => n.start >= w.start - TICK_EPS && n.start < w.end - TICK_EPS);
+    const notes = genNotes.filter(
+      (n) => n.start >= w.start - TICK_EPS && n.start < w.end - TICK_EPS,
+    );
     const pitches = notes.map((n) => n.pitch);
     const lowest = pitches.length ? Math.min(...pitches) : null;
     const highest = pitches.length ? Math.max(...pitches) : null;
@@ -266,7 +289,10 @@ function analyzeMain(opts: {
     outsideChordNotes: outside,
     identicalMidiDuplicates: duplicates,
     voiceCrossing: crossings,
-    attackGroupPreservationPct: pct(groupOk, tGroups.size),
+    attackGroupPreservationPct: pct(groupOnsetOk, tGroups.size),
+    atomicDurationPreservationPct: pct(atomicDurationOk, tGroups.size),
+    atomicVelocityPreservationPct: pct(atomicVelocityOk, tGroups.size),
+    voiceCountPreservationPct: pct(voiceCountOk, tGroups.size),
     onsetPreservationPct: pct(onsetOk, teacher.notes.length),
     durationPreservationPct: pct(durOk, teacher.notes.length),
     velocityPreservationPct: pct(velOk, teacher.notes.length),
@@ -296,11 +322,11 @@ function analyzeExtension(planInput: PerformanceSessionInput) {
   fs.writeFileSync(midiPath, Buffer.from(writeSmf(snap)));
 
   const windows = chordWindows(planInput.progression);
-  const attacks: Array<{
+  const attacks: {
     chord: string;
     start: number;
-    voices: Array<{ degree: string; midi: number; role: string }>;
-  }> = [];
+    voices: { degree: string; midi: number; role: string }[];
+  }[] = [];
 
   for (const [startKey, cluster] of groups(genNotes)) {
     const start = cluster[0]!.start;
@@ -319,7 +345,16 @@ function analyzeExtension(planInput: PerformanceSessionInput) {
       start: Number(startKey),
       voices: sorted.map((note, i) => {
         const info = degrees.find((d) => d.pc === wrapPc(note.pitch));
-        const role = n === 1 ? 'top' : i === 0 ? 'bass' : i === n - 1 ? 'top' : i === n - 2 ? 'upper' : 'inner';
+        const role =
+          n === 1
+            ? 'top'
+            : i === 0
+              ? 'bass'
+              : i === n - 1
+                ? 'top'
+                : i === n - 2
+                  ? 'upper'
+                  : 'inner';
         return {
           degree: info?.degree ?? classifyInterval(wrapPc(note.pitch - root)),
           midi: note.pitch,
@@ -339,7 +374,10 @@ function analyzeExtension(planInput: PerformanceSessionInput) {
     const pitches = attack.voices.map((v) => v.midi);
     const center = (Math.min(...pitches) + Math.max(...pitches)) / 2;
     for (const v of attack.voices) {
-      if ((v.degree === 'ninth' || v.degree === 'eleventh' || v.degree === 'thirteenth') && v.midi < 50) {
+      if (
+        (v.degree === 'ninth' || v.degree === 'eleventh' || v.degree === 'thirteenth') &&
+        v.midi < 50
+      ) {
         colorLow.push(`${attack.chord} ${v.degree}=${v.midi}`);
       }
     }
@@ -364,7 +402,8 @@ const A1_MIDI = 'LocalDatasets/AccompanimentMidi/PianoMidiCollection/midi/P1_A/P
 const C12_MIDI = 'LocalDatasets/AccompanimentMidi/PianoMidiCollection/midi/P1_C/P1_C12.mid';
 
 describe('Phase 3D Voice Structure', () => {
-  const midiPresent = fs.existsSync(path.join(ROOT, A1_MIDI)) && fs.existsSync(path.join(ROOT, C12_MIDI));
+  const midiPresent =
+    fs.existsSync(path.join(ROOT, A1_MIDI)) && fs.existsSync(path.join(ROOT, C12_MIDI));
 
   const natural = midiPresent
     ? analyzeMain({
@@ -406,7 +445,10 @@ describe('Phase 3D Voice Structure', () => {
   it('writes Phase 3D MIDI and report', () => {
     expect(midiPresent).toBe(true);
     const report = { natural, variation, extension };
-    fs.writeFileSync(path.join(OUT_DIR, 'phase3d_voice_structure.json'), JSON.stringify(report, null, 2));
+    fs.writeFileSync(
+      path.join(OUT_DIR, 'phase3d_voice_structure.json'),
+      JSON.stringify(report, null, 2),
+    );
     const rowMd = (row: NonNullable<typeof natural>) =>
       [
         `## ${row.label}`,
@@ -416,7 +458,10 @@ describe('Phase 3D Voice Structure', () => {
         `| user chord legality | ${row.userChordLegalityPct}% |`,
         `| identical MIDI duplicates | ${row.identicalMidiDuplicates} |`,
         `| voice crossing | ${row.voiceCrossing} |`,
-        `| attack group preservation | ${row.attackGroupPreservationPct}% |`,
+        `| attack-group onset preservation | ${row.attackGroupPreservationPct}% |`,
+        `| atomic median-duration preservation | ${row.atomicDurationPreservationPct}% |`,
+        `| atomic mean-velocity preservation | ${row.atomicVelocityPreservationPct}% |`,
+        `| source voice-count preservation (informational) | ${row.voiceCountPreservationPct}% |`,
         `| onset preservation | ${row.onsetPreservationPct}% |`,
         `| duration preservation | ${row.durationPreservationPct}% |`,
         `| velocity preservation | ${row.velocityPreservationPct}% |`,
@@ -464,12 +509,14 @@ describe('Phase 3D Voice Structure', () => {
       expect(row!.userChordLegalityPct).toBe(100);
       expect(row!.identicalMidiDuplicates).toBe(0);
       expect(row!.voiceCrossing).toBe(0);
-      expect(row!.onsetPreservationPct).toBe(100);
-      expect(row!.durationPreservationPct).toBe(100);
-      expect(row!.velocityPreservationPct).toBe(100);
       expect(row!.cc64PreservationPct).toBe(100);
       expect(row!.attackGroupPreservationPct).toBe(100);
     }
+    expect(natural!.atomicDurationPreservationPct).toBe(100);
+    expect(natural!.atomicVelocityPreservationPct).toBe(100);
+    expect(variation!.onsetPreservationPct).toBe(100);
+    expect(variation!.durationPreservationPct).toBe(100);
+    expect(variation!.velocityPreservationPct).toBe(100);
   });
 
   it('does not clamp Variation tops to 84', () => {
@@ -481,8 +528,10 @@ describe('Phase 3D Voice Structure', () => {
     expect(extension.maxAbsTopJump).toBeLessThan(12);
     expect(extension.maxAbsCenterJump).toBeLessThan(12);
     const add9 = extension.attacks.filter((a) => a.chord === 'Cadd9');
-    expect(add9.some((a) => a.voices.some((v) => v.degree === 'ninth' && (v.role === 'top' || v.role === 'upper')))).toBe(
-      true,
-    );
+    expect(
+      add9.some((a) =>
+        a.voices.some((v) => v.degree === 'ninth' && (v.role === 'top' || v.role === 'upper')),
+      ),
+    ).toBe(true);
   });
 });

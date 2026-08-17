@@ -1,6 +1,10 @@
 import { clampVelocity, type NoteEvent } from '../NoteEvent';
 import type { PerfChord } from '../PerformanceEngine';
-import { applyVoicingMask, buildStableFullVoicings, type FullVoicingNote } from '../chordComping';
+import {
+  applyVoicingMask,
+  fullVoicingsFromPerfChords,
+  type FullVoicingNote,
+} from '../chordComping';
 import { CITY_TYPE1_CANDIDATE_POLICIES, CITY_TYPE1_GROOVE } from './cityType1Groove';
 import type { CityType1Attack, CityType1CandidateId, CityType1Plan } from './types';
 
@@ -38,7 +42,7 @@ export function realizeCityType1(
   seed: number,
 ): CityType1Plan {
   const policy = CITY_TYPE1_CANDIDATE_POLICIES[candidateId];
-  const fullVoicings = buildStableFullVoicings(chords);
+  const fullVoicings = fullVoicingsFromPerfChords(chords);
   const attacks: CityType1Attack[] = [];
   const notes: NoteEvent[] = [];
 

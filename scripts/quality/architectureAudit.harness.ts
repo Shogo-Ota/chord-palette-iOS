@@ -16,7 +16,6 @@ import { buildStableFullVoicings } from '@/lib/performance/chordComping';
 import { progressionToPerfChords } from '@/lib/performance/progressionInput';
 import { PUBLIC_ACCOMPANIMENT_PATTERNS } from '@/lib/performance/publicAccompaniment';
 import { defaultVariantFor } from '@/lib/performance/variants';
-import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
 import type { InstrumentEffect } from '@/lib/performance/effect';
 
 import { GOLDEN_PROGRESSIONS } from './goldenProgressions';
@@ -159,13 +158,8 @@ describe('PHASE A — accompaniment architecture audit', () => {
         });
       }
 
-      // 3. The two competing base-voicing engines, compared directly.
-      const perfChords = progressionToPerfChords(
-        progression.chords,
-        progression.key,
-        0,
-        voicingAestheticFor('natural', 'free'),
-      );
+      // 3. Shared Base and the degree-tagged mask adapter must be pitch-identical.
+      const perfChords = progressionToPerfChords(progression.chords, progression.key, 0);
       const compact = buildStableFullVoicings(perfChords);
       perfChords.forEach((chord, chordIndex) => {
         const voiceLed = [...chord.bassMidi, ...chord.bodyMidi].sort((a, b) => a - b);

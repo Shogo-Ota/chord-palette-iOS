@@ -29,10 +29,10 @@ function ev(rootOffset: number, suffix: string, definitionId?: string): ChordEve
   };
 }
 
-const REPRESENTATIVE_PROGRESSIONS: Array<{
+const REPRESENTATIVE_PROGRESSIONS: {
   name: string;
   chords: ChordEvent[];
-}> = [
+}[] = [
   { name: 'major triad', chords: [ev(0, '')] },
   { name: 'minor triad', chords: [ev(9, 'm')] },
   { name: 'maj7', chords: [ev(0, 'maj7')] },
@@ -70,6 +70,9 @@ describe('strict v2 human template realize', () => {
           const events = realizeHumanTemplate(template, perf, {
             seed: 42,
             velocityCenter: 68,
+            // This validator is the lossless Teacher Identity gate. Production
+            // userChord mode intentionally realizes atomic groups from Shared Base.
+            pitchMode: 'teacherFidelity',
           });
           expect(events.length).toBeGreaterThan(0);
           const spans = perf.map((c) => ({

@@ -56,9 +56,7 @@ function countExtremeLeaps(events: NoteEvent[], chords: ValidateChordSpan[]): nu
       (a, b) => a - b,
     );
     const lastAttackTime = attackTimes[attackTimes.length - 1]!;
-    const lastAttackNotes = inChord.filter(
-      (e) => Math.round(e.timeBeat * 1000) === lastAttackTime,
-    );
+    const lastAttackNotes = inChord.filter((e) => Math.round(e.timeBeat * 1000) === lastAttackTime);
     topByChord.push(Math.max(...lastAttackNotes.map((e) => e.pitch)));
   }
   let leaps = 0;
@@ -83,10 +81,12 @@ export function validateHumanTemplateOutput(
     if (!allowed.containsPitch(e.pitch)) illegalPitches.push(e.pitch);
   }
 
+  // This validator proves the lossless Teacher regression path. Production
+  // `userChord` mode requires Shared Base pitches and has its own atomic gates.
   const realized = realizeHumanTemplate(
     template,
     chords.map((c) => ({ ...c, bassMidi: [], bodyMidi: [] })),
-    { seed: 1, velocityCenter: 68 },
+    { seed: 1, velocityCenter: 68, pitchMode: 'teacherFidelity' },
   );
 
   const timingPreserved =

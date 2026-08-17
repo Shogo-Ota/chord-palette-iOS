@@ -1,6 +1,6 @@
 /**
- * Phase 3A nearest-fit helper. Production uses `realizeVoiceStructureAttack`.
- * Kept so the 3A unit tests still describe the old algorithm.
+ * DEPRECATED ANALYSIS ONLY: Phase 3A nearest-fit helper. Production uses Shared
+ * Base Voicing plus atomic subtractive masks. Kept only for historical unit tests.
  */
 
 import type { AllowedToneSet, TemplateNote } from '../strictV2';

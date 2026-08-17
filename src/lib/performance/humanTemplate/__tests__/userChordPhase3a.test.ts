@@ -38,7 +38,7 @@ function ev(rootOffset: number, suffix: string, displayName: string): ChordEvent
   };
 }
 
-const I_VI_IV_V: Array<[number, string]> = [
+const I_VI_IV_V: [number, string][] = [
   [0, ''],
   [9, 'm'],
   [5, ''],
@@ -97,13 +97,25 @@ function pct(ok: number, n: number): number {
   return Math.round((10000 * ok) / n) / 100;
 }
 
+function mean(values: readonly number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length;
+}
+
+function median(values: readonly number[]): number {
+  const sorted = [...values].sort((left, right) => left - right);
+  const middle = Math.floor(sorted.length / 2);
+  return sorted.length % 2 === 0 ? (sorted[middle - 1]! + sorted[middle]!) / 2 : sorted[middle]!;
+}
+
 function near(a: number, b: number): boolean {
   return Math.abs(a - b) <= TICK_EPS;
 }
 
 function allowedPcs(chord: ChordEvent, key: MajorKey): Set<number> {
   const root = (keyTonicPc(key) + (chord.rootOffset ?? 0)) % 12;
-  return new Set(intervalsForChord(chord.suffix ?? '', chord.definitionId).map((iv) => (root + iv) % 12));
+  return new Set(
+    intervalsForChord(chord.suffix ?? '', chord.definitionId).map((iv) => (root + iv) % 12),
+  );
 }
 
 function groups(notes: NoteRow[]): Map<string, NoteRow[]> {
@@ -141,10 +153,12 @@ function analyze(opts: {
     pcs: allowedPcs(chord, opts.planInput.key),
   }));
 
-  const outside: Array<Record<string, unknown>> = [];
+  const outside: Record<string, unknown>[] = [];
   let legal = 0;
   for (const n of genNotes) {
-    const w = windows.find((win) => n.start >= win.start - TICK_EPS && n.start < win.end - TICK_EPS) ?? windows[0]!;
+    const w =
+      windows.find((win) => n.start >= win.start - TICK_EPS && n.start < win.end - TICK_EPS) ??
+      windows[0]!;
     const pc = ((n.pitch % 12) + 12) % 12;
     if (w.pcs.has(pc)) legal += 1;
     else outside.push({ bar: w.label, start: n.start, pitch: n.pitch, pc });
@@ -205,10 +219,19 @@ function analyze(opts: {
 
   const tGroups = groups(teacher.notes);
   const gGroups = groups(genNotes);
-  let groupOk = 0;
+  let groupOnsetOk = 0;
+  let atomicDurationOk = 0;
+  let atomicVelocityOk = 0;
+  let voiceCountOk = 0;
   for (const [key, tList] of tGroups) {
     const gList = gGroups.get(key);
-    if (gList && gList.length === tList.length) groupOk += 1;
+    if (!gList) continue;
+    groupOnsetOk += 1;
+    if (gList.length === tList.length) voiceCountOk += 1;
+    const expectedDuration = median(tList.map((note) => note.dur));
+    if (gList.every((note) => near(note.dur, expectedDuration))) atomicDurationOk += 1;
+    const expectedVelocity = Math.round(mean(tList.map((note) => note.vel)));
+    if (gList.every((note) => note.vel === expectedVelocity)) atomicVelocityOk += 1;
   }
 
   fs.mkdirSync(OUT_DIR, { recursive: true });
@@ -228,7 +251,10 @@ function analyze(opts: {
     durationPreservationPct: pct(durOk, teacher.notes.length),
     velocityPreservationPct: pct(velOk, teacher.notes.length),
     cc64PreservationPct: pct(ccOk, teacher.cc64.length),
-    attackGroupPreservationPct: pct(groupOk, tGroups.size),
+    attackGroupPreservationPct: pct(groupOnsetOk, tGroups.size),
+    atomicDurationPreservationPct: pct(atomicDurationOk, tGroups.size),
+    atomicVelocityPreservationPct: pct(atomicVelocityOk, tGroups.size),
+    voiceCountPreservationPct: pct(voiceCountOk, tGroups.size),
     minPitch: pitches.length ? Math.min(...pitches) : null,
     maxPitch: pitches.length ? Math.max(...pitches) : null,
     legacyExtraNotes: plan.notes.filter((n) => n.trackId === 'bass').length,
@@ -239,7 +265,8 @@ const A1_MIDI = 'LocalDatasets/AccompanimentMidi/PianoMidiCollection/midi/P1_A/P
 const C12_MIDI = 'LocalDatasets/AccompanimentMidi/PianoMidiCollection/midi/P1_C/P1_C12.mid';
 
 describe('Phase 3A User Chord Authority', () => {
-  const midiPresent = fs.existsSync(path.join(ROOT, A1_MIDI)) && fs.existsSync(path.join(ROOT, C12_MIDI));
+  const midiPresent =
+    fs.existsSync(path.join(ROOT, A1_MIDI)) && fs.existsSync(path.join(ROOT, C12_MIDI));
 
   const natural = midiPresent
     ? analyze({
@@ -282,13 +309,19 @@ describe('Phase 3A User Chord Authority', () => {
         `| duration preservation | ${row!.durationPreservationPct}% |`,
         `| velocity preservation | ${row!.velocityPreservationPct}% |`,
         `| CC64 preservation | ${row!.cc64PreservationPct}% |`,
-        `| attack group preservation | ${row!.attackGroupPreservationPct}% |`,
+        `| attack-group onset preservation | ${row!.attackGroupPreservationPct}% |`,
+        `| atomic median-duration preservation | ${row!.atomicDurationPreservationPct}% |`,
+        `| atomic mean-velocity preservation | ${row!.atomicVelocityPreservationPct}% |`,
+        `| source voice-count preservation (informational) | ${row!.voiceCountPreservationPct}% |`,
         `| min / max pitch | ${row!.minPitch} / ${row!.maxPitch} |`,
         `| MIDI | ${row!.midiPath} |`,
         '',
       ]),
     ].join('\n');
-    fs.writeFileSync(path.join(ROOT, 'LocalAnalysis/teacher_forensic_audit/user_chord_phase3a.md'), md);
+    fs.writeFileSync(
+      path.join(ROOT, 'LocalAnalysis/teacher_forensic_audit/user_chord_phase3a.md'),
+      md,
+    );
     expect(fs.existsSync(path.join(OUT_DIR, 'natural-type1-C-Am-F-G.mid'))).toBe(true);
     expect(fs.existsSync(path.join(OUT_DIR, 'variation-type1-D-Bm-G-A.mid'))).toBe(true);
   });
@@ -299,11 +332,10 @@ describe('Phase 3A User Chord Authority', () => {
     expect(natural!.userChordLegalityPct).toBe(100);
     expect(natural!.outsideChordNotes).toEqual([]);
     expect(natural!.duplicateSimultaneousPitch).toBe(0);
-    expect(natural!.onsetPreservationPct).toBe(100);
-    expect(natural!.durationPreservationPct).toBe(100);
-    expect(natural!.velocityPreservationPct).toBe(100);
     expect(natural!.cc64PreservationPct).toBe(100);
     expect(natural!.attackGroupPreservationPct).toBe(100);
+    expect(natural!.atomicDurationPreservationPct).toBe(100);
+    expect(natural!.atomicVelocityPreservationPct).toBe(100);
   });
 
   it('Variation Type1 is legal on D|Bm|G|A and keeps performance', () => {

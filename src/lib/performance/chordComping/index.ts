@@ -1,4 +1,7 @@
-export { buildStableFullVoicings } from './fullVoicing';
+export {
+  fullVoicingsFromPerfChords,
+  fullVoicingsFromPerfChords as buildStableFullVoicings,
+} from './fromPerfChords';
 export { applyVoicingMask, maskContainsColor } from './masks';
 export {
   VOICING_MASKS,

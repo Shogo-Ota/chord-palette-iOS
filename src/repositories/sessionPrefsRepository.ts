@@ -8,7 +8,12 @@ import { getDb } from '@/lib/db';
 const LAST_PROJECT_KEY = 'last_project_id';
 const RELEASE_CUT_KEY = 'release_cut';
 const ADMIN_MODE_KEY = 'admin_mode';
-const OCTAVE_SHIFT_KEY = 'octave_shift';
+/**
+ * v1 defaulted to +1 octave before every public style shared one register
+ * policy. Use a versioned key so existing installs do not restore that obsolete
+ * automatic raise after the compact Base migration.
+ */
+const OCTAVE_SHIFT_KEY = 'octave_shift_v2';
 const EDITOR_TUTORIAL_KEY = 'editor_tutorial_seen';
 const DRUM_MODE_KEY = 'drum_mode';
 const DRUM_BEAT_KEY = 'drum_beat';
@@ -24,11 +29,10 @@ export const DEFAULT_DRUM_BEAT_PREF = '8' as const;
 export const DEFAULT_RELEASE_CUT = false;
 
 /**
- * Default whole-arrangement register: raised one octave (bass floor C3). C2 felt
- * too low/muddy on device speakers; the user can drop back to 0 (original C2) via
- * the octave switch on the Style screen.
+ * Neutral compact register: LH C2–C3 and RH C3–C5. Register is independent of
+ * inversion; a future explicit user choice may still raise this by one octave.
  */
-export const DEFAULT_OCTAVE_SHIFT = 1;
+export const DEFAULT_OCTAVE_SHIFT = 0;
 
 export async function getLastProjectId(): Promise<string | null> {
   const db = await getDb();

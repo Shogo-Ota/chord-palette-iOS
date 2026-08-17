@@ -167,7 +167,7 @@ export interface PerformanceOptions {
    * Human Template pitch path. Omitted = production (`userChord`).
    * `teacherFidelity` is the Phase 1 / 2 regression path only.
    */
-  humanTemplatePitchMode?: 'userChord' | 'teacherFidelity';
+  humanTemplatePitchMode?: 'sharedBase' | 'userChord' | 'teacherFidelity';
 }
 
 /** General-MIDI-style pitches for the synthesized drum voices. */
@@ -314,8 +314,7 @@ function collectStrikes(
           // figure spells 1-3-5-7 up/down, kept with tensions); fall back to the
           // voice-led body when no arp source is provided. The order is the
           // explicit `order`, else an up/down cycle derived from the note count.
-          const source =
-            chord.arpMidi && chord.arpMidi.length > 0 ? chord.arpMidi : chord.bodyMidi;
+          const source = chord.arpMidi && chord.arpMidi.length > 0 ? chord.arpMidi : chord.bodyMidi;
           if (chord !== arpChord) {
             arpChord = chord;
             arpIndex = 0;
@@ -324,8 +323,11 @@ function collectStrikes(
           const bodyIndex = arpOrder[arpIndex % arpOrder.length] % source.length;
           pitches = [source[bodyIndex]];
           arpIndex++;
-        } else if (style.holdAllChordTones && chord.arpMidi && chord.arpMidi.length > 0) {
-          pitches = chord.arpMidi;
+        } else if (style.holdAllChordTones) {
+          // Block must strike the exact Shared Base body. `arpMidi` is a legacy
+          // root-position source for the hidden arpeggio style and may collide
+          // with an inverted/shared bass.
+          pitches = chord.bodyMidi;
         } else {
           pitches = chord.bodyMidi;
         }
@@ -375,7 +377,15 @@ function collectBankStrikes(
     const endBar = Math.min(bars, startBar + PHRASE_LENGTH);
     const template = pickNaturalTemplate(seed, phrase, bank);
     strikes.push(
-      ...collectStrikes(track, patternFor(template, track), template, chords, startBar, endBar, totalBeats),
+      ...collectStrikes(
+        track,
+        patternFor(template, track),
+        template,
+        chords,
+        startBar,
+        endBar,
+        totalBeats,
+      ),
     );
   }
   return strikes;
@@ -434,8 +444,7 @@ function renderTrack(
       ghost: d.ghost,
       // Chord-role shaping (v1.01 Phase 4): only multi-pitch chord strikes carry
       // roles — the top note sings, the inner voices sit slightly back.
-      chordRole:
-        track === 'chord' && d.strumSize > 1 ? (d.strikeTop ? 'top' : 'inner') : undefined,
+      chordRole: track === 'chord' && d.strumSize > 1 ? (d.strikeTop ? 'top' : 'inner') : undefined,
       rng: streamFor(seed, 'vel', track, d.bar, d.step, i, d.pitch),
     }),
   );
@@ -458,7 +467,9 @@ function renderTrack(
       const rng = streamFor(seed, 'strum', d.bar, d.step, d.pitch);
       // Tier widens the roll (strumScale). scale 1 = the style's own spread unchanged.
       const spec =
-        strumScale === 1 ? style.strum : { ...style.strum, spreadMs: style.strum.spreadMs * strumScale };
+        strumScale === 1
+          ? style.strum
+          : { ...style.strum, spreadMs: style.strum.spreadMs * strumScale };
       strumBeat = strumOffsetBeats(
         d.strumRank,
         d.strumSize,
@@ -485,10 +496,10 @@ function renderTrack(
           track,
         );
     const durationBeat = d.nominalBeat * gate;
-    const tie =
-      held || (style.gate.sustain === 'legato' && gate > 0.88 && i + 1 < drafts.length);
+    const tie = held || (style.gate.sustain === 'legato' && gate > 0.88 && i + 1 < drafts.length);
 
-    const velocity = strumVel === 1 ? velocities[i] : clampVelocity(Math.round(velocities[i] * strumVel));
+    const velocity =
+      strumVel === 1 ? velocities[i] : clampVelocity(Math.round(velocities[i] * strumVel));
     return {
       timeBeat,
       durationBeat,
@@ -616,9 +627,7 @@ export function generatePerformance(
 
   const energy = normalizeEnergy(options.energy ?? DEFAULT_ENERGY);
   const accompanimentStyle: AccompanimentStyle =
-    options.accompanimentStyle ??
-    axesFor(String(options.styleId))?.style ??
-    'band';
+    options.accompanimentStyle ?? axesFor(String(options.styleId))?.style ?? 'band';
   const energyProfile = energyProfileFor(accompanimentStyle, energy);
   // Human MIDI Template (strict v2) — production path for natural / variation.
   const humanTemplate = options.humanTemplateId
@@ -721,7 +730,9 @@ export function generatePerformance(
     const realized = realizeHumanTemplate(humanTemplate, input.chords, {
       seed: input.seed,
       trackId: 'chord',
-      pitchMode: options.humanTemplatePitchMode ?? 'userChord',
+      pitchMode:
+        options.humanTemplatePitchMode ??
+        (options.styleId === 'natural' ? 'sharedBase' : 'userChord'),
     });
     const drumsOnly = events.filter(
       (e) => e.trackId === 'kick' || e.trackId === 'snare' || e.trackId === 'hat',

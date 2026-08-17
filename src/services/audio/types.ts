@@ -129,6 +129,10 @@ export type PreviewRequest = {
 export type RenderAudioRequest = {
   bpm: number;
   totalBeats: number;
+  /**
+   * Legacy offline-render payload. Retained for older native binaries; current
+   * video export renders {@link midiEvents} as the canonical source.
+   */
   chordEvents: NoteEvent[];
   drumPatternId: string;
   /** Accompaniment rhythm id — mirrors {@link PlaybackRequest.accompaniment}. */
@@ -138,6 +142,14 @@ export type RenderAudioRequest = {
   /** Mirrors {@link PlaybackRequest.beatsPerBar}. */
   beatsPerBar?: number;
   drumMode?: 'off' | 'clap' | 'full';
+  /** Canonical Final MIDI schedule shared with shipping realtime playback. */
+  midiEvents?: NativeMidiEvent[];
+  /** Whether the canonical schedule contains a GM percussion track. */
+  hasDrums?: boolean;
+  /** GM melodic program loaded by both realtime and offline samplers. */
+  gmProgram?: number;
+  /** Final MIDI fingerprint logged with the exported audio. */
+  planSignature?: string;
 };
 
 /** Result of an offline audio render: a temp file URI + its sample rate. */

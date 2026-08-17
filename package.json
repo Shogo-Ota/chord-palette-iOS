@@ -81,6 +81,7 @@
     "city:listening": "jest -c scripts/city/jest.city.config.js --testPathPattern cityListening.harness",
     "quality:audit": "jest -c scripts/quality/jest.quality.config.js --testPathPattern architectureAudit.harness",
     "quality:gate01": "jest -c scripts/quality/jest.quality.config.js --testPathPattern gate01Sustain.harness",
+    "quality:sharedVoicingPoc": "jest -c scripts/quality/jest.quality.config.js --testPathPattern sharedVoicingPoc.harness",
     "quality:localAnalysis": "jest -c scripts/quality/jest.localAnalysis.config.js"
   },
   "private": true

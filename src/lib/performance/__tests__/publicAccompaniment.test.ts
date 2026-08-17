@@ -6,7 +6,7 @@ import {
 } from '../publicAccompaniment';
 
 describe('public accompaniment release policy', () => {
-  it('offers Block, Natural and listening-approved City Type1', () => {
+  it('offers Block, Natural and Variation playback providers', () => {
     expect(PUBLIC_ACCOMPANIMENT_PATTERNS).toEqual(['block', 'natural', 'city']);
     expect(DEFAULT_PUBLIC_ACCOMPANIMENT).toBe('natural');
     expect(DEFAULT_PUBLIC_VARIANT).toBe('natural.type1');
@@ -30,7 +30,7 @@ describe('public accompaniment release policy', () => {
     });
   });
 
-  it('falls hidden patterns and variants back to Natural Type1', () => {
+  it('falls hidden patterns and variants back to release-safe defaults', () => {
     expect(normalizePublicAccompanimentSelection('arpeggio', 'arpeggio.type1')).toEqual({
       accompanimentPattern: 'natural',
       accompanimentVariant: 'natural.type1',

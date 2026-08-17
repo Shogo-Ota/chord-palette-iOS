@@ -13,8 +13,8 @@ import { type Tier } from '@/lib/performance/tier';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
-import { mapPerfNotesToPlaybackRequest } from '@/services/audio/performanceMapper';
 import type { ChordEvent, InstrumentId, MajorKey } from '@/types';
+import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 
 /** Minimal snapshot the exporter needs (decoupled from the editor feature layer). */
 export type VideoExportInput = {
@@ -97,26 +97,9 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   // Performance output is authoritative. Recompute here instead of accepting a UI
   // duration so remetered audio, visual segments and native muxing share one boundary.
   const durationSec = cycleDurationSec(performance.totalBeats, performance.bpm);
-  const playback = mapPerfNotesToPlaybackRequest(performance.notes, {
-    bpm: performance.bpm,
-    totalBeats: performance.totalBeats,
-    loop: true,
-    drumPatternId: performance.drumPatternId,
-    instrument: performance.instrumentId,
-    beatsPerBar: performance.beatsPerBar,
-    drumMode: performance.drumMode,
-  });
-  const audio = await audioService.renderAudioFile({
-    bpm: playback.bpm,
-    totalBeats: playback.totalBeats,
-    chordEvents: playback.chordEvents,
-    drumPatternId: playback.drumPatternId,
-    accompaniment: playback.accompaniment,
-    instrument: playback.instrument,
-    durationSec,
-    beatsPerBar: playback.beatsPerBar,
-    drumMode: playback.drumMode,
-  });
+  const audio = await audioService.renderAudioFile(
+    buildVideoAudioRequest(performance, durationSec),
+  );
   if (!audio) {
     throw new VideoExportError('音声のレンダリングに失敗しました。');
   }

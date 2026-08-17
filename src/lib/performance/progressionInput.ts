@@ -1,47 +1,67 @@
 /**
  * Adapter: build the engine's `PerfChord[]` from a real (degree-based) progression
- * plus a key, reusing the existing Step-1 voice-leading path (`progressionToChordSpecs`).
- * This keeps `PerformanceEngine` decoupled from the chord-voicing details while
- * letting callers (and tests) drive it straight from a progression. Pure domain —
- * no service/native imports beyond the pure `voicing` module in the same layer.
+ * plus a key. Shared Compact Base Voicing is resolved exactly once here, before a
+ * style is selected. Block, Natural and City therefore receive identical harmonic
+ * pitches and may differ only in timing, dynamics and subtractive masks.
  */
 
 import { chordArpeggioNotes, progressionToChordSpecs } from '@/lib/voicing';
+import { buildCompactBaseVoicings, type VoicingPosition } from './baseVoicing';
 import { chordHarmonyFromEvent } from './humanTemplate/chordHarmony';
 import type { ChordEvent, MajorKey } from '@/types';
 import type { PerfChord } from './PerformanceEngine';
 import type { VoiceLeadingOptions } from './voiceLeading';
 
 /**
- * Split each voice-led ChordSpec into bass (< C3) and body (≥ C3), matching the
- * native `isBass` / `isBody` split. Bass length is 1 after audit P0-2 (C2 only).
- *
- * `octaveShift` (in octaves, default 0) is the device-level register preference
- * (bass floor C2 vs C3). CRITICAL: the C3(48) bass/body split is computed on the
- * UNSHIFTED voicing, then the shift is applied to each part — otherwise raising
- * the bass to C3 would push it across the 48 threshold and misclassify it as body
- * (leaving the bass track empty). Shifting after the split keeps bass-below-body.
- *
- * `aesthetic` (optional) selects the voicing aesthetic (inversion/octave placement).
- * Omitted = the engine default (`balanced`) — identical to the previous output, so
- * existing callers are unaffected. See `VOICING_AESTHETICS`.
+ * `octaveShift` moves the entire hand model in octaves. `position` controls the
+ * non-slash bass degree; explicit slash bass always overrides it.
  */
 export function progressionToPerfChords(
+  progression: ChordEvent[],
+  key: MajorKey,
+  octaveShift = 0,
+  position: VoicingPosition = 'root',
+): PerfChord[] {
+  const harmonies = progression.map((event) => chordHarmonyFromEvent(event, key));
+  const baseVoicings = buildCompactBaseVoicings(harmonies, { position, octaveShift });
+  let beat = 0;
+  return baseVoicings.map((voicing, index) => {
+    const event = progression[index]!;
+    const chord: PerfChord = {
+      bassMidi: voicing.notes.filter((note) => note.hand === 'LH').map((note) => note.pitch),
+      bodyMidi: voicing.notes.filter((note) => note.hand === 'RH').map((note) => note.pitch),
+      harmony: voicing.harmony,
+      // Root-position source for the arpeggio style (1-3-5-7 up/down, tensions incl.).
+      arpMidi: chordArpeggioNotes(event, key).map((note) => note + octaveShift * 12),
+      startBeat: beat,
+      durationBeats: event.durationBeats,
+    };
+    beat += event.durationBeats;
+    return chord;
+  });
+}
+
+/**
+ * DEPRECATED ANALYSIS ONLY: reconstructs the pre-Shared-Base authoring path so
+ * pinned historical baselines remain reproducible. Shipping sessions must never
+ * call this function.
+ */
+export function progressionToLegacyPerfChords(
   progression: ChordEvent[],
   key: MajorKey,
   octaveShift = 0,
   aesthetic?: VoiceLeadingOptions,
 ): PerfChord[] {
   const specs = progressionToChordSpecs(progression, key, aesthetic);
-  const semis = 12 * octaveShift;
+  const semitones = octaveShift * 12;
   let beat = 0;
-  return specs.map((spec, i) => {
+  return specs.map((spec, index) => {
+    const event = progression[index]!;
     const chord: PerfChord = {
-      bassMidi: spec.midiNotes.filter((n) => n < 48).map((n) => n + semis),
-      bodyMidi: spec.midiNotes.filter((n) => n >= 48).map((n) => n + semis),
-      harmony: chordHarmonyFromEvent(progression[i]!, key),
-      // Root-position source for the arpeggio style (1-3-5-7 up/down, tensions incl.).
-      arpMidi: chordArpeggioNotes(progression[i], key).map((n) => n + semis),
+      bassMidi: spec.midiNotes.filter((note) => note < 48).map((note) => note + semitones),
+      bodyMidi: spec.midiNotes.filter((note) => note >= 48).map((note) => note + semitones),
+      harmony: chordHarmonyFromEvent(event, key),
+      arpMidi: chordArpeggioNotes(event, key).map((note) => note + semitones),
       startBeat: beat,
       durationBeats: spec.lengthBeats,
     };

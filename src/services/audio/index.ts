@@ -3,6 +3,7 @@ import type { EventSubscription } from 'expo-modules-core';
 import { ChordAudioNative } from '@modules/chord-audio';
 import { logger } from '@/lib/logger';
 import { getVolumeLevels, setVolumeLevel } from '@/repositories/settingsRepository';
+import { PlaybackLifecycleCoordinator } from '@/services/audio/playbackLifecycle';
 import { clampVolume } from '@/services/audio/schedule';
 import type {
   AudioDiagnostics,
@@ -37,14 +38,6 @@ function applyDrumBusGain(): void {
   applyVolumeToNative('drum', drumBusMuted ? 0 : stored);
 }
 
-/**
- * Serializes overlapping `play` calls (style taps / live re-apply). A newer
- * request always wins; an older in-flight `play` is ignored after await so a
- * rapid style switch cannot leave a stale plan sounding.
- */
-let playGeneration = 0;
-let playChain: Promise<void> = Promise.resolve();
-
 export function isNativeAudioAvailable(): boolean {
   return !!ChordAudioNative && ChordAudioNative.isAvailable();
 }
@@ -56,6 +49,51 @@ function applyVolumeToNative(channel: VolumeChannel, value: number): void {
   else if (channel === 'chord') ChordAudioNative.setChordVolume(v);
   else ChordAudioNative.setDrumVolume(v);
 }
+
+function setDrumBusMuted(muted: boolean): void {
+  drumBusMuted = muted;
+  applyDrumBusGain();
+}
+
+async function restoreVolumesFromStorage(): Promise<VolumeLevels> {
+  const levels = await getVolumeLevels();
+  cachedVolumes = levels;
+  applyVolumeToNative('master', levels.master);
+  applyVolumeToNative('chord', levels.chord);
+  applyDrumBusGain();
+  return levels;
+}
+
+function scheduleDevelopmentPlaybackDiagnostics(request: PlaybackRequest): void {
+  if (!__DEV__ || !request.countIn) return;
+  const countInSeconds = request.countIn.beats * (60 / Math.max(1, request.bpm));
+  const firstMusicWindowMs = Math.ceil((countInSeconds + 1) * 1000);
+  setTimeout(() => {
+    void audioService.logPlaybackDiagnostics(
+      `first-play-window sig=${request.planSignature ?? '-'} loop=${request.loop}`,
+    );
+  }, firstMusicWindowMs);
+}
+
+const playbackLifecycle = new PlaybackLifecycleCoordinator<PlaybackRequest>({
+  getState: () => (ChordAudioNative?.getState() as PlaybackState | undefined) ?? 'idle',
+  prepare: async () => {
+    if (!ChordAudioNative) return;
+    await ChordAudioNative.prepare();
+    await restoreVolumesFromStorage();
+  },
+  play: async (request) => {
+    await ChordAudioNative?.play(request);
+    setDrumBusMuted(request.drumMode === 'off');
+    scheduleDevelopmentPlaybackDiagnostics(request);
+  },
+  stop: async () => {
+    await ChordAudioNative?.stop();
+  },
+  teardown: async () => {
+    await ChordAudioNative?.teardown();
+  },
+});
 
 export const audioService = {
   isAvailable: isNativeAudioAvailable,
@@ -75,12 +113,11 @@ export const audioService = {
 
   async prepare(): Promise<void> {
     if (!ChordAudioNative) return;
-    await ChordAudioNative.prepare();
-    await this.restoreVolumes();
+    await playbackLifecycle.prepare();
   },
 
   async teardown(): Promise<void> {
-    await ChordAudioNative?.teardown();
+    await playbackLifecycle.teardown();
   },
 
   /**
@@ -148,21 +185,12 @@ export const audioService = {
   },
 
   async play(req: PlaybackRequest): Promise<void> {
-    const gen = ++playGeneration;
-    playChain = playChain
-      .catch(() => undefined)
-      .then(async () => {
-        if (gen !== playGeneration) return;
-        await ChordAudioNative?.play(req);
-        audioService.setDrumMuted(req.drumMode === 'off');
-      });
-    await playChain;
+    await playbackLifecycle.play(req);
   },
 
   /** Silence the native drum bus. Does not change the stored drum volume. */
   setDrumMuted(muted: boolean): void {
-    drumBusMuted = muted;
-    applyDrumBusGain();
+    setDrumBusMuted(muted);
   },
 
   /**
@@ -181,7 +209,15 @@ export const audioService = {
    * Returns null when the native module is unavailable (JS export / Expo Go).
    */
   async renderAudioFile(req: RenderAudioRequest): Promise<RenderAudioResult | null> {
-    return (await ChordAudioNative?.renderAudioFile(req)) ?? null;
+    const result = (await ChordAudioNative?.renderAudioFile(req)) ?? null;
+    if (__DEV__ && result) {
+      void audioService.logPlaybackDiagnostics(
+        `video-render sig=${req.planSignature ?? '-'} cc64=${
+          req.midiEvents?.filter((event) => event.kind === 'cc' && event.a === 64).length ?? 0
+        }`,
+      );
+    }
+    return result;
   },
 
   async pause(): Promise<void> {
@@ -193,17 +229,12 @@ export const audioService = {
   },
 
   async stop(): Promise<void> {
-    await ChordAudioNative?.stop();
+    await playbackLifecycle.stop();
   },
 
   /** Load persisted volumes from SQLite and push them to the native engine. */
   async restoreVolumes(): Promise<VolumeLevels> {
-    const levels = await getVolumeLevels();
-    cachedVolumes = levels;
-    applyVolumeToNative('master', levels.master);
-    applyVolumeToNative('chord', levels.chord);
-    applyDrumBusGain();
-    return levels;
+    return restoreVolumesFromStorage();
   },
 
   getVolumes(): VolumeLevels | null {

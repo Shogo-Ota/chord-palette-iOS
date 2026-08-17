@@ -1,8 +1,8 @@
 /**
- * Phase 3D — realize one attack as a voicing, then connect to the next.
+ * DEPRECATED ANALYSIS ONLY: Phase 3D attack-by-attack voicing experiment.
  *
- * User Chord = legal degrees. Teacher = voice structure / spacing / contour.
- * Previous voicing = where those degrees should sit.
+ * Production no longer reads Teacher pitch structure. Shared Base Voicing is
+ * resolved once per chord and Natural applies atomic subtractive masks.
  */
 
 import type { AllowedToneSet, TemplateNote } from '../strictV2';

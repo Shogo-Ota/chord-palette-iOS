@@ -29,10 +29,5 @@ export {
   reconstructTeacherPitch,
 } from './pureTranspose';
 export { realizeHumanTemplate, type HumanTemplatePitchMode } from './realize';
-export { realizeUserChordAttack } from './userChordVoicing';
-export {
-  emptyVoiceLeadingState,
-  realizeVoiceStructureAttack,
-} from './voiceStructureRealize';
 export { validateHumanTemplateOutput } from './validate';
 export type { HumanMidiTemplate, HumanTemplateAttack } from './types';

@@ -123,6 +123,9 @@ export function chordMidiNotes(
  * `options` selects the voicing aesthetic (inversion/octave placement). Omitted =
  * the engine default (`balanced`), which reproduces the current output exactly — so
  * every existing caller is unaffected. See `VOICING_AESTHETICS`.
+ *
+ * @deprecated Analysis/legacy tests only. Shipping session playback resolves one
+ * style-neutral voicing through `performance/baseVoicing`.
  */
 export function progressionToChordSpecs(
   progression: ChordEvent[],

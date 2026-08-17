@@ -1,7 +1,7 @@
 import type { NoteEvent } from '../NoteEvent';
 import type { PerfChord } from '../PerformanceEngine';
 import type { HumanMidiTemplate } from '../humanTemplate/types';
-import { buildStableFullVoicings } from './fullVoicing';
+import { fullVoicingsFromPerfChords } from '../chordComping';
 import { applyVoicingMask } from './masks';
 import { atomicPedalEvents, extractAtomicType1Timeline } from './timeline';
 import type { AtomicNaturalPlan } from './types';
@@ -11,7 +11,7 @@ export function realizeAtomicNaturalType1(
   chords: readonly PerfChord[],
   seed: number,
 ): AtomicNaturalPlan {
-  const fullVoicings = buildStableFullVoicings(chords);
+  const fullVoicings = fullVoicingsFromPerfChords(chords);
   const attacks = extractAtomicType1Timeline(template, chords, fullVoicings);
   const notes: NoteEvent[] = [];
 

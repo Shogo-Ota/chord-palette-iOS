@@ -7,20 +7,19 @@ import { DrumModeSegment } from '@/components/DrumModeSegment';
 import { Chip, ChipRow, SectionTitle, VolumeSlider } from '@/components/controls';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { ENABLED_INSTRUMENTS, INSTRUMENT_LABELS } from '@/data/labels';
 import {
-  ACCOMPANIMENT_HINTS,
-  ACCOMPANIMENT_LABELS,
-  ENABLED_INSTRUMENTS,
-  INSTRUMENT_LABELS,
-} from '@/data/labels';
+  groupForSelection,
+  PUBLIC_ACCOMPANIMENT_GROUPS,
+  typeForSelection,
+  type AccompanimentGroup,
+} from '@/features/editor/accompanimentGroups';
 import * as session from '@/features/editor/session';
 import { useEditorSession } from '@/features/editor/session';
 import { useLiveSoundReapply } from '@/features/editor/useLiveSoundReapply';
 import type { DrumBeat } from '@/lib/drum/drumBeat';
 import { drumBeatSelectorVisible, type DrumMode } from '@/lib/drum/drumMode';
 import { logger } from '@/lib/logger';
-import { PUBLIC_ACCOMPANIMENT_PATTERNS } from '@/lib/performance/publicAccompaniment';
-import { defaultVariantFor, offeredVariantsFor } from '@/lib/performance/variants';
 import { setDrumBeatPref, setDrumModePref } from '@/repositories/sessionPrefsRepository';
 import { audioService } from '@/services/audio';
 import {
@@ -49,14 +48,14 @@ function rgba(hex: string, a: number) {
 export default function GrooveScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const grooveChipW = (width - 40 - 8) / 2;
+  const grooveChipW = (width - 40 - 8 * 2) / 3;
   const s = useEditorSession();
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const drumOff = s.drumMode === 'off';
   const showDrumBeat = drumBeatSelectorVisible(s.drumMode);
-  // Types are the real teacher takes this pattern owns — never padded to a fixed count.
-  const patternTypes = offeredVariantsFor(s.accompanimentPattern);
-  const activeType = patternTypes.find((v) => v.id === s.accompanimentVariant);
+  const activeGroup = groupForSelection(s.accompanimentPattern, s.accompanimentVariant);
+  const patternTypes = activeGroup.types;
+  const activeType = typeForSelection(s.accompanimentPattern, s.accompanimentVariant);
   const typeChipW = (width - 40 - 8 * 2) / 3;
 
   const [volumes, setVolumes] = useState<VolumeLevels>(
@@ -163,8 +162,10 @@ export default function GrooveScreen() {
 
   useLiveSoundReapply(playbackState, true, s);
 
-  function handlePatternChange(id: (typeof PUBLIC_ACCOMPANIMENT_PATTERNS)[number]) {
-    session.setAccompaniment(id, defaultVariantFor(id).id);
+  function handleGroupChange(group: AccompanimentGroup) {
+    const first = group.types[0];
+    if (!first) return;
+    session.setAccompaniment(first.pattern, first.variant);
   }
 
   return (
@@ -207,25 +208,25 @@ export default function GrooveScreen() {
 
       <SectionTitle>伴奏パターン</SectionTitle>
       <View style={styles.grid}>
-        {PUBLIC_ACCOMPANIMENT_PATTERNS.map((id) => (
+        {PUBLIC_ACCOMPANIMENT_GROUPS.map((group) => (
           <Chip
-            key={id}
-            label={ACCOMPANIMENT_LABELS[id]}
-            active={id === s.accompanimentPattern}
-            onPress={() => handlePatternChange(id)}
+            key={group.id}
+            label={group.label}
+            active={group.id === activeGroup.id}
+            onPress={() => handleGroupChange(group)}
             style={{ width: grooveChipW }}
             textStyle={{ fontSize: 13 }}
           />
         ))}
       </View>
-      {patternTypes.length > 1 && (
+      {(patternTypes.length > 1 || activeGroup.id === 'variation') && (
         <View style={styles.typeRow}>
           {patternTypes.map((v) => (
             <Chip
-              key={v.id}
+              key={`${v.pattern}:${v.variant}`}
               label={v.label}
-              active={v.id === s.accompanimentVariant}
-              onPress={() => session.setAccompanimentVariant(v.id)}
+              active={v.pattern === s.accompanimentPattern && v.variant === s.accompanimentVariant}
+              onPress={() => session.setAccompaniment(v.pattern, v.variant)}
               style={{ width: typeChipW }}
               textStyle={{ fontSize: 12 }}
             />
@@ -233,7 +234,7 @@ export default function GrooveScreen() {
         </View>
       )}
       <Text style={styles.patternHint} numberOfLines={2}>
-        {activeType?.hint ?? ACCOMPANIMENT_HINTS[s.accompanimentPattern]}
+        {activeType?.hint}
       </Text>
 
       <SectionTitle>音色</SectionTitle>

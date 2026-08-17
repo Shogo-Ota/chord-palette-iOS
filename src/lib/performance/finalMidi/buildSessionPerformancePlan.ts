@@ -17,7 +17,7 @@ import {
 import { beatsPerBarFor } from '../rhythms';
 import { resolveDrumPatternId } from '@/lib/drum/resolveDrumPattern';
 import { tierProfile, type Tier } from '../tier';
-import { voicingAestheticFor } from '../voiceLeading';
+import type { VoicingPosition } from '../baseVoicing';
 import { performanceSeedFromSession } from '@/services/audio/performanceMapper';
 import type { DrumBeat } from '@/lib/drum/drumBeat';
 import type { DrumMode } from '@/lib/drum/drumMode';
@@ -36,6 +36,8 @@ export type PerformanceSessionInput = {
   instrumentId: InstrumentId;
   accompanimentEnergy: AccompanimentEnergy;
   octaveShift: number;
+  /** Shared Base Voicing inversion. Omitted = root position. */
+  voicingPosition?: VoicingPosition;
   releaseCut: boolean;
   /** Piano effect. Omitted = derived from the legacy `releaseCut` flag. */
   instrumentEffect?: InstrumentEffect;
@@ -47,7 +49,7 @@ export type PerformanceSessionInput = {
    * Test-only. Production never sets this. `teacherFidelity` keeps Phase 1 / 2
    * Identity and Pure Transpose as low-level regression gates.
    */
-  humanTemplatePitchMode?: 'userChord' | 'teacherFidelity';
+  humanTemplatePitchMode?: 'sharedBase' | 'userChord' | 'teacherFidelity';
 };
 
 export function buildSessionPerformancePlan(
@@ -59,7 +61,7 @@ export function buildSessionPerformancePlan(
     session.progression,
     session.key,
     session.octaveShift,
-    voicingAestheticFor(session.accompanimentPattern, tier),
+    session.voicingPosition ?? 'root',
   );
   const chords = remeterChords(authored, beatsPerBar);
   const totalBeats = chords.reduce((max, c) => Math.max(max, c.startBeat + c.durationBeats), 0);

@@ -28,9 +28,13 @@ describe('City Type1 offline generator', () => {
         (attack) => attack.chordIndex === current.chords.indexOf(chord),
       );
       expect(attacks.map((attack) => attack.cycleAttackIndex)).toEqual([0, 1, 2, 3, 4, 5]);
+      expect(attacks.map((attack) => attack.onsetBeat - chord.startBeat)).toEqual([
+        0, 0.5, 0.75, 1.25, 1.75, 2,
+      ]);
       expect(attacks.every((attack) => attack.gapToNextAttackBeat >= 0)).toBe(true);
       expect(attacks[5]!.gapToNextAttackBeat).toBeGreaterThan(1.7);
     }
+    expect(CITY_TYPE1_GROOVE.sourceContract.sourceGridDelayBeat).toBe(0.008333);
     expect(CITY_TYPE1_GROOVE.sourceContract.literalPitchExcluded).toBe(true);
     expect(CITY_TYPE1_GROOVE.sourceContract.harmonyExcluded).toBe(true);
   });

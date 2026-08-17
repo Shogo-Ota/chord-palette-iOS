@@ -175,6 +175,7 @@ final class AudioEngineController {
   private var countInActive = false
   private var countInPaused = false
   private var pendingCountInStart: (() -> Void)?
+  private var pendingCountInContext = ""
 
   /// Last volumes pushed from JS (also applied as a render-time gain so 0 = mute
   /// even if the AVAudioMixerNode path misbehaves). Read under `unfairLock`.
@@ -213,14 +214,21 @@ final class AudioEngineController {
     if prepared {
       // Already built. A screen remount calls prepare() again while the engine may
       // have been stopped meanwhile (interruption / config change) — re-activate the
-      // session and re-arm the engine so the next play()/preview is audible, then
-      // report ready. Nodes stay attached/connected, so a plain start() suffices.
+      // session and re-arm the engine so the next play()/preview is audible. Never
+      // overwrite a live transport with `ready`: the Groove screen mounts while the
+      // Editor can still be playing, and its prepare() call must be idempotent.
       if !engine.isRunning {
         try? AVAudioSession.sharedInstance().setActive(true)
         try? engine.start()
         diagnosticsLog.record("prepare.rearm", "engineRunning=\(engine.isRunning)")
       }
-      state = .ready
+      let stateBeforeReuse = state
+      if state != .playing && state != .paused {
+        state = .ready
+      }
+      diagnosticsLog.record(
+        "prepare.reuse",
+        "state=\(stateBeforeReuse.rawValue) engineRunning=\(engine.isRunning)")
       return
     }
     state = .preparing
@@ -237,6 +245,11 @@ final class AudioEngineController {
       // Load sampled GM percussion for the drums (synth fallback on failure).
       loadDrumVoice()
       if let url = Self.soundFontURL() {
+        // The shipping path is realtime. Warm its default melodic program before
+        // `ready`, otherwise the first 148 MB SoundFont load happens after the
+        // four-count and breaks the musical handoff. Request-specific instruments
+        // are also preflighted before count-in in ChordAudioModule.play.
+        _ = prepareRealtimeInstrument("piano", gmProgram: 0, hasDrums: false)
         _ = countInPlayer?.load(soundFontURL: url)
       }
       state = .ready
@@ -432,6 +445,44 @@ final class AudioEngineController {
     diagnosticsLog.record("instrument", "\(instrumentId) sampled=\(provider is SampledInstrumentProvider)")
   }
 
+  /// Make the realtime sampler ready before a count-in begins. Idempotent: an
+  /// already-loaded instrument returns without touching the AudioUnit.
+  @discardableResult
+  func prepareRealtimeInstrument(
+    _ instrumentId: String,
+    gmProgram: Int,
+    hasDrums: Bool
+  ) -> Bool {
+    guard prepared, let rt = realtime else {
+      diagnosticsLog.record(
+        "instrument.v2.preflight.reject",
+        "prepared=\(prepared) attached=\(realtime != nil)")
+      return false
+    }
+    guard let url = Self.soundFontURL() else {
+      diagnosticsLog.record("instrument.v2.preflight.error", "no SoundFont resolved")
+      return false
+    }
+
+    let program = UInt8(max(0, min(127, gmProgram)))
+    let cached = rt.isInstrumentLoaded(instrumentId, program: program)
+    let started = DispatchTime.now().uptimeNanoseconds
+    diagnosticsLog.record(
+      "instrument.v2.load.start",
+      "\(instrumentId) program=\(program) cached=\(cached)")
+    let instrumentReady = rt.setInstrument(
+      instrumentId,
+      program: program,
+      soundFontURL: url)
+    let drumsReady = !hasDrums || rt.loadDrumBank(soundFontURL: url)
+    let elapsedMs = Double(DispatchTime.now().uptimeNanoseconds &- started) / 1_000_000.0
+    diagnosticsLog.record(
+      "instrument.v2.load.end",
+      "\(instrumentId) program=\(program) cached=\(cached) ok=\(instrumentReady) "
+        + "drums=\(drumsReady) elapsedMs=\(String(format: "%.1f", elapsedMs))")
+    return instrumentReady
+  }
+
   /// Resolve (and cache) the provider for `instrumentId`. Does not change the
   /// active voice — callers decide whether to install it.
   private func resolveInstrumentProvider(_ instrumentId: String) -> InstrumentProvider {
@@ -524,6 +575,11 @@ final class AudioEngineController {
     // controls apply to both engines. Attached before `start` (dynamic attachment on a
     // running engine is the riskier path) and silent until a request selects v2.
     let rt = RealtimeSamplerEngine(engine: engine)
+    rt.onFirstChordNoteOn = { [weak self] pitch, beat in
+      self?.diagnosticsLog.record(
+        "play.v2.firstNoteOn",
+        "pitch=\(pitch) beat=\(String(format: "%.4f", beat))")
+    }
     rt.attach(chordBus: mix.chordMixer, drumBus: mix.drumMixer, format: fmt)
     realtime = rt
     let preRoll = CountInPlayer(engine: engine)
@@ -558,9 +614,14 @@ final class AudioEngineController {
   func playAfterCountIn(
     config: CountInConfigValue,
     bpm: Double,
+    planSignature: String?,
     start: @escaping () -> Void
   ) {
-    guard prepared else { return }
+    guard prepared else {
+      state = .failed
+      diagnosticsLog.record("countIn.reject", "prepared=false")
+      return
+    }
     cancelCountIn(clearPending: true)
     if !engine.isRunning {
       try? AVAudioSession.sharedInstance().setActive(true)
@@ -568,11 +629,14 @@ final class AudioEngineController {
     }
     countInLock.lock()
     pendingCountInStart = start
+    pendingCountInContext = "sig=\(planSignature ?? "-")"
     countInActive = true
     countInPaused = false
     countInLock.unlock()
     state = .playing
-    diagnosticsLog.record("countIn.start", "beats=\(config.beats) bpm=\(Int(bpm))")
+    diagnosticsLog.record(
+      "countIn.start",
+      "beats=\(config.beats) bpm=\(Int(bpm)) sig=\(planSignature ?? "-")")
 
     let scheduled = countInPlayer?.play(config: config, bpm: bpm) { [weak self] in
       self?.finishCountIn()
@@ -626,9 +690,11 @@ final class AudioEngineController {
       countInLock.unlock()
       return false
     }
+    let context = pendingCountInContext
     pendingCountInStart = nil
+    pendingCountInContext = ""
     countInLock.unlock()
-    diagnosticsLog.record(logKind)
+    diagnosticsLog.record(logKind, context)
     start()
     return true
   }
@@ -640,6 +706,7 @@ final class AudioEngineController {
     countInActive = false
     if clearPending {
       pendingCountInStart = nil
+      pendingCountInContext = ""
       countInPaused = false
     }
     countInLock.unlock()
@@ -760,22 +827,12 @@ final class AudioEngineController {
     finished = false
     os_unfair_lock_unlock(&unfairLock)
 
-    // v2 uses the general GM bank for every voice: the program in the snapshot decides
-    // the timbre (0 = grand, 4 = e.piano). Keeping v2 off the separately bundled Rhodes
-    // SF2 means this path does not depend on an asset that is not in version control.
-    guard let url = Self.soundFontURL() else {
-      diagnosticsLog.record("play.v2.error", "no SoundFont resolved for v2")
-      state = .failed
-      return
-    }
-    guard rt.setInstrument(instrument, program: UInt8(max(0, min(127, gmProgram))), soundFontURL: url)
-    else {
+    // Usually a cache hit because the request was preflighted before count-in.
+    // Keep the guard here so direct/no-count-in callers share the same readiness path.
+    guard prepareRealtimeInstrument(instrument, gmProgram: gmProgram, hasDrums: hasDrums) else {
       diagnosticsLog.record("play.v2.error", rt.lastError ?? "instrument load failed")
       state = .failed
       return
-    }
-    if hasDrums {
-      _ = rt.loadDrumBank(soundFontURL: url)
     }
 
     useRealtimeEngine = true
@@ -1645,6 +1702,45 @@ final class AudioEngineController {
   }
 
   // MARK: - Offline render (Phase 4 export)
+
+  /// Render the canonical Final MIDI through the same live-sampler semantics as
+  /// shipping playback. This is the preferred video path; the chord-event renderer
+  /// below remains only for compatibility with older JS bundles.
+  func renderMidiToFile(
+    bpm: Double,
+    durationSec: Double,
+    events: [ScheduledMidiEvent],
+    instrument: String,
+    gmProgram: Int,
+    hasDrums: Bool,
+    planSignature: String?
+  ) throws -> (url: URL, sampleRate: Double) {
+    guard let soundFontURL = Self.soundFontURL() else {
+      throw NSError(
+        domain: "ChordAudio",
+        code: -1,
+        userInfo: [NSLocalizedDescriptionKey: "Could not resolve canonical SoundFont"]
+      )
+    }
+    let program = UInt8(max(0, min(127, gmProgram)))
+    let result = try OfflineMidiRenderer().render(
+      bpm: bpm,
+      durationSec: durationSec,
+      events: events,
+      soundFontURL: soundFontURL,
+      gmProgram: program,
+      hasDrums: hasDrums
+    )
+    let noteOns = events.filter { $0.kind == "on" }.count
+    let cc64 = events.filter { $0.kind == "cc" && $0.a == 64 }.count
+    diagnosticsLog.record(
+      "render.v2",
+      "instrument=\(instrument) program=\(program) events=\(events.count) "
+        + "noteOns=\(noteOns) cc64=\(cc64) sig=\(planSignature ?? "-") "
+        + "sr=\(Int(result.sampleRate))"
+    )
+    return result
+  }
 
   /// Deterministically render `durationSec` of the looped progression + drums to a
   /// temporary `.m4a` and return its URL + sample rate. Independent of the

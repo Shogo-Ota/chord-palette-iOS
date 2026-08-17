@@ -11,7 +11,7 @@
 
 import { generatePerformance } from '../PerformanceEngine';
 import type { NoteEvent, TrackId } from '../NoteEvent';
-import { progressionToPerfChords } from '../progressionInput';
+import { progressionToLegacyPerfChords } from '../progressionInput';
 import { maxPolyphony } from './metrics';
 import { EVAL_PROGRESSIONS } from './fixtures';
 
@@ -218,7 +218,8 @@ export function buildBalladBaseline(
   const progA = EVAL_PROGRESSIONS.find((p) => p.id === 'A');
   if (!progA) throw new Error('EVAL_PROGRESSIONS missing progression A (C-G-Am-F)');
 
-  const chords = progressionToPerfChords(progA.chords, progA.key);
+  // This artifact intentionally fingerprints the pre-Shared-Base engine.
+  const chords = progressionToLegacyPerfChords(progA.chords, progA.key);
   const notes = generatePerformance(
     { chords, bpm: BPM, seed: BALLAD_BASELINE_SEED },
     { styleId: PATTERN, drums: true },

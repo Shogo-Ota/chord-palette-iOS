@@ -12,10 +12,9 @@
  *              slash bass is the lowest sounding note of its chord.
  *  - REGISTER  a style keeps its own hands in place across a chord change.
  *
- * The style-invariance gate (`STYLE MUST NOT CHANGE PITCH`) is declared here as a
- * known-failing contract: today each style owns a different base-voicing engine, so
- * it cannot hold yet. It is written as `it.failing` on purpose — when the shared
- * Compact Voicing Engine lands, this test starts passing and must be promoted.
+ * The style-invariance gate (`STYLE MUST NOT CHANGE PITCH`) compares the complete
+ * per-chord pitch union produced by every public style. Subtractive masks may change
+ * individual attacks, but each style must draw from the same Shared Base Voicing.
  */
 
 import { GOLDEN_PROGRESSIONS } from '@/lib/midiQa/goldenProgressions';
@@ -98,31 +97,31 @@ describe('accompaniment quality contract — HARMONY', () => {
     }
   });
 
-  it.each(PUBLIC_SLOTS)('$pattern/$variantId adds no extension the user did not ask for', (slot) => {
-    // Golden E walks C → Cadd9 → Cmaj7 → C7 on one root: a style that quietly
-    // upgrades a plain triad shows up here as a 9th, major 7th or ♭7 over bar 1.
-    const progression = GOLDEN_PROGRESSIONS.find((p) => p.id === 'E')!;
-    const rendered = plan(slot, progression);
-    const plainTriad = rendered.chords[0]!;
-    const allowed = new Set(resolveAllowed(plainTriad.harmony!).pcs);
-    const sounded = new Set(notesInChord(rendered, 0).map((n) => pc(n.pitch)));
-    for (const value of sounded) expect(allowed.has(value)).toBe(true);
-  });
+  it.each(PUBLIC_SLOTS)(
+    '$pattern/$variantId adds no extension the user did not ask for',
+    (slot) => {
+      // Golden E walks C → Cadd9 → Cmaj7 → C7 on one root: a style that quietly
+      // upgrades a plain triad shows up here as a 9th, major 7th or ♭7 over bar 1.
+      const progression = GOLDEN_PROGRESSIONS.find((p) => p.id === 'E')!;
+      const rendered = plan(slot, progression);
+      const plainTriad = rendered.chords[0]!;
+      const allowed = new Set(resolveAllowed(plainTriad.harmony!).pcs);
+      const sounded = new Set(notesInChord(rendered, 0).map((n) => pc(n.pitch)));
+      for (const value of sounded) expect(allowed.has(value)).toBe(true);
+    },
+  );
 });
 
 describe('accompaniment quality contract — GATE', () => {
-  it.each(PUBLIC_SLOTS)(
-    '$pattern/$variantId never lengthens a note to imitate a pedal',
-    (slot) => {
-      for (const progression of GOLDEN_PROGRESSIONS) {
-        const written = plan(slot, progression, 'off');
-        const sustained = plan(slot, progression, 'sustain');
-        expect(sustained.notes.map((n) => n.durationBeat)).toEqual(
-          written.notes.map((n) => n.durationBeat),
-        );
-      }
-    },
-  );
+  it.each(PUBLIC_SLOTS)('$pattern/$variantId never lengthens a note to imitate a pedal', (slot) => {
+    for (const progression of GOLDEN_PROGRESSIONS) {
+      const written = plan(slot, progression, 'off');
+      const sustained = plan(slot, progression, 'sustain');
+      expect(sustained.notes.map((n) => n.durationBeat)).toEqual(
+        written.notes.map((n) => n.durationBeat),
+      );
+    }
+  });
 
   it.each(PUBLIC_SLOTS)('$pattern/$variantId rings through CC64, never twice', (slot) => {
     for (const progression of GOLDEN_PROGRESSIONS) {
@@ -211,12 +210,7 @@ describe('accompaniment quality contract — REGISTER', () => {
 });
 
 describe('accompaniment quality contract — STYLE PITCH INVARIANCE', () => {
-  // KNOWN OPEN (ledger blocker `style-pitch-variance`). Block reads
-  // src/lib/voicing.ts, City reads chordComping/fullVoicing.ts and Natural solves
-  // every attack in humanTemplate/voiceStructureRealize.ts, so the same chord lands
-  // in three different places. When the shared Compact Voicing Engine lands this
-  // starts passing and must be turned into a plain `it`.
-  it.failing('the same chord sounds at the same pitch whatever the style', () => {
+  it('the same chord sounds at the same pitch whatever the style', () => {
     for (const progression of GOLDEN_PROGRESSIONS) {
       const byPattern = PUBLIC_ACCOMPANIMENT_PATTERNS.map((pattern) => {
         const slot: Slot = { pattern, variantId: offeredVariantsFor(pattern)[0]!.id };

@@ -2,7 +2,8 @@
  * Realize a Human MIDI Template onto user chords.
  *
  * Timing, duration and velocity come from the teacher and are not regenerated.
- * Production (`userChord`): Voice Structure + User degrees + voice leading.
+ * Public Natural (`sharedBase`): Shared Base Voicing + attack-group masks.
+ * Legacy templates (`userChord`): historical per-attack user-chord realization.
  * Teacher fidelity (`teacherFidelity`): lossless Identity / Pure Transpose.
  * Teacher `absolutePitch` is never read here.
  */
@@ -14,9 +15,10 @@ import { realizeDegreePitch } from './degreePitch';
 import { teacherVelocity } from './losslessTone';
 import { progressionTransposeDelta, wrapPitchClass } from './pureTranspose';
 import type { HumanMidiTemplate } from './types';
+import { realizeAtomicNaturalType1 } from '../naturalAtomic/realize';
 import { emptyVoiceLeadingState, realizeVoiceStructureAttack } from './voiceStructureRealize';
 
-export type HumanTemplatePitchMode = 'userChord' | 'teacherFidelity';
+export type HumanTemplatePitchMode = 'sharedBase' | 'userChord' | 'teacherFidelity';
 
 export interface RealizeHumanTemplateOptions {
   seed: number;
@@ -24,8 +26,8 @@ export interface RealizeHumanTemplateOptions {
   velocityCenter?: number;
   trackId?: NoteEvent['trackId'];
   /**
-   * Production default is `userChord`. `teacherFidelity` is the Phase 1 / 2
-   * regression path and is not a product quality target.
+   * Public Natural passes `sharedBase`. `userChord` remains for hidden legacy
+   * templates; `teacherFidelity` is the lossless regression path.
    */
   pitchMode?: HumanTemplatePitchMode;
 }
@@ -70,6 +72,13 @@ export function realizeHumanTemplate(
   const trackId = options.trackId ?? 'chord';
   const loopBars = template.loopBars;
   const pitchMode = options.pitchMode ?? 'userChord';
+  if (pitchMode === 'sharedBase') {
+    return realizeAtomicNaturalType1(template, chords, options.seed).notes.map((note) => ({
+      ...note,
+      trackId,
+    }));
+  }
+
   const globalDelta =
     pitchMode === 'teacherFidelity' ? globalTransposeDelta(template, chords, loopBars) : undefined;
   const events: NoteEvent[] = [];

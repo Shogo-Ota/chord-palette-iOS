@@ -1,12 +1,11 @@
 /**
  * Harmony invariant across the exact axes the user reported failing on device:
  * "changing key + toggling admin (Pro) / normal mode sometimes plays only the
- * bass". Admin mode flips the monetization tier free⇄pro, which changes both the
- * humanize/strum strength AND the voicing aesthetic (register / inversion). This
- * suite drives the REAL playback path (`voicingAestheticFor` + `tierProfile`, the
- * same wiring as `sessionToPlaybackRequest`) across all 12 keys × both tiers ×
- * both octave registers and asserts every chord still sounds its harmony (chord/
- * top, not just bass) inside its own window.
+ * bass". Admin mode flips the monetization tier free⇄pro, which changes humanize/
+ * strum strength but must not change Shared Base Voicing. This suite drives the
+ * real playback axes across all 12 keys × both tiers × both octave registers and
+ * asserts every chord still sounds its harmony (chord/top, not just bass) inside
+ * its own window.
  *
  * If this ever fails it pinpoints the (key, tier, register, pattern, groove)
  * combination that regressed — deterministically, without a device.
@@ -17,7 +16,6 @@ import { MAJOR_KEYS } from '@/data/music';
 import { generatePerformance, type PerfChord } from '@/lib/performance/PerformanceEngine';
 import { progressionToPerfChords } from '@/lib/performance/progressionInput';
 import { tierProfile, type Tier } from '@/lib/performance/tier';
-import { voicingAestheticFor } from '@/lib/performance/voiceLeading';
 import { performanceSeedFromSession } from '@/services/audio/performanceMapper';
 import type { NoteEvent } from '@/lib/performance/NoteEvent';
 import type { ChordEvent, MajorKey } from '@/types';
@@ -56,7 +54,9 @@ const PROGS: [string, ChordEvent[]][] = [
 const TIERS: Tier[] = ['free', 'pro'];
 const SHIFTS = [0, 1]; // C2 floor and the default C3 (raised) register
 // Keep the matrix bounded: a representative pattern/groove pair per family.
-const PATTERNS = Array.from(new Set<string>(['block', 'natural', 'arpeggio', ...ACCOMPANIMENT_IDS]));
+const PATTERNS = Array.from(
+  new Set<string>(['block', 'natural', 'arpeggio', ...ACCOMPANIMENT_IDS]),
+);
 const GROOVES = GROOVE_IDS;
 const BPM = 132;
 
@@ -67,15 +67,9 @@ describe('Harmony invariant — every key × tier(admin) × register still sound
         const strength = tierProfile(tier);
         for (const octaveShift of SHIFTS) {
           for (const pattern of PATTERNS) {
-            const aesthetic = voicingAestheticFor(pattern, tier);
             for (const grooveId of GROOVES) {
               for (const [label, progression] of PROGS) {
-                const chords = progressionToPerfChords(
-                  progression,
-                  key as MajorKey,
-                  octaveShift,
-                  aesthetic,
-                );
+                const chords = progressionToPerfChords(progression, key as MajorKey, octaveShift);
                 const seed = performanceSeedFromSession({
                   key: key as MajorKey,
                   tempoBpm: BPM,

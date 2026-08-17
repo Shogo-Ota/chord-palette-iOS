@@ -1,5 +1,5 @@
 /**
- * Golden Progressions A–F — the fixed corpus every accompaniment quality gate and
+ * Golden Progressions A–I — the fixed corpus every accompaniment quality gate and
  * experiment renders. Distinct from {@link QA_PROGRESSIONS}, which is the older MIDI
  * QA corpus: this set is the one the accompaniment quality contract is defined
  * against, and it deliberately covers slash bass (D) and an altered dominant (F).
@@ -10,7 +10,7 @@
 
 import type { ChordDuration, ChordEvent, MajorKey } from '@/types';
 
-export type GoldenProgressionId = 'A' | 'B' | 'C' | 'D' | 'E' | 'F';
+export type GoldenProgressionId = 'A' | 'B' | 'C' | 'D' | 'E' | 'F' | 'G' | 'H' | 'I';
 
 export type GoldenProgression = {
   id: GoldenProgressionId;
@@ -90,6 +90,24 @@ export const GOLDEN_PROGRESSIONS: readonly GoldenProgression[] = [
     { displayName: 'C7(♭9)', rootOffset: 0, suffix: '7(♭9)', definitionId: 'dom7_b9' },
     { displayName: 'Am7', rootOffset: 9, suffix: 'm7', definitionId: 'm7' },
     { displayName: 'Dm7', rootOffset: 2, suffix: 'm7', definitionId: 'm7' },
+  ]),
+  line('G', 'F | G | Em | Am', 'C', [
+    { displayName: 'F', rootOffset: 5, suffix: '' },
+    { displayName: 'G', rootOffset: 7, suffix: '' },
+    { displayName: 'Em', rootOffset: 4, suffix: 'm' },
+    { displayName: 'Am', rootOffset: 9, suffix: 'm' },
+  ]),
+  line('H', 'Fmaj7 | G7 | Em7 | Am7', 'C', [
+    { displayName: 'Fmaj7', rootOffset: 5, suffix: 'maj7', definitionId: 'maj7' },
+    { displayName: 'G7', rootOffset: 7, suffix: '7', definitionId: 'dom7' },
+    { displayName: 'Em7', rootOffset: 4, suffix: 'm7', definitionId: 'm7' },
+    { displayName: 'Am7', rootOffset: 9, suffix: 'm7', definitionId: 'm7' },
+  ]),
+  line('I', 'Cdim | Caug | F | G', 'C', [
+    { displayName: 'Cdim', rootOffset: 0, suffix: 'dim', definitionId: 'dim' },
+    { displayName: 'Caug', rootOffset: 0, suffix: 'aug', definitionId: 'aug' },
+    { displayName: 'F', rootOffset: 5, suffix: '' },
+    { displayName: 'G', rootOffset: 7, suffix: '' },
   ]),
 ];
 

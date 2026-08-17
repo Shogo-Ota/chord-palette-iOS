@@ -21,6 +21,8 @@ export type CityType1GrooveAsset = {
   sourceContract: {
     ppq: 480;
     measuredAttackGroups: 24;
+    /** Fixed four-tick recording phase removed from the production groove. */
+    sourceGridDelayBeat: number;
     harmonyExcluded: true;
     literalPitchExcluded: true;
     cc64Present: false;
@@ -36,42 +38,42 @@ export const CITY_TYPE1_GROOVE: CityType1GrooveAsset = {
   cycleBeats: 4,
   attacks: [
     {
-      onsetBeat: 0.008333,
+      onsetBeat: 0,
       durationBeat: 0.227083,
       gapToNextAttackBeat: 0.260417,
       relativeVelocity: 1.0475,
       accent: 'STRONG',
     },
     {
-      onsetBeat: 0.508333,
+      onsetBeat: 0.5,
       durationBeat: 0.227083,
       gapToNextAttackBeat: 0.010417,
       relativeVelocity: 1.0393,
       accent: 'STRONG',
     },
     {
-      onsetBeat: 0.758333,
+      onsetBeat: 0.75,
       durationBeat: 0.227083,
       gapToNextAttackBeat: 0.260417,
       relativeVelocity: 1.0516,
       accent: 'STRONG',
     },
     {
-      onsetBeat: 1.258333,
+      onsetBeat: 1.25,
       durationBeat: 0.227083,
       gapToNextAttackBeat: 0.260417,
       relativeVelocity: 1.0558,
       accent: 'STRONG',
     },
     {
-      onsetBeat: 1.758333,
+      onsetBeat: 1.75,
       durationBeat: 0.227083,
       gapToNextAttackBeat: 0.010417,
       relativeVelocity: 0.75,
       accent: 'WEAK',
     },
     {
-      onsetBeat: 2.008333,
+      onsetBeat: 2,
       durationBeat: 0.227083,
       gapToNextAttackBeat: 1.760417,
       relativeVelocity: 1.0558,
@@ -86,6 +88,7 @@ export const CITY_TYPE1_GROOVE: CityType1GrooveAsset = {
   sourceContract: {
     ppq: 480,
     measuredAttackGroups: 24,
+    sourceGridDelayBeat: 0.008333,
     harmonyExcluded: true,
     literalPitchExcluded: true,
     cc64Present: false,

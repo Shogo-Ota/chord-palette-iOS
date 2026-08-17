@@ -4,6 +4,7 @@
  */
 
 import { humanTemplateById } from '../humanTemplate';
+import { mapNaturalSourceOnset, naturalDurationPolicy } from '../naturalAtomic/durationPolicy';
 import type { PerfChord } from '../PerformanceEngine';
 import type { FinalMidiControlChange } from './types';
 
@@ -20,16 +21,27 @@ export function pedalCcFromHumanTemplate(
 
   chords.forEach((chord, chordIndex) => {
     const barInLoop = (chordIndex % loopBars) + 1;
-    const chordEnd = chord.startBeat + chord.durationBeats;
+    const policy = naturalDurationPolicy(chord.durationBeats, template.meter.beatsPerBar);
+    let pedalDown = false;
 
     for (const pedal of template.pedalEvents!) {
       if (pedal.musicalBar !== barInLoop) continue;
-      const absBeat = chord.startBeat + pedal.beatInMusicalBar;
-      if (absBeat < chord.startBeat - 1e-9 || absBeat >= chordEnd - 1e-9) continue;
+      const mappedOnset = mapNaturalSourceOnset(pedal.beatInMusicalBar, policy);
+      if (mappedOnset == null) continue;
+      const value = pedal.state === 'down' ? Math.max(0, Math.min(127, pedal.value)) : 0;
       out.push({
-        startBeat: absBeat,
+        startBeat: chord.startBeat + mappedOnset,
         controller: 64,
-        value: pedal.state === 'down' ? Math.max(0, Math.min(127, pedal.value)) : 0,
+        value,
+        channel: 0,
+      });
+      pedalDown = value >= 64;
+    }
+    if (pedalDown) {
+      out.push({
+        startBeat: chord.startBeat + chord.durationBeats,
+        controller: 64,
+        value: 0,
         channel: 0,
       });
     }

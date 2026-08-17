@@ -5,7 +5,8 @@
 - 測定コマンド: `npm run quality:audit` / `npm run quality:gate01`
 - 測定成果物: `LocalAnalysis/accompaniment_quality/audit_phase_a/`、`.../experiments/gate-01/`
 - 測定対象: Golden Progressions A–F（directive §30 準拠、`src/lib/midiQa/goldenProgressions.ts`）
-- 品質台帳: `LocalAnalysis/accompaniment_quality/current_status.json`
+- 共有品質台帳: `docs/current_quality_status.md`
+- 詳細実験台帳（local）: `LocalAnalysis/accompaniment_quality/current_status.json`
 
 > PHASE A の記述は監査時点のスナップショットとして残す。`sustain` の音長 ×2 は §7 の `gate-01` で廃止済みであり、現在の実装ではない。
 
@@ -361,3 +362,602 @@ UI に見える effect ID（`sustain`）は変更していない。ユーザー�
 1. **gate-02（GATE）**: Natural が書かれた音長の時点で 13/31 の遷移で次 attack に被る問題。1軸（gate 長）のみ変更
 2. **PHASE C/D（VOICING）**: Shared Compact Voicing Engine。`style-pitch-variance` の解消をもって `it.failing` を反転
 3. **衛生**: `src/lib/accompanimentQuality/`（POP909 / preference 実験）と `src/lib/performance/library/`（DEAD）の隔離または削除（§42）。`LocalAnalysis/` の分離は §7 で完了
+
+---
+
+## 9. SEPTEMBER RELEASE QUALITY RECOVERY — PHASE 0
+
+監査日: 2026-08-17
+
+対象: `quality/autonomous-pdca` / `3aeabce`
+
+制約: Production コード変更なし。特に Harmony / Voicing は未変更。
+
+### 9.1 User-observed P0
+
+Fresh launch、`F | G | Em | Am`、Natural Type1、Drum OFF、Loop ON。四カウント後の最初の playback が正しく流れず、Loop OFF にして先頭から再生し直すと正常になる。
+
+現時点では実機 fresh-start の診断ログを未取得であり、root cause は **未確定**。ただし静的到達性監査では、観測と強く一致する cold-start 専用処理を確認した。
+
+### 9.2 First playback の Production 到達可能グラフ
+
+```text
+Editor mount
+  └─ editor.tsx: prepareAudio()
+       └─ audioService.prepare()
+            └─ ChordAudioModule.prepare()
+                 └─ AudioEngineController.prepare()
+                      ├─ AVAudioSession configure / activate
+                      ├─ buildEngine()
+                      │    ├─ RealtimeSamplerEngine を attach（楽器は未load）
+                      │    └─ CountInPlayer を attach
+                      ├─ AVAudioEngine.start()
+                      ├─ legacy SampledInstrumentProvider に piano を load
+                      ├─ legacy drum voice を load
+                      └─ CountInPlayer の percussion bank を load
+
+Play tap
+  └─ editor.tsx: togglePlayback()
+       └─ editorPlaybackRequest(session, loop, tier)
+            ├─ buildSessionPerformancePlan()
+            ├─ FinalMidiSnapshot → NativeMidiEvent[]
+            └─ countIn = 4 beats
+       └─ audioService.play()（JS play queue）
+            └─ ChordAudioModule.play()
+                 └─ AudioEngineController.playAfterCountIn()
+                      ├─ state = playing（music開始前）
+                      ├─ CountInPlayer.play()
+                      └─ countIn completion
+                           └─ main queue: pending start closure
+                                └─ AudioEngineController.playRealtime()
+                                     ├─ SoundFont URL resolve
+                                     ├─ RealtimeSamplerEngine.setInstrument()
+                                     │    └─ 初回のみ 148MB GM SoundFontを
+                                     │       AVAudioUnitSamplerへ同期load
+                                     └─ RealtimeSamplerEngine.play()
+                                          ├─ loop 0をschedule
+                                          ├─ Loop ONならloop 1も先行schedule
+                                          └─ position timer開始
+```
+
+### 9.3 P0 root-cause candidate
+
+#### Candidate 1 — Realtime sampler の初回 SoundFont load が count-in 後（最有力）
+
+**確認済み事実**
+
+- `prepare()` は realtime sampler を attach するが、realtime用 melodic program を load しない。
+- `prepare()` 内の `setInstrument("piano")` は `useRealtimeEngine == false` のため、legacy `SampledInstrumentProvider` を準備する。
+- CountIn sampler は prepare 中に percussion bank を load する。
+- Realtime sampler の melodic program は、count-in completion後の `playRealtime()` → `rt.setInstrument()` で初めて load される。
+- `loadSoundBankInstrument` はその start closure 内で同期実行される。
+- `RealtimeSamplerEngine` は `(instrument, program)` を保持し、2回目以降は即 return する。
+- bundled GM SoundFont は約148MB。初回だけ発生する処理として十分に大きい。
+
+**観測との整合**
+
+- 四カウントは CountIn専用 sampler なので正常に鳴り得る。
+- 四カウント完了後、music scheduling前にcold loadが入る。
+- LoopをOFFにしたこと自体ではなく、再生し直してwarm stateになったことで正常化した可能性がある。
+
+**未確認**
+
+- 実機上の `countIn.handoff` → `play.v2` の実時間差。
+- その差が「遅延」だけか、Audio Unit / engine状態を不整合にするか。
+- Loop ONとOFFでcold stateの結果が本当に異なるか。
+
+#### Candidate 2 — prepare/play の非直列race
+
+**確認済み事実**
+
+- editor mountは `audioService.prepare()` を開始するがawaitせず、listener登録とUI表示へ進む。
+- `audioService.play()` のqueueはplay同士だけを直列化し、prepare/stop/teardownとは直列化しない。
+- `togglePlayback()` 自体には `ready` guardがない。
+- native `playAfterCountIn()` は `prepared == false` なら記録もstate変更もせずreturnする。
+
+ユーザー操作まで通常は十分な時間があるためCandidate 1より優先度は低いが、true fresh state matrixでは必ず観測する。
+
+#### Candidate 3 — Loop先行schedule / first-boundary
+
+Loop ONでは `RealtimeSamplerEngine.play()` がloop 0とloop 1を同時にarmする。コード上、未来のwork itemを登録するだけで現在のnoteを直接変更しないため、現時点で具体的な破綻根拠はない。Loop OFFで直るという観測だけを理由にLoop実装を変更してはならない。
+
+### 9.4 現在取得できる診断情報と不足
+
+既存 `PlaybackDiagnostics` は以下を記録できる。
+
+- `prepare`, `prepare.rearm`
+- `countIn.start`, `countIn.complete`, `countIn.handoff`
+- `play.v2`, `play.v2.error`, `play.v2.reject`
+- stop/pause/resume、route change、interruption、engine configuration change
+- realtime plan signature、event数、pitch range、CC64数、engine running
+
+不足:
+
+- realtime instrument load の start/end時刻と所要時間
+- Play request受信時の prepared/state/loop/count-in/generation
+- count-in handoff時に渡されたplan signature
+- MIDI beat 0の最初のNoteOnを実際に送った時刻
+- JS側 prepare/play/stop generation の対応番号
+
+PHASE 1ではまずこの観測穴だけを埋める。Harmony/Voicing/Final MIDI生成は変更しない。
+
+### 9.5 Required fresh-state matrix の現状
+
+| Scenario | 自動test | 実機 |
+|---|---|---|
+| Fresh launch → Loop ON → Play | 未実装 | 未実施 |
+| Fresh launch → Loop OFF → Play | 未実装 | 未実施 |
+| Stop → Play | 部分的なunitのみ | 未実施 |
+| Loop ON → OFF → Play | 未実装 | 未実施 |
+| Loop OFF → ON → Play | 未実装 | 未実施 |
+| Natural → Block → Natural | generation単体のみ | 未実施 |
+| Progression change → Play | plan生成testのみ | 未実施 |
+| 10 consecutive fresh starts | 未実装 | 未実施 |
+
+既存 `playbackCountIn.test.ts` は「通常Editor Playだけにcount-inが付く」1条件のみで、transport readinessやnative handoffは検証していない。
+
+### 9.6 Music Sources of Truth（再監査）
+
+以前の結論は現ブランチでも有効。
+
+| 責務 | 現Production | 判定 |
+|---|---|---|
+| Allowed pitch classes | `theory/definitions/catalog.ts` → `chordHarmonyFromEvent` → `resolveAllowed` | 単一 |
+| Harmony検出 | `harmonyGate/harmonyGate.ts`（修復/snapなし） | 単一 |
+| Block base pitches | `progressionToChordSpecs()` の `bassMidi/bodyMidi` | Voicing競合① |
+| Natural pitches | `realizeVoiceStructureAttack()` がTeacher register/spacingを使いattack毎に再計算 | Voicing競合② |
+| City pitches | `buildStableFullVoicings()` + degree-role mask | Voicing競合③ |
+| Register | aesthetics / City soft range / Natural preferred range | 3系統 |
+| Public passing bass | Block=ROOT_ONLY、Natural=legacy bass除外、City=独立早期return | public 3 stylesでは到達不能 |
+| Legacy passing bass | 非公開・保存済みlegacy rhythmから到達可能 | release risk |
+| Voicing user selection | 未存在。`octaveShift`だけがdevice preference | 未実装 |
+
+Style pitch invarianceは引き続き **0/24一致**。`accompanimentQualityContract.test.ts` の `it.failing` が既知blockerを固定している。PHASE 1では触れない。
+
+### 9.7 Golden corpus gap
+
+現在のcanonical `GOLDEN_PROGRESSIONS` は6本。September directiveの8本に対して次が不足する。
+
+- `F | G | Em | Am`（P0再現進行）
+- `Fmaj7 | G7 | Em7 | Am7`（muddy 7th再現）
+- `Cdim | Caug | F | G`
+
+既存6本のうち `D | Bm | G | A` は新directiveに含まれないが、transpose regressionとして削除せず維持する。したがって次のcanonical corpusは置換ではなく **9本**（既存6 + 上記3）とするのが安全。
+
+`dim` / `aug` は既に `CHORD_CATALOG` に合法interval（`[0,3,6]` / `[0,4,8]`）として存在するため、「parser未実装」とは言えない。PHASE 7で必要なのは新規定義よりも、UI到達性・Shared Voicing・transpose/export/playbackを通したend-to-end検証である。
+
+### 9.8 PHASE 0 conclusion
+
+1. P0はHarmony/Voicingより先にnative cold-start境界を調べるべきである。
+2. 最有力仮説は「Realtime samplerだけがcount-in後にcold-loadされる」こと。
+3. Loop実装を先に変更する根拠はまだない。
+4. PHASE 1の最初の変更は診断計測とreadinessの明示化に限定する。
+5. P0が10/10実機PASSするまでShared Voicingへ進まない。
+
+---
+
+## 10. PHASE 1 — First Playback candidate
+
+Category: **PLAYBACK only**
+
+Baseline:
+`LocalAnalysis/accompaniment_quality/experiments/first-play-01/baseline.json`
+（Production変更前、commit `3aeabce`）
+
+### 10.1 Changes
+
+#### Native readiness
+
+- `AudioEngineController.prepare()` がRealtime samplerのdefault pianoを
+  `ready`通知前にwarm loadする。
+- `ChordAudioModule.play()` がrequest固有のinstrument/program/drum bankを
+  count-in開始前にpreflightする。
+- `playRealtime()` も同じ`prepareRealtimeInstrument()`を呼ぶ。通常はcache
+  hitであり、count-in無し/旧callerにも同じ安全条件を適用する。
+- preflight失敗時はcount-inを開始せず、`playRealtime()`の既存failed pathへ
+  進む。四カウント後に無音になる失敗形を作らない。
+
+#### Lifecycle serialization
+
+新規`PlaybackLifecycleCoordinator`がService層で以下を担当する。
+
+- concurrent prepareのdedupe
+- cold prepareよりplayを先行させない
+- newer play wins
+- stop/teardownで待機中play generationを無効化
+- prepare/teardownを交差させない
+
+音楽時間やMIDI event scheduleは変更しない。
+
+#### Repeated prepare state bug
+
+追加監査で、Editor再生中にGroove screenがmountして`prepare()`を再実行すると、
+native stateが無条件に`ready`へ書き換えられることを確認した。音は鳴り続けても
+`useLiveSoundReapply()`がtransportをliveと判定できず、Natural→Block→Natural
+matrixを壊す。
+
+再利用prepareはengineだけをrearmし、`playing`/`paused`を保持するよう変更した。
+
+#### Diagnostics
+
+同一`PlaybackDiagnostics` timelineに追加:
+
+- `instrument.v2.load.start`
+- `instrument.v2.load.end`
+  (`cached`, `ok`, `elapsedMs`)
+- `countIn.start` / `countIn.handoff`のplan signature
+- `play.v2.firstNoteOn` (`pitch`, `beat`)
+- `prepare.reuse`のstate
+- prepared前count-inの`countIn.reject`
+
+Development buildではcount-in + 1秒後に
+`audioService.logPlaybackDiagnostics()`を自動実行するため、Windows + Metro
+でもnative timelineを取得できる。音声scheduleには関与しない。
+
+### 10.2 Automated result
+
+`PlaybackLifecycleCoordinator`の8 tests:
+
+- Fresh launch → Loop ON → Play
+- Fresh launch → Loop OFF → Play
+- Stop → Play
+- Loop ON → OFF → Play
+- Loop OFF → ON → Play
+- Natural → Block → Natural
+- Progression change → Play
+- cold prepare中のStop
+
+結果:
+
+- Full Jest: **109 suites PASS**
+- Tests: **2086 PASS / 1 skipped / 0 failed**
+- ESLint（変更TS）: **0 error / 0 warning**
+- TypeScript（既知の`dist-check` archiveと既存fixtureを除外）:
+  **0 relevant diagnostics**
+
+WindowsにはSwift compilerがないため、internal EAS development build
+`aa03b2a7-b1d2-48b1-b481-01e0f1bbcc7b`でnative compileを検証した。
+結果は **FINISHED / PASS**（app 1.0.1, build 8, internal distribution）。
+
+### 10.3 Decision
+
+**KEEP / DEVICE PASS**
+
+以下を満たしたため、P0をPASSとして閉じる。
+
+1. EAS build compile PASS（完了）
+2. Provisioned iPhoneでrequired matrix PASS
+3. true fresh launch 10/10 PASS
+4. `countIn.handoff`から`play.v2.firstNoteOn`まで不自然なgapなし
+
+PHASE 2（Shared Base Voicing）のPoC開始条件を満たした。
+
+### 10.4 Device evidence
+
+初回のInternal build cold process startで次を観測した。
+
+- realtime piano preflight: `cached=false` load 10.8 ms（count-inより前）
+- count-in直前のpreflight: cache hit 0.8 ms
+- `countIn.handoff`: `04:16:39.407Z`
+- first chord NoteOn: `04:16:39.409Z`
+- handoff → NoteOn: **2 ms**
+- engine: `sequencer`
+- Natural CC64: **16件到達**
+
+その後、更新buildでuser-observed true process restartを10回実施し、**10/10
+PASS**。その最終確認のうちMetroが完全に捕捉した独立cold processは2回で、
+それぞれ次の結果だった。
+
+- 07:49 process: handoff → first NoteOn **2 ms**
+- 07:52 process: handoff → first NoteOn **3 ms**
+- 両方ともSequencer / Drum OFF / Loop ON / CC64 16件到達
+
+手動実機gate 10/10と診断捕捉2/2の双方に失敗なし。pre-fixの遅延値自体は取得して
+いないため歴史的root causeの直接計測とは区別するが、release blockerは解消した。
+
+---
+
+## 11. VIDEO PLAYBACK FIDELITY — `video-fidelity-01`
+
+User observation: アプリで試聴した伴奏より動画の伴奏品質が低く、特にNaturalで
+差が大きい。
+
+Baseline:
+`LocalAnalysis/accompaniment_quality/experiments/video-fidelity-01/baseline.json`
+
+### 11.1 Confirmed root cause
+
+アプリと動画は同じ`buildSessionPerformancePlan()`からpitch/onset/duration/velocity
+を作っていたが、その後の音声経路が分岐していた。
+
+```text
+App
+  FinalMidiSnapshot
+    → NativeMidiEvent[] (NoteOn / NoteOff / CC64)
+      → RealtimeSamplerEngine
+        → AVAudioUnitSampler + FluidR3 GM
+
+Video（変更前）
+  Performance notes
+    → chordEvents（Noteだけ。CCのfieldなし）
+      → AudioEngineController.renderToFile()
+        → SampledInstrumentProvider（旧pre-render buffer）
+```
+
+実機Natural plan `72eb8624` はApp側でNoteOn 72 / NoteOff 72 / CC64 16を
+samplerへ送っていた。一方、video requestはCCを表現できず **CC64 loss 16/16**。
+さらにAppは48 kHz live sampler、動画は44.1 kHz pre-rendered note bufferだった。
+Naturalだけ差が大きいという報告と一致するため、root causeを **CONFIRMED** とする。
+
+### 11.2 Kept architecture
+
+- 新規`services/videoExport/buildVideoAudioRequest.ts`が
+  `FinalMidiSnapshot → buildNativePlaybackPlan()`を唯一の変換経路として使う。
+- video requestにrealtimeと同一の`midiEvents`、GM program、drum flag、
+  plan signatureを渡す。
+- 新規`OfflineMidiRenderer.swift`はstyle/chordを解釈せず、Canonical MIDIを
+  sample境界で`AVAudioUnitSampler`へ送る。
+- CC64とsame-pitch NoteOff protectionはrealtimeと同じsemantics。
+- 旧`chordEvents` rendererは古いJS bundle互換fallbackとしてのみ維持する。
+
+Harmony、Voicing、Natural gesture、gate長には変更なし。
+
+### 11.3 Automated result
+
+- Block/Natural/Cityのvideo payload === realtime payload: PASS
+- Natural CC64 count: PASS（Final MIDIと同数）
+- Release Cut時CC64 = 0: PASS
+- 新規tests: **5/5 PASS**
+- Full Jest: **110 suites / 2091 passed / 1 skipped / 0 failed**
+- ESLint: 0 errors（今回差分0 warnings、全体の既存warnings 51）
+- TypeScript: 今回差分0 diagnostics。全体commandは既存`dist-check/`と
+  `projectSummary.test.ts`でexit 2
+- iOS Swift compile:
+  `bb2b826f-c312-44e6-b145-b32559ea7e6f` **FINISHED / PASS**
+
+### 11.4 Decision
+
+JS/Native payload統合は **KEEP / DEVICE A/B PASS**。
+
+---
+
+## 12. CITY DOWNBEAT / VARIATION UI
+
+### 12.1 Downbeat diagnosis
+
+User observation: Cityの拍頭がだれて聞こえる。
+
+Baseline:
+`LocalAnalysis/accompaniment_quality/experiments/city-downbeat-01/baseline.json`
+
+Production Cityは`PerformanceEngine → independentStyles.city →
+realizePublicCityType1`でCandidate Bを直接返し、通常のmicro-humanizationを
+通らない。Groove assetの全attackはsource MIDIの固定4 tick遅れを保持していた。
+
+- 固定delay: `+0.008333 beat`
+- 480 PPQ: 4 ticks
+- BPM 100: 5 ms
+- hand roll: OFF
+- attack overlap: 0
+
+したがって、原因はgate/overlap/voicingではなく、capture phaseをgroove essence
+として反復していたこと。
+
+### 12.2 Kept groove change
+
+Production onsetを一律`-0.008333 beat`し、
+`[0, 0.5, 0.75, 1.25, 1.75, 2.0]`へ整列した。
+
+不変:
+
+- inter-onset interval
+- duration / gap
+- velocity
+- Candidate B masks
+- pitch / voicing
+- atomic simultaneous attack
+
+元MIDIのdelayは`sourceContract.sourceGridDelayBeat`に監査情報として残した。
+
+### 12.3 Variation presentation architecture
+
+Cityを`arpeggio`へ移行すると独立rendererと既存project schemaへ波及するため、
+永続化モデルは変更しない。新規`features/editor/accompanimentGroups.ts`を
+presentation SoTとし、次のUIを構成する。
+
+```text
+Block       → block / block.type1
+Natural     → natural / natural.type1..3
+Variation   → city / city.type1 (label: City)
+```
+
+既存City projectは`city / city.type1`のまま読み書きされ、UIだけVariation > City
+として表示される。Playback、MIDI、Videoは従来のCity independent rendererへ到達する。
+旧`arpeggio.type1..3`はcatalog互換用に残すが、release UIからは非公開。
+
+### 12.4 Gates
+
+- City normalized onsets: PASS
+- Candidate B / no roll / subtraction-only: PASS
+- City hard gates: PASS
+- Public selection groups: Block / Natural / Variation PASS
+- Variation child list: City only PASS
+- Persisted City ids unchanged: PASS
+- Public Harmony/Gate/Register contract including Variation providers: PASS
+
+---
+
+## 13. PHASE 2 — SHARED COMPACT BASE VOICING PoC
+
+Category: **VOICING only**
+
+Baseline / candidate evidence:
+`LocalAnalysis/accompaniment_quality/experiments/shared-voicing-01/comparison.json`
+
+### 13.1 Architecture
+
+Production接続前に、新規domain moduleだけでstyle-neutral candidateを作成した。
+
+```text
+src/lib/performance/baseVoicing/
+  types.ts                  BaseVoicing / preference / hand contract
+  handModel.ts              LH 1 / RH 2–4 / total 3–5 / register limits
+  CompactVoicingEngine.ts   legal tone selection + compact candidates
+  continuity.ts             progression + loop boundary global DP
+  index.ts                  public domain API
+```
+
+入力は`ChordHarmonyInput`、`position`、`octaveShift`だけで、style、variant、tier、
+Teacher MIDIを受け取らない。出力`BaseVoicing[]`はrhythm providerより前の
+style-neutral harmonic materialである。
+
+`基本形 / 1st / 2nd`は非slash chordのLH pitch classを選ぶ。slash chordでは明示
+bassが常に優先する。RHはuser chord内の2〜4音だけを使い、7th/guide tone、
+explicit tension、dim/augのaltered fifthをplain fifthより優先する。
+
+### 13.2 Expanded Golden corpus
+
+Canonical corpusを既存A–FからA–Iへ拡張した。
+
+- G: `F | G | Em | Am`
+- H: `Fmaj7 | G7 | Em7 | Am7`
+- I: `Cdim | Caug | F | G`
+
+既存Production Hard Gateは拡張後も42/42 PASS。
+
+### 13.3 Measured comparison
+
+Historical Production baseline（3 voicer並立）:
+
+- exact style equality: **0/36 chords**
+
+Shared candidate:
+
+- exact style equality: **36/36 chords**
+- Golden A–I × 3 positions: **108 voicings**
+- compact failures: **0**
+- illegal notes: **0**
+- duplicate MIDI: **0**
+- inversion failures: **0**
+- voice count: min 4 / max 5 / mean 4.417
+- max bass jump: **10 semitones**（loop境界含む）
+- max top jump: **3 semitones**（loop境界含む）
+- all 12 transpositions: PASS
+
+### 13.4 Production promotion
+
+**KEEP / AUTOMATED PASS / DEVICE LISTENING PENDING**
+
+Approved boundary was connected:
+
+1. `progressionToPerfChords()` generates Shared Base Voicing once.
+2. Block strikes the exact resolved `bassMidi/bodyMidi`.
+3. Natural reads Teacher attack-group onset/gate/velocity, then applies masks to
+   the Shared Base. It no longer solves pitch per attack.
+4. City applies Candidate B masks to the same Base. Its former independent
+   `chordComping/fullVoicing.ts` voicer was deleted.
+5. style and tier are not accepted by the Base generation API.
+6. `octaveShift` and requested inversion are inputs to the shared engine and
+   therefore reach all three styles.
+
+Historical reproducibility is isolated in `progressionToLegacyPerfChords()` for
+the pinned Ballad analysis baseline. Teacher-fidelity pitch realization remains
+explicitly selectable for forensic validation only; it is not the Natural
+Production path.
+
+### 13.5 Production evidence
+
+Post-promotion measurement:
+
+- exact Block/Natural/City Base equality: **36/36**
+- identical bass: **36/36**
+- identical top: **36/36**
+- maximum cross-style bass/top spread: **0 semitones**
+- compact/harmony/duplicate/inversion failures: **0**
+- all 12 transpositions: PASS
+- normal Production invariance gate: PASS
+- full Jest: **113 suites / 2119 passed / 1 skipped / 0 failed**
+- focused ESLint: **0 errors / 0 warnings**
+- quality audit: **5/5 PASS**
+- shared-voicing harness: **1/1 PASS**
+
+The promotion did not change rhythm assets, gate policy, velocity policy, CC64,
+City onset phase, or persisted style IDs. Natural forensic tests now evaluate
+attack groups atomically: onset, median gate, and mean velocity are preserved
+without requiring the Shared Base to copy Teacher voice count or pitch layout.
+
+### 13.6 Device-listening register correction
+
+Device listening found all styles higher than intended. This was not preparation
+for inversion selection. The pre-Shared-Base device default was
+`octaveShift = +1`; after promotion, the shared engine correctly applied that
+obsolete default to Block, Natural, and City alike.
+
+Kept correction:
+
+- product default: `+1 → 0`
+- default register: LH C2–C3 / RH C3–C5
+- old preference key retired; `octave_shift_v2` starts existing installs at the
+  neutral register
+- an explicit future `+1` preference remains representable
+- inversion (`基本形 / 1st / 2nd`) remains independent from register height
+- focused register/Shared Base/quality gates: **52/52 PASS**
+- full regression: **114 suites / 2124 passed / 1 skipped / 0 failed**
+
+Natural rhythm, velocity, gate, pedal and subtraction masks were not changed in
+this correction. The product principle is simple, comfortable comping rather
+than maximizing fullness.
+
+---
+
+## 14. SHORT CHORD DURATION AUDIT
+
+User quality baseline after register and short-chord correction: **87/100**.
+
+Scope: mixed 1/4-bar (1 beat), 1/2-bar (2 beats), and full-bar (4 beats)
+progressions at 90/132 BPM through the canonical Production Plan.
+
+### 14.1 Result
+
+- Block: PASS
+- City: PASS
+- Natural baseline: **FAIL**
+- missing chord/body attack: 0 in passing styles
+- duplicate simultaneous pitch: 0 in passing styles
+- invalid duration/start outside chord window: 0 in passing styles
+
+Natural currently computes
+`scale = chord.durationBeats / template.meter.beatsPerBar` and maps every
+full-bar Teacher attack into each chord. Type1 therefore compresses its eight
+half-beat attacks into one beat (eighth-note feel becomes 32nd-note repetition).
+This is mechanically legal but not natural or comfortable.
+
+The compressed final attack also lands at 0.875 beat. The global 1/8-beat
+anticipation window classifies that old-chord pitch against the next chord,
+producing two harmony findings in the mixed fixture. Block and City do not show
+this failure.
+
+### 14.2 Kept correction
+
+Add a pure duration policy under `naturalAtomic/`:
+
+- 4-beat chord: preserve the existing full Teacher bar
+- 2-beat chord: use the uncompressed first two beats
+- 1-beat chord: use the uncompressed first beat
+- clip gate and pedal release to the chord boundary
+- never change Shared Base pitch, velocity identity, style storage, or other
+  public styles
+
+Production result:
+
+- Natural 4-beat chord: existing Teacher timeline unchanged
+- Natural 2-beat chord: uncompressed first two beats
+- Natural 1-beat chord: uncompressed first beat
+- maximum Natural attack density: 2 attack groups/beat
+- short-chord harmony findings: **2 → 0**
+- CC64 state at every short chord boundary: up
+- mixed-duration matrix at 90/132 BPM: **6/6 PASS**
+- focused duration/identity/quality regression: **69/69 PASS**
+- full regression: **116 suites / 2134 passed / 1 skipped / 0 failed**
+
+`shortChordDurations.test.ts` is now a normal permanent passing gate.

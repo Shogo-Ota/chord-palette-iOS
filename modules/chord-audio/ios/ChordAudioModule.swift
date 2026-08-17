@@ -80,6 +80,12 @@ struct RenderAudioRequestRecord: Record {
   @Field var durationSec: Double = 15
   /// Beats per bar for drum groove folding (default 4/4).
   @Field var beatsPerBar: Double = 4
+  /// Canonical Final MIDI schedule. New binaries render this instead of rebuilding
+  /// the take from chordEvents, so NoteOn/Off/CC64 match realtime playback.
+  @Field var midiEvents: [MidiEventRecord] = []
+  @Field var hasDrums: Bool = false
+  @Field var gmProgram: Int = 0
+  @Field var planSignature: String?
 }
 
 /// Expo Custom Native Module bridging JS ↔ `AudioEngineController` (Phase 2A).
@@ -199,6 +205,22 @@ public class ChordAudioModule: Module {
         )
       }
 
+      // The count-in is a promise that music is ready at its boundary. Resolve the
+      // request-specific realtime instrument before starting that clock; otherwise
+      // the first cold SoundFont load occurs after the final click. The same method
+      // is called again inside playRealtime as an idempotent safety guard.
+      let realtimeReady =
+        req.engine != "sequencer" || req.midiEvents.isEmpty
+        || self.controller.prepareRealtimeInstrument(
+          req.instrument,
+          gmProgram: req.gmProgram,
+          hasDrums: req.hasDrums)
+
+      if !realtimeReady {
+        startPlayback()
+        return
+      }
+
       if let countIn = req.countIn, countIn.beats > 0, req.startBeat <= 0 {
         let config = CountInConfigValue(
           beats: max(1, min(8, countIn.beats)),
@@ -206,13 +228,41 @@ public class ChordAudioModule: Module {
           velocity: UInt8(max(1, min(127, countIn.velocity))),
           finalVelocity: UInt8(max(1, min(127, countIn.finalVelocity)))
         )
-        self.controller.playAfterCountIn(config: config, bpm: req.bpm, start: startPlayback)
+        self.controller.playAfterCountIn(
+          config: config,
+          bpm: req.bpm,
+          planSignature: req.planSignature,
+          start: startPlayback)
       } else {
         startPlayback()
       }
     }
 
     AsyncFunction("renderAudioFile") { (req: RenderAudioRequestRecord) -> [String: Any] in
+      if !req.midiEvents.isEmpty {
+        let midi = req.midiEvents.map { ev in
+          ScheduledMidiEvent(
+            beat: ev.beat,
+            kind: ev.kind,
+            channel: UInt8(max(0, min(15, ev.channel))),
+            a: UInt8(max(0, min(127, ev.a))),
+            b: UInt8(max(0, min(127, ev.b))),
+            drum: ev.drum
+          )
+        }
+        let result = try self.controller.renderMidiToFile(
+          bpm: req.bpm,
+          durationSec: req.durationSec,
+          events: midi,
+          instrument: req.instrument,
+          gmProgram: req.gmProgram,
+          hasDrums: req.hasDrums,
+          planSignature: req.planSignature
+        )
+        return ["uri": result.url.absoluteString, "sampleRate": result.sampleRate]
+      }
+
+      // Backward-compatible fallback for callers that predate canonical MIDI export.
       let events = req.chordEvents.map { event in
         NoteEventValue(
           midiNotes: event.midiNotes,
