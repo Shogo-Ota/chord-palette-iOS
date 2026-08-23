@@ -1,9 +1,10 @@
 # Chord Palette 1.0.2 Internal Candidate
 
 Updated: 2026-08-23  
-Version/build: `1.0.2 (22)`  
+Version/build: `1.0.2 (23)`  
 Branch: `quality/autonomous-pdca`  
 Internal build: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/22f9f87b-fff5-41e3-a554-d112f2e8c260
+Production build: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/0a3f0799-8785-49ca-bb23-0bdbcde43586
 
 Build 11 is the device-approved 87/100 accompaniment authority. Build 12 changes
 only chord-card Preview lifetime/ownership; it must leave all 45 accompaniment
@@ -110,6 +111,7 @@ the accepted Reo MIDI candidate groups.
 - [x] Full Build 22 Jest: 135 suites / 2278 passed / 1 skipped
 - [x] Build 22 TypeScript and canonical lint (0 errors / 46 existing warnings)
 - [x] Build 22 internal EAS iOS build and Swift compile
+- [x] Build 23 Production EAS iOS build and signing
 
 ## Build 13 Natural Type2–5 listening matrix
 
