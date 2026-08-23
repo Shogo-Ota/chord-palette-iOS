@@ -456,6 +456,7 @@ quality and 87-point digest gates. Arbitrary-root dim/aug/dim7 UI is deferred.
 | Build 22 TypeScript / canonical lint | PASS / 0 errors, 46 existing warnings |
 | v1.0.2 build 22 internal iOS build | PASS — `22f9f87b-fff5-41e3-a554-d112f2e8c260` |
 | v1.0.2 build 23 Production iOS build | PASS — `0a3f0799-8785-49ca-bb23-0bdbcde43586` |
+| Build 23 App Store Connect upload | PASS — `ccc7d6a2-6452-40ca-a6bc-7775a27b9176` |
 
 ## Known Blockers
 

@@ -112,6 +112,7 @@ the accepted Reo MIDI candidate groups.
 - [x] Build 22 TypeScript and canonical lint (0 errors / 46 existing warnings)
 - [x] Build 22 internal EAS iOS build and Swift compile
 - [x] Build 23 Production EAS iOS build and signing
+- [x] Build 23 uploaded to App Store Connect
 
 ## Build 13 Natural Type2–5 listening matrix
 

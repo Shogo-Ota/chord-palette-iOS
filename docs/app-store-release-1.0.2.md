@@ -1,10 +1,13 @@
 # App Store Release 1.0.2
 
-Status: Production build 23 complete; App Store Connect upload pending  
+Status: Production build 23 uploaded; Apple processing in progress  
 Prepared: 2026-08-23
 
 Production build:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/0a3f0799-8785-49ca-bb23-0bdbcde43586
+
+EAS submission:
+https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/ccc7d6a2-6452-40ca-a6bc-7775a27b9176
 
 ## What's New — Japanese
 
@@ -38,7 +41,8 @@ Suggested test path:
 
 ## Submission Checks
 
-- [ ] Production build uploaded and processing completed
+- [x] Production build uploaded to App Store Connect
+- [ ] Apple processing completed
 - [ ] Version `1.0.2` selected in App Store Connect
 - [ ] Japanese and English What's New text entered
 - [ ] Screenshots and app description remain accurate
