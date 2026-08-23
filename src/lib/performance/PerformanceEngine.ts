@@ -733,6 +733,7 @@ export function generatePerformance(
       pitchMode:
         options.humanTemplatePitchMode ??
         (options.styleId === 'natural' ? 'sharedBase' : 'userChord'),
+      variantId: options.variantId,
     });
     const drumsOnly = events.filter(
       (e) => e.trackId === 'kick' || e.trackId === 'snare' || e.trackId === 'hat',

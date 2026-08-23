@@ -93,6 +93,32 @@ describe('Shared Base Voicing — Production reachability', () => {
     }
   });
 
+  it('honors a different inversion on each chord without breaking style invariance', () => {
+    const source = GOLDEN_PROGRESSIONS.find((candidate) => candidate.id === 'A')!;
+    const positions: VoicingPosition[] = ['root', 'first', 'second', 'root'];
+    const progression = {
+      ...source,
+      chords: source.chords.map((chord, index) => ({
+        ...chord,
+        voicingPosition: positions[index]!,
+      })),
+    };
+    const rendered = PUBLIC_ACCOMPANIMENT_PATTERNS.map((pattern) =>
+      plan(progression, pattern, 'free', 'root'),
+    );
+    expect(new Set(rendered.map(baseSignature)).size).toBe(1);
+
+    rendered[0]!.chords.forEach((chord, index) => {
+      const harmony = chord.harmony!;
+      const chordPcs = [
+        ...new Set(harmony.chordIntervals.map((interval) => pc(harmony.rootPc + interval))),
+      ];
+      const position = positions[index]!;
+      const degreeIndex = position === 'root' ? 0 : position === 'first' ? 1 : 2;
+      expect(pc(chord.bassMidi[0]!)).toBe(chordPcs[degreeIndex]);
+    });
+  });
+
   it('keeps the product default in the neutral compact register for every style', () => {
     const progression = GOLDEN_PROGRESSIONS.find((candidate) => candidate.id === 'H')!;
     expect(DEFAULT_OCTAVE_SHIFT).toBe(0);

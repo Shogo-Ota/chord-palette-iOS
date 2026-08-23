@@ -6,7 +6,11 @@
  */
 
 import { chordArpeggioNotes, progressionToChordSpecs } from '@/lib/voicing';
-import { buildCompactBaseVoicings, type VoicingPosition } from './baseVoicing';
+import {
+  buildCompactBaseVoicingsWithPreferences,
+  normalizeVoicingPosition,
+  type VoicingPosition,
+} from './baseVoicing';
 import { chordHarmonyFromEvent } from './humanTemplate/chordHarmony';
 import type { ChordEvent, MajorKey } from '@/types';
 import type { PerfChord } from './PerformanceEngine';
@@ -23,7 +27,11 @@ export function progressionToPerfChords(
   position: VoicingPosition = 'root',
 ): PerfChord[] {
   const harmonies = progression.map((event) => chordHarmonyFromEvent(event, key));
-  const baseVoicings = buildCompactBaseVoicings(harmonies, { position, octaveShift });
+  const preferences = progression.map((event) => ({
+    position: normalizeVoicingPosition(event.voicingPosition ?? position),
+    octaveShift,
+  }));
+  const baseVoicings = buildCompactBaseVoicingsWithPreferences(harmonies, preferences);
   let beat = 0;
   return baseVoicings.map((voicing, index) => {
     const event = progression[index]!;

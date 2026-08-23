@@ -10,6 +10,11 @@ import { buildVideoAudioRequest } from '../buildVideoAudioRequest';
 const STYLES = [
   { pattern: 'block', variant: 'block.type1' },
   { pattern: 'natural', variant: 'natural.type1' },
+  { pattern: 'natural', variant: 'natural.type2' },
+  { pattern: 'natural', variant: 'natural.type4' },
+  { pattern: 'natural', variant: 'natural.type5' },
+  { pattern: 'natural', variant: 'natural.dance1' },
+  { pattern: 'natural', variant: 'natural.type3' },
   { pattern: 'city', variant: 'city.type1' },
 ] as const;
 
@@ -74,5 +79,44 @@ describe('video audio Final MIDI fidelity', () => {
     );
 
     expect(actualCc64).toEqual([]);
+  });
+
+  it('preserves every controlled Type2/Driving/Arpeggio CC64 message in video audio', () => {
+    for (const style of [STYLES[2], STYLES[3], STYLES[4]]) {
+      const plan = performance(style);
+      const expectedCc64 = buildFinalMidiSnapshot(plan).controlChanges.filter(
+        (event) => event.controller === 64,
+      );
+      const actualCc64 = buildVideoAudioRequest(plan, 9.6).midiEvents?.filter(
+        (event) => event.kind === 'cc' && event.a === 64,
+      );
+
+      expect(expectedCc64.length).toBeGreaterThan(0);
+      expect(actualCc64).toHaveLength(expectedCc64.length);
+    }
+  });
+
+  it('keeps the MIDI-reference Dance profile CC64-free in video audio', () => {
+    const plan = performance(STYLES[5]);
+    expect(buildFinalMidiSnapshot(plan).controlChanges).toEqual([]);
+    expect(
+      buildVideoAudioRequest(plan, 9.6).midiEvents?.filter(
+        (event) => event.kind === 'cc' && event.a === 64,
+      ),
+    ).toEqual([]);
+  });
+
+  it('renders Funk and City with the same subtle room as realtime playback', () => {
+    for (const style of [STYLES[6], STYLES[7]]) {
+      expect(buildVideoAudioRequest(performance(style), 9.6)).toMatchObject({
+        reverbPreset: 'smallRoom',
+        reverbWetDryMix: 8,
+      });
+    }
+
+    expect(buildVideoAudioRequest(performance(STYLES[2]), 9.6)).toMatchObject({
+      reverbPreset: 'off',
+      reverbWetDryMix: 0,
+    });
   });
 });

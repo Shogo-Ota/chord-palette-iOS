@@ -55,4 +55,26 @@ describe('playback engine policy', () => {
     );
     expect(actual.planSignature).toMatch(/^[0-9a-f]{8}$/);
   });
+
+  it.each([
+    ['natural', 'natural.type3', 'smallRoom', 8],
+    ['city', 'city.type1', 'smallRoom', 8],
+    ['natural', 'natural.type2', 'off', 0],
+  ] as const)('maps %s/%s to its native room profile', (pattern, variant, preset, wet) => {
+    const plan = buildSessionPerformancePlan(playbackTestSessionInput(pattern, variant), 'free');
+    const request = mapPerfNotesToPlaybackRequest(plan.notes, {
+      bpm: plan.bpm,
+      totalBeats: plan.totalBeats,
+      loop: true,
+      drumPatternId: plan.drumPatternId,
+      instrument: plan.instrumentId,
+      beatsPerBar: plan.beatsPerBar,
+      drumMode: plan.drumMode,
+    });
+
+    expect(withNativePlaybackPlan(request, plan)).toMatchObject({
+      reverbPreset: preset,
+      reverbWetDryMix: wet,
+    });
+  });
 });

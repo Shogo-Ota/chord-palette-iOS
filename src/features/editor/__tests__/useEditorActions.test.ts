@@ -97,6 +97,7 @@ describe('computeChordContext', () => {
     expect(c.canMoveLeft).toBe(false);
     expect(c.canMoveRight).toBe(false);
     expect(c.canEditDuration).toBe(false);
+    expect(c.canEditVoicing).toBe(false);
   });
 
   it('is not visible when the selection is out of range', () => {
@@ -108,6 +109,7 @@ describe('computeChordContext', () => {
     expect(c.visible).toBe(true);
     expect(c.canDelete).toBe(true);
     expect(c.canEditDuration).toBe(true);
+    expect(c.canEditVoicing).toBe(true);
     expect(c.canMoveLeft).toBe(false);
     expect(c.canMoveRight).toBe(true);
   });

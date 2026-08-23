@@ -21,6 +21,7 @@ export type AnalyticsEvent =
   | 'chord_added'
   | 'chord_removed'
   | 'chord_duration_changed'
+  | 'chord_voicing_changed'
   | 'playback_started'
   | 'groove_selected'
   | 'accompaniment_selected'

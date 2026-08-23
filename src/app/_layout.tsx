@@ -24,6 +24,7 @@ import {
   getOctaveShift,
 } from '@/repositories/sessionPrefsRepository';
 import { track, initAnalytics } from '@/services/analytics';
+import { useAudioAppLifecycle } from '@/services/audio/appLifecycle';
 import { billingService } from '@/services/billing';
 import { initMonitoring } from '@/services/monitoring';
 import { colors } from '@/theme/tokens';
@@ -36,6 +37,7 @@ initAnalytics();
 SplashScreen.preventAutoHideAsync();
 
 export default function RootLayout() {
+  useAudioAppLifecycle();
   const [loaded] = useFonts({
     NotoSansJP_400Regular,
     NotoSansJP_500Medium,

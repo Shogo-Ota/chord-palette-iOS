@@ -4,6 +4,7 @@ import type { HumanMidiTemplate } from '@/lib/performance/humanTemplate/types';
 import {
   applyVoicingMask,
   buildStableFullVoicings,
+  realizeAtomicNatural,
   realizeAtomicNaturalType1,
   validateAtomicNatural,
 } from '@/lib/performance/naturalAtomic';
@@ -138,7 +139,13 @@ describe('Natural Atomic Chord', () => {
   it('keeps the Full Voicing progression independent of Natural Type timeline', () => {
     const { current } = atomicFor();
     const reference = buildStableFullVoicings(current.chords);
-    for (const variant of ['natural.type1', 'natural.type2', 'natural.type3'] as const) {
+    for (const variant of [
+      'natural.type1',
+      'natural.type2',
+      'natural.type3',
+      'natural.type4',
+      'natural.type5',
+    ] as const) {
       const plan = buildSessionPerformancePlan(
         { ...PHASE3C_CASES['natural-type1'].session, accompanimentVariant: variant },
         'free',
@@ -202,6 +209,31 @@ describe('Natural Atomic Chord', () => {
       colorPresencePass: true,
     });
   });
+
+  it.each(['natural.type2', 'natural.type3', 'natural.type4', 'natural.type5'] as const)(
+    '%s passes the same atomic harmony and voicing gates',
+    (variant) => {
+      const current = buildSessionPerformancePlan(
+        {
+          ...PHASE3C_CASES['natural-type1'].session,
+          accompanimentVariant: variant,
+        },
+        'free',
+      );
+      const template = humanTemplateById(current.humanTemplateId!);
+      if (!template) throw new Error(`missing template ${current.humanTemplateId}`);
+      const atomic = realizeAtomicNatural(template, current.chords, current.seed, variant);
+
+      expect(validateAtomicNatural(atomic)).toMatchObject({
+        pass: true,
+        userChordLegalityPct: 100,
+        duplicateSimultaneousMidi: 0,
+        invalidVoiceCrossing: 0,
+        slashBassPass: true,
+        colorPresencePass: true,
+      });
+    },
+  );
 
   it('keeps the specified slash bass as the lowest note in every mask', () => {
     const base = PHASE3C_CASES['natural-type1'].session;

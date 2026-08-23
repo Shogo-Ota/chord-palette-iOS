@@ -8,6 +8,7 @@
 
 import { buildFinalMidiSnapshot } from '@/lib/performance/finalMidi/buildFinalMidiSnapshot';
 import type { SessionPerformancePlan } from '@/lib/performance/finalMidi/types';
+import { accompanimentSpaceProfileFor } from '@/lib/performance/space/accompanimentSpaceProfile';
 import { buildNativePlaybackPlan } from '@/lib/playback';
 import { mapPerfNotesToPlaybackRequest } from '@/services/audio/performanceMapper';
 import type { RenderAudioRequest } from '@/services/audio/types';
@@ -26,6 +27,7 @@ export function buildVideoAudioRequest(
     drumMode: performance.drumMode,
   });
   const snapshot = buildFinalMidiSnapshot(performance);
+  const space = accompanimentSpaceProfileFor(performance.accompanimentVariant);
   const native = buildNativePlaybackPlan(snapshot, { loop: false });
 
   return {
@@ -42,5 +44,7 @@ export function buildVideoAudioRequest(
     hasDrums: native.hasDrums,
     gmProgram: native.gmProgram,
     planSignature: native.signature,
+    reverbPreset: space.reverbPreset,
+    reverbWetDryMix: space.reverbWetDryMix,
   };
 }

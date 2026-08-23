@@ -6,6 +6,7 @@
 
 import type { NativeMidiEvent } from '@/lib/playback';
 import type { CountInConfig } from '@/lib/playback/countIn';
+import type { RoomReverbPreset } from '@/lib/performance/space/accompanimentSpaceProfile';
 
 /* ------------------------------------------------------------------ */
 /* Volume                                                              */
@@ -108,6 +109,9 @@ export type PlaybackRequest = {
   planSignature?: string;
   /** Flattened MIDI schedule for the realtime sampler (v2). */
   midiEvents?: NativeMidiEvent[];
+  /** Style-owned room profile. Omitted fields remain dry on older/native fallback paths. */
+  reverbPreset?: RoomReverbPreset;
+  reverbWetDryMix?: number;
 };
 
 export type { NativeMidiEvent } from '@/lib/playback';
@@ -119,6 +123,9 @@ export type PlaybackEngineId = 'sampled' | 'sequencer';
 export type PreviewRequest = {
   midiNotes: number[];
   velocity: number;
+  /** Product-owned wall-clock duration; preferred over tempo-derived beats. */
+  durationSec?: number;
+  /** Compatibility fallback for native binaries predating `durationSec`. */
   lengthBeats?: number;
   bpm?: number;
   /** Instrument id → native maps to a voice (SoundFont or dedicated EP synth). */
@@ -150,6 +157,9 @@ export type RenderAudioRequest = {
   gmProgram?: number;
   /** Final MIDI fingerprint logged with the exported audio. */
   planSignature?: string;
+  /** Same room profile as realtime playback so exported video matches audition. */
+  reverbPreset?: RoomReverbPreset;
+  reverbWetDryMix?: number;
 };
 
 /** Result of an offline audio render: a temp file URI + its sample rate. */

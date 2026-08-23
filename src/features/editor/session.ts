@@ -15,6 +15,11 @@ import {
   type AccompanimentEnergy,
 } from '@/lib/performance/energy';
 import {
+  DEFAULT_VOICING_POSITION,
+  normalizeVoicingPosition,
+  type VoicingPosition,
+} from '@/lib/performance/baseVoicing/types';
+import {
   DEFAULT_PUBLIC_ACCOMPANIMENT,
   DEFAULT_PUBLIC_VARIANT,
   normalizePublicAccompanimentSelection,
@@ -228,9 +233,13 @@ function applyProject(p: Project): void {
     // Respell for the project's own key — a no-op for names, but canonicalizes any
     // legacy slash-chord degree labels ("I/E") to the degree denominator ("I/III").
     // Preserve any saved per-chord keyContext; legacy events fall back to the key.
-    progression: transposeProgression(p.chordEvents, p.key).map((e) =>
-      e.keyContext ? e : { ...e, keyContext: p.key },
-    ),
+    progression: transposeProgression(p.chordEvents, p.key).map((e) => ({
+      ...e,
+      keyContext: e.keyContext ?? p.key,
+      // v1.0.2 stored one Project-wide position. Promote it into every legacy
+      // chord exactly once; from here on the event is the production authority.
+      voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
+    })),
     selected: p.chordEvents.length > 0 ? 0 : -1,
     createdAt: p.createdAt,
   };
@@ -258,6 +267,9 @@ function toProject(id: string): Project {
     accompanimentPattern: state.accompanimentPattern,
     accompanimentVariant: state.accompanimentVariant,
     accompanimentEnergy: state.accompanimentEnergy,
+    // Retained only for backward schema compatibility. Per-chord events are the
+    // sole production source of truth after the per-chord migration.
+    voicingPosition: DEFAULT_VOICING_POSITION,
     chordEvents: state.progression,
     createdAt: state.createdAt || Date.now(),
     updatedAt: Date.now(),
@@ -284,6 +296,7 @@ export async function save(): Promise<void> {
       accompanimentPattern: state.accompanimentPattern,
       accompanimentVariant: state.accompanimentVariant,
       accompanimentEnergy: state.accompanimentEnergy,
+      voicingPosition: DEFAULT_VOICING_POSITION,
       chordEvents: state.progression,
     });
     set({ projectId: created.id, createdAt: created.createdAt, dirty: false });
@@ -313,7 +326,15 @@ export function setSelected(index: number): void {
  */
 export function addChord(chord: Omit<ChordEvent, 'id'>): void {
   if (!canAdd(state.progression, chord.durationBeats)) return;
-  const next = [...state.progression, { ...chord, id: nextEventId(), keyContext: state.key }];
+  const next = [
+    ...state.progression,
+    {
+      ...chord,
+      id: nextEventId(),
+      keyContext: state.key,
+      voicingPosition: normalizeVoicingPosition(chord.voicingPosition),
+    },
+  ];
   commit(next, -1);
 }
 
@@ -334,6 +355,7 @@ export function replaceSelected(
           id: cur.id,
           durationBeats: chord.durationBeats ?? cur.durationBeats,
           keyContext: state.key,
+          voicingPosition: normalizeVoicingPosition(chord.voicingPosition ?? cur.voicingPosition),
         }
       : e,
   );
@@ -465,6 +487,20 @@ export function setAccompanimentEnergy(energy: AccompanimentEnergy): void {
   set({ accompanimentEnergy: normalizeEnergy(energy), dirty: true });
 }
 
+/** Set the compact inversion of the selected placed chord only. */
+export function setSelectedVoicingPosition(position: VoicingPosition): void {
+  if (state.selected < 0) return;
+  const current = state.progression[state.selected];
+  if (!current) return;
+  const next = normalizeVoicingPosition(position);
+  if (next === normalizeVoicingPosition(current.voicingPosition)) return;
+  commit(
+    state.progression.map((event, index) =>
+      index === state.selected ? { ...event, voicingPosition: next } : event,
+    ),
+  );
+}
+
 /**
  * Toggle piano release cut. Device preference — does not mark the project dirty.
  */
@@ -517,7 +553,11 @@ export function loadV101ListeningLab(
 ): void {
   const progression = buildV101ListeningChords(
     () => `listen-${Date.now().toString(36)}-${listeningIdCounter++}`,
-  ).map((e) => ({ ...e, keyContext: 'C' as const }));
+  ).map((e) => ({
+    ...e,
+    keyContext: 'C' as const,
+    voicingPosition: DEFAULT_VOICING_POSITION,
+  }));
 
   set({
     projectId: null,
@@ -545,6 +585,7 @@ export function loadPhase3cListeningCase(id: Phase3cCaseId): void {
     ...e,
     id: `p3c-${Date.now().toString(36)}-${listeningIdCounter++}`,
     keyContext: c.key,
+    voicingPosition: normalizeVoicingPosition(e.voicingPosition),
   }));
 
   set({
@@ -583,6 +624,7 @@ export function startFromPreset(preset: Preset, targetKey: MajorKey = state.key)
     ...e,
     id: nextEventId(),
     keyContext: targetKey,
+    voicingPosition: DEFAULT_VOICING_POSITION,
   }));
   const { octaveShift, drumMode, drumBeat } = state;
   state = {
@@ -614,7 +656,12 @@ export type AppendOutcome = { appended: number; dropped: number };
 function appendPrepared(incoming: Omit<ChordEvent, 'id'>[]): AppendOutcome {
   // Appended chords are rendered/rebased into the current session key, so they
   // belong to it (appendProject relabels, appendPreset renders in `state.key`).
-  const withIds = incoming.map((e) => ({ ...e, id: nextEventId(), keyContext: state.key }));
+  const withIds = incoming.map((e) => ({
+    ...e,
+    id: nextEventId(),
+    keyContext: state.key,
+    voicingPosition: normalizeVoicingPosition(e.voicingPosition),
+  }));
   const { events, appended, dropped } = appendWithinCap(state.progression, withIds);
   if (appended > 0) commit(events, state.selected < 0 ? state.progression.length : state.selected);
   return { appended, dropped };

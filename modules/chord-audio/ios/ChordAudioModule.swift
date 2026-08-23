@@ -48,6 +48,9 @@ struct PlaybackRequestRecord: Record {
   @Field var planSignature: String?
   /// Flattened MIDI schedule (note on/off + CC). Native plays this, not the SMF.
   @Field var midiEvents: [MidiEventRecord] = []
+  /// Style-owned room profile. Older JS bundles remain dry through these defaults.
+  @Field var reverbPreset: String = "off"
+  @Field var reverbWetDryMix: Double = 0
 }
 
 struct MidiEventRecord: Record {
@@ -63,6 +66,7 @@ struct MidiEventRecord: Record {
 struct PreviewRequestRecord: Record {
   @Field var midiNotes: [Int] = []
   @Field var velocity: Int = 100
+  @Field var durationSec: Double?
   @Field var lengthBeats: Double?
   @Field var bpm: Double?
   @Field var instrument: String = "piano"
@@ -86,6 +90,8 @@ struct RenderAudioRequestRecord: Record {
   @Field var hasDrums: Bool = false
   @Field var gmProgram: Int = 0
   @Field var planSignature: String?
+  @Field var reverbPreset: String = "off"
+  @Field var reverbWetDryMix: Double = 0
 }
 
 /// Expo Custom Native Module bridging JS ↔ `AudioEngineController` (Phase 2A).
@@ -144,7 +150,7 @@ public class ChordAudioModule: Module {
     AsyncFunction("previewChord") { (req: PreviewRequestRecord) in
       let bpm = req.bpm ?? 120.0
       let lengthBeats = req.lengthBeats ?? 2.0
-      let durationSec = lengthBeats * (60.0 / bpm)
+      let durationSec = req.durationSec ?? lengthBeats * (60.0 / bpm)
       self.controller.previewChord(
         notes: req.midiNotes,
         velocity: req.velocity,
@@ -187,6 +193,8 @@ public class ChordAudioModule: Module {
             instrument: req.instrument,
             startBeat: req.startBeat,
             planSignature: req.planSignature,
+            reverbPreset: req.reverbPreset,
+            reverbWetDryMix: req.reverbWetDryMix,
             chordEvents: events
           )
           return
@@ -257,7 +265,9 @@ public class ChordAudioModule: Module {
           instrument: req.instrument,
           gmProgram: req.gmProgram,
           hasDrums: req.hasDrums,
-          planSignature: req.planSignature
+          planSignature: req.planSignature,
+          reverbPreset: req.reverbPreset,
+          reverbWetDryMix: req.reverbWetDryMix
         )
         return ["uri": result.url.absoluteString, "sampleRate": result.sampleRate]
       }

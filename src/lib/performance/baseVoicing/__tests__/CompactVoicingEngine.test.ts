@@ -90,6 +90,41 @@ describe('Shared Compact Base Voicing Engine', () => {
     }
   });
 
+  it('makes first and second inversion audible in both hand anchors', () => {
+    const harmony = chordHarmonyFromEvent(
+      { rootOffset: 0, suffix: '', definitionId: 'maj' },
+      'C',
+    );
+    const first = buildCompactBaseVoicings([harmony], {
+      position: 'first',
+      octaveShift: 0,
+    })[0]!;
+    const second = buildCompactBaseVoicings([harmony], {
+      position: 'second',
+      octaveShift: 0,
+    })[0]!;
+    const firstRight = first.notes.filter((note) => note.hand === 'RH');
+    const secondRight = second.notes.filter((note) => note.hand === 'RH');
+
+    expect(first.notes.find((note) => note.hand === 'LH')?.pc).toBe(4);
+    expect(firstRight[0]?.pc).toBe(7);
+    expect(second.notes.find((note) => note.hand === 'LH')?.pc).toBe(7);
+    expect(secondRight[0]?.pc).toBe(0);
+  });
+
+  it('keeps slash-bass voicing independent of inversion selection', () => {
+    const progression = GOLDEN_PROGRESSIONS.find((item) => item.id === 'D')!;
+    const harmony = chordHarmonyFromEvent(progression.chords[1]!, progression.key);
+    const signatures = VOICING_POSITIONS.map((position) =>
+      buildCompactBaseVoicings([harmony], { position, octaveShift: 0 })[0]!.notes.map(
+        (note) => note.pitch,
+      ),
+    );
+
+    expect(signatures[1]).toEqual(signatures[0]);
+    expect(signatures[2]).toEqual(signatures[0]);
+  });
+
   it('is deterministic and style-neutral by construction', () => {
     const progression = GOLDEN_PROGRESSIONS.find((item) => item.id === 'H')!;
     const harmonies = progression.chords.map((chord) =>

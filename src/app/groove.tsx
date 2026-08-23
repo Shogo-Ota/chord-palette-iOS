@@ -48,7 +48,7 @@ function rgba(hex: string, a: number) {
 export default function GrooveScreen() {
   const router = useRouter();
   const { width } = useWindowDimensions();
-  const grooveChipW = (width - 40 - 8 * 2) / 3;
+  const grooveChipW = (width - 40 - 8) / 2;
   const s = useEditorSession();
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const drumOff = s.drumMode === 'off';
@@ -56,7 +56,7 @@ export default function GrooveScreen() {
   const activeGroup = groupForSelection(s.accompanimentPattern, s.accompanimentVariant);
   const patternTypes = activeGroup.types;
   const activeType = typeForSelection(s.accompanimentPattern, s.accompanimentVariant);
-  const typeChipW = (width - 40 - 8 * 2) / 3;
+  const typeChipW = (width - 40 - 8) / 2;
 
   const [volumes, setVolumes] = useState<VolumeLevels>(
     () => audioService.getVolumes() ?? VOLUME_DEFAULTS,

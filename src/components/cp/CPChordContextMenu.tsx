@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon, type IconName } from '@/components/Icon';
 import { SegTrack } from '@/components/controls';
 import type { ChordContextActions } from '@/features/editor/useEditorActions';
+import type { VoicingPosition } from '@/lib/performance/baseVoicing';
 import { colors, font, radius, spacing, typeSize } from '@/theme/tokens';
 import type { ChordDuration } from '@/types';
 
@@ -26,6 +27,7 @@ export type CPChordContextMenuProps = {
   /** Secondary degree label (e.g. "IV" / "V7"). */
   degreeLabel?: string;
   durationBeats: ChordDuration;
+  voicingPosition: VoicingPosition;
   context: ChordContextActions;
   onRequestClose: () => void;
   onDuplicate: () => void;
@@ -33,12 +35,19 @@ export type CPChordContextMenuProps = {
   onMoveRight: () => void;
   onDelete: () => void;
   onSetDuration: (beats: ChordDuration) => void;
+  onSetVoicingPosition: (position: VoicingPosition) => void;
 };
 
 const DURATION_OPTIONS = [
   { key: '4', label: '1小節' },
   { key: '2', label: '1/2小節' },
   { key: '1', label: '1/4小節' },
+];
+
+const VOICING_OPTIONS = [
+  { key: 'root', label: '基本形' },
+  { key: 'first', label: '1st' },
+  { key: 'second', label: '2nd' },
 ];
 
 /** Derive a translucent tint from a token hex (keeps direct color values out). */
@@ -84,6 +93,7 @@ export function CPChordContextMenu({
   chordLabel,
   degreeLabel,
   durationBeats,
+  voicingPosition,
   context,
   onRequestClose,
   onDuplicate,
@@ -91,6 +101,7 @@ export function CPChordContextMenu({
   onMoveRight,
   onDelete,
   onSetDuration,
+  onSetVoicingPosition,
 }: CPChordContextMenuProps) {
   return (
     <Modal
@@ -116,6 +127,20 @@ export function CPChordContextMenu({
                 value={String(durationBeats)}
                 onChange={(k) => onSetDuration(Number(k) as ChordDuration)}
               />
+            </View>
+          ) : null}
+
+          {context.canEditVoicing ? (
+            <View style={styles.durationBlock}>
+              <Text style={styles.sectionLabel}>ボイシング</Text>
+              <SegTrack
+                options={VOICING_OPTIONS}
+                value={voicingPosition}
+                onChange={(key) => onSetVoicingPosition(key as VoicingPosition)}
+              />
+              <Text style={styles.voicingHint}>
+                このコードだけの最低音と響きを変更します
+              </Text>
             </View>
           ) : null}
 
@@ -192,6 +217,12 @@ const styles = StyleSheet.create({
     fontFamily: font.semibold,
     fontWeight: '600',
     fontSize: typeSize.label,
+    paddingHorizontal: spacing.s4,
+  },
+  voicingHint: {
+    color: colors.textFaint,
+    fontFamily: font.regular,
+    fontSize: typeSize.caption,
     paddingHorizontal: spacing.s4,
   },
   rows: {

@@ -4,10 +4,14 @@ import { STARTER_PRESET } from '@/data/presets';
 import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
 import { getDb } from '@/lib/db';
 import { normalizeGroove } from '@/lib/groove';
+import {
+  DEFAULT_VOICING_POSITION,
+  normalizeVoicingPosition,
+} from '@/lib/performance/baseVoicing/types';
 import { DEFAULT_ENERGY, normalizeEnergy } from '@/lib/performance/energy';
 import { defaultVariantFor, normalizeVariant } from '@/lib/performance/variants';
 import { buildPresetProgression } from '@/lib/presets';
-import type { NewProjectInput, Project } from '@/types';
+import type { ChordEvent, NewProjectInput, Project } from '@/types';
 
 /** Raw DB row shape (snake_case columns). */
 type ProjectRow = {
@@ -23,6 +27,8 @@ type ProjectRow = {
   accompaniment_variant: string | null;
   /** Style × Energy; missing on older rows → build via normalizeEnergy. */
   accompaniment_energy: string | null;
+  /** Compact inversion; missing/invalid on older rows → root. */
+  voicing_position: string | null;
   chord_events: string;
   created_at: number;
   updated_at: number;
@@ -38,6 +44,7 @@ const DEFAULTS: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
   accompanimentPattern: DEFAULT_ACCOMPANIMENT,
   accompanimentVariant: defaultVariantFor(DEFAULT_ACCOMPANIMENT).id,
   accompanimentEnergy: DEFAULT_ENERGY,
+  voicingPosition: DEFAULT_VOICING_POSITION,
   chordEvents: [],
 };
 
@@ -45,8 +52,21 @@ function genId(): string {
   return `p-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
 }
 
+function promotePerChordVoicing(
+  events: readonly ChordEvent[],
+  legacyPosition: unknown,
+): ChordEvent[] {
+  const fallback = normalizeVoicingPosition(legacyPosition);
+  return events.map((event) => ({
+    ...event,
+    voicingPosition: normalizeVoicingPosition(event.voicingPosition ?? fallback),
+  }));
+}
+
 function rowToProject(row: ProjectRow): Project {
   const accompanimentPattern = normalizeAccompaniment(row.accompaniment_pattern);
+  const legacyPosition = normalizeVoicingPosition(row.voicing_position);
+  const parsedEvents = JSON.parse(row.chord_events) as Project['chordEvents'];
   return {
     id: row.id,
     title: row.title,
@@ -62,7 +82,10 @@ function rowToProject(row: ProjectRow): Project {
     // was migrated — either way this lands on the pattern's original reading.
     accompanimentVariant: normalizeVariant(accompanimentPattern, row.accompaniment_variant),
     accompanimentEnergy: normalizeEnergy(row.accompaniment_energy),
-    chordEvents: JSON.parse(row.chord_events) as Project['chordEvents'],
+    // Kept at root on all new writes; the old column is consumed only as the
+    // fallback used to promote legacy chord events below.
+    voicingPosition: DEFAULT_VOICING_POSITION,
+    chordEvents: promotePerChordVoicing(parsedEvents, legacyPosition),
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -73,8 +96,8 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
     `INSERT INTO projects
        (id, title, key, tempo_bpm, time_signature, instrument_id, groove_id,
         accompaniment_pattern, accompaniment_variant, accompaniment_energy,
-        chord_events, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        voicing_position, chord_events, created_at, updated_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        key = excluded.key,
@@ -85,6 +108,7 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
        accompaniment_pattern = excluded.accompaniment_pattern,
        accompaniment_variant = excluded.accompaniment_variant,
        accompaniment_energy = excluded.accompaniment_energy,
+       voicing_position = excluded.voicing_position,
        chord_events = excluded.chord_events,
        updated_at = excluded.updated_at;`,
     [
@@ -98,6 +122,7 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
       p.accompanimentPattern,
       normalizeVariant(p.accompanimentPattern, p.accompanimentVariant),
       normalizeEnergy(p.accompanimentEnergy),
+      DEFAULT_VOICING_POSITION,
       JSON.stringify(p.chordEvents),
       p.createdAt,
       p.updatedAt,
@@ -116,6 +141,7 @@ async function ensureSeeded(db: SQLiteDatabase): Promise<void> {
   const chordEvents = buildPresetProgression(STARTER_PRESET, 'C').map((e, i) => ({
     ...e,
     id: `seed-${i}`,
+    voicingPosition: DEFAULT_VOICING_POSITION,
   }));
   await upsert(db, {
     ...DEFAULTS,
@@ -154,6 +180,8 @@ export async function createProject(input: NewProjectInput = {}): Promise<Projec
     createdAt: now,
     updatedAt: now,
   };
+  project.chordEvents = promotePerChordVoicing(project.chordEvents, input.voicingPosition);
+  project.voicingPosition = DEFAULT_VOICING_POSITION;
   await upsert(db, project);
   return project;
 }
@@ -161,7 +189,12 @@ export async function createProject(input: NewProjectInput = {}): Promise<Projec
 /** Persist changes to an existing project (bumps updatedAt). Returns the saved project. */
 export async function saveProject(project: Project): Promise<Project> {
   const db = await getDb();
-  const saved: Project = { ...project, updatedAt: Date.now() };
+  const saved: Project = {
+    ...project,
+    voicingPosition: DEFAULT_VOICING_POSITION,
+    chordEvents: promotePerChordVoicing(project.chordEvents, project.voicingPosition),
+    updatedAt: Date.now(),
+  };
   await upsert(db, saved);
   return saved;
 }

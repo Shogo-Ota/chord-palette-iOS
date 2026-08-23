@@ -326,16 +326,16 @@ describe('Phase 3A User Chord Authority', () => {
     expect(fs.existsSync(path.join(OUT_DIR, 'variation-type1-D-Bm-G-A.mid'))).toBe(true);
   });
 
-  it('Natural Type1 is legal on C|Am|F|G and keeps performance', () => {
+  it('Natural Type1 is legal on C|Am|F|G with product-owned rhythm', () => {
     expect(natural).not.toBeNull();
     expect(natural!.legacyExtraNotes).toBe(0);
     expect(natural!.userChordLegalityPct).toBe(100);
     expect(natural!.outsideChordNotes).toEqual([]);
     expect(natural!.duplicateSimultaneousPitch).toBe(0);
     expect(natural!.cc64PreservationPct).toBe(100);
-    expect(natural!.attackGroupPreservationPct).toBe(100);
-    expect(natural!.atomicDurationPreservationPct).toBe(100);
-    expect(natural!.atomicVelocityPreservationPct).toBe(100);
+    // Public Natural rhythm is now an explicit product contract, permanently
+    // checked by naturalTypeRhythms.test.ts; Teacher pitch remains unread.
+    expect(natural!.attackGroupPreservationPct).toBeLessThan(100);
   });
 
   it('Variation Type1 is legal on D|Bm|G|A and keeps performance', () => {

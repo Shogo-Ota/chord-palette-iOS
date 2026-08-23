@@ -96,6 +96,28 @@ function bodySpecs(
     .sort((left, right) => left.sourceOrder - right.sourceOrder);
 }
 
+/**
+ * Root keeps the approved 87-point candidate set unchanged. For explicit
+ * inversions, anchor the RH on the next available chord tone above the requested
+ * bass so the inversion changes the whole hand shape, not only one low note.
+ */
+function preferredRightAnchorPc(
+  harmony: ChordHarmonyInput,
+  specs: readonly ToneSpec[],
+  body: readonly ToneSpec[],
+  bass: ToneSpec,
+  preference: BaseVoicingPreference,
+): number | undefined {
+  if (preference.position === 'root' || harmony.slashBassPc != null) return undefined;
+  const bassIndex = specs.findIndex((spec) => spec.pc === bass.pc);
+  if (bassIndex < 0) return undefined;
+  for (let offset = 1; offset <= specs.length; offset += 1) {
+    const candidate = specs[(bassIndex + offset) % specs.length]!;
+    if (body.some((spec) => spec.pc === candidate.pc)) return candidate.pc;
+  }
+  return undefined;
+}
+
 function permutations<T>(items: readonly T[]): T[][] {
   if (items.length <= 1) return [[...items]];
   const result: T[][] = [];
@@ -219,6 +241,7 @@ export function compactCandidatesForHarmony(
   if (specs.length === 0) return [];
   const bass = bassSpec(harmony, specs, preference);
   const body = bodySpecs(harmony, specs, bass);
+  const rightAnchorPc = preferredRightAnchorPc(harmony, specs, body, bass, preference);
   const policy = compactRegisterPolicy(preference);
   const candidates: BaseVoicingCandidate[] = [];
   const seen = new Set<string>();
@@ -235,6 +258,7 @@ export function compactCandidatesForHarmony(
     };
     for (const order of permutations(body)) {
       for (const right of placeRightHand(order, bassPitch, preference)) {
+        if (rightAnchorPc != null && right[0]?.pc !== rightAnchorPc) continue;
         const notes = [bassNote, ...right].sort((left, next) => left.pitch - next.pitch);
         if (!isCompactHandModel(notes, policy)) continue;
         const candidate: BaseVoicingCandidate = {
@@ -264,7 +288,29 @@ export function buildCompactBaseVoicings(
   harmonies: readonly ChordHarmonyInput[],
   preference: BaseVoicingPreference = DEFAULT_BASE_VOICING_PREFERENCE,
 ): BaseVoicing[] {
-  const layers = harmonies.map((harmony) => compactCandidatesForHarmony(harmony, preference));
+  return buildCompactBaseVoicingsWithPreferences(
+    harmonies,
+    harmonies.map(() => preference),
+  );
+}
+
+/**
+ * Resolve one continuous progression while honoring each chord's own inversion.
+ * Candidate selection remains global, so per-chord control does not sacrifice
+ * voice-leading or loop-boundary continuity.
+ */
+export function buildCompactBaseVoicingsWithPreferences(
+  harmonies: readonly ChordHarmonyInput[],
+  preferences: readonly BaseVoicingPreference[],
+): BaseVoicing[] {
+  if (harmonies.length !== preferences.length) {
+    throw new Error(
+      `Base voicing preference count ${preferences.length} does not match harmony count ${harmonies.length}`,
+    );
+  }
+  const layers = harmonies.map((harmony, index) =>
+    compactCandidatesForHarmony(harmony, preferences[index]),
+  );
   const missing = layers.findIndex((layer) => layer.length === 0);
   if (missing >= 0) {
     throw new Error(
@@ -275,7 +321,7 @@ export function buildCompactBaseVoicings(
   return selected.map((candidate, chordIndex) => ({
     chordIndex,
     harmony: harmonies[chordIndex]!,
-    preference: { ...preference },
+    preference: { ...preferences[chordIndex]! },
     notes: candidate.notes.map((note) => ({ ...note })),
   }));
 }

@@ -805,6 +805,8 @@ final class AudioEngineController {
     instrument: String,
     startBeat: Double,
     planSignature: String?,
+    reverbPreset: String,
+    reverbWetDryMix: Double,
     chordEvents: [NoteEventValue]
   ) {
     guard prepared, let rt = realtime else {
@@ -846,7 +848,9 @@ final class AudioEngineController {
         totalBeats: totalBeats,
         loop: loop,
         startBeat: startBeat,
-        signature: planSignature)
+        signature: planSignature,
+        reverbPreset: reverbPreset,
+        reverbWetDryMix: reverbWetDryMix)
     else {
       diagnosticsLog.record("play.v2.error", rt.lastError ?? "start failed")
       state = .failed
@@ -858,6 +862,7 @@ final class AudioEngineController {
       "play.v2",
       "bpm=\(Int(bpm)) beats=\(totalBeats) program=\(gmProgram) drums=\(hasDrums) "
         + "startBeat=\(String(format: "%.2f", startBeat)) events=\(midiEvents.count) "
+        + "room=\(reverbPreset)/\(String(format: "%.1f", reverbWetDryMix)) "
         + "sig=\(planSignature ?? "-") engineRunning=\(engine.isRunning)")
   }
 
@@ -909,6 +914,7 @@ final class AudioEngineController {
     if resumePendingCountInIfNeeded() { return }
     if useRealtimeEngine {
       guard state == .paused, let rt = realtime, rt.hasPlan else { return }
+      try? AVAudioSession.sharedInstance().setActive(true)
       if !engine.isRunning { try? engine.start() }
       guard rt.resume() else {
         diagnosticsLog.record("resume.v2.error", rt.lastError ?? "resume failed")
@@ -916,7 +922,11 @@ final class AudioEngineController {
       }
       state = .playing
       startPositionTimer()
-      diagnosticsLog.record("resume.v2", "engineRunning=\(engine.isRunning)")
+      diagnosticsLog.record(
+        "resume.v2",
+        "engineRunning=\(engine.isRunning) restoredActive=\(rt.restoredActiveVoiceCount) "
+          + "restoredSustained=\(rt.restoredSustainedVoiceCount) "
+          + "restoredCc=\(rt.restoredControllerCount)")
       return
     }
     os_unfair_lock_lock(&unfairLock)
@@ -1076,11 +1086,22 @@ final class AudioEngineController {
           for note in pvNotes {
             pv += provider.sample(note: note, tSeconds: t, durationSeconds: pvDur) * velGain
           }
+          // UI audition only: ease the final 250 ms instead of dropping a summed
+          // chord at one sample boundary. Playback notes keep their authored gates.
+          let releaseWindow = min(0.25, max(0.05, pvDur))
+          let remaining = pvDur - t
+          let releaseGain: Float
+          if remaining < releaseWindow {
+            let x = max(0, min(1, remaining / releaseWindow))
+            releaseGain = Float(x * x * (3 - 2 * x))
+          } else {
+            releaseGain = 1
+          }
           // Soft-limit the summed preview polyphony. A tapped chord (4–5 sampled
           // notes × gain × velocity) easily exceeds 1.0; adding it un-limited made
           // the output hard-clip and read as a machine-like buzz ("ジー") on every
           // chord tap. tanh keeps the body while taming the peak.
-          value += tanh(pv)
+          value += tanh(pv) * releaseGain
         }
       }
 
@@ -1713,7 +1734,9 @@ final class AudioEngineController {
     instrument: String,
     gmProgram: Int,
     hasDrums: Bool,
-    planSignature: String?
+    planSignature: String?,
+    reverbPreset: String,
+    reverbWetDryMix: Double
   ) throws -> (url: URL, sampleRate: Double) {
     guard let soundFontURL = Self.soundFontURL() else {
       throw NSError(
@@ -1729,7 +1752,9 @@ final class AudioEngineController {
       events: events,
       soundFontURL: soundFontURL,
       gmProgram: program,
-      hasDrums: hasDrums
+      hasDrums: hasDrums,
+      reverbPreset: reverbPreset,
+      reverbWetDryMix: reverbWetDryMix
     )
     let noteOns = events.filter { $0.kind == "on" }.count
     let cc64 = events.filter { $0.kind == "cc" && $0.a == 64 }.count
@@ -1737,6 +1762,7 @@ final class AudioEngineController {
       "render.v2",
       "instrument=\(instrument) program=\(program) events=\(events.count) "
         + "noteOns=\(noteOns) cc64=\(cc64) sig=\(planSignature ?? "-") "
+        + "room=\(reverbPreset)/\(String(format: "%.1f", reverbWetDryMix)) "
         + "sr=\(Int(result.sampleRate))"
     )
     return result

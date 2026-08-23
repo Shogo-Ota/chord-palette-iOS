@@ -7,12 +7,12 @@ import { ChordKeyboard } from '@/components/ChordKeyboard';
 import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { chordPreviewMidiNotes } from '@/features/editor/playback';
 import { useEditorSession } from '@/features/editor/session';
 import { useMidiExport } from '@/features/export/useMidiExport';
 import { VideoExportError } from '@/lib/errors';
 import { progressionCycleDurationSec } from '@/lib/exportCycleTiming';
 import { beatsPerBarFor } from '@/lib/performance/rhythms';
-import { chordMidiNotes } from '@/lib/voicing';
 import { track } from '@/services/analytics';
 import { getTier } from '@/services/billing';
 import { videoExportService } from '@/services/videoExport';
@@ -140,7 +140,9 @@ export default function ExportScreen() {
   const idx = usePreviewIndex(s.progression, s.tempoBpm);
   const current = s.progression[idx];
   const accent = current ? functionColor[current.function] : colors.primary;
-  const notes = current ? chordMidiNotes(current, s.key, s.octaveShift) : [];
+  const notes = current
+    ? chordPreviewMidiNotes(current, s.key, s.octaveShift)
+    : [];
   const totalBeats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
   const bars = Math.max(1, Math.ceil(totalBeats / 4));
   const autoDurationLabel = Number.isInteger(cycleDurationSec)

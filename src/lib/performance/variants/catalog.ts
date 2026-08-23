@@ -91,7 +91,7 @@ const BEAT16_FUNK_CHORD: StepPattern = {
 /* ------------------------------------------------------------------ */
 
 /**
- * Production offers Block Type1, Natural Type1–3 and Variation Type1–3.
+ * Production offers Block Type1, Natural Type1–5 and Variation Type1–3.
  * Block is a single plain held-chord reading — no teacher take.
  * Variation Types are P1_C12 / P1_C13 / P1_C14 (the Style screen label is
  * バリエーション; the rhythm id stays `arpeggio` so saved projects still resolve).
@@ -101,8 +101,8 @@ const BEAT16_FUNK_CHORD: StepPattern = {
 const BLOCK_VARIANTS: readonly AccompanimentVariant[] = [
   {
     id: 'block.type1',
-    label: 'ブロック',
-    hint: 'コード構成音を、コードの長さいっぱい鳴らす',
+    label: 'Type 1',
+    hint: 'Held chord tones for the full chord.',
   },
 ];
 
@@ -166,20 +166,38 @@ const NATURAL_VARIANTS: readonly AccompanimentVariant[] = [
   {
     id: 'natural.type1',
     label: 'Type 1',
-    hint: '標準のナチュラル。素直に弾く',
+    hint: 'A clear phrase combining long and short chord attacks.',
     humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A1,
   },
   {
     id: 'natural.type2',
     label: 'Type 2',
-    hint: '同じ伴奏を別の手で',
+    hint: 'Chord, upper voices, and bass respond with natural rests.',
     humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_C1,
   },
   {
     id: 'natural.type3',
     label: 'Type 3',
-    hint: 'もう少し動きのあるナチュラル',
+    hint: 'Short syncopation and bass responses with a funky feel.',
     humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A3,
+  },
+  {
+    id: 'natural.type4',
+    label: 'Type 4',
+    hint: 'Driving 16th-note responses with controlled sustain.',
+    humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A1,
+  },
+  {
+    id: 'natural.type5',
+    label: 'Type 5',
+    hint: 'A single-note chord-tone arpeggio that rises and falls.',
+    humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A1,
+  },
+  {
+    id: 'natural.dance1',
+    label: 'Dance',
+    hint: 'Layered syncopated dance-piano rhythm with an eight-bar build.',
+    humanTemplateId: HUMAN_TEMPLATE_NORMAL_P1_A1,
   },
   {
     id: 'natural.auto',
@@ -215,7 +233,7 @@ const CITY_VARIANTS: readonly AccompanimentVariant[] = [
   {
     id: 'city.type1',
     label: 'Type 1',
-    hint: '短いコード、意図的な休符、控えめな構成音の間引き',
+    hint: 'Short chords, intentional rests, and controlled note subtraction.',
   },
 ];
 
@@ -418,7 +436,12 @@ const REGGAE_VARIANTS: readonly AccompanimentVariant[] = [
     label: 'ディープ',
     hint: '低音を長めに、スカットは短く',
     refine: {
-      gate: { min: 0.18, max: 0.34, sustain: 'staccato', byTrack: { bass: { min: 0.7, max: 0.92 } } },
+      gate: {
+        min: 0.18,
+        max: 0.34,
+        sustain: 'staccato',
+        byTrack: { bass: { min: 0.7, max: 0.92 } },
+      },
     },
   },
 ];

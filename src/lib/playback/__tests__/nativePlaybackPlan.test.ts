@@ -122,9 +122,7 @@ describe('native playback plan — Final MIDI equivalence', () => {
     );
     isolated.forEach((want) => {
       const got = scheduled.find(
-        (n) =>
-          n.pitch === want.pitch &&
-          Math.abs(n.startBeat - want.startBeat) <= tick,
+        (n) => n.pitch === want.pitch && Math.abs(n.startBeat - want.startBeat) <= tick,
       );
       expect(got).toBeDefined();
       expect(Math.abs(got!.durationBeat - want.durationBeat)).toBeLessThanOrEqual(tick * 2);
@@ -280,6 +278,57 @@ describe('native playback plan — Final MIDI equivalence', () => {
     // Pedal-down must be scheduled at or before the notes it sustains.
     const firstOn = ons[0]!.beat;
     expect(ccs[0]!.beat).toBeLessThanOrEqual(firstOn);
+  });
+
+  it('orders a same-beat re-pedal boundary deterministically in live and SMF output', () => {
+    const base = sustainTestSnapshot();
+    const snapshot: FinalMidiSnapshot = {
+      ...base,
+      totalBeats: 8,
+      notes: [
+        {
+          startBeat: 0,
+          durationBeat: 4,
+          pitch: 60,
+          velocity: 90,
+          channel: 0,
+          track: 'accompaniment',
+        },
+        {
+          startBeat: 4,
+          durationBeat: 1,
+          pitch: 62,
+          velocity: 92,
+          channel: 0,
+          track: 'accompaniment',
+        },
+      ],
+      // Deliberately supply Down before Up: canonical ordering must not trust input/sort stability.
+      controlChanges: [
+        { startBeat: 0, controller: 64, value: 96, channel: 0 },
+        { startBeat: 4, controller: 64, value: 96, channel: 0 },
+        { startBeat: 4, controller: 64, value: 0, channel: 0 },
+      ],
+    };
+
+    const plan = buildNativePlaybackPlan(snapshot);
+    expect(
+      plan.midiEvents
+        .filter((event) => event.beat === 4)
+        .map((event) => [event.kind, event.a, event.b]),
+    ).toEqual([
+      ['off', 60, 0],
+      ['cc', 64, 0],
+      ['cc', 64, 96],
+      ['on', 62, 92],
+    ]);
+
+    const parsed = parseSmf(base64ToBytes(plan.smfBase64));
+    expect(
+      parsed.controlChanges
+        .filter((event) => event.tick === 4 * PPQ && event.controller === 64)
+        .map((event) => event.value),
+    ).toEqual([0, 96]);
   });
 
   it('handles the synthetic audio tests without dropping or reordering events', () => {

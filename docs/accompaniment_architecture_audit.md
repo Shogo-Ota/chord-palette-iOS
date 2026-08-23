@@ -961,3 +961,571 @@ Production result:
 - full regression: **116 suites / 2134 passed / 1 skipped / 0 failed**
 
 `shortChordDurations.test.ts` is now a normal permanent passing gate.
+
+---
+
+## 15. V1.0.2 — 87-POINT AUTHORITY AND VOICING CONTROL
+
+### 15.1 Approved checkpoint and deterministic authority
+
+The user-approved 87/100 state is preserved at commit `ddf2602`. A versioned
+fixture now hashes the exact Shared Base, pitch, onset, gate, velocity and CC64
+events for Golden A–I × the five public Types:
+
+- tracked digests: **45**
+- exact matches after v1.0.2 wiring: **45/45**
+- default position: `root`
+- update authority: intentional sound change + all Hard Gates + device score
+  at least 87 + Quality Ledger update
+- new Types add keys and may not rewrite existing digest keys
+
+This gate is complementary to semantic quality contracts: the digest detects any
+audible event change, while the semantic gates explain whether harmony, register,
+pedal, silence and style invariance remain legal.
+
+### 15.2 Project-owned voicing preference
+
+`VoicingPosition` remains defined only in `baseVoicing/types.ts`. The selected
+value now reaches:
+
+1. SQLite Project row (`voicing_position`, root-default migration)
+2. Project repository normalization and upsert
+3. Editor Session load/save and dirty tracking
+4. live sound re-apply signature
+5. realtime playback and preset playback
+6. single-chord preview and export keyboard preview
+7. Standard MIDI and video/offline audio export
+
+The Groove screen adds a thin `基本形 / 1st / 2nd` selector. Style changes do not
+change it, and slash bass still overrides inversion at the Shared Base boundary.
+Legacy, missing and invalid persisted values normalize to `root`.
+
+### 15.3 Automated candidate evidence
+
+- Project migration/default/write: PASS
+- preview root/first/second and slash bass: PASS
+- video performance input propagation: PASS
+- Style/Tier invariance for all positions: PASS
+- all 12 transpositions: PASS
+- TypeScript: PASS
+- quality audit: **5/5 PASS**
+- Shared Voicing harness: **1/1 PASS**
+- full Jest: **121 suites / 2147 passed / 1 skipped / 0 failed**
+- internal iOS/Swift build: **PASS**, build
+  `73c6cbb2-0763-44d5-b454-d971207ff412`
+
+The remaining release boundary is the internal-device matrix. Production build,
+App Store submission and baseline digest replacement remain outside this phase.
+
+---
+
+## 16. BUILD 9 DEVICE REJECTION — NATURAL TYPE IDENTITY
+
+Device listening rejected build 9 for two concrete reasons:
+
+1. Natural Type1/2/3 differed only through Teacher MIDI takes routed through one
+   common extraction/mask policy, so their product identities were not obvious.
+2. Inversions changed the LH bass degree, but RH continuity could retain a very
+   similar hand shape, making the overall difference subtle.
+
+### 16.1 Build 10 candidate
+
+Natural now selects an explicit rhythm Strategy by public variant ID:
+
+- Type1: two long attacks at beats `0, 2`
+- Type2: five attacks at `0, 1, 1.5, 2.5, 3` for phrase bars 1–3 and three
+  attacks at `0, 1, 1.5` for bar 4
+- Type3: four short attacks at `0, 1, 2, 3`
+- 1/2- and 1/4-bar chords take the uncompressed prefix
+
+Teacher pitch remains unread. Shared Base, mask subtraction, CC64 handling,
+harmony legality and Style pitch invariance remain in their existing layers.
+
+For `1st` and `2nd`, the RH is now anchored to the next available chord tone
+above the requested LH inversion bass. `root` candidate generation is unchanged,
+and slash bass bypasses the inversion anchor.
+
+### 16.2 Automated evidence
+
+- exact public Natural attack signatures: **4/4 PASS**
+- new rhythm/profile and Shared Base focused tests: **48/48 PASS**
+- Hard Gate / short chord / style invariance: **54/54 PASS**
+- quality audit: illegal pitch 0; Natural rest rate 1.0; overlap 0
+- Shared Voicing: 108 voicings, compact/harmony/duplicate/inversion failures 0
+- maximum top jump across inversion candidates: 10 semitones
+- candidate suite excluding the intentionally held approval digest:
+  **122 suites / 2157 passed / 1 skipped**
+- unchanged approved digest keys: Block/City **18/18**
+- intentionally changed Natural keys: **27**, not approved yet
+- internal iOS/Swift build: **PASS**,
+  `76ec5312-1c67-49cf-8621-2ba8b3ddf5da`
+
+Build 10 passed device listening on 2026-08-19. The 27 intentional Natural keys
+were promoted into the v87 fixture; all 45 public-Type digests now pass. Final
+approved regression: **123 suites / 2158 passed / 1 skipped / 0 failed**.
+
+---
+
+## 17. BUILD 11 — PER-CHORD VOICING, NATURAL REASSIGNMENT, RESUME RECOVERY
+
+### 17.1 Per-chord Voicing authority
+
+The Project-wide selector was not the requested interaction. Build 11 makes
+`ChordEvent.voicingPosition` the Production authority and places the selector in
+the existing long-press chord context menu.
+
+Architecture:
+
+1. Legacy `projects.voicing_position` is consumed only as a read-migration
+   fallback and copied into events that lack their own position.
+2. New writes keep the old SQL column at `root`; the `chord_events` JSON owns
+   `root / first / second`.
+3. `buildCompactBaseVoicingsWithPreferences()` builds one candidate layer per
+   chord preference and still selects the complete progression with the existing
+   continuity DP.
+4. Block, Natural and City receive the same per-chord Base, preserving Style
+   pitch invariance.
+5. Slash bass still overrides the requested inversion.
+
+No second voicing engine or screen-owned music logic was added.
+
+### 17.2 Natural Type reassignment
+
+The accepted beat grid is:
+
+- Type1: `0, 1, 1.5, 2.5, 3` on all phrase bars
+- Type2 RH: `0` with a 2.75-beat gate, then a short attack at `3.5`
+- Type2 LH: exactly one Shared Base bass note from chord onset to chord boundary
+- Type3: unchanged `0, 1, 2, 3`
+
+Type2 uses a subtractive `RIGHT_HAND` mask for its RH attacks; it does not
+revoice or add pitch. Its template pedal is omitted so the 0–3.5 rest remains
+real, while the independently gated LH provides the requested continuous bass.
+One- and two-beat chords keep uncompressed prefixes.
+
+### 17.3 Background resume root cause and correction
+
+The generated/native plan was not monophonic: device diagnostics showed 44
+scheduled chord NoteOns, pitch range 36–65 and three active keys. The structural
+failure was inside `RealtimeSamplerEngine`:
+
+1. `pause()` saved the beat, cancelled work and sent All Notes Off.
+2. `resume()` called `play(startBeat:)`.
+3. Scheduling discarded every event before `startBeat`.
+4. Notes and CC64 already active at that beat were never reconstructed.
+5. The next sparse mask could therefore be a single LH note.
+
+Build 11 simulates the MIDI timeline up to the resume beat and restores:
+
+- active keyed voices, including same-pitch gate depth
+- pedal-held released voices
+- latest controller state, including CC64
+
+Future events are then scheduled as before. AppState transitions are serialized:
+backgrounding pauses once, foregrounding reactivates/prepare-rearms the engine,
+and playback never auto-resumes unexpectedly.
+
+### 17.4 Current evidence and authority boundary
+
+- TypeScript: PASS
+- canonical lint: 0 errors (46 pre-existing warnings)
+- targeted Voicing/Natural/lifecycle/Hard Gate: PASS
+- full suite: 123 suites / 2165 passed / 1 skipped
+- approved authority: Build 11 Natural Type1/2 replaced exactly 18 keys after
+  device PASS; all 45 current keys are exact
+- unchanged from Build 10: Block, City and Natural Type3, 27/27 exact
+- Swift compile: **PASS**, internal build
+  `5bda9432-7e1e-4c63-a6b1-817b1e936a6e`
+- device listening/background matrix: **PASS**
+
+The Build 11 Natural rhythm and resume behavior passed on device. Its 18 intended
+Natural digest changes are now part of the tracked 87/100 authority.
+
+---
+
+## 18. BUILD 12 — CHORD PREVIEW LIFETIME
+
+The editor chord-card sound effect is outside Final MIDI and accompaniment
+generation. Two defects were confirmed in that isolated Preview path:
+
+1. A fixed two-beat request made audition length tempo-dependent (1.2 seconds at
+   100 BPM and 0.67 seconds at 180 BPM).
+2. Each realtime audition left an independent delayed NoteOff. If the next chord
+   shared a pitch, the old closure could stop that pitch in the new audition.
+
+Build 12 defines a feature-owned two-second wall-clock Preview policy. It also
+writes an equivalent beat value for Build 11 native compatibility. The native
+record accepts `durationSec` as the new authority.
+
+`RealtimeSamplerEngine` now owns Preview notes by generation:
+
+- starting a new audition stops only the prior Preview notes
+- generation increments before the new notes start
+- delayed NoteOff executes only if its generation still owns the audition
+- All Notes Off invalidates Preview ownership before transport work continues
+
+The sampled fallback applies a Preview-only 250 ms smooth release. Authored
+accompaniment gates, CC64, Shared Base, style rhythm, Export and video are not
+changed. Therefore the Build 11 45-digest authority must remain exact.
+
+Automated evidence before native build:
+
+- Preview timing policy: PASS at 60/100/180 BPM
+- Build 11 accompaniment authority: 45/45 exact
+- TypeScript: PASS
+- canonical lint: 0 errors (46 pre-existing warnings)
+- full regression: **125 suites / 2171 passed / 1 skipped / 0 failed**
+- Swift compile / internal Build 12: **PASS**
+  (`9df25e88-2978-4acc-8941-1d8a24efef24`)
+
+---
+
+## 19. BUILD 16 — VARIATION DANCE PROFILE
+
+Dance is an additive rhythm/pedal provider, not a new voicing engine. The
+Production dependency direction is:
+
+```text
+Variant ID → Groove Profile Registry → rhythm/pedal declarations
+User chord → Shared Base Voicing → subtractive attack mask → Final MIDI
+```
+
+`danceGrooveProfile.ts` owns one measured six-group gesture and controlled-long
+CC64 declaration. `grooveProfileRegistry.ts` is the extension point shared by
+existing Natural candidates and Dance, so future profiles do not require a new
+renderer branch. The atomic Natural renderer remains the sole realization path.
+
+Forensic boundary:
+
+- copied: onset, gate, velocity, pedal and simultaneous Attack Group structure
+- forbidden: source pitch, pitch class, key, chord, progression and melody
+- emitted pitch: unchanged `bassMidi/bodyMidi` subset only
+- persistence: `natural / natural.dance1`; no DB migration
+- presentation: `Variation / Dance`
+- release authority: device listening required before freezing a Dance digest
+
+Automated evidence:
+
+- exact six-group identity: PASS
+- full-bar and 1/2/1-beat uncompressed prefixes: PASS
+- Golden A–I × root/1st/2nd Shared Base invariance: PASS
+- all 12 keys, slash bass, 7th/aug/dim, range/crossing/duplicate gates: PASS
+- controlled CC64 Up at 3.85 and every chord boundary: PASS
+- `releaseCut` CC64: 0
+- live/MIDI/video canonical Final MIDI path: PASS
+- existing release and Natural candidate digest changes: 0
+- full regression: **130 suites / 2242 passed / 1 skipped / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- internal iOS/Swift Build 16: **PASS**,
+  `36b98b97-7186-4d95-9326-5b181cb71784`
+
+---
+
+## 20. BUILD 17 — DANCE HAND DYNAMICS / ARPEGGIO RESONANCE
+
+Build 16 Dance received **60/100** on device. Its onset/gate/mask/pedal contract
+was correct, but the renderer applied one Attack Group mean velocity to every
+selected note. The source's defining low-to-high RH hierarchy (`77/81/93` and
+`77/85/97`) was therefore absent.
+
+Build 17 adds a pure `attackVelocityPolicy.ts` after subtractive note selection.
+Profiles may declare an LH value and a pitch-independent RH rank envelope. The
+policy resamples the envelope to the available Shared Base voice count and may
+change velocity only. Existing profiles omit the shape and remain byte-for-byte
+compatible.
+
+Arpeggio `natural.type5` changes from eight to seven attacks:
+
+```text
+0 BASS → 0.5 RH_BOTTOM → 1 RH_MIDDLE → 1.5 RH_TOP
+→ 2 REST → 2.5 RH_MIDDLE → 3 RH_BOTTOM → 3.5 BASS
+```
+
+The removed second apex becomes a controlled resonance window. CC64 is Down at
+0, Up at 3.9 and forced Up at every chord boundary; `releaseCut` emits no CC64.
+The same Final MIDI remains authoritative for live playback, MIDI and video.
+
+Protected boundaries:
+
+- Dance pitch/onset/gate/mask/pedal: unchanged
+- Shared Base and harmony: unchanged
+- Block/Natural Type1/City 27 release digests: unchanged
+- Natural Type2/3/4 note digests: unchanged
+- source pitch/key/chord/progression data in Production: 0
+- full regression: **132 suites / 2251 passed / 1 skipped / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- internal iOS/Swift Build 17: **PASS**,
+  `f7f3aff7-76e6-4b5d-b226-1db98933e706`
+
+---
+
+## 21. BUILD 18 — DANCE PHRASE / CANONICAL SUSTAIN ORDER
+
+Build 17 device listening approved Arpeggio but rejected Dance again for weak
+groove. The accepted Arpeggio note/CC64 schedule is now frozen by SHA-256 digest
+`4ff013c...f0834`; Build 18 does not alter its profile.
+
+Dance remains a declarative provider in `grooveProfileRegistry.ts`, but its
+one-bar literal source translation is replaced by a product `DESIGN_TARGET`:
+
+```text
+A/B/A: 0 SHELL → 0.5 FULL → 1.5 RH → 2.5 FULL → 3.5 RH
+D:     0 SHELL → 0.5 FULL → 1.5 RH → 2.5 FULL → REST
+```
+
+The beat-0 shell is deliberately weak. Offbeat attacks are short and stronger,
+and CC64 is limited to `0.5–0.92` and `2.5–2.92`. This preserves key and pedal
+silence rather than filling the rhythm with the rejected long pedal wash.
+Shared Base, pitch ownership, persistence ID and the atomic renderer are
+unchanged.
+
+The common Sustain correction is below Style/Profile logic. New pure
+`midiExport/eventOrdering.ts` defines one same-instant order:
+
+```text
+Program → NoteOff → CC64 Up → CC/CC64 Down → NoteOn
+```
+
+Both realtime/native event flattening and the SMF writer consume this policy.
+Offline video already consumes the flattened native order. Adjacent chord
+re-pedaling can therefore no longer depend on JavaScript sort stability or leave
+the sampler in an accidental Pedal Up state.
+
+Automated evidence:
+
+- Dance four-bar Attack Group counts: `5 / 5 / 5 / 4`
+- Dance short pedal windows and every chord-boundary Up: PASS
+- Live and SMF same-beat `Off / Up / Down / On`: PASS
+- approved Arpeggio digest: exact
+- protected release/Natural candidate digests: exact
+- full regression: **132 suites / 2253 passed / 1 skipped / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- internal iOS/Swift Build 18: **PASS**,
+  `9d9ee09d-113f-4f1c-94c0-73981900f617`
+
+---
+
+## 22. BUILD 19 — MEASURED DANCE PULSE PROVIDER
+
+Build 18 device listening approved the common Sustain correction but rejected
+Dance accompaniment quality. The earlier isolated piano MIDI did not represent
+the overall groove the owner wanted. The owner therefore supplied a full-mix
+reference and identified `00:35–01:05` as the Dance target.
+
+The reliable pitch-independent audio measurements are:
+
+- approximately 128–129 BPM
+- harmonic median inter-onset interval 0.232 seconds (one eighth note)
+- Bass-band attack presence 80–93% on each eighth-note offbeat
+- stable 10-second harmonic density `42 / 46 / 47`
+- no measured fourth-bar density drop
+- tightly gridded attacks; no evidence supporting random Humanize
+
+`dancePulseProfile.ts` is a new declarative Provider behind the persisted
+`natural.dance1` identity. `danceGrooveProfile.ts` becomes a compatibility
+facade, so the registry, renderer, UI and saved projects remain unchanged.
+
+```text
+0 FULL → 0.5 BASS → 1 RH → 1.5 BASS
+→ 2 FULL → 2.5 BASS → 3 RH → 3.5 BASS
+```
+
+The four-bar topology is `A / B / A / B` with constant attack density. A/B
+variation changes accents only. Pitch remains an unchanged Shared Base subset;
+the Provider owns timing, gate, velocity, role selection and short chord-anchor
+CC64 windows only. Driving and every other Style are outside this change.
+
+Automated evidence:
+
+- Dance four-bar Attack Group counts: `8 / 8 / 8 / 8`
+- all four offbeats resolve to exactly one Shared Base Bass note
+- full anchors, RH responses and short-chord prefixes: PASS
+- all-key harmony, inversion, slash-bass, range and duplicate gates: PASS
+- approved Arpeggio digest: exact
+- protected release/Natural candidate digests: exact
+- full regression: **132 suites / 2253 passed / 1 skipped / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- internal iOS/Swift Build 19: **PASS**,
+  `2b38792c-91b4-47fc-bd1e-35ae79221c97`
+
+---
+
+## 23. BUILD 20A — AUDIO SAMPLE-CLOCK MIDI SCHEDULER
+
+The owner reported rare timing disruption without a reproducible Style or user
+action. Final MIDI generation is deterministic, but the Build 19 realtime engine
+submitted every NoteOn, NoteOff and CC through its own
+`DispatchQueue.asyncAfter`. Dispatch deadlines are not audio deadlines: under
+system load the queue may wake after the intended instant.
+
+Build 20A adds `SampleAccurateMidiScheduler.swift`, a transport-only component
+with no knowledge of chords, Styles or harmony. It observes each sampler's
+pre-render callback, maps beat time to sample frames once, and submits only the
+events that belong to the current audio buffer:
+
+```text
+Final MIDI beat
+  → shared chord/drum sample-time origin
+  → current render-buffer frame offset
+  → AUAudioUnit.scheduleMIDIEventBlock
+```
+
+Chord and drum samplers use separate render observers but one
+`SampleAccurateMidiClock`, preventing a one-buffer route skew. Looping advances
+an event cursor on the audio clock rather than arming the next loop from a wall
+clock timer. Stop and pause clear scheduler state, so no future NoteOn has been
+queued beyond the current render buffer.
+
+Same-pitch lifetime resolution remains necessary because a sampler NoteOff can
+otherwise cut an overlapping re-attack. Build 20A performs that resolution once
+on the control thread before playback. The render callback therefore does not
+acquire the gate's `NSLock` or mutate its dictionary.
+
+Protected boundaries:
+
+- Final MIDI notes, CC64, onset, gate, velocity and canonical event order: unchanged
+- Style providers, Shared Base Voicing and Harmony Gate: unchanged
+- MIDI and offline video rendering: unchanged
+- Preview duration timer: unchanged; it is not accompaniment musical time
+- no dependency or persistence change
+
+Automated evidence:
+
+- render-observer/frame-offset source contract: PASS
+- no event-level realtime accompaniment `asyncAfter`: PASS
+- shared chord/drum sample origin: PASS
+- canonical Native MIDI order: PASS
+- full regression: **133 suites / 2257 passed / 1 skipped / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- internal iOS/Swift Build 20: **PASS**,
+  `fd03d5f9-e21c-44bd-be82-4d88de92e125`
+
+---
+
+## 24. BUILD 21 — STYLE SUSTAIN AND ACCOMPANIMENT SPACE
+
+Build 20A device listening accepted the common audio sample-clock scheduler.
+Build 21 freezes that transport and separates two requested sound changes.
+
+CC64 remains owned by the declarative Natural profile:
+
+```text
+Type2:   Down 0 → Up 3.9
+Driving: Down/Up 0/0.82 → 1/1.95 → 2/2.82 → 3/3.95
+```
+
+Type2 now rings through one full chord. Driving keeps short windows around its
+main anchors while its two 16th-note turns remain under pedal through the final
+single attacks at `1.75/3.75`. Note onset, gate, velocity and pitch are unchanged.
+Short-chord realization still injects Pedal Up at every harmonic boundary.
+
+Reverb is not represented as MIDI or placed in UI logic. New pure
+`performance/space/accompanimentSpaceProfile.ts` maps stable variant identity to
+one semantic audio profile:
+
+```text
+natural.type3 (Funk) → Small Room / 8%
+city.type1 (City)    → Small Room / 8%
+everything else      → Off / 0%
+```
+
+The JS audio service passes that profile to both realtime and video render
+requests. The Expo bridge defaults missing fields to dry for old bundles.
+Realtime and `OfflineMidiRenderer` each route only the chord sampler through an
+`AVAudioUnitReverb`; the drum sampler remains direct. Native clamps wet mix to
+`0...100`.
+
+Protected boundaries:
+
+- Build 20A sample-clock scheduler and event timing: unchanged
+- MIDI notes/onsets/gates/velocities and Harmony Gate: unchanged
+- SMF export: no audio reverb metadata
+- preview and drum paths: dry
+- UI, persistence IDs and DB schema: unchanged
+
+Automated evidence:
+
+- Type2/Driving pedal profile and chord-boundary gates: PASS
+- Funk/City 8% Provider; all other Styles dry: PASS
+- realtime/offline native room routing source contract: PASS
+- focused Sustain/Room regression: **7 suites / 53 passed / 0 failed**
+- full regression: **135 suites / 2274 passed / 1 skipped / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- internal iOS/Swift Build 21: **PASS**,
+  `c9e63333-fe2f-488c-b95a-925f7931685d`
+
+---
+
+## 25. BUILD 22 — DANCE MIDI-REFERENCE PROVIDER
+
+Build 21 device listening accepted Type2 Sustain, Driving Sustain and the
+Funk/City room profile. Build 22 freezes those paths. The owner designated
+`hipnotize piano.mid` (SHA-256 `ee9dd75b...deec91`) as the exact Dance reference,
+superseding Build 19's full-mix eighth-note pulse.
+
+The new `danceReferenceMidiProfile.ts` is a declarative provider behind the
+existing `danceGrooveProfile.ts` facade:
+
+```text
+natural.dance1
+  → Groove Profile Registry
+  → eight-bar onset/gate/velocity/role declarations
+  → Shared Base Voicing
+  → subtractive selection
+  → canonical Final MIDI
+```
+
+Measured phrase:
+
+```text
+bars 1–6: 0 FULL → 1 RH → 1.5 BASS+RH_BOTTOM → 1.75 RH → 2.5 RH → 3.5 RH
+bar 7:    0 FULL → 1 RH → REST → 1.75 RH → 2.5 RH → 3.5 RH
+bar 8:    0 BASS → 0.0438 RH roll → 1 RH → 1.75 RH → 2.5 RH
+          → 3 BASS+RH split gate → 3.5 RH accent
+```
+
+`NaturalAttackVoicingSelection` gains one additive `VOICE_ROLES` form. It
+resolves each requested hand/rank from the already-completed Full Voicing,
+deduplicates by pitch and returns a subset. It cannot add, transpose, double or
+revoice a note. The compatibility mask for mixed Bass/RH selection is `SHELL`.
+Existing `MASK` and single `VOICE_ROLE` behavior is unchanged.
+
+The shared rhythm entry point previously reduced `chordIndex` modulo four before
+calling a Strategy, making any eight-bar provider unreachable. It now passes the
+phrase index unchanged. Existing Type2–5 Strategies still apply their own
+four-bar modulo; only Dance resolves modulo its eight-bar provider length.
+
+Pedal authority for Dance is `NONE`. The reference has no CC64 events; its
+96.84% key-sounding ratio comes from written 0.5/1.0-beat gates and overlap.
+Bar 8's 0.0438-beat roll is the only retained non-grid offset. No random timing
+or source pitch identity is imported.
+
+Protected boundaries:
+
+- persisted ID, UI group and DB schema: unchanged
+- Build 20A sample-clock scheduler: unchanged
+- Build 21 Type2/Driving pedal and Funk/City room: unchanged
+- source pitch/key/chord/progression/melody in Production: 0
+- every Dance pitch: unchanged Shared Base subset
+- approved Arpeggio and protected release digests: unchanged
+
+Automated evidence:
+
+- eight-bar unique Attack Group counts `6/6/6/6/6/6/5/7`: PASS
+- multi-role subtraction and compatibility mask: PASS
+- Golden A–I × root/1st/2nd, all keys and slash bass: PASS
+- uncompressed short-chord prefixes: PASS
+- Dance CC64 in live/video Final MIDI: 0
+- focused Dance/Natural Atomic regression: **8 suites / 57 passed / 0 failed**
+- TypeScript: PASS
+- canonical lint: **0 errors / 46 existing warnings**
+- full regression: **135 suites / 2278 passed / 1 skipped / 0 failed**
+- internal iOS/Swift Build 22: **PASS**,
+  `22f9f87b-fff5-41e3-a554-d112f2e8c260`
+- Build 22 all-Style real-device listening: **PASS — release authority**

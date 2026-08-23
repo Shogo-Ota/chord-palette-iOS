@@ -503,17 +503,18 @@ describe('Phase 3D Voice Structure', () => {
     expect(fs.existsSync(path.join(OUT_DIR, 'extension-C-Cadd9-Cmaj7-C7.mid'))).toBe(true);
   });
 
-  it('Natural / Variation keep 3A hard contracts and performance HOW', () => {
+  it('Natural / Variation keep harmony contracts; Variation keeps Teacher HOW', () => {
     for (const row of [natural, variation]) {
       expect(row).not.toBeNull();
       expect(row!.userChordLegalityPct).toBe(100);
       expect(row!.identicalMidiDuplicates).toBe(0);
       expect(row!.voiceCrossing).toBe(0);
       expect(row!.cc64PreservationPct).toBe(100);
-      expect(row!.attackGroupPreservationPct).toBe(100);
     }
-    expect(natural!.atomicDurationPreservationPct).toBe(100);
-    expect(natural!.atomicVelocityPreservationPct).toBe(100);
+    // Natural's explicit Type rhythm is pinned in naturalTypeRhythms.test.ts.
+    // Variation still uses the lossless Teacher performance contract.
+    expect(natural!.attackGroupPreservationPct).toBeLessThan(100);
+    expect(variation!.attackGroupPreservationPct).toBe(100);
     expect(variation!.onsetPreservationPct).toBe(100);
     expect(variation!.durationPreservationPct).toBe(100);
     expect(variation!.velocityPreservationPct).toBe(100);

@@ -2,19 +2,19 @@ import type { EventSubscription } from 'expo-modules-core';
 
 import { ChordVideoExportNative } from '@modules/chord-video-export';
 import { buildExportPlan } from '@/lib/exportPlan';
-import { normalizeAccompaniment } from '@/lib/accompaniment';
-import { normalizeDrumBeat, type DrumBeat } from '@/lib/drum/drumBeat';
-import { normalizeDrumMode, type DrumMode } from '@/lib/drum/drumMode';
+import type { DrumBeat } from '@/lib/drum/drumBeat';
+import type { DrumMode } from '@/lib/drum/drumMode';
 import { cycleDurationSec } from '@/lib/exportCycleTiming';
 import type { InstrumentEffect } from '@/lib/performance/effect';
-import { normalizeEnergy } from '@/lib/performance/energy';
+import type { VoicingPosition } from '@/lib/performance/baseVoicing/types';
 import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
 import { type Tier } from '@/lib/performance/tier';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
-import type { ChordEvent, InstrumentId, MajorKey } from '@/types';
+import type { ChordEvent, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
+import { videoPerformanceInput } from './performanceInput';
 
 /** Minimal snapshot the exporter needs (decoupled from the editor feature layer). */
 export type VideoExportInput = {
@@ -37,6 +37,8 @@ export type VideoExportInput = {
   octaveShift?: number;
   /** Style × Energy — mirrors playback so export matches audition. Default build. */
   accompanimentEnergy?: string;
+  /** Compact inversion — mirrors playback and MIDI export. Default root. */
+  voicingPosition?: VoicingPosition;
   /** Drum mode — mirrors playback so a silenced kit stays silent in the clip. */
   drumMode?: DrumMode;
   /** Drum subdivision — mirrors playback so the clip uses the kit the user heard. */
@@ -74,21 +76,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   // exactly the notes the user auditioned, Human MIDI Template and Harmonic Gate
   // included.
   const performance = buildSessionPerformancePlan(
-    {
-      key: input.key,
-      tempoBpm: input.bpm,
-      grooveId: input.grooveId,
-      accompanimentPattern: normalizeAccompaniment(input.accompaniment),
-      accompanimentVariant: input.accompanimentVariant,
-      instrumentId: input.instrumentId as InstrumentId,
-      accompanimentEnergy: normalizeEnergy(input.accompanimentEnergy),
-      octaveShift: input.octaveShift ?? 0,
-      releaseCut: input.releaseCut !== false,
-      drumMode: normalizeDrumMode(input.drumMode),
-      drumBeat: normalizeDrumBeat(input.drumBeat),
-      instrumentEffect: input.instrumentEffect,
-      progression: input.progression,
-    },
+    videoPerformanceInput(input),
     input.tier ?? 'free',
   );
   if (performance.totalBeats <= 0) {

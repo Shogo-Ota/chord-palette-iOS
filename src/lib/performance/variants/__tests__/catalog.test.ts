@@ -1,6 +1,7 @@
 import { ACCOMPANIMENT_IDS } from '@/data/labels';
 import { humanTemplateById } from '@/lib/performance/humanTemplate';
 import { CORE_PATTERNS } from '@/lib/performance/model/styleCards';
+import { GROOVE_PROFILE_REGISTRY } from '@/lib/performance/naturalAtomic/grooveProfileRegistry';
 import {
   defaultVariantFor,
   isDefaultVariant,
@@ -63,18 +64,26 @@ describe('the catalog is well formed', () => {
       const types = offeredVariantsFor(pattern);
       expect(types.length).toBeGreaterThan(0);
       for (const t of types) {
+        if (t.id in GROOVE_PROFILE_REGISTRY) {
+          expect(
+            GROOVE_PROFILE_REGISTRY[t.id as keyof typeof GROOVE_PROFILE_REGISTRY],
+          ).toBeDefined();
+          continue;
+        }
         // No Type may be invented to round a list up: each one must resolve to a take
         // that actually loads from the approved pattern pool.
         expect(t.humanTemplateId).toBeDefined();
         expect(humanTemplateById(t.humanTemplateId!)).toBeDefined();
       }
       // And no two Types may be the same take wearing two labels.
-      const takes = types.map((t) => t.humanTemplateId);
+      const takes = types
+        .filter((t) => !(t.id in GROOVE_PROFILE_REGISTRY))
+        .map((t) => t.humanTemplateId);
       expect(new Set(takes).size).toBe(takes.length);
     }
   });
 
-  it('offers exactly the eight Production Types', () => {
+  it('offers exactly the eleven Production Types', () => {
     const slots = CORE_PATTERNS.flatMap((pattern) =>
       offeredVariantsFor(pattern).map((v) => `${pattern}/${v.id}`),
     );
@@ -83,6 +92,9 @@ describe('the catalog is well formed', () => {
       'natural/natural.type1',
       'natural/natural.type2',
       'natural/natural.type3',
+      'natural/natural.type4',
+      'natural/natural.type5',
+      'natural/natural.dance1',
       'city/city.type1',
       'arpeggio/arpeggio.type1',
       'arpeggio/arpeggio.type2',

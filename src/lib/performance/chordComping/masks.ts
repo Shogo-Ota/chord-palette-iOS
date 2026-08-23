@@ -70,6 +70,9 @@ export function applyVoicingMask(voicing: FullVoicing, mask: VoicingMask): FullV
       selected = upper.length ? upper : right;
       break;
     }
+    case 'RIGHT_HAND':
+      selected = right;
+      break;
   }
 
   return uniqueByPitch(selected);

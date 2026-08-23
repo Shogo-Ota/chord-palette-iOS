@@ -23,7 +23,9 @@ final class OfflineMidiRenderer {
     events: [ScheduledMidiEvent],
     soundFontURL: URL,
     gmProgram: UInt8,
-    hasDrums: Bool
+    hasDrums: Bool,
+    reverbPreset: String,
+    reverbWetDryMix: Double
   ) throws -> (url: URL, sampleRate: Double) {
     guard bpm > 0, durationSec > 0, !events.isEmpty else {
       throw error("Invalid offline MIDI plan")
@@ -32,6 +34,7 @@ final class OfflineMidiRenderer {
     let engine = AVAudioEngine()
     let chordSampler = AVAudioUnitSampler()
     let drumSampler = AVAudioUnitSampler()
+    let chordReverb = AVAudioUnitReverb()
     let chordMixer = AVAudioMixerNode()
     let drumMixer = AVAudioMixerNode()
     let limiter = makeLimiter()
@@ -47,10 +50,18 @@ final class OfflineMidiRenderer {
 
     engine.attach(chordSampler)
     engine.attach(drumSampler)
+    engine.attach(chordReverb)
     engine.attach(chordMixer)
     engine.attach(drumMixer)
     engine.attach(limiter)
-    engine.connect(chordSampler, to: chordMixer, format: format)
+    chordReverb.loadFactoryPreset(.smallRoom)
+    if reverbPreset == "smallRoom" {
+      chordReverb.wetDryMix = Float(max(0, min(100, reverbWetDryMix)))
+    } else {
+      chordReverb.wetDryMix = 0
+    }
+    engine.connect(chordSampler, to: chordReverb, format: format)
+    engine.connect(chordReverb, to: chordMixer, format: format)
     engine.connect(drumSampler, to: drumMixer, format: format)
     engine.connect(chordMixer, to: engine.mainMixerNode, format: format)
     engine.connect(drumMixer, to: engine.mainMixerNode, format: format)

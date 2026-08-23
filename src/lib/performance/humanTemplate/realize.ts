@@ -15,7 +15,7 @@ import { realizeDegreePitch } from './degreePitch';
 import { teacherVelocity } from './losslessTone';
 import { progressionTransposeDelta, wrapPitchClass } from './pureTranspose';
 import type { HumanMidiTemplate } from './types';
-import { realizeAtomicNaturalType1 } from '../naturalAtomic/realize';
+import { realizeAtomicNatural } from '../naturalAtomic/realize';
 import { emptyVoiceLeadingState, realizeVoiceStructureAttack } from './voiceStructureRealize';
 
 export type HumanTemplatePitchMode = 'sharedBase' | 'userChord' | 'teacherFidelity';
@@ -30,6 +30,8 @@ export interface RealizeHumanTemplateOptions {
    * templates; `teacherFidelity` is the lossless regression path.
    */
   pitchMode?: HumanTemplatePitchMode;
+  /** Public Natural Type selects an explicit product-owned rhythm strategy. */
+  variantId?: string;
 }
 
 function clampMidi(n: number): number {
@@ -73,10 +75,9 @@ export function realizeHumanTemplate(
   const loopBars = template.loopBars;
   const pitchMode = options.pitchMode ?? 'userChord';
   if (pitchMode === 'sharedBase') {
-    return realizeAtomicNaturalType1(template, chords, options.seed).notes.map((note) => ({
-      ...note,
-      trackId,
-    }));
+    // Atomic Natural owns its hand-role tracks (notably Type2's independent
+    // sustained bass). Flattening everything to `chord` would erase that contract.
+    return realizeAtomicNatural(template, chords, options.seed, options.variantId).notes;
   }
 
   const globalDelta =

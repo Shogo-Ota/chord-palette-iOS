@@ -56,6 +56,7 @@ import { isKeyLocked } from '@/lib/keyAccess';
 import { distinctKeys, eventKey, isMultiKey, keyColorSlots } from '@/lib/keyColor';
 import { hapticError, hapticSelection, hapticSoft, hapticSuccess } from '@/lib/haptics';
 import { logger } from '@/lib/logger';
+import { normalizeVoicingPosition } from '@/lib/performance/baseVoicing';
 import { authoringBeats } from '@/lib/performance/meter';
 import {
   MAX_BARS,
@@ -426,7 +427,13 @@ export default function EditorScreen() {
         const s2 = getSession();
         audioService
           .previewChord(
-            chordPreviewRequest(c, s2.key, s2.tempoBpm, s2.instrumentId, s2.octaveShift),
+            chordPreviewRequest(
+              c,
+              s2.key,
+              s2.tempoBpm,
+              s2.instrumentId,
+              s2.octaveShift,
+            ),
           )
           .catch(() => undefined);
       }
@@ -449,8 +456,19 @@ export default function EditorScreen() {
     }
     if (!isPlaying) {
       const s2 = getSession();
+      const placedChord = editing
+        ? s2.progression[s2.selected] ?? c
+        : s2.progression[s2.progression.length - 1] ?? c;
       audioService
-        .previewChord(chordPreviewRequest(c, s2.key, s2.tempoBpm, s2.instrumentId, s2.octaveShift))
+        .previewChord(
+          chordPreviewRequest(
+            placedChord,
+            s2.key,
+            s2.tempoBpm,
+            s2.instrumentId,
+            s2.octaveShift,
+          ),
+        )
         .catch(() => undefined);
     }
   }
@@ -708,7 +726,13 @@ export default function EditorScreen() {
                         onLongPress={() => openChordMenu(i)}
                         delayLongPress={350}
                         accessibilityRole="button"
-                        accessibilityLabel={`${ev.displayName} ${ev.degreeLabel}`}
+                        accessibilityLabel={`${ev.displayName} ${ev.degreeLabel} ${
+                          normalizeVoicingPosition(ev.voicingPosition) === 'root'
+                            ? '基本形'
+                            : normalizeVoicingPosition(ev.voicingPosition) === 'first'
+                              ? '1st'
+                              : '2nd'
+                        }`}
                         accessibilityHint="長押しで編集メニュー"
                         accessibilityState={{ selected: i === selected }}
                         onLayout={(e) => {
@@ -757,6 +781,13 @@ export default function EditorScreen() {
                             </Text>
                             <Text style={[styles.timeDegree, { color: isActivePlay ? neon : fn }]}>
                               {ev.degreeLabel}
+                              {normalizeVoicingPosition(ev.voicingPosition) === 'root'
+                                ? ''
+                                : ` · ${
+                                    normalizeVoicingPosition(ev.voicingPosition) === 'first'
+                                      ? '1st'
+                                      : '2nd'
+                                  }`}
                             </Text>
                           </View>
                           <View style={styles.timeDur}>
@@ -1040,6 +1071,7 @@ export default function EditorScreen() {
             chordLabel={selectedEvent.displayName}
             degreeLabel={selectedEvent.degreeLabel}
             durationBeats={selectedEvent.durationBeats}
+            voicingPosition={normalizeVoicingPosition(selectedEvent.voicingPosition)}
             context={chordContext}
             onRequestClose={() => setContextMenuOpen(false)}
             onDuplicate={() => {
@@ -1056,6 +1088,27 @@ export default function EditorScreen() {
             onSetDuration={(beats) => {
               actions.setDuration(beats);
               track('chord_duration_changed', { beats });
+            }}
+            onSetVoicingPosition={(position) => {
+              session.setSelectedVoicingPosition(position);
+              track('chord_voicing_changed', { position });
+              if (playbackState !== 'playing' && playbackState !== 'paused') {
+                const current = getSession();
+                const chord = current.progression[current.selected];
+                if (chord) {
+                  audioService
+                    .previewChord(
+                      chordPreviewRequest(
+                        chord,
+                        current.key,
+                        current.tempoBpm,
+                        current.instrumentId,
+                        current.octaveShift,
+                      ),
+                    )
+                    .catch(() => undefined);
+                }
+              }
             }}
           />
         )}

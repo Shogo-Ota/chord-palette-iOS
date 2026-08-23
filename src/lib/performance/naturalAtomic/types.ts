@@ -2,6 +2,8 @@ import type { NoteEvent } from '../NoteEvent';
 import type { FullVoicing, FullVoicingNote, PianoHandRole, VoicingMask } from '../chordComping';
 import { VOICING_MASKS } from '../chordComping';
 import type { FinalMidiControlChange } from '../finalMidi/types';
+import type { NaturalAttackVoicingSelection } from './attackVoicingPolicy';
+import type { NaturalAttackVelocityShape } from './attackVelocityPolicy';
 
 export const NATURAL_VOICING_MASKS = VOICING_MASKS;
 
@@ -13,9 +15,11 @@ export type AtomicGrooveAttack = {
   onsetBeat: number;
   durationBeat: number;
   velocity: number;
+  velocityShape?: NaturalAttackVelocityShape;
   gapToNextAttack: number | null;
   pedalDown: boolean;
   mask: NaturalVoicingMask;
+  selection: NaturalAttackVoicingSelection;
 };
 
 export type AtomicNaturalPlan = {

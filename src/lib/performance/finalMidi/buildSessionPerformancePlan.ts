@@ -36,7 +36,7 @@ export type PerformanceSessionInput = {
   instrumentId: InstrumentId;
   accompanimentEnergy: AccompanimentEnergy;
   octaveShift: number;
-  /** Shared Base Voicing inversion. Omitted = root position. */
+  /** @deprecated Fallback for callers predating per-chord `voicingPosition`. */
   voicingPosition?: VoicingPosition;
   releaseCut: boolean;
   /** Piano effect. Omitted = derived from the legacy `releaseCut` flag. */
@@ -78,16 +78,19 @@ export function buildSessionPerformancePlan(
   // The chosen Type names its own teacher take; a project saved before Types existed
   // falls back to the take its rhythm always played.
   // Block is a plain held chord — never a Human MIDI Template.
+  const resolvedVariant = resolveVariant(
+    session.accompanimentPattern,
+    session.accompanimentVariant,
+  );
   const humanTemplateId =
     session.accompanimentPattern === 'block'
       ? undefined
-      : (resolveVariant(session.accompanimentPattern, session.accompanimentVariant)
-          .humanTemplateId ?? humanTemplateIdForPattern(session.accompanimentPattern));
+      : (resolvedVariant.humanTemplateId ?? humanTemplateIdForPattern(session.accompanimentPattern));
   const raw = generatePerformance(
     { chords, bpm: session.tempoBpm, seed },
     {
       styleId: session.accompanimentPattern,
-      variantId: session.accompanimentVariant,
+      variantId: resolvedVariant.id,
       grooveId: session.grooveId,
       energy: session.accompanimentEnergy,
       accompanimentStyle: styleForRhythm(session.accompanimentPattern) ?? 'band',
@@ -119,6 +122,7 @@ export function buildSessionPerformancePlan(
     instrumentId: session.instrumentId,
     drumMode: session.drumMode,
     instrumentEffect: effect,
+    accompanimentVariant: resolvedVariant.id,
     humanTemplateId,
     seed,
     harmonyViolations: gated.violations,

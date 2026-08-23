@@ -9,7 +9,7 @@
 import { offeredVariantsFor, type AccompanimentVariantId } from '@/lib/performance/variants';
 import type { AccompanimentPattern } from '@/types';
 
-export type AccompanimentGroupId = 'block' | 'natural' | 'variation';
+export type AccompanimentGroupId = 'block' | 'natural' | 'variation' | 'arpeggio';
 
 export type AccompanimentTypeOption = {
   pattern: AccompanimentPattern;
@@ -34,22 +34,50 @@ function typesFor(pattern: AccompanimentPattern): AccompanimentTypeOption[] {
 }
 
 const city = typesFor('city')[0];
+const naturalTypes = typesFor('natural');
+
+function presentedNaturalType(
+  variant: AccompanimentVariantId,
+  label?: string,
+): AccompanimentTypeOption | undefined {
+  const option = naturalTypes.find((type) => type.variant === variant);
+  return option ? { ...option, label: label ?? option.label } : undefined;
+}
+
+function definedTypes(
+  types: readonly (AccompanimentTypeOption | undefined)[],
+): AccompanimentTypeOption[] {
+  return types.filter((type): type is AccompanimentTypeOption => type != null);
+}
 
 export const PUBLIC_ACCOMPANIMENT_GROUPS: readonly AccompanimentGroup[] = [
   {
     id: 'block',
-    label: 'ブロック',
+    label: 'Block',
     types: typesFor('block'),
   },
   {
     id: 'natural',
-    label: 'ナチュラル',
-    types: typesFor('natural'),
+    label: 'Natural',
+    types: definedTypes([
+      presentedNaturalType('natural.type1'),
+      presentedNaturalType('natural.type2'),
+    ]),
   },
   {
     id: 'variation',
-    label: 'バリエーション',
-    types: city ? [{ ...city, label: 'City' }] : [],
+    label: 'Variation',
+    types: definedTypes([
+      city ? { ...city, label: 'City' } : undefined,
+      presentedNaturalType('natural.type3', 'Funk'),
+      presentedNaturalType('natural.type4', 'Driving'),
+      presentedNaturalType('natural.dance1', 'Dance'),
+    ]),
+  },
+  {
+    id: 'arpeggio',
+    label: 'Arpeggio',
+    types: definedTypes([presentedNaturalType('natural.type5', 'Type 1')]),
   },
 ];
 

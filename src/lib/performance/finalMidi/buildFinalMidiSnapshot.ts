@@ -12,7 +12,8 @@ import {
 } from '@/lib/drum/drumKit';
 import type { InstrumentId } from '@/types';
 import type { NoteEvent } from '../NoteEvent';
-import { pedalCcFromHumanTemplate } from './pedalCcFromTemplate';
+import { humanTemplateById } from '../humanTemplate';
+import { naturalPedalEvents } from '../naturalAtomic/pedalPolicy';
 import type {
   FinalMidiMarker,
   FinalMidiNote,
@@ -102,13 +103,13 @@ function markersFromProgression(plan: SessionPerformancePlan): FinalMidiMarker[]
 export function buildFinalMidiSnapshot(plan: SessionPerformancePlan): FinalMidiSnapshot {
   const accompaniment = perfNotesToFinal(plan.notes);
   const drums = drumNotesForPlan(plan);
-  // The teacher take's own pedal is the only CC64 written, and it is what `sustain`
-  // rings with — note lengths are never stretched to imitate it. A release cut drops
-  // the pedal instead: held notes in a DAW would undo the cut the app plays.
+  // A Natural Type owns exactly one CC64 policy. Note lengths are never stretched
+  // to imitate pedal, and releaseCut removes CC64 at the canonical Final MIDI boundary.
+  const template = humanTemplateById(plan.humanTemplateId ?? '');
   const controlChanges =
-    plan.instrumentEffect === 'releaseCut'
+    plan.instrumentEffect === 'releaseCut' || !template
       ? []
-      : pedalCcFromHumanTemplate(plan.humanTemplateId, plan.chords);
+      : naturalPedalEvents(template, plan.chords, plan.accompanimentVariant);
 
   return {
     bpm: plan.bpm,

@@ -1,7 +1,14 @@
 import type { PerfChord } from '../PerformanceEngine';
 import type { HarmonicDegree } from '../humanTemplate/degreeRoles';
 
-export const VOICING_MASKS = ['FULL', 'TRIAD', 'ROOT_ONLY', 'SHELL', 'UPPER'] as const;
+export const VOICING_MASKS = [
+  'FULL',
+  'TRIAD',
+  'ROOT_ONLY',
+  'SHELL',
+  'UPPER',
+  'RIGHT_HAND',
+] as const;
 
 export type VoicingMask = (typeof VOICING_MASKS)[number];
 

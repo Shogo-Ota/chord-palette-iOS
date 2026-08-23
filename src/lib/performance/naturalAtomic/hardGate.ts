@@ -1,6 +1,6 @@
 import { kindOfDegree, wrapPc } from '../humanTemplate/degreeRoles';
 import { resolveAllowed } from '../strictV2';
-import { applyVoicingMask } from './masks';
+import { selectNaturalAttackNotes } from './attackVoicingPolicy';
 import type { AtomicHardGateFailure, AtomicHardGateReport, AtomicNaturalPlan } from './types';
 
 const EPS = 1e-6;
@@ -67,10 +67,10 @@ export function validateAtomicNatural(plan: AtomicNaturalPlan): AtomicHardGateRe
 
     for (const attack of attacks) {
       const notes = plan.notes.filter((note) => Math.abs(note.timeBeat - attack.onsetBeat) <= EPS);
-      const masked = applyVoicingMask(voicing, attack.mask);
+      const selected = selectNaturalAttackNotes(voicing, attack.selection);
       if (
-        (attack.mask === 'ROOT_ONLY' && masked.some((note) => note.handRole !== 'LEFT')) ||
-        (attack.mask === 'UPPER' && masked.some((note) => note.handRole !== 'RIGHT'))
+        (attack.mask === 'ROOT_ONLY' && selected.some((note) => note.handRole !== 'LEFT')) ||
+        (attack.mask === 'UPPER' && selected.some((note) => note.handRole !== 'RIGHT'))
       ) {
         failures.push({
           code: 'hand_role',
@@ -127,7 +127,7 @@ export function validateAtomicNatural(plan: AtomicNaturalPlan): AtomicHardGateRe
       }
       if (
         slash != null &&
-        attack.mask !== 'UPPER' &&
+        selected.some((note) => note.handRole === 'LEFT') &&
         wrapPc(Math.min(...notes.map((note) => note.pitch))) !== wrapPc(slash)
       ) {
         slashBassPass = false;

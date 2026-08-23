@@ -4,6 +4,7 @@
  */
 
 import type { FinalMidiSnapshot } from '../performance/finalMidi/types';
+import { canonicalMidiBytesPriority } from './eventOrdering';
 
 export const DEFAULT_PPQ = 480;
 
@@ -56,7 +57,14 @@ function pushCc(
 }
 
 function flushTrack(events: TimedEvent[]): number[] {
-  events.sort((a, b) => a.tick - b.tick || a.bytes[0] - b.bytes[0]);
+  events.sort(
+    (a, b) =>
+      a.tick - b.tick ||
+      canonicalMidiBytesPriority(a.bytes) - canonicalMidiBytesPriority(b.bytes) ||
+      (a.bytes[0] ?? 0) - (b.bytes[0] ?? 0) ||
+      (a.bytes[1] ?? 0) - (b.bytes[1] ?? 0) ||
+      (a.bytes[2] ?? 0) - (b.bytes[2] ?? 0),
+  );
   const body: number[] = [];
   let lastTick = 0;
   for (const ev of events) {

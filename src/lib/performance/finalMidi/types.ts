@@ -9,6 +9,7 @@ import type { HarmonyViolation } from '../harmonyGate';
 import type { NoteEvent } from '../NoteEvent';
 import type { PerfChord } from '../PerformanceEngine';
 import type { DrumMode } from '@/lib/drum/drumMode';
+import type { AccompanimentVariantId } from '@/lib/performance/variants';
 import type { ChordEvent, InstrumentId } from '@/types';
 
 /** One resolved note destined for playback or SMF export. */
@@ -63,6 +64,7 @@ export type SessionPerformancePlan = {
   drumMode: DrumMode;
   /** The piano effect already applied to `notes` — export reads it for the pedal. */
   instrumentEffect: InstrumentEffect;
+  accompanimentVariant?: AccompanimentVariantId;
   humanTemplateId?: string;
   seed: number;
   /** Illegal pitches detected after generation. Never repaired by the gate. */

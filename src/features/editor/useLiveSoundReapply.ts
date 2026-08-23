@@ -100,7 +100,13 @@ export function useLiveSoundReapply(
       const first = sound.progression[0];
       audioService
         .previewChord(
-          chordPreviewRequest(first, sound.key, sound.tempoBpm, sound.instrumentId, sound.octaveShift),
+          chordPreviewRequest(
+            first,
+            sound.key,
+            sound.tempoBpm,
+            sound.instrumentId,
+            sound.octaveShift,
+          ),
         )
         .catch((e) => logger.error('Instrument preview failed', { error: String(e) }));
       return;

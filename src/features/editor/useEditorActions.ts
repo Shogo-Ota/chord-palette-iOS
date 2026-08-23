@@ -58,6 +58,7 @@ export type ChordContextActions = {
   canMoveRight: boolean;
   canDelete: boolean;
   canEditDuration: boolean;
+  canEditVoicing: boolean;
 };
 
 /* ------------------------------------------------------------------ */
@@ -102,6 +103,7 @@ export function computeChordContext(input: ChordContextInput): ChordContextActio
     canMoveRight: visible && selected < progression.length - 1,
     canDelete: visible,
     canEditDuration: visible,
+    canEditVoicing: visible,
   };
 }
 

@@ -9,7 +9,7 @@ export { applyVoicingMask, maskContainsColor };
  * properties—onset, gate and velocity—not teacher pitch, degree sequence or note count.
  */
 export function type1MaskSequence(
-  attacks: readonly Omit<AtomicGrooveAttack, 'mask'>[],
+  attacks: readonly Omit<AtomicGrooveAttack, 'mask' | 'selection'>[],
   voicings: readonly FullVoicing[],
 ): NaturalVoicingMask[] {
   const firstAttackByChord = new Set<number>();

@@ -1,6 +1,7 @@
 import type { ChordFunction } from '@/theme/tokens';
+import type { VoicingPosition } from '@/lib/performance/baseVoicing/types';
 
-export type { ChordFunction };
+export type { ChordFunction, VoicingPosition };
 
 /** 12 major keys supported in the MVP (display names use ♭ where flat). */
 export type MajorKey =
@@ -158,6 +159,11 @@ export type ChordEvent = {
    * compatibility: legacy events without it fall back to the project/session key.
    */
   keyContext?: MajorKey;
+  /**
+   * Compact inversion selected for this placed chord. Optional only for projects
+   * written before per-chord voicing existed; read paths normalize it to `root`.
+   */
+  voicingPosition?: VoicingPosition;
 };
 
 export type PresetCategory = 'free' | 'pro';
@@ -229,6 +235,11 @@ export type Project = {
    * Style. Default `build` preserves pre-Energy projects.
    */
   accompanimentEnergy: string;
+  /**
+   * @deprecated Migration fallback for v1.0.2 projects. Production playback reads
+   * `ChordEvent.voicingPosition`; new writes keep this at `root`.
+   */
+  voicingPosition: VoicingPosition;
   chordEvents: ChordEvent[];
   /** epoch millis */
   createdAt: number;
@@ -249,6 +260,7 @@ export type NewProjectInput = Partial<
     | 'accompanimentPattern'
     | 'accompanimentVariant'
     | 'accompanimentEnergy'
+    | 'voicingPosition'
     | 'chordEvents'
   >
 >;

@@ -1,58 +1,15 @@
 import { clampVelocity } from '../NoteEvent';
 import type { PerfChord } from '../PerformanceEngine';
-import { teacherVelocity } from '../humanTemplate/losslessTone';
-import type { HumanMidiTemplate } from '../humanTemplate/types';
 import type { FinalMidiControlChange } from '../finalMidi/types';
-import { fitNaturalGate, mapNaturalSourceOnset, naturalDurationPolicy } from './durationPolicy';
+import type { HumanMidiTemplate } from '../humanTemplate/types';
+import {
+  compatibilityMaskForSelection,
+  type NaturalAttackVoicingSelection,
+} from './attackVoicingPolicy';
 import { type1MaskSequence } from './masks';
+import { naturalPedalEvents } from './pedalPolicy';
+import { naturalRhythmForChord, naturalRhythmStrategyFor } from './rhythmProfiles';
 import type { AtomicGrooveAttack, FullVoicing } from './types';
-
-const EPS = 1e-9;
-
-function mean(values: readonly number[]): number {
-  return values.length ? values.reduce((sum, value) => sum + value, 0) / values.length : 0;
-}
-
-function median(values: readonly number[]): number {
-  if (values.length === 0) return 0;
-  const sorted = [...values].sort((left, right) => left - right);
-  const middle = Math.floor(sorted.length / 2);
-  return sorted.length % 2 === 0 ? (sorted[middle - 1]! + sorted[middle]!) / 2 : sorted[middle]!;
-}
-
-export function atomicPedalEvents(
-  template: HumanMidiTemplate,
-  chords: readonly PerfChord[],
-): FinalMidiControlChange[] {
-  const events: FinalMidiControlChange[] = [];
-  chords.forEach((chord, chordIndex) => {
-    const barInLoop = (chordIndex % template.loopBars) + 1;
-    const policy = naturalDurationPolicy(chord.durationBeats, template.meter.beatsPerBar);
-    let pedalDown = false;
-    for (const pedal of template.pedalEvents ?? []) {
-      if (pedal.musicalBar !== barInLoop) continue;
-      const mappedOnset = mapNaturalSourceOnset(pedal.beatInMusicalBar, policy);
-      if (mappedOnset == null) continue;
-      const value = pedal.state === 'down' ? Math.max(0, Math.min(127, pedal.value)) : 0;
-      events.push({
-        startBeat: chord.startBeat + mappedOnset,
-        controller: 64,
-        value,
-        channel: 0,
-      });
-      pedalDown = value >= 64;
-    }
-    if (pedalDown) {
-      events.push({
-        startBeat: chord.startBeat + chord.durationBeats,
-        controller: 64,
-        value: 0,
-        channel: 0,
-      });
-    }
-  });
-  return events.sort((left, right) => left.startBeat - right.startBeat || left.value - right.value);
-}
 
 function pedalDownAt(events: readonly FinalMidiControlChange[], beat: number): boolean {
   let down = false;
@@ -63,42 +20,31 @@ function pedalDownAt(events: readonly FinalMidiControlChange[], beat: number): b
   return down;
 }
 
-export function extractAtomicType1Timeline(
+export function extractAtomicNaturalTimeline(
   template: HumanMidiTemplate,
   chords: readonly PerfChord[],
   voicings: readonly FullVoicing[],
+  variantId: unknown,
 ): AtomicGrooveAttack[] {
-  const pedalEvents = atomicPedalEvents(template, chords);
-  const groups: Omit<AtomicGrooveAttack, 'mask'>[] = [];
+  const pedalEvents = naturalPedalEvents(template, chords, variantId);
+  const groups: (Omit<AtomicGrooveAttack, 'mask' | 'selection'> & {
+    selection?: NaturalAttackVoicingSelection;
+  })[] = [];
+  const strategy = naturalRhythmStrategyFor(variantId);
 
   chords.forEach((chord, chordIndex) => {
-    const barInLoop = (chordIndex % template.loopBars) + 1;
-    const policy = naturalDurationPolicy(chord.durationBeats, template.meter.beatsPerBar);
-    const sourceAttacks = template.attacks.filter(
-      (attack) => attack.musicalBarInLoop === barInLoop && attack.notes.length > 0,
-    );
+    const sourceAttacks = naturalRhythmForChord(strategy, chordIndex, chord.durationBeats);
     for (const source of sourceAttacks) {
-      const sounding = source.notes.filter((note) => (note.durationBeats ?? 0.5) > 0);
-      if (sounding.length === 0) continue;
-      const mappedOnset = mapNaturalSourceOnset(
-        source.beatInMusicalBar + (source.timingOffsetBeats ?? 0),
-        policy,
-      );
-      if (mappedOnset == null) continue;
-      const durationBeat = fitNaturalGate(
-        Math.max(1 / 64, median(sounding.map((note) => note.durationBeats ?? 0.5))),
-        mappedOnset,
-        policy,
-      );
-      if (durationBeat <= EPS) continue;
-      const onsetBeat = chord.startBeat + mappedOnset;
+      const onsetBeat = chord.startBeat + source.onsetBeat;
       groups.push({
         chordIndex,
         onsetBeat,
-        durationBeat,
-        velocity: clampVelocity(Math.round(mean(sounding.map(teacherVelocity)))),
+        durationBeat: source.durationBeat,
+        velocity: clampVelocity(source.velocity),
+        velocityShape: source.velocityShape,
         gapToNextAttack: null,
         pedalDown: pedalDownAt(pedalEvents, onsetBeat),
+        selection: source.selection,
       });
     }
   });
@@ -109,5 +55,26 @@ export function extractAtomicType1Timeline(
     group.gapToNextAttack = next ? next.onsetBeat - (group.onsetBeat + group.durationBeat) : null;
   });
   const masks = type1MaskSequence(groups, voicings);
-  return groups.map((group, index) => ({ ...group, mask: masks[index]! }));
+  return groups.map((group, index) => {
+    const selection: NaturalAttackVoicingSelection =
+      group.selection ??
+      ({
+        kind: 'MASK',
+        mask: strategy.attackMask ?? masks[index]!,
+      } as const);
+    return {
+      ...group,
+      mask: compatibilityMaskForSelection(selection),
+      selection,
+    };
+  });
+}
+
+/** Compatibility entry point for PoC/analysis callers. */
+export function extractAtomicType1Timeline(
+  template: HumanMidiTemplate,
+  chords: readonly PerfChord[],
+  voicings: readonly FullVoicing[],
+): AtomicGrooveAttack[] {
+  return extractAtomicNaturalTimeline(template, chords, voicings, 'natural.type1');
 }

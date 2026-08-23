@@ -10,15 +10,22 @@
  */
 
 import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
+import {
+  buildCompactBaseVoicings,
+  DEFAULT_VOICING_POSITION,
+  normalizeVoicingPosition,
+  type VoicingPosition,
+} from '@/lib/performance/baseVoicing';
+import { chordHarmonyFromEvent } from '@/lib/performance/humanTemplate/chordHarmony';
 import { countInForStart } from '@/lib/playback';
 import { buildPresetProgression } from '@/lib/presets';
-import { chordMidiNotes } from '@/lib/voicing';
 import { mapPerfNotesToPlaybackRequest } from '@/services/audio/performanceMapper';
 import { withNativePlaybackPlan } from '@/services/audio/playbackEngine';
 import type { PlaybackRequest, PreviewRequest } from '@/services/audio/types';
 import type { ChordEvent, MajorKey, Preset } from '@/types';
 import type { Tier } from '@/lib/performance/tier';
 import type { EditorSession } from './session';
+import { chordPreviewTiming } from './chordPreviewPolicy';
 
 export { beatsPerBarFor } from '@/lib/performance/rhythms';
 export { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
@@ -82,14 +89,41 @@ export function presetPlaybackRequest(
   return sessionToPlaybackRequest({ ...session, progression, selected: -1 }, loop, tier);
 }
 
-/** Single-chord audition for a library/timeline tap (context-free voicing). */
+/** Shared-Base notes for single-chord audition and the visual export keyboard. */
+export function chordPreviewMidiNotes(
+  chord: Pick<
+    ChordEvent,
+    'rootOffset' | 'suffix' | 'definitionId' | 'bassOffset' | 'voicingPosition'
+  >,
+  key: MajorKey,
+  octaveShift = 0,
+  voicingPosition: VoicingPosition = DEFAULT_VOICING_POSITION,
+): number[] {
+  const harmony = chordHarmonyFromEvent(chord, key);
+  const voicing = buildCompactBaseVoicings([harmony], {
+    position: normalizeVoicingPosition(chord.voicingPosition ?? voicingPosition),
+    octaveShift,
+  })[0];
+  return voicing ? voicing.notes.map((note) => note.pitch).sort((a, b) => a - b) : [];
+}
+
+/** Single-chord audition for a library/timeline tap (context-free Shared Base). */
 export function chordPreviewRequest(
-  chord: Pick<ChordEvent, 'rootOffset' | 'suffix' | 'bassOffset'>,
+  chord: Pick<
+    ChordEvent,
+    'rootOffset' | 'suffix' | 'definitionId' | 'bassOffset' | 'voicingPosition'
+  >,
   key: MajorKey,
   bpm: number,
   instrument: string,
   octaveShift = 0,
+  voicingPosition: VoicingPosition = DEFAULT_VOICING_POSITION,
 ): PreviewRequest {
-  const midiNotes = chordMidiNotes(chord, key, octaveShift);
-  return { midiNotes, velocity: 100, lengthBeats: 2, bpm, instrument };
+  const midiNotes = chordPreviewMidiNotes(chord, key, octaveShift, voicingPosition);
+  return {
+    midiNotes,
+    velocity: 100,
+    instrument,
+    ...chordPreviewTiming(bpm),
+  };
 }

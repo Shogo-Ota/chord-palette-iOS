@@ -16,10 +16,24 @@ describe('public accompaniment release policy', () => {
       accompanimentVariant: 'block.type1',
     });
     expect(
-      ['natural.type1', 'natural.type2', 'natural.type3'].map(
+      [
+        'natural.type1',
+        'natural.type2',
+        'natural.type3',
+        'natural.type4',
+        'natural.type5',
+        'natural.dance1',
+      ].map(
         (variant) => normalizePublicAccompanimentSelection('natural', variant).accompanimentVariant,
       ),
-    ).toEqual(['natural.type1', 'natural.type2', 'natural.type3']);
+    ).toEqual([
+      'natural.type1',
+      'natural.type2',
+      'natural.type3',
+      'natural.type4',
+      'natural.type5',
+      'natural.dance1',
+    ]);
     expect(normalizePublicAccompanimentSelection('city', 'city.type1')).toEqual({
       accompanimentPattern: 'city',
       accompanimentVariant: 'city.type1',

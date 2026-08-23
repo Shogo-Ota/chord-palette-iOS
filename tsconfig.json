@@ -20,5 +20,10 @@
     "**/*.tsx",
     ".expo/types/**/*.ts",
     "expo-env.d.ts"
+  ],
+  "exclude": [
+    "dist-check",
+    "LocalAnalysis",
+    "node_modules"
   ]
 }

@@ -8,6 +8,14 @@ export const VOICING_POSITIONS = ['root', 'first', 'second'] as const;
  */
 export type VoicingPosition = (typeof VOICING_POSITIONS)[number];
 
+export const DEFAULT_VOICING_POSITION: VoicingPosition = 'root';
+
+export function normalizeVoicingPosition(value: unknown): VoicingPosition {
+  return VOICING_POSITIONS.includes(value as VoicingPosition)
+    ? (value as VoicingPosition)
+    : DEFAULT_VOICING_POSITION;
+}
+
 export type BaseVoicingPreference = {
   position: VoicingPosition;
   /** Whole-register shift in octaves. */
@@ -15,7 +23,7 @@ export type BaseVoicingPreference = {
 };
 
 export const DEFAULT_BASE_VOICING_PREFERENCE: BaseVoicingPreference = {
-  position: 'root',
+  position: DEFAULT_VOICING_POSITION,
   octaveShift: 0,
 };
 

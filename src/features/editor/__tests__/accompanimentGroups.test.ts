@@ -6,17 +6,34 @@ import {
 import { styleSummaryParts } from '@/features/editor/styleSummary';
 
 describe('release accompaniment presentation groups', () => {
-  it('shows City as one type inside Variation', () => {
+  it('regroups the approved profiles without changing playback ids', () => {
     expect(PUBLIC_ACCOMPANIMENT_GROUPS.map((group) => group.id)).toEqual([
       'block',
       'natural',
       'variation',
+      'arpeggio',
+    ]);
+    expect(PUBLIC_ACCOMPANIMENT_GROUPS.map((group) => group.label)).toEqual([
+      'Block',
+      'Natural',
+      'Variation',
+      'Arpeggio',
     ]);
 
+    const natural = PUBLIC_ACCOMPANIMENT_GROUPS[1]!;
     const variation = PUBLIC_ACCOMPANIMENT_GROUPS[2]!;
-    expect(variation.types.map((type) => type.label)).toEqual(['City']);
+    const arpeggio = PUBLIC_ACCOMPANIMENT_GROUPS[3]!;
+    expect(natural.types.map((type) => type.label)).toEqual(['Type 1', 'Type 2']);
+    expect(natural.types.map((type) => type.variant)).toEqual(['natural.type1', 'natural.type2']);
+    expect(variation.types.map((type) => type.label)).toEqual(['City', 'Funk', 'Driving', 'Dance']);
     expect(variation.types.map((type) => `${type.pattern}/${type.variant}`)).toEqual([
       'city/city.type1',
+      'natural/natural.type3',
+      'natural/natural.type4',
+      'natural/natural.dance1',
+    ]);
+    expect(arpeggio.types.map((type) => `${type.pattern}/${type.variant}`)).toEqual([
+      'natural/natural.type5',
     ]);
   });
 
@@ -29,7 +46,21 @@ describe('release accompaniment presentation groups', () => {
     });
   });
 
-  it('summarizes City under the Variation parent label', () => {
+  it('keeps every displayed Style label and pattern hint in English', () => {
+    const displayed = PUBLIC_ACCOMPANIMENT_GROUPS.flatMap((group) => [
+      group.label,
+      ...group.types.flatMap((type) => [type.label, type.hint]),
+    ]);
+    expect(displayed.every((text) => !/[ぁ-んァ-ン一-龠]/u.test(text))).toBe(true);
+  });
+
+  it.each([
+    ['city', 'city.type1', 'Variation', 'City'],
+    ['natural', 'natural.type3', 'Variation', 'Funk'],
+    ['natural', 'natural.type4', 'Variation', 'Driving'],
+    ['natural', 'natural.dance1', 'Variation', 'Dance'],
+    ['natural', 'natural.type5', 'Arpeggio', 'Type 1'],
+  ] as const)('summarizes %s/%s under its presentation parent', (pattern, variant, group, type) => {
     const common = {
       instrumentId: 'piano' as const,
       drumMode: 'off' as const,
@@ -38,9 +69,22 @@ describe('release accompaniment presentation groups', () => {
     expect(
       styleSummaryParts({
         ...common,
-        accompanimentPattern: 'city',
-        accompanimentVariant: 'city.type1',
+        accompanimentPattern: pattern,
+        accompanimentVariant: variant,
       }).slice(0, 2),
-    ).toEqual(['バリエーション', 'City']);
+    ).toEqual(group === 'Arpeggio' ? [group, 'Piano'] : [group, type]);
+  });
+
+  it('keeps per-chord voicing out of the global Style summary', () => {
+    const summary = styleSummaryParts({
+      accompanimentPattern: 'natural' as const,
+      accompanimentVariant: 'natural.type1',
+      instrumentId: 'piano' as const,
+      drumMode: 'off' as const,
+      drumBeat: '8' as const,
+    });
+    expect(summary).not.toContain('基本形');
+    expect(summary).not.toContain('1st');
+    expect(summary).not.toContain('2nd');
   });
 });

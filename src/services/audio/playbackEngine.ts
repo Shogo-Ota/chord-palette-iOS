@@ -20,6 +20,7 @@
 
 import { buildFinalMidiSnapshot } from '@/lib/performance/finalMidi/buildFinalMidiSnapshot';
 import type { SessionPerformancePlan } from '@/lib/performance/finalMidi/types';
+import { accompanimentSpaceProfileFor } from '@/lib/performance/space/accompanimentSpaceProfile';
 import { buildNativePlaybackPlan } from '@/lib/playback';
 import type { PlaybackEngineId, PlaybackRequest } from './types';
 
@@ -65,6 +66,7 @@ export function withNativePlaybackPlan(
   if (engine !== 'sequencer') return request;
 
   const snapshot = buildFinalMidiSnapshot(plan);
+  const space = accompanimentSpaceProfileFor(plan.accompanimentVariant);
   const native = buildNativePlaybackPlan(snapshot, {
     loop: request.loop,
     startBeat: request.startBeat,
@@ -77,5 +79,7 @@ export function withNativePlaybackPlan(
     gmProgram: native.gmProgram,
     planSignature: native.signature,
     midiEvents: native.midiEvents,
+    reverbPreset: space.reverbPreset,
+    reverbWetDryMix: space.reverbWetDryMix,
   };
 }

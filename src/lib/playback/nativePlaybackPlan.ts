@@ -19,6 +19,7 @@
  */
 
 import { DEFAULT_PPQ, writeSmf } from '@/lib/midiExport/smfWrite';
+import { canonicalMidiEventPriority } from '@/lib/midiExport/eventOrdering';
 import type { FinalMidiSnapshot } from '@/lib/performance/finalMidi/types';
 import type { InstrumentId } from '@/types';
 import { bytesToBase64 } from './base64';
@@ -111,12 +112,6 @@ export function snapshotSignature(snapshot: FinalMidiSnapshot): string {
   );
 }
 
-function kindOrder(kind: NativeMidiEvent['kind']): number {
-  if (kind === 'cc') return 0;
-  if (kind === 'off') return 1;
-  return 2;
-}
-
 /** Flatten the snapshot into the messages native will send the sampler. */
 export function snapshotToMidiEvents(snapshot: FinalMidiSnapshot): NativeMidiEvent[] {
   const events: NativeMidiEvent[] = [];
@@ -149,7 +144,14 @@ export function snapshotToMidiEvents(snapshot: FinalMidiSnapshot): NativeMidiEve
       drum: false,
     });
   }
-  return events.sort((x, y) => x.beat - y.beat || kindOrder(x.kind) - kindOrder(y.kind));
+  return events.sort(
+    (x, y) =>
+      x.beat - y.beat ||
+      canonicalMidiEventPriority(x.kind, x.a, x.b) - canonicalMidiEventPriority(y.kind, y.a, y.b) ||
+      x.channel - y.channel ||
+      x.a - y.a ||
+      x.b - y.b,
+  );
 }
 
 export function buildNativePlaybackPlan(
