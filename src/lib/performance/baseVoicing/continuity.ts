@@ -1,4 +1,5 @@
 import type { BaseVoicingCandidate, BaseVoicingNote } from './types';
+import { VOICING_POLICY } from './voicingPolicy';
 
 const EPSILON = 1e-9;
 
@@ -65,11 +66,14 @@ type PathState = {
   cost: number;
   path: number[];
   key: string;
+  firstIndex: number;
 };
 
 /**
  * Global dynamic-programming selection. The closing transition is included so a
  * looped four-bar progression does not hide an octave jump at its repeat point.
+ * One forward pass tracks each path's start index, so loop closure stays
+ * exact without rerunning the lattice from every first candidate.
  */
 export function selectContinuousCandidatePath(
   layers: readonly (readonly BaseVoicingCandidate[])[],
@@ -77,68 +81,72 @@ export function selectContinuousCandidatePath(
   if (layers.length === 0) return [];
   if (layers.some((layer) => layer.length === 0)) return [];
 
-  let best: PathState | undefined;
   const firstLayer = layers[0]!;
+  let states: PathState[] = firstLayer.map((first, firstIndex) => ({
+    cost: first.staticCost,
+    path: [firstIndex],
+    key: candidateKey(first),
+    firstIndex,
+  }));
 
-  firstLayer.forEach((first, firstIndex) => {
-    let states: PathState[] = firstLayer.map((_, index) => ({
-      cost: index === firstIndex ? first.staticCost : Number.POSITIVE_INFINITY,
-      path: index === firstIndex ? [index] : [],
-      key: index === firstIndex ? candidateKey(first) : '',
-    }));
-
-    for (let layerIndex = 1; layerIndex < layers.length; layerIndex += 1) {
-      const previousLayer = layers[layerIndex - 1]!;
-      const layer = layers[layerIndex]!;
-      states = layer.map((candidate, candidateIndex) => {
-        let chosen: PathState | undefined;
-        states.forEach((state, previousIndex) => {
-          if (!Number.isFinite(state.cost)) return;
-          const transition = baseVoicingTransitionCost(
-            previousLayer[previousIndex]!.notes,
-            candidate.notes,
-          );
-          const key = `${state.key}|${candidateKey(candidate)}`;
-          const next: PathState = {
-            cost: state.cost + candidate.staticCost + transition,
-            path: [...state.path, candidateIndex],
-            key,
-          };
-          if (
-            chosen == null ||
-            next.cost < chosen.cost - EPSILON ||
-            (Math.abs(next.cost - chosen.cost) <= EPSILON && next.key < chosen.key)
-          ) {
-            chosen = next;
-          }
-        });
-        return (
-          chosen ?? {
-            cost: Number.POSITIVE_INFINITY,
-            path: [],
-            key: '',
-          }
+  for (let layerIndex = 1; layerIndex < layers.length; layerIndex += 1) {
+    const previousLayer = layers[layerIndex - 1]!;
+    const layer = layers[layerIndex]!;
+    states = layer.map((candidate, candidateIndex) => {
+      let chosen: PathState | undefined;
+      states.forEach((state, previousIndex) => {
+        if (!Number.isFinite(state.cost)) return;
+        const transition = baseVoicingTransitionCost(
+          previousLayer[previousIndex]!.notes,
+          candidate.notes,
         );
+        const key = `${state.key}|${candidateKey(candidate)}`;
+        const next: PathState = {
+          cost: state.cost + candidate.staticCost + VOICING_POLICY.CONTINUITY_WEIGHT * transition,
+          path: [...state.path, candidateIndex],
+          key,
+          firstIndex: state.firstIndex,
+        };
+        if (
+          chosen == null ||
+          next.cost < chosen.cost - EPSILON ||
+          (Math.abs(next.cost - chosen.cost) <= EPSILON && next.key < chosen.key)
+        ) {
+          chosen = next;
+        }
       });
-    }
-
-    const finalLayer = layers[layers.length - 1]!;
-    states.forEach((state, finalIndex) => {
-      if (!Number.isFinite(state.cost)) return;
-      const closedCost =
-        state.cost +
-        (layers.length > 1
-          ? baseVoicingTransitionCost(finalLayer[finalIndex]!.notes, first.notes)
-          : 0);
-      const closed: PathState = { ...state, cost: closedCost };
-      if (
-        best == null ||
-        closed.cost < best.cost - EPSILON ||
-        (Math.abs(closed.cost - best.cost) <= EPSILON && closed.key < best.key)
-      ) {
-        best = closed;
-      }
+      return (
+        chosen ?? {
+          cost: Number.POSITIVE_INFINITY,
+          path: [],
+          key: '',
+          firstIndex: 0,
+        }
+      );
     });
+  }
+
+  const finalLayer = layers[layers.length - 1]!;
+  let best: PathState | undefined;
+  states.forEach((state, finalIndex) => {
+    if (!Number.isFinite(state.cost)) return;
+    const closedCost =
+      state.cost +
+      (layers.length > 1
+        ? VOICING_POLICY.CONTINUITY_WEIGHT *
+          baseVoicingTransitionCost(
+            finalLayer[finalIndex]!.notes,
+            firstLayer[state.firstIndex]!.notes,
+          )
+        : 0);
+    const closed: PathState = { ...state, cost: closedCost };
+    if (
+      best == null ||
+      closed.cost < best.cost - EPSILON ||
+      (Math.abs(closed.cost - best.cost) <= EPSILON && closed.key < best.key)
+    ) {
+      best = closed;
+    }
   });
 
   if (best == null) return [];

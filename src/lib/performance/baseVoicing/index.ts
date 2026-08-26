@@ -6,6 +6,13 @@ export {
 export { baseVoicingTransitionCost, selectContinuousCandidatePath } from './continuity';
 export { compactRegisterPolicy, isCompactHandModel } from './handModel';
 export {
+  LOW_CLUSTER_HARD_CEILING,
+  VOICING_POLICY,
+  evaluateVoicingPolicy,
+  intervalRole,
+  minorSecondPenalty,
+} from './voicingPolicy';
+export {
   DEFAULT_BASE_VOICING_PREFERENCE,
   DEFAULT_VOICING_POSITION,
   normalizeVoicingPosition,

@@ -9,6 +9,13 @@ import {
   type BaseVoicingNote,
   type BaseVoicingPreference,
 } from './types';
+import {
+  evaluateVoicingPolicy,
+  intervalRole,
+  isGuideRole,
+  supportToneSpecs,
+  type VoicingPolicyContext,
+} from './voicingPolicy';
 
 type ToneSpec = {
   id: string;
@@ -94,6 +101,54 @@ function bodySpecs(
     })
     .slice(0, 4)
     .sort((left, right) => left.sourceOrder - right.sourceOrder);
+}
+
+function sameFamily(left: readonly ToneSpec[], right: readonly ToneSpec[]): boolean {
+  if (left.length !== right.length) return false;
+  const key = (specs: readonly ToneSpec[]) =>
+    specs
+      .map((spec) => spec.pc)
+      .sort((a, b) => a - b)
+      .join(',');
+  return key(left) === key(right);
+}
+
+/**
+ * Extra RH families omit support tones (perfect 5th / duplicated root) so a
+ * legal 4-note close voicing is not the only option when it would pack a
+ * semitone. Guide tones and explicit tensions stay required via Policy cost.
+ */
+function bodyFamilies(
+  harmony: ChordHarmonyInput,
+  specs: readonly ToneSpec[],
+  bass: ToneSpec,
+): ToneSpec[][] {
+  const primary = bodySpecs(harmony, specs, bass);
+  const families: ToneSpec[][] = [primary];
+  const push = (family: ToneSpec[]) => {
+    if (family.length < 2 || family.length > 4) return;
+    if (families.some((existing) => sameFamily(existing, family))) return;
+    families.push(family);
+  };
+
+  if (intervalRole(bass.interval) === 'root' && specs.length >= 5) {
+    push(
+      bodySpecs(
+        harmony,
+        specs.filter((spec) => intervalRole(spec.interval) !== 'root'),
+        bass,
+      ),
+    );
+  }
+
+  for (const omitted of supportToneSpecs(primary)) {
+    push(primary.filter((spec) => spec.id !== omitted.id));
+  }
+
+  const required = specs.filter((spec) => isGuideRole(intervalRole(spec.interval)));
+  if (required.length >= 2 && required.length <= 4) push(required);
+
+  return families;
 }
 
 /**
@@ -184,7 +239,7 @@ function mean(values: readonly number[]): number {
   return values.reduce((sum, value) => sum + value, 0) / values.length;
 }
 
-function staticVoicingCost(
+function registerPlacementCost(
   notes: readonly BaseVoicingNote[],
   preference: BaseVoicingPreference,
 ): number {
@@ -204,26 +259,17 @@ function staticVoicingCost(
   cost += Math.abs(mean(rightPitches) - policy.rh.center) * 0.65;
   cost += Math.abs(rightSpan - targetRightSpan) * 0.35;
   cost += Math.abs(totalSpan - targetTotalSpan) * 0.25;
-
-  right.forEach((note, index) => {
-    if (
-      index < right.length - 1 &&
-      note.pitch < 55 + preference.octaveShift * 12 &&
-      right[index + 1]!.pitch - note.pitch <= 2
-    ) {
-      cost += 14;
-    }
-    if (
-      (note.degree === 'ninth' ||
-        note.degree === 'eleventh' ||
-        note.degree === 'thirteenth' ||
-        note.degree === 'seventh') &&
-      note.pitch < 53 + preference.octaveShift * 12
-    ) {
-      cost += (53 + preference.octaveShift * 12 - note.pitch) * 1.5;
-    }
-  });
   return cost;
+}
+
+function staticVoicingCost(
+  notes: readonly BaseVoicingNote[],
+  preference: BaseVoicingPreference,
+  context: VoicingPolicyContext,
+): number {
+  const policy = evaluateVoicingPolicy(notes, preference, context);
+  if (policy.hardReject) return Number.POSITIVE_INFINITY;
+  return registerPlacementCost(notes, preference) + policy.totalSoftCost;
 }
 
 function candidateKey(candidate: BaseVoicingCandidate): string {
@@ -240,9 +286,14 @@ export function compactCandidatesForHarmony(
   const specs = toneSpecs(harmony);
   if (specs.length === 0) return [];
   const bass = bassSpec(harmony, specs, preference);
-  const body = bodySpecs(harmony, specs, bass);
-  const rightAnchorPc = preferredRightAnchorPc(harmony, specs, body, bass, preference);
+  const families = bodyFamilies(harmony, specs, bass);
+  const rightAnchorPc = preferredRightAnchorPc(harmony, specs, families[0] ?? [], bass, preference);
   const policy = compactRegisterPolicy(preference);
+  const context: VoicingPolicyContext = {
+    rootPc: harmony.rootPc,
+    availableIntervals: harmony.chordIntervals,
+    preferredRightAnchorPc: rightAnchorPc,
+  };
   const candidates: BaseVoicingCandidate[] = [];
   const seen = new Set<string>();
 
@@ -256,22 +307,25 @@ export function compactCandidatesForHarmony(
       isBass: true,
       isDuplicate: false,
     };
-    for (const order of permutations(body)) {
-      for (const right of placeRightHand(order, bassPitch, preference)) {
-        if (rightAnchorPc != null && right[0]?.pc !== rightAnchorPc) continue;
-        const notes = [bassNote, ...right].sort((left, next) => left.pitch - next.pitch);
-        if (!isCompactHandModel(notes, policy)) continue;
-        const candidate: BaseVoicingCandidate = {
-          notes: notes.map((note) => ({
-            ...note,
-            isDuplicate: note.hand === 'RH' && note.pc === bass.pc,
-          })),
-          staticCost: staticVoicingCost(notes, preference),
-        };
-        const key = candidateKey(candidate);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        candidates.push(candidate);
+    for (const body of families) {
+      for (const order of permutations(body)) {
+        for (const right of placeRightHand(order, bassPitch, preference)) {
+          const notes = [bassNote, ...right].sort((left, next) => left.pitch - next.pitch);
+          if (!isCompactHandModel(notes, policy)) continue;
+          const scored = staticVoicingCost(notes, preference, context);
+          if (!Number.isFinite(scored)) continue;
+          const candidate: BaseVoicingCandidate = {
+            notes: notes.map((note) => ({
+              ...note,
+              isDuplicate: note.hand === 'RH' && note.pc === bass.pc,
+            })),
+            staticCost: scored,
+          };
+          const key = candidateKey(candidate);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          candidates.push(candidate);
+        }
       }
     }
   }

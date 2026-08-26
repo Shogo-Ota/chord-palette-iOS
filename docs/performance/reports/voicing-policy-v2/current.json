@@ -1,0 +1,5094 @@
+{
+  "phase": "after",
+  "capturedAt": "2026-08-26T03:10:21.715Z",
+  "highlights": {
+    "Fmaj7": [
+      {
+        "position": "root",
+        "rhMidi": [
+          53,
+          57,
+          60,
+          64
+        ],
+        "notes": [
+          "F2",
+          "F3",
+          "A3",
+          "C4",
+          "E4"
+        ],
+        "hasRhEFAdjacency": false,
+        "rhAdjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "bassRootDuplication": true,
+        "selectedCandidateRank": 1
+      },
+      {
+        "position": "root",
+        "rhMidi": [
+          53,
+          57,
+          60,
+          64
+        ],
+        "notes": [
+          "F2",
+          "F3",
+          "A3",
+          "C4",
+          "E4"
+        ],
+        "hasRhEFAdjacency": false,
+        "rhAdjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "bassRootDuplication": true,
+        "selectedCandidateRank": 1
+      },
+      {
+        "position": "first",
+        "rhMidi": [
+          53,
+          60,
+          64,
+          69
+        ],
+        "notes": [
+          "A2",
+          "F3",
+          "C4",
+          "E4",
+          "A4"
+        ],
+        "hasRhEFAdjacency": false,
+        "rhAdjacentIntervals": [
+          7,
+          4,
+          5
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 3
+      },
+      {
+        "position": "first",
+        "rhMidi": [
+          53,
+          57,
+          60,
+          64
+        ],
+        "notes": [
+          "A2",
+          "F3",
+          "A3",
+          "C4",
+          "E4"
+        ],
+        "hasRhEFAdjacency": false,
+        "rhAdjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1
+      },
+      {
+        "position": "second",
+        "rhMidi": [
+          52,
+          57,
+          60,
+          65
+        ],
+        "notes": [
+          "C2",
+          "E3",
+          "A3",
+          "C4",
+          "F4"
+        ],
+        "hasRhEFAdjacency": false,
+        "rhAdjacentIntervals": [
+          5,
+          3,
+          5
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1
+      },
+      {
+        "position": "second",
+        "rhMidi": [
+          52,
+          57,
+          60,
+          65
+        ],
+        "notes": [
+          "C2",
+          "E3",
+          "A3",
+          "C4",
+          "F4"
+        ],
+        "hasRhEFAdjacency": false,
+        "rhAdjacentIntervals": [
+          5,
+          3,
+          5
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1
+      }
+    ],
+    "C7(♭9)": [
+      {
+        "position": "root",
+        "rhMidi": [
+          55,
+          61,
+          64,
+          70
+        ],
+        "notes": [
+          "C3",
+          "G3",
+          "Db4",
+          "E4",
+          "Bb4"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          6,
+          3,
+          6
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 7,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "root",
+        "rhMidi": [
+          55,
+          58,
+          61,
+          64
+        ],
+        "notes": [
+          "C2",
+          "G3",
+          "Bb3",
+          "Db4",
+          "E4"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          3
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "root",
+        "rhMidi": [
+          55,
+          58,
+          61,
+          64
+        ],
+        "notes": [
+          "C2",
+          "G3",
+          "Bb3",
+          "Db4",
+          "E4"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          3
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "first",
+        "rhMidi": [
+          58,
+          61,
+          64,
+          72
+        ],
+        "notes": [
+          "E2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "first",
+        "rhMidi": [
+          58,
+          61,
+          64,
+          72
+        ],
+        "notes": [
+          "E2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "first",
+        "rhMidi": [
+          58,
+          61,
+          64,
+          72
+        ],
+        "notes": [
+          "E2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "second",
+        "rhMidi": [
+          58,
+          61,
+          64,
+          72
+        ],
+        "notes": [
+          "G2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "second",
+        "rhMidi": [
+          58,
+          61,
+          64,
+          72
+        ],
+        "notes": [
+          "G2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      },
+      {
+        "position": "second",
+        "rhMidi": [
+          58,
+          61,
+          64,
+          72
+        ],
+        "notes": [
+          "G2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "hasRhCDbAdjacency": false,
+        "rhAdjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "bassRootDuplication": false,
+        "selectedCandidateRank": 1,
+        "lowestTensionPitch": 61
+      }
+    ]
+  },
+  "timing": [
+    {
+      "id": "V1",
+      "label": "Fmaj7",
+      "candidates": 26,
+      "generationMs": 0.661944,
+      "dpMs": 0.658821
+    },
+    {
+      "id": "V2",
+      "label": "C7(♭9)",
+      "candidates": 32,
+      "generationMs": 1.311145,
+      "dpMs": 1.341997
+    },
+    {
+      "id": "V3",
+      "label": "Cmaj7",
+      "candidates": 42,
+      "generationMs": 1.025943,
+      "dpMs": 1.048177
+    },
+    {
+      "id": "V5",
+      "label": "Cadd9",
+      "candidates": 35,
+      "generationMs": 1.006836,
+      "dpMs": 1.134527
+    },
+    {
+      "id": "V6",
+      "label": "Cmaj9",
+      "candidates": 34,
+      "generationMs": 1.334437,
+      "dpMs": 1.331449
+    },
+    {
+      "id": "V7",
+      "label": "Cm9",
+      "candidates": 30,
+      "generationMs": 1.337543,
+      "dpMs": 1.66583
+    },
+    {
+      "id": "V8",
+      "label": "C13",
+      "candidates": 11,
+      "generationMs": 0.591943,
+      "dpMs": 0.582116
+    },
+    {
+      "id": "V9a",
+      "label": "C7(♭9)",
+      "candidates": 32,
+      "generationMs": 1.682942,
+      "dpMs": 1.49984
+    },
+    {
+      "id": "V9b",
+      "label": "C7(#9)",
+      "candidates": 31,
+      "generationMs": 1.471695,
+      "dpMs": 1.327447
+    },
+    {
+      "id": "V9c",
+      "label": "C7(♭13)",
+      "candidates": 50,
+      "generationMs": 1.483227,
+      "dpMs": 1.485153
+    }
+  ],
+  "sixteenChordMs": 70.576187,
+  "rows": [
+    {
+      "source": "golden-H",
+      "name": "Fmaj7 | G7 | Em7 | Am7",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Fmaj7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 41,
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 41,
+              "name": "F2",
+              "pc": 5,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            }
+          ],
+          "adjacentIntervals": [
+            12,
+            4,
+            3,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "totalSpan": 23,
+          "rhSpan": 11,
+          "staticCost": 3.225,
+          "continuityCost": -14.449999999999998,
+          "selectedCandidateRank": 1,
+          "candidateCount": 26,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "G7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            53,
+            59,
+            62,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            10,
+            6,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            3,
+            5
+          ],
+          "totalSpan": 24,
+          "rhSpan": 14,
+          "staticCost": 4.8125,
+          "continuityCost": -33.7,
+          "selectedCandidateRank": 2,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Em7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            52,
+            59,
+            62,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            }
+          ],
+          "adjacentIntervals": [
+            12,
+            7,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            3,
+            5
+          ],
+          "totalSpan": 27,
+          "rhSpan": 15,
+          "staticCost": 4.95,
+          "continuityCost": -23.049999999999997,
+          "selectedCandidateRank": 1,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Am7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 45,
+          "rhMidi": [
+            52,
+            57,
+            60,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 45,
+              "name": "A2",
+              "pc": 9,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            }
+          ],
+          "adjacentIntervals": [
+            7,
+            5,
+            3,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            7
+          ],
+          "totalSpan": 22,
+          "rhSpan": 15,
+          "staticCost": 7.75,
+          "continuityCost": -22.95,
+          "selectedCandidateRank": 4,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "golden-F",
+      "name": "Gm9 | C7(♭9) | Am7 | Dm7",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Gm9",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            57,
+            62,
+            65,
+            70
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 65,
+              "name": "F4",
+              "pc": 5,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 70,
+              "name": "Bb4",
+              "pc": 10,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            }
+          ],
+          "adjacentIntervals": [
+            14,
+            5,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "totalSpan": 27,
+          "rhSpan": 13,
+          "staticCost": 5.325,
+          "continuityCost": -19.049999999999997,
+          "selectedCandidateRank": 3,
+          "candidateCount": 26,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 57,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 48,
+          "rhMidi": [
+            55,
+            61,
+            64,
+            70
+          ],
+          "notes": [
+            {
+              "midi": 48,
+              "name": "C3",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 70,
+              "name": "Bb4",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            }
+          ],
+          "adjacentIntervals": [
+            7,
+            6,
+            3,
+            6
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            3,
+            6
+          ],
+          "totalSpan": 22,
+          "rhSpan": 15,
+          "staticCost": 9.125,
+          "continuityCost": -27.65,
+          "selectedCandidateRank": 7,
+          "candidateCount": 32,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Am7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 45,
+          "rhMidi": [
+            55,
+            60,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 45,
+              "name": "A2",
+              "pc": 9,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            10,
+            5,
+            4,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            4,
+            5
+          ],
+          "totalSpan": 24,
+          "rhSpan": 14,
+          "staticCost": 7.55,
+          "continuityCost": -15.849999999999998,
+          "selectedCandidateRank": 3,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Dm7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 38,
+          "rhMidi": [
+            60,
+            62,
+            65,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 38,
+              "name": "D2",
+              "pc": 2,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 65,
+              "name": "F4",
+              "pc": 5,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            }
+          ],
+          "adjacentIntervals": [
+            22,
+            2,
+            3,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            3,
+            4
+          ],
+          "totalSpan": 31,
+          "rhSpan": 9,
+          "staticCost": 15.078333333333333,
+          "continuityCost": -23.45,
+          "selectedCandidateRank": 19,
+          "candidateCount": 28,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.4444444444444444,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V1",
+      "name": "Fmaj7",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Fmaj7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 41,
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 41,
+              "name": "F2",
+              "pc": 5,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            }
+          ],
+          "adjacentIntervals": [
+            12,
+            4,
+            3,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "totalSpan": 23,
+          "rhSpan": 11,
+          "staticCost": 3.225,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 26,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": true,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V2",
+      "name": "C7(♭9)",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            55,
+            58,
+            61,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            }
+          ],
+          "adjacentIntervals": [
+            19,
+            3,
+            3,
+            3
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            3
+          ],
+          "totalSpan": 28,
+          "rhSpan": 9,
+          "staticCost": 6.025,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 32,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.4444444444444444,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V3",
+      "name": "Cmaj7",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cmaj7",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            55,
+            59,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            }
+          ],
+          "adjacentIntervals": [
+            19,
+            4,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            5
+          ],
+          "totalSpan": 28,
+          "rhSpan": 9,
+          "staticCost": 9.433333333333332,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 42,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3333333333333333,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V5",
+      "name": "Cadd9",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cadd9",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            52,
+            55,
+            62
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            3,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            7
+          ],
+          "totalSpan": 26,
+          "rhSpan": 10,
+          "staticCost": 11.23333333333333,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 35,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V6",
+      "name": "Cmaj9",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cmaj9",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            52,
+            55,
+            59,
+            62
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            3,
+            4,
+            3
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            4,
+            3
+          ],
+          "totalSpan": 26,
+          "rhSpan": 10,
+          "staticCost": 6.8,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 34,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.4,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V7",
+      "name": "Cm9",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cm9",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            51,
+            55,
+            58,
+            62
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 51,
+              "name": "Eb3",
+              "pc": 3,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            4,
+            3,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "totalSpan": 26,
+          "rhSpan": 11,
+          "staticCost": 6.775,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 30,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V8",
+      "name": "C13",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C13",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            58,
+            62,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "thirteenth",
+              "hand": "RH",
+              "interval": 21
+            }
+          ],
+          "adjacentIntervals": [
+            22,
+            4,
+            2,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            2,
+            5
+          ],
+          "totalSpan": 33,
+          "rhSpan": 11,
+          "staticCost": 14.8675,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 11,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9a",
+      "name": "C7(♭9)",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            55,
+            58,
+            61,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            }
+          ],
+          "adjacentIntervals": [
+            19,
+            3,
+            3,
+            3
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            3
+          ],
+          "totalSpan": 28,
+          "rhSpan": 9,
+          "staticCost": 6.025,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 32,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.4444444444444444,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9b",
+      "name": "C7(#9)",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(#9)",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            52,
+            55,
+            58,
+            63
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 63,
+              "name": "Eb4",
+              "pc": 3,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 15
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            3,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            5
+          ],
+          "totalSpan": 27,
+          "rhSpan": 11,
+          "staticCost": 6.7,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 31,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9c",
+      "name": "C7(♭13)",
+      "position": "root",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭13)",
+          "position": "root",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            55,
+            58,
+            64,
+            68
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "root",
+              "hand": "LH",
+              "interval": 0
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 68,
+              "name": "Ab4",
+              "pc": 8,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 20
+            }
+          ],
+          "adjacentIntervals": [
+            19,
+            3,
+            6,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            6,
+            4
+          ],
+          "totalSpan": 32,
+          "rhSpan": 13,
+          "staticCost": 7.5125,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 50,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "golden-H",
+      "name": "Fmaj7 | G7 | Em7 | Am7",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Fmaj7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 45,
+          "rhMidi": [
+            53,
+            60,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 45,
+              "name": "A2",
+              "pc": 9,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            }
+          ],
+          "adjacentIntervals": [
+            8,
+            7,
+            4,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            4,
+            5
+          ],
+          "totalSpan": 24,
+          "rhSpan": 16,
+          "staticCost": 14.925,
+          "continuityCost": -17.1,
+          "selectedCandidateRank": 3,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.25,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "G7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 47,
+          "rhMidi": [
+            53,
+            59,
+            62,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 47,
+              "name": "B2",
+              "pc": 11,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            6,
+            6,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            3,
+            5
+          ],
+          "totalSpan": 20,
+          "rhSpan": 14,
+          "staticCost": 16.0125,
+          "continuityCost": -33.45,
+          "selectedCandidateRank": 3,
+          "candidateCount": 18,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Em7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            52,
+            59,
+            62,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 3
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            }
+          ],
+          "adjacentIntervals": [
+            9,
+            7,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            3,
+            5
+          ],
+          "totalSpan": 24,
+          "rhSpan": 15,
+          "staticCost": 12,
+          "continuityCost": -21.05,
+          "selectedCandidateRank": 2,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Am7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            52,
+            57,
+            60,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 3
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            5,
+            3,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            7
+          ],
+          "totalSpan": 31,
+          "rhSpan": 15,
+          "staticCost": 7.800000000000001,
+          "continuityCost": -7.25,
+          "selectedCandidateRank": 1,
+          "candidateCount": 46,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "golden-F",
+      "name": "Gm9 | C7(♭9) | Am7 | Dm7",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Gm9",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 46,
+          "rhMidi": [
+            53,
+            58,
+            67,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 46,
+              "name": "Bb2",
+              "pc": 10,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 3
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            7,
+            5,
+            9,
+            2
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            9,
+            2
+          ],
+          "totalSpan": 23,
+          "rhSpan": 16,
+          "staticCost": 12.084166666666668,
+          "continuityCost": -1.149999999999995,
+          "selectedCandidateRank": 1,
+          "candidateCount": 18,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.25,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 69,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            18,
+            3,
+            3,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "totalSpan": 32,
+          "rhSpan": 14,
+          "staticCost": 7.7875,
+          "continuityCost": -14.649999999999999,
+          "selectedCandidateRank": 1,
+          "candidateCount": 14,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Am7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            55,
+            60,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 3
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            19,
+            5,
+            4,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            4,
+            5
+          ],
+          "totalSpan": 33,
+          "rhSpan": 14,
+          "staticCost": 17.6,
+          "continuityCost": -23.049999999999997,
+          "selectedCandidateRank": 7,
+          "candidateCount": 46,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Dm7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 41,
+          "rhMidi": [
+            53,
+            60,
+            62,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 41,
+              "name": "F2",
+              "pc": 5,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 3
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            }
+          ],
+          "adjacentIntervals": [
+            12,
+            7,
+            2,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            2,
+            7
+          ],
+          "totalSpan": 28,
+          "rhSpan": 16,
+          "staticCost": 18.028333333333332,
+          "continuityCost": -19.95,
+          "selectedCandidateRank": 10,
+          "candidateCount": 28,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.25,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V1",
+      "name": "Fmaj7",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Fmaj7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 45,
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 45,
+              "name": "A2",
+              "pc": 9,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            }
+          ],
+          "adjacentIntervals": [
+            8,
+            4,
+            3,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "totalSpan": 19,
+          "rhSpan": 11,
+          "staticCost": 14.425,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V2",
+      "name": "C7(♭9)",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            18,
+            3,
+            3,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "totalSpan": 32,
+          "rhSpan": 14,
+          "staticCost": 7.7875,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 14,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V3",
+      "name": "Cmaj7",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cmaj7",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            55,
+            60,
+            64,
+            71
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 71,
+              "name": "B4",
+              "pc": 11,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            5,
+            4,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            4,
+            7
+          ],
+          "totalSpan": 31,
+          "rhSpan": 16,
+          "staticCost": 5.925,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 26,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.25,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V5",
+      "name": "Cadd9",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cadd9",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            55,
+            60,
+            62,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            5,
+            2,
+            2
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            2,
+            2
+          ],
+          "totalSpan": 24,
+          "rhSpan": 9,
+          "staticCost": 12.295833333333333,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 27,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 2,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.4444444444444444,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V6",
+      "name": "Cmaj9",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cmaj9",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            59,
+            62,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            19,
+            3,
+            2,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            2,
+            8
+          ],
+          "totalSpan": 32,
+          "rhSpan": 13,
+          "staticCost": 12.7675,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 16,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V7",
+      "name": "Cm9",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cm9",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 39,
+          "rhMidi": [
+            48,
+            51,
+            58,
+            62
+          ],
+          "notes": [
+            {
+              "midi": 39,
+              "name": "Eb2",
+              "pc": 3,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 3
+            },
+            {
+              "midi": 48,
+              "name": "C3",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 51,
+              "name": "Eb3",
+              "pc": 3,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            9,
+            3,
+            7,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            7,
+            4
+          ],
+          "totalSpan": 23,
+          "rhSpan": 14,
+          "staticCost": 16.8125,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 13,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V8",
+      "name": "C13",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C13",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            58,
+            62,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "thirteenth",
+              "hand": "RH",
+              "interval": 21
+            }
+          ],
+          "adjacentIntervals": [
+            18,
+            4,
+            2,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            2,
+            5
+          ],
+          "totalSpan": 29,
+          "rhSpan": 11,
+          "staticCost": 38.667500000000004,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 7,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9a",
+      "name": "C7(♭9)",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            18,
+            3,
+            3,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "totalSpan": 32,
+          "rhSpan": 14,
+          "staticCost": 7.7875,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 14,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9b",
+      "name": "C7(#9)",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(#9)",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            48,
+            52,
+            58,
+            63
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 48,
+              "name": "C3",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 63,
+              "name": "Eb4",
+              "pc": 3,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 15
+            }
+          ],
+          "adjacentIntervals": [
+            8,
+            4,
+            6,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            6,
+            5
+          ],
+          "totalSpan": 23,
+          "rhSpan": 15,
+          "staticCost": 16.0375,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 13,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9c",
+      "name": "C7(♭13)",
+      "position": "first",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭13)",
+          "position": "first",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            58,
+            64,
+            68,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "third",
+              "hand": "LH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 68,
+              "name": "Ab4",
+              "pc": 8,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 20
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            18,
+            6,
+            4,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            4,
+            4
+          ],
+          "totalSpan": 32,
+          "rhSpan": 14,
+          "staticCost": 8.925,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 18,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "golden-H",
+      "name": "Fmaj7 | G7 | Em7 | Am7",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Fmaj7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            52,
+            57,
+            60,
+            65
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 65,
+              "name": "F4",
+              "pc": 5,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            5,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "totalSpan": 29,
+          "rhSpan": 13,
+          "staticCost": 6.925,
+          "continuityCost": -11.899999999999997,
+          "selectedCandidateRank": 1,
+          "candidateCount": 42,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "G7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 38,
+          "rhMidi": [
+            53,
+            59,
+            62,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 38,
+              "name": "D2",
+              "pc": 2,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            6,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            3,
+            5
+          ],
+          "totalSpan": 29,
+          "rhSpan": 14,
+          "staticCost": 4.862500000000001,
+          "continuityCost": -28.45,
+          "selectedCandidateRank": 1,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Em7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 47,
+          "rhMidi": [
+            52,
+            59,
+            62,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 47,
+              "name": "B2",
+              "pc": 11,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            }
+          ],
+          "adjacentIntervals": [
+            5,
+            7,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            3,
+            5
+          ],
+          "totalSpan": 20,
+          "rhSpan": 15,
+          "staticCost": 16.200000000000003,
+          "continuityCost": -21.8,
+          "selectedCandidateRank": 2,
+          "candidateCount": 16,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Am7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            52,
+            57,
+            60,
+            67
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            }
+          ],
+          "adjacentIntervals": [
+            12,
+            5,
+            3,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            7
+          ],
+          "totalSpan": 27,
+          "rhSpan": 15,
+          "staticCost": 12.6,
+          "continuityCost": -30.65,
+          "selectedCandidateRank": 5,
+          "candidateCount": 28,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "golden-F",
+      "name": "Gm9 | C7(♭9) | Am7 | Dm7",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Gm9",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 38,
+          "rhMidi": [
+            53,
+            58,
+            67,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 38,
+              "name": "D2",
+              "pc": 2,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            5,
+            9,
+            2
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            9,
+            2
+          ],
+          "totalSpan": 31,
+          "rhSpan": 16,
+          "staticCost": 10.484166666666667,
+          "continuityCost": -4.9999999999999964,
+          "selectedCandidateRank": 1,
+          "candidateCount": 18,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.25,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 69,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            3,
+            3,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "totalSpan": 29,
+          "rhSpan": 14,
+          "staticCost": 6.3374999999999995,
+          "continuityCost": -16.4,
+          "selectedCandidateRank": 1,
+          "candidateCount": 14,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Am7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 40,
+          "rhMidi": [
+            55,
+            60,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 40,
+              "name": "E2",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            5,
+            4,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            4,
+            5
+          ],
+          "totalSpan": 29,
+          "rhSpan": 14,
+          "staticCost": 4.4,
+          "continuityCost": -23.799999999999997,
+          "selectedCandidateRank": 1,
+          "candidateCount": 28,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        },
+        {
+          "chordSymbol": "Dm7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 45,
+          "rhMidi": [
+            53,
+            60,
+            62,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 45,
+              "name": "A2",
+              "pc": 9,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 53,
+              "name": "F3",
+              "pc": 5,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            }
+          ],
+          "adjacentIntervals": [
+            8,
+            7,
+            2,
+            7
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            2,
+            7
+          ],
+          "totalSpan": 24,
+          "rhSpan": 16,
+          "staticCost": 20.22833333333333,
+          "continuityCost": -18.700000000000003,
+          "selectedCandidateRank": 8,
+          "candidateCount": 22,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.25,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V1",
+      "name": "Fmaj7",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Fmaj7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 36,
+          "rhMidi": [
+            52,
+            57,
+            60,
+            65
+          ],
+          "notes": [
+            {
+              "midi": 36,
+              "name": "C2",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 57,
+              "name": "A3",
+              "pc": 9,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 65,
+              "name": "F4",
+              "pc": 5,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            5,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "totalSpan": 29,
+          "rhSpan": 13,
+          "staticCost": 6.925,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 42,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V2",
+      "name": "C7(♭9)",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            3,
+            3,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "totalSpan": 29,
+          "rhSpan": 14,
+          "staticCost": 6.3374999999999995,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 14,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V3",
+      "name": "Cmaj7",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cmaj7",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            59,
+            64,
+            67,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 67,
+              "name": "G4",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            5,
+            3,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "totalSpan": 29,
+          "rhSpan": 13,
+          "staticCost": 7.125000000000001,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 26,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V5",
+      "name": "Cadd9",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cadd9",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            50,
+            55,
+            60,
+            64
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 50,
+              "name": "D3",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 55,
+              "name": "G3",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 7
+            },
+            {
+              "midi": 60,
+              "name": "C4",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            }
+          ],
+          "adjacentIntervals": [
+            7,
+            5,
+            5,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            5,
+            4
+          ],
+          "totalSpan": 21,
+          "rhSpan": 14,
+          "staticCost": 9.6875,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 27,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 50,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V6",
+      "name": "Cmaj9",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cmaj9",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            59,
+            62,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 59,
+              "name": "B3",
+              "pc": 11,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 11
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            16,
+            3,
+            2,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            2,
+            8
+          ],
+          "totalSpan": 29,
+          "rhSpan": 13,
+          "staticCost": 11.3175,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 16,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.3076923076923077,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V7",
+      "name": "Cm9",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "Cm9",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            48,
+            51,
+            58,
+            62
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 48,
+              "name": "C3",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 51,
+              "name": "Eb3",
+              "pc": 3,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 3
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            }
+          ],
+          "adjacentIntervals": [
+            5,
+            3,
+            7,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            7,
+            4
+          ],
+          "totalSpan": 19,
+          "rhSpan": 14,
+          "staticCost": 16.3125,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 13,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V8",
+      "name": "C13",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C13",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            58,
+            62,
+            64,
+            69
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 62,
+              "name": "D4",
+              "pc": 2,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 14
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 69,
+              "name": "A4",
+              "pc": 9,
+              "degree": "thirteenth",
+              "hand": "RH",
+              "interval": 21
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            4,
+            2,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            2,
+            5
+          ],
+          "totalSpan": 26,
+          "rhSpan": 11,
+          "staticCost": 37.2175,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 7,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 1,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.36363636363636365,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 62,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9a",
+      "name": "C7(♭9)",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭9)",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 61,
+              "name": "Db4",
+              "pc": 1,
+              "degree": "ninth",
+              "hand": "RH",
+              "interval": 13
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            3,
+            3,
+            8
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "totalSpan": 29,
+          "rhSpan": 14,
+          "staticCost": 6.3374999999999995,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 14,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": 61,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9b",
+      "name": "C7(#9)",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(#9)",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            48,
+            52,
+            58,
+            63
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 48,
+              "name": "C3",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            },
+            {
+              "midi": 52,
+              "name": "E3",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 63,
+              "name": "Eb4",
+              "pc": 3,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 15
+            }
+          ],
+          "adjacentIntervals": [
+            5,
+            4,
+            6,
+            5
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            6,
+            5
+          ],
+          "totalSpan": 20,
+          "rhSpan": 15,
+          "staticCost": 16.0875,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 13,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.26666666666666666,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    },
+    {
+      "source": "quality-V9c",
+      "name": "C7(♭13)",
+      "position": "second",
+      "octaveShift": 0,
+      "chords": [
+        {
+          "chordSymbol": "C7(♭13)",
+          "position": "second",
+          "octaveShift": 0,
+          "bassMidi": 43,
+          "rhMidi": [
+            58,
+            64,
+            68,
+            72
+          ],
+          "notes": [
+            {
+              "midi": 43,
+              "name": "G2",
+              "pc": 7,
+              "degree": "fifth",
+              "hand": "LH",
+              "interval": 7
+            },
+            {
+              "midi": 58,
+              "name": "Bb3",
+              "pc": 10,
+              "degree": "seventh",
+              "hand": "RH",
+              "interval": 10
+            },
+            {
+              "midi": 64,
+              "name": "E4",
+              "pc": 4,
+              "degree": "third",
+              "hand": "RH",
+              "interval": 4
+            },
+            {
+              "midi": 68,
+              "name": "Ab4",
+              "pc": 8,
+              "degree": "fifth",
+              "hand": "RH",
+              "interval": 20
+            },
+            {
+              "midi": 72,
+              "name": "C5",
+              "pc": 0,
+              "degree": "root",
+              "hand": "RH",
+              "interval": 0
+            }
+          ],
+          "adjacentIntervals": [
+            15,
+            6,
+            4,
+            4
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            4,
+            4
+          ],
+          "totalSpan": 29,
+          "rhSpan": 14,
+          "staticCost": 7.4750000000000005,
+          "continuityCost": 0,
+          "selectedCandidateRank": 1,
+          "candidateCount": 18,
+          "metrics": {
+            "minorSecondCount": 0,
+            "majorSecondCount": 0,
+            "lowMinorSecondCount": 0,
+            "clusterDensity": 0.2857142857142857,
+            "bassRootDuplication": false,
+            "lowestTensionPitch": null,
+            "rhHasEFAdjacency": false,
+            "rhHasCDbAdjacency": false
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -91,10 +91,7 @@ describe('Shared Compact Base Voicing Engine', () => {
   });
 
   it('makes first and second inversion audible in both hand anchors', () => {
-    const harmony = chordHarmonyFromEvent(
-      { rootOffset: 0, suffix: '', definitionId: 'maj' },
-      'C',
-    );
+    const harmony = chordHarmonyFromEvent({ rootOffset: 0, suffix: '', definitionId: 'maj' }, 'C');
     const first = buildCompactBaseVoicings([harmony], {
       position: 'first',
       octaveShift: 0,
