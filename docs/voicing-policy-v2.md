@@ -227,7 +227,31 @@ Regenerate the approved-vs-candidate comparison dump:
 npm run quality:voicingPolicyV2
 ```
 
-## 9. Open questions
+## 9. Device audition — PENDING
+
+Dev build for the A/B:
+<https://expo.dev/accounts/shogoota/projects/chord-palette/builds/5f3498ee-dfb4-46c5-a5c3-04913d2c4188>
+
+1. Home → **v1.01 実機リスニング（Human MIDI）** (dev builds only).
+2. **Shared Base Voicing（A/B）** → `v1 承認済み（87点）`, play, and keep it as the
+   reference.
+3. Switch to `v2 候補（試聴前）` and replay the same Case. Style, rhythm, dynamics
+   and pedal are identical; only the chord pitches move.
+4. Repeat per Case and per Style, and report a score for v2 relative to v1.
+
+What to listen for, from the measured differences:
+
+- `C7(♭9)` and `C7(♭13)`: the low-mid semitone rub should be gone without the
+  altered color thinning out.
+- `Fmaj7` first inversion: the E/F rub should be gone.
+- `C13`: the 13th on top should read as color, not as a clash under the 7th.
+- Anything that got **worse**: a voicing that now sounds thin, too open, or that
+  lost weight in the left hand.
+
+The override is diagnostic and resets on app restart. Nothing in this build
+changes the App Store path, which still resolves `compact.v1`.
+
+## 10. Open questions
 
 1. **Does v2 sound better on a device?** Unknown until the audition. All evidence
    so far is structural and measured, not perceptual.
