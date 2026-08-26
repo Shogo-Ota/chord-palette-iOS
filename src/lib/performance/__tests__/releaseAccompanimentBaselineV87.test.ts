@@ -1,9 +1,9 @@
 /**
  * Exact audible-output checkpoint for the user-approved 87/100 baseline.
  *
- * Updating Type1 digests requires all hard gates plus a Quality Ledger note.
- * Voicing Policy v2 retuned Shared Base spacing, so Type1 hashes were refreshed.
- * New Types get new keys; they must not rewrite existing keys.
+ * Updating these digests requires all hard gates, a new real-device listening
+ * score of at least 87, and a matching Quality Ledger update. New Types get new
+ * keys; they must not rewrite existing keys.
  */
 import { createHash } from 'node:crypto';
 

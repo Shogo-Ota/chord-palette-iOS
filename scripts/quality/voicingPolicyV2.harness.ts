@@ -1,5 +1,9 @@
 /**
- * Voicing Policy v2 experiment dump.
+ * Voicing Policy comparison dump.
+ *
+ * Renders the same corpus through the approved policy and the candidate so the
+ * difference can be read note by note before anyone listens. It only observes:
+ * it never selects a policy for production.
  *
  * Run: npx jest -c scripts/quality/jest.quality.config.js --testPathPattern voicingPolicyV2.harness
  * Out:
@@ -7,14 +11,24 @@
  *   docs/performance/reports/voicing-policy-v2/
  */
 
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { mkdirSync, writeFileSync } from 'fs';
 import { join } from 'path';
 
-import { VOICING_POSITIONS, type VoicingPosition } from '@/lib/performance/baseVoicing';
+import {
+  COMPACT_V1_POLICY,
+  COMPACT_V2_POLICY,
+  VOICING_POSITIONS,
+  buildCompactBaseVoicings,
+  compactCandidatesForHarmony,
+  selectVoicingPath,
+  type VoicingPolicySpec,
+  type VoicingPosition,
+} from '@/lib/performance/baseVoicing';
 import {
   dumpProgressionVoicings,
   dumpSelectedVoicing,
   measureCandidateGeneration,
+  type SelectedVoicingDump,
 } from '@/lib/performance/baseVoicing/voicingAnalysis';
 import {
   BASELINE_PROGRESSION_IDS,
@@ -22,11 +36,6 @@ import {
   goldenHarmoniesById,
   harmonyFromQualityCase,
 } from '@/lib/performance/baseVoicing/voicingQualityCorpus';
-import {
-  buildCompactBaseVoicings,
-  compactCandidatesForHarmony,
-} from '@/lib/performance/baseVoicing/CompactVoicingEngine';
-import { selectContinuousCandidatePath } from '@/lib/performance/baseVoicing/continuity';
 
 const LOCAL_ROOT = join(
   process.cwd(),
@@ -44,7 +53,15 @@ function writeJson(filename: string, value: unknown): void {
   }
 }
 
-function dumpTargets(label: string) {
+type PolicyDumpRow = {
+  source: string;
+  name: string;
+  position: VoicingPosition;
+  octaveShift: number;
+  chords: SelectedVoicingDump[];
+};
+
+function dumpTargets(policy: VoicingPolicySpec) {
   const progressions = BASELINE_PROGRESSION_IDS.map((id) => goldenHarmoniesById(id));
   const quality = VOICING_QUALITY_CASES.map((item) => ({
     id: item.id,
@@ -52,63 +69,50 @@ function dumpTargets(label: string) {
     harmony: harmonyFromQualityCase(item),
   }));
 
-  const rows = [];
+  const rows: PolicyDumpRow[] = [];
   for (const position of VOICING_POSITIONS) {
     const preference = { position, octaveShift: 0 };
     for (const progression of progressions) {
-      const chords = dumpProgressionVoicings(progression.harmonies, preference);
       rows.push({
         source: `golden-${progression.id}`,
         name: progression.name,
         position,
         octaveShift: 0,
-        chords,
+        chords: dumpProgressionVoicings(progression.harmonies, preference, policy),
       });
     }
     for (const item of quality) {
-      const voicing = buildCompactBaseVoicings([item.harmony], preference)[0]!;
+      const voicing = buildCompactBaseVoicings([item.harmony], preference, policy)[0]!;
       rows.push({
         source: `quality-${item.id}`,
         name: item.label,
         position,
         octaveShift: 0,
-        chords: [dumpSelectedVoicing(voicing, 0)],
+        chords: [dumpSelectedVoicing(voicing, 0, policy)],
       });
     }
   }
 
-  const highlights = {
-    Fmaj7: rows
-      .flatMap((row) => row.chords.filter((chord) => chord.chordSymbol === 'Fmaj7'))
+  const highlight = (symbol: string) =>
+    rows
+      .flatMap((row) => row.chords.filter((chord) => chord.chordSymbol === symbol))
       .map((chord) => ({
         position: chord.position,
         rhMidi: chord.rhMidi,
         notes: chord.notes.map((note) => note.name),
+        rhAdjacentIntervals: chord.rhAdjacentIntervals,
         hasRhEFAdjacency: chord.metrics.rhHasEFAdjacency,
-        rhAdjacentIntervals: chord.rhAdjacentIntervals,
-        bassRootDuplication: chord.metrics.bassRootDuplication,
-        selectedCandidateRank: chord.selectedCandidateRank,
-      })),
-    'C7(♭9)': rows
-      .flatMap((row) => row.chords.filter((chord) => chord.chordSymbol === 'C7(♭9)'))
-      .map((chord) => ({
-        position: chord.position,
-        rhMidi: chord.rhMidi,
-        notes: chord.notes.map((note) => note.name),
         hasRhCDbAdjacency: chord.metrics.rhHasCDbAdjacency,
-        rhAdjacentIntervals: chord.rhAdjacentIntervals,
         bassRootDuplication: chord.metrics.bassRootDuplication,
-        selectedCandidateRank: chord.selectedCandidateRank,
         lowestTensionPitch: chord.metrics.lowestTensionPitch,
-      })),
-  };
+        selectedCandidateRank: chord.selectedCandidateRank,
+      }));
 
   const timing = quality.map((item) => {
     const preference = { position: 'root' as VoicingPosition, octaveShift: 0 };
-    const generated = measureCandidateGeneration(item.harmony, preference);
+    const generated = measureCandidateGeneration(item.harmony, preference, policy);
     const started = process.hrtime.bigint();
-    const layers = [compactCandidatesForHarmony(item.harmony, preference)];
-    selectContinuousCandidatePath(layers);
+    selectVoicingPath([compactCandidatesForHarmony(item.harmony, preference, policy)], policy);
     const dpMs = Number(process.hrtime.bigint() - started) / 1e6;
     return {
       id: item.id,
@@ -124,79 +128,66 @@ function dumpTargets(label: string) {
     (_, index) => quality[index % quality.length]!.harmony,
   );
   const sixteenStarted = process.hrtime.bigint();
-  buildCompactBaseVoicings(sixteen, { position: 'root', octaveShift: 0 });
+  buildCompactBaseVoicings(sixteen, { position: 'root', octaveShift: 0 }, policy);
   const sixteenMs = Number(process.hrtime.bigint() - sixteenStarted) / 1e6;
 
   return {
-    phase: label,
+    policy: policy.id,
+    listeningApproved: policy.listeningApproved,
     capturedAt: new Date().toISOString(),
-    highlights,
+    highlights: { Fmaj7: highlight('Fmaj7'), 'C7(♭9)': highlight('C7(♭9)') },
     timing,
     sixteenChordMs: sixteenMs,
     rows,
   };
 }
 
-describe('Voicing Policy v2 experiment dump', () => {
-  it('writes the current Final MIDI snapshot without clobbering baseline', () => {
-    const snapshot = dumpTargets('after');
-    writeJson('after.json', snapshot);
-    writeJson('current.json', snapshot);
+describe('Voicing Policy comparison dump', () => {
+  it('writes the approved and candidate snapshots side by side', () => {
+    const approved = dumpTargets(COMPACT_V1_POLICY);
+    const candidate = dumpTargets(COMPACT_V2_POLICY);
+    writeJson('approved-v1.json', approved);
+    writeJson('candidate-v2.json', candidate);
 
-    const baselinePath = join(DOCS_ROOT, 'baseline.json');
-    if (existsSync(baselinePath)) {
-      const before = JSON.parse(readFileSync(baselinePath, 'utf8')) as ReturnType<
-        typeof dumpTargets
-      >;
-      const compare = {
-        phase: 'before-after',
-        capturedAt: snapshot.capturedAt,
-        highlights: {
-          before: before.highlights,
-          after: snapshot.highlights,
-        },
-        timing: {
-          before: before.timing,
-          after: snapshot.timing,
-          sixteenChordMs: { before: before.sixteenChordMs, after: snapshot.sixteenChordMs },
-        },
-        qualityChords: VOICING_QUALITY_CASES.flatMap((item) =>
-          (['root', 'first', 'second'] as const).map((position) => {
-            const prev = before.rows.find(
+    writeJson('before-after.json', {
+      phase: 'approved-vs-candidate',
+      capturedAt: candidate.capturedAt,
+      shipped: approved.policy,
+      candidate: candidate.policy,
+      highlights: { before: approved.highlights, after: candidate.highlights },
+      timing: {
+        before: approved.timing,
+        after: candidate.timing,
+        sixteenChordMs: { before: approved.sixteenChordMs, after: candidate.sixteenChordMs },
+      },
+      qualityChords: VOICING_QUALITY_CASES.flatMap((item) =>
+        VOICING_POSITIONS.map((position) => {
+          const pick = (snapshot: typeof approved) =>
+            snapshot.rows.find(
               (row) => row.source === `quality-${item.id}` && row.position === position,
             )?.chords[0];
-            const next = snapshot.rows.find(
-              (row) => row.source === `quality-${item.id}` && row.position === position,
-            )?.chords[0];
-            return {
-              id: item.id,
-              label: item.label,
-              position,
-              before: prev && {
-                selectedMidi: [prev.bassMidi, ...prev.rhMidi],
-                noteNames: prev.notes.map((note) => note.name),
-                adjacentIntervals: prev.rhAdjacentIntervals,
-                rhSpan: prev.rhSpan,
-                staticCost: prev.staticCost,
-                ...prev.metrics,
-              },
-              after: next && {
-                selectedMidi: [next.bassMidi, ...next.rhMidi],
-                noteNames: next.notes.map((note) => note.name),
-                adjacentIntervals: next.rhAdjacentIntervals,
-                rhSpan: next.rhSpan,
-                staticCost: next.staticCost,
-                ...next.metrics,
-              },
+          const summarize = (chord: ReturnType<typeof pick>) =>
+            chord && {
+              selectedMidi: [chord.bassMidi, ...chord.rhMidi],
+              noteNames: chord.notes.map((note) => note.name),
+              adjacentIntervals: chord.rhAdjacentIntervals,
+              rhSpan: chord.rhSpan,
+              staticCost: chord.staticCost,
+              ...chord.metrics,
             };
-          }),
-        ),
-      };
-      writeJson('before-after.json', compare);
-    }
+          return {
+            id: item.id,
+            label: item.label,
+            position,
+            before: summarize(pick(approved)),
+            after: summarize(pick(candidate)),
+          };
+        }),
+      ),
+    });
 
-    expect(snapshot.rows.length).toBeGreaterThan(0);
-    expect(snapshot.highlights.Fmaj7.length).toBeGreaterThan(0);
-    expect(snapshot.highlights['C7(♭9)'].length).toBeGreaterThan(0);
+    expect(approved.rows.length).toBe(candidate.rows.length);
+    expect(candidate.highlights.Fmaj7.length).toBeGreaterThan(0);
+    expect(candidate.highlights['C7(♭9)'].length).toBeGreaterThan(0);
   });
 });

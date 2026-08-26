@@ -1,13 +1,13 @@
-import { DEFAULT_BASE_VOICING_PREFERENCE } from '../types';
+import { DEFAULT_BASE_VOICING_PREFERENCE, type BaseVoicingNote } from '../../types';
 import {
   LOW_CLUSTER_HARD_CEILING,
-  VOICING_POLICY,
-  evaluateVoicingPolicy,
+  V2_COST_WEIGHTS,
+  evaluateCompactV2Cost,
   hasExtremeLowMinorSecond,
-  intervalRole,
   minorSecondPenalty,
-} from '../voicingPolicy';
-import type { BaseVoicingNote } from '../types';
+  requiredToneCost,
+} from '../compactV2Costs';
+import { intervalRole } from '../intervalRoles';
 
 function note(
   pitch: number,
@@ -25,7 +25,9 @@ function note(
   };
 }
 
-describe('voicingPolicy interval roles', () => {
+const THIRTEENTH_CHORD = [0, 4, 7, 10, 14, 21];
+
+describe('compact v2 interval roles', () => {
   it('classifies from intervals, never from chord symbols', () => {
     expect(intervalRole(11)).toBe('seventh');
     expect(intervalRole(0)).toBe('root');
@@ -38,7 +40,7 @@ describe('voicingPolicy interval roles', () => {
   });
 });
 
-describe('voicingPolicy dissonance', () => {
+describe('compact v2 dissonance', () => {
   it('penalizes lower minor seconds more than higher ones', () => {
     const low = minorSecondPenalty(48, 49, 'structural', 0);
     const mid = minorSecondPenalty(60, 61, 'structural', 0);
@@ -64,35 +66,72 @@ describe('voicingPolicy dissonance', () => {
   });
 });
 
-describe('voicingPolicy evaluation', () => {
+describe('compact v2 required tones', () => {
   it('does not delete tension: missing ♭9 is far more expensive than spreading it', () => {
-    const withFlatNine = evaluateVoicingPolicy(
+    const withFlatNine = evaluateCompactV2Cost(
       [note(36, 0, 'LH'), note(52, 4), note(58, 10), note(61, 13)],
       DEFAULT_BASE_VOICING_PREFERENCE,
       { rootPc: 0, availableIntervals: [0, 4, 7, 10, 13] },
     );
-    const withoutFlatNine = evaluateVoicingPolicy(
+    const withoutFlatNine = evaluateCompactV2Cost(
       [note(36, 0, 'LH'), note(52, 4), note(55, 7), note(58, 10)],
       DEFAULT_BASE_VOICING_PREFERENCE,
       { rootPc: 0, availableIntervals: [0, 4, 7, 10, 13] },
     );
     expect(withFlatNine.hardReject).toBe(false);
-    expect(withoutFlatNine.harmonicRoleCost).toBeGreaterThanOrEqual(VOICING_POLICY.TENSION_ABSENCE);
+    expect(withoutFlatNine.requiredToneCost).toBeGreaterThanOrEqual(
+      V2_COST_WEIGHTS.TENSION_ABSENCE,
+    );
     expect(withoutFlatNine.totalSoftCost).toBeGreaterThan(withFlatNine.totalSoftCost);
   });
 
   it('does not delete a major seventh to clear a cluster', () => {
-    const withSeventh = evaluateVoicingPolicy(
+    const withSeventh = evaluateCompactV2Cost(
       [note(41, 0, 'LH'), note(53, 0), note(57, 4), note(60, 7), note(64, 11)],
       DEFAULT_BASE_VOICING_PREFERENCE,
       { rootPc: 5, availableIntervals: [0, 4, 7, 11] },
     );
-    const triad = evaluateVoicingPolicy(
+    const triad = evaluateCompactV2Cost(
       [note(41, 0, 'LH'), note(53, 0), note(57, 4), note(60, 7)],
       DEFAULT_BASE_VOICING_PREFERENCE,
       { rootPc: 5, availableIntervals: [0, 4, 7, 11] },
     );
-    expect(triad.harmonicRoleCost).toBeGreaterThanOrEqual(VOICING_POLICY.GUIDE_TONE_ABSENCE);
+    expect(triad.requiredToneCost).toBeGreaterThanOrEqual(V2_COST_WEIGHTS.GUIDE_TONE_ABSENCE);
     expect(triad.totalSoftCost).toBeGreaterThan(withSeventh.totalSoftCost);
+  });
+
+  it('charges a 13th chord that lost its 13th, even while it still holds the 9th', () => {
+    const withNinthOnly = requiredToneCost(
+      [note(36, 0, 'LH'), note(52, 4), note(58, 10), note(62, 14)],
+      { rootPc: 0, availableIntervals: THIRTEENTH_CHORD },
+    );
+    expect(withNinthOnly).toBeGreaterThanOrEqual(V2_COST_WEIGHTS.TENSION_ABSENCE);
+  });
+
+  it('lets a lower extension yield once the identity extension is present', () => {
+    const withThirteenthOnly = requiredToneCost(
+      [note(36, 0, 'LH'), note(52, 4), note(58, 10), note(69, 21)],
+      { rootPc: 0, availableIntervals: THIRTEENTH_CHORD },
+    );
+    const withNinthOnly = requiredToneCost(
+      [note(36, 0, 'LH'), note(52, 4), note(58, 10), note(62, 14)],
+      { rootPc: 0, availableIntervals: THIRTEENTH_CHORD },
+    );
+    expect(withThirteenthOnly).toBeLessThan(V2_COST_WEIGHTS.TENSION_ABSENCE);
+    expect(withThirteenthOnly).toBeGreaterThanOrEqual(V2_COST_WEIGHTS.SECONDARY_TENSION_ABSENCE);
+    expect(withThirteenthOnly).toBeLessThan(withNinthOnly);
+  });
+
+  it('prices a plain fifth as nearly free and a guide tone as mandatory', () => {
+    const withoutFifth = requiredToneCost(
+      [note(36, 0, 'LH'), note(52, 4), note(59, 11), note(62, 14)],
+      { rootPc: 0, availableIntervals: [0, 4, 7, 11, 14] },
+    );
+    const withoutThird = requiredToneCost(
+      [note(36, 0, 'LH'), note(55, 7), note(59, 11), note(62, 14)],
+      { rootPc: 0, availableIntervals: [0, 4, 7, 11, 14] },
+    );
+    expect(withoutFifth).toBe(V2_COST_WEIGHTS.PERFECT_FIFTH_ABSENCE);
+    expect(withoutThird).toBeGreaterThanOrEqual(V2_COST_WEIGHTS.GUIDE_TONE_ABSENCE);
   });
 });

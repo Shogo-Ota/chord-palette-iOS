@@ -1,6 +1,7 @@
 {
-  "phase": "current",
-  "capturedAt": "2026-08-26T03:00:29.548Z",
+  "policy": "compact.v1",
+  "listeningApproved": true,
+  "capturedAt": "2026-08-26T16:42:13.062Z",
   "highlights": {
     "Fmaj7": [
       {
@@ -18,13 +19,15 @@
           "C4",
           "E4"
         ],
-        "hasRhEFAdjacency": false,
         "rhAdjacentIntervals": [
           4,
           3,
           4
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": true,
+        "lowestTensionPitch": null,
         "selectedCandidateRank": 1
       },
       {
@@ -42,13 +45,15 @@
           "C4",
           "E4"
         ],
-        "hasRhEFAdjacency": false,
         "rhAdjacentIntervals": [
           4,
           3,
           4
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": true,
+        "lowestTensionPitch": null,
         "selectedCandidateRank": 1
       },
       {
@@ -66,13 +71,15 @@
           "F4",
           "A4"
         ],
-        "hasRhEFAdjacency": true,
         "rhAdjacentIntervals": [
           4,
           1,
           4
         ],
+        "hasRhEFAdjacency": true,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": false,
+        "lowestTensionPitch": null,
         "selectedCandidateRank": 1
       },
       {
@@ -90,13 +97,15 @@
           "F4",
           "A4"
         ],
-        "hasRhEFAdjacency": true,
         "rhAdjacentIntervals": [
           4,
           1,
           4
         ],
+        "hasRhEFAdjacency": true,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": false,
+        "lowestTensionPitch": null,
         "selectedCandidateRank": 1
       },
       {
@@ -114,13 +123,15 @@
           "C4",
           "F4"
         ],
-        "hasRhEFAdjacency": false,
         "rhAdjacentIntervals": [
           5,
           3,
           5
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": false,
+        "lowestTensionPitch": null,
         "selectedCandidateRank": 1
       },
       {
@@ -138,13 +149,15 @@
           "C4",
           "F4"
         ],
-        "hasRhEFAdjacency": false,
         "rhAdjacentIntervals": [
           5,
           3,
           5
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": false,
+        "lowestTensionPitch": null,
         "selectedCandidateRank": 1
       }
     ],
@@ -164,15 +177,16 @@
           "Db4",
           "E4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           2,
           1,
           3
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": true,
-        "selectedCandidateRank": 8,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 8
       },
       {
         "position": "root",
@@ -189,15 +203,16 @@
           "C4",
           "Db4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           6,
           2,
           1
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": true,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       },
       {
         "position": "root",
@@ -214,15 +229,16 @@
           "C4",
           "Db4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           6,
           2,
           1
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": true,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       },
       {
         "position": "first",
@@ -239,15 +255,16 @@
           "Db4",
           "E4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           2,
           1,
           3
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": false,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       },
       {
         "position": "first",
@@ -264,15 +281,16 @@
           "Db4",
           "E4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           2,
           1,
           3
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": false,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       },
       {
         "position": "first",
@@ -289,15 +307,16 @@
           "Db4",
           "E4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           2,
           1,
           3
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": false,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       },
       {
         "position": "second",
@@ -314,15 +333,16 @@
           "E4",
           "C5"
         ],
-        "hasRhCDbAdjacency": false,
         "rhAdjacentIntervals": [
           3,
           3,
           8
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": false,
         "bassRootDuplication": false,
-        "selectedCandidateRank": 2,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 2
       },
       {
         "position": "second",
@@ -339,15 +359,16 @@
           "Db4",
           "E4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           2,
           1,
           3
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": false,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       },
       {
         "position": "second",
@@ -364,15 +385,16 @@
           "Db4",
           "E4"
         ],
-        "hasRhCDbAdjacency": true,
         "rhAdjacentIntervals": [
           2,
           1,
           3
         ],
+        "hasRhEFAdjacency": false,
+        "hasRhCDbAdjacency": true,
         "bassRootDuplication": false,
-        "selectedCandidateRank": 1,
-        "lowestTensionPitch": 61
+        "lowestTensionPitch": 61,
+        "selectedCandidateRank": 1
       }
     ]
   },
@@ -381,74 +403,74 @@
       "id": "V1",
       "label": "Fmaj7",
       "candidates": 10,
-      "generationMs": 0.383827,
-      "dpMs": 0.393926
+      "generationMs": 0.3716,
+      "dpMs": 0.4091
     },
     {
       "id": "V2",
       "label": "C7(♭9)",
       "candidates": 15,
-      "generationMs": 0.566922,
-      "dpMs": 0.634334
+      "generationMs": 0.5886,
+      "dpMs": 0.6264
     },
     {
       "id": "V3",
       "label": "Cmaj7",
       "candidates": 16,
-      "generationMs": 0.590422,
-      "dpMs": 0.735203
+      "generationMs": 0.6462,
+      "dpMs": 0.6261
     },
     {
       "id": "V5",
       "label": "Cadd9",
       "candidates": 14,
-      "generationMs": 0.623779,
-      "dpMs": 0.645268
+      "generationMs": 0.5499,
+      "dpMs": 0.5966
     },
     {
       "id": "V6",
       "label": "Cmaj9",
       "candidates": 15,
-      "generationMs": 0.553022,
-      "dpMs": 0.617263
+      "generationMs": 0.5379,
+      "dpMs": 0.6252
     },
     {
       "id": "V7",
       "label": "Cm9",
       "candidates": 15,
-      "generationMs": 0.617531,
-      "dpMs": 0.662169
+      "generationMs": 0.5467,
+      "dpMs": 0.6033
     },
     {
       "id": "V8",
       "label": "C13",
       "candidates": 11,
-      "generationMs": 0.518536,
-      "dpMs": 0.545065
+      "generationMs": 0.5114,
+      "dpMs": 0.5357
     },
     {
       "id": "V9a",
       "label": "C7(♭9)",
       "candidates": 15,
-      "generationMs": 0.972562,
-      "dpMs": 0.642158
+      "generationMs": 0.5735,
+      "dpMs": 0.6063
     },
     {
       "id": "V9b",
       "label": "C7(#9)",
       "candidates": 15,
-      "generationMs": 0.572607,
-      "dpMs": 0.623209
+      "generationMs": 0.5484,
+      "dpMs": 0.772
     },
     {
       "id": "V9c",
       "label": "C7(♭13)",
       "candidates": 20,
-      "generationMs": 0.586314,
-      "dpMs": 0.697919
+      "generationMs": 0.7079,
+      "dpMs": 0.7283
     }
   ],
-  "sixteenChordMs": 114.127222,
+  "sixteenChordMs": 143.3335,
   "rows": [
     {
       "source": "golden-H",

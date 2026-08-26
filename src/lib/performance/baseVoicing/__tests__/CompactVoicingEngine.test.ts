@@ -1,16 +1,34 @@
+/**
+ * Structural contracts every voicing policy must satisfy: legal pitch classes,
+ * the compact two-hand model, the requested bass, and continuity across the loop
+ * boundary. Both the approved default and the candidate are gated here, so a new
+ * policy cannot ship by relaxing the shape of the Shared Base.
+ */
 import { GOLDEN_PROGRESSIONS } from '@/lib/midiQa/goldenProgressions';
 import { chordHarmonyFromEvent } from '../../humanTemplate/chordHarmony';
 import { wrapPc } from '../../humanTemplate/degreeRoles';
 import {
+  COMPACT_V1_POLICY,
+  COMPACT_V2_POLICY,
   VOICING_POSITIONS,
   buildCompactBaseVoicings,
   compactRegisterPolicy,
   isCompactHandModel,
   type BaseVoicing,
+  type VoicingPolicySpec,
   type VoicingPosition,
 } from '..';
 
-function renderGolden(position: VoicingPosition, transpose = 0): BaseVoicing[][] {
+const POLICY_CASES: [string, VoicingPolicySpec][] = [
+  [COMPACT_V1_POLICY.id, COMPACT_V1_POLICY],
+  [COMPACT_V2_POLICY.id, COMPACT_V2_POLICY],
+];
+
+function renderGolden(
+  policy: VoicingPolicySpec,
+  position: VoicingPosition,
+  transpose = 0,
+): BaseVoicing[][] {
   return GOLDEN_PROGRESSIONS.map((progression) => {
     const harmonies = progression.chords.map((chord) => {
       const harmony = chordHarmonyFromEvent(chord, progression.key);
@@ -21,7 +39,7 @@ function renderGolden(position: VoicingPosition, transpose = 0): BaseVoicing[][]
           harmony.slashBassPc == null ? undefined : wrapPc(harmony.slashBassPc + transpose),
       };
     });
-    return buildCompactBaseVoicings(harmonies, { position, octaveShift: 0 });
+    return buildCompactBaseVoicings(harmonies, { position, octaveShift: 0 }, policy);
   });
 }
 
@@ -36,14 +54,14 @@ function expectedBassPc(voicing: BaseVoicing, position: VoicingPosition): number
   return uniquePcs[Math.min(index, uniquePcs.length - 1)]!;
 }
 
-describe('Shared Compact Base Voicing Engine', () => {
+describe.each(POLICY_CASES)('Shared Compact Base Voicing Engine — %s', (_id, policy) => {
   it.each(VOICING_POSITIONS)(
     '%s obeys harmony, hand-count, compact-register and inversion contracts',
     (position) => {
-      for (const progression of renderGolden(position)) {
+      for (const progression of renderGolden(policy, position)) {
         expect(progression).toHaveLength(4);
         progression.forEach((voicing) => {
-          const policy = compactRegisterPolicy(voicing.preference);
+          const registers = compactRegisterPolicy(voicing.preference);
           const allowed = new Set(
             voicing.harmony.chordIntervals.map((interval) =>
               wrapPc(voicing.harmony.rootPc + interval),
@@ -53,7 +71,7 @@ describe('Shared Compact Base Voicing Engine', () => {
             allowed.add(wrapPc(voicing.harmony.slashBassPc));
           }
 
-          expect(isCompactHandModel(voicing.notes, policy)).toBe(true);
+          expect(isCompactHandModel(voicing.notes, registers)).toBe(true);
           expect(voicing.notes.length).toBeGreaterThanOrEqual(3);
           expect(voicing.notes.length).toBeLessThanOrEqual(5);
           expect(new Set(voicing.notes.map((note) => note.pitch)).size).toBe(voicing.notes.length);
@@ -75,7 +93,7 @@ describe('Shared Compact Base Voicing Engine', () => {
   );
 
   it.each(VOICING_POSITIONS)('%s avoids octave jumps, including the loop boundary', (position) => {
-    for (const progression of renderGolden(position)) {
+    for (const progression of renderGolden(policy, position)) {
       const closed = [...progression, progression[0]!];
       for (let index = 1; index < closed.length; index += 1) {
         const previous = closed[index - 1]!;
@@ -92,14 +110,16 @@ describe('Shared Compact Base Voicing Engine', () => {
 
   it('makes first and second inversion audible in both hand anchors', () => {
     const harmony = chordHarmonyFromEvent({ rootOffset: 0, suffix: '', definitionId: 'maj' }, 'C');
-    const first = buildCompactBaseVoicings([harmony], {
-      position: 'first',
-      octaveShift: 0,
-    })[0]!;
-    const second = buildCompactBaseVoicings([harmony], {
-      position: 'second',
-      octaveShift: 0,
-    })[0]!;
+    const first = buildCompactBaseVoicings(
+      [harmony],
+      { position: 'first', octaveShift: 0 },
+      policy,
+    )[0]!;
+    const second = buildCompactBaseVoicings(
+      [harmony],
+      { position: 'second', octaveShift: 0 },
+      policy,
+    )[0]!;
     const firstRight = first.notes.filter((note) => note.hand === 'RH');
     const secondRight = second.notes.filter((note) => note.hand === 'RH');
 
@@ -113,7 +133,7 @@ describe('Shared Compact Base Voicing Engine', () => {
     const progression = GOLDEN_PROGRESSIONS.find((item) => item.id === 'D')!;
     const harmony = chordHarmonyFromEvent(progression.chords[1]!, progression.key);
     const signatures = VOICING_POSITIONS.map((position) =>
-      buildCompactBaseVoicings([harmony], { position, octaveShift: 0 })[0]!.notes.map(
+      buildCompactBaseVoicings([harmony], { position, octaveShift: 0 }, policy)[0]!.notes.map(
         (note) => note.pitch,
       ),
     );
@@ -127,16 +147,19 @@ describe('Shared Compact Base Voicing Engine', () => {
     const harmonies = progression.chords.map((chord) =>
       chordHarmonyFromEvent(chord, progression.key),
     );
-    const base = buildCompactBaseVoicings(harmonies);
+    const preference = { position: 'root' as VoicingPosition, octaveShift: 0 };
+    const base = buildCompactBaseVoicings(harmonies, preference, policy);
     const pitches = base.map((voicing) => voicing.notes.map((note) => note.pitch));
     const styleConsumers = ['block', 'natural', 'city'].map(() =>
-      buildCompactBaseVoicings(harmonies).map((voicing) => voicing.notes.map((note) => note.pitch)),
+      buildCompactBaseVoicings(harmonies, preference, policy).map((voicing) =>
+        voicing.notes.map((note) => note.pitch),
+      ),
     );
     expect(styleConsumers).toEqual([pitches, pitches, pitches]);
   });
 
   it('keeps guide tones and defining altered fifths in advanced chords', () => {
-    for (const progression of renderGolden('root')) {
+    for (const progression of renderGolden(policy, 'root')) {
       progression.forEach((voicing) => {
         const availableDegrees = new Set(
           voicing.harmony.chordIntervals.map((interval) => {
@@ -168,7 +191,7 @@ describe('Shared Compact Base Voicing Engine', () => {
   it.each([0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11])(
     'remains legal and compact after transposition +%i',
     (transpose) => {
-      for (const progression of renderGolden('root', transpose)) {
+      for (const progression of renderGolden(policy, 'root', transpose)) {
         progression.forEach((voicing) => {
           const allowed = new Set(
             voicing.harmony.chordIntervals.map((interval) =>

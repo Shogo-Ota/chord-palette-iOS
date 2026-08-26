@@ -106,6 +106,31 @@ immutable, while rejected Type2/3 keys are no longer treated as approved release
 authority. Type2–5 receive new digest authority only after Build 13 device
 listening passes.
 
+Build 24 concretises Voicing Policy v2 (`docs/voicing-policy-v2.md`). The Shared
+Base gains an explicit policy contract: the engine now enumerates hand shapes
+only, while tone importance, spacing/dissonance cost, required-tone cost and
+progression-wide path search live behind `VoicingPolicySpec`. Two policies are
+registered. `compact.v1` is the audible output the owner approved at 87/100 and
+is reproduced byte for byte — `releaseAccompanimentBaselineV87` passes against
+the **original, unmodified** digests, which is the proof that the refactor
+changed nothing shippable.
+
+An earlier state of this branch had rewritten those approved digests to match the
+candidate. That made the suite green while discarding the only evidence that the
+shipped sound was ever approved, so the digests and the test's update rule were
+restored. The candidate now has its own readable checkpoint
+(`voicingPolicyV2Candidate`), explicitly recorded as `listeningApproved: false`.
+
+`compact.v2` remains a CANDIDATE and is not reachable from any shipping path:
+`registry.ts` defaults to the approved id, and only the admin-only dev listening
+screen can override it, so v1 and v2 can be compared by ear inside one build.
+Measured against v1 across Golden and the V1–V9 corpus, v2 changes 25 of 30
+voicings, removes the low-mid `C/D♭` and `E/F` semitone clusters while keeping
+the ♭9 and the maj7, lifts a 13th chord's 13th to the top, and resolves 16 chords
+in 82.2 ms versus 143.3 ms. Whether it sounds better is unknown until the
+audition. Promotion to default requires a device score of at least 87 plus a
+digest refresh in the same commit as a Quality Ledger note.
+
 ## First Playback
 
 **PASS — MANUAL 10/10 PROCESS RESTARTS / DIAGNOSTIC CAPTURE 2/2**

@@ -128,6 +128,18 @@ variants/catalog.ts
 - **Safe to delete later**: no
 - **Replacement if deprecated**: n/a
 
+### P-03b Shared Base Voicing policy provider
+
+- **Path**: `src/lib/performance/baseVoicing/policy/*`, `baseVoicing/CompactVoicingEngine.ts`, `baseVoicing/continuity.ts`
+- **Purpose**: Shared Base Voicingの音選択を`VoicingPolicySpec`へ分離する。Engineは合法な手形の列挙のみ、tone重要度/spacing・dissonance costs/必須音cost/進行全体のpath探索はPolicyが持つ。
+- **Imported by**: `progressionInput.ts`（Production全Style）、`features/editor/playback.ts`（preview）、`voicingAnalysis.ts`、QA harness。
+- **Imports**: `theory` harmony、`handModel` register窓、`degreeRoles`。
+- **Production reachable**: yes
+- **Source of truth**: yes。Shared Base pitchの正規決定点。
+- **Safe to delete later**: no
+- **Replacement if deprecated**: n/a
+- **Governance**: `registry.ts`の既定は`APPROVED_VOICING_POLICY_ID`（`compact.v1` = 87点承認済み）。`compact.v2`は候補で、admin専用のdev試聴画面の override からのみ到達する。仕様は`docs/voicing-policy-v2.md`。
+
 ### P-04 Performance orchestration
 
 - **Path**: `src/lib/performance/PerformanceEngine.ts`

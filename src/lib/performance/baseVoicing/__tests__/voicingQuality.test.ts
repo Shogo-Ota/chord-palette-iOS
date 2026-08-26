@@ -1,5 +1,13 @@
+/**
+ * Voicing Quality corpus (Cases V1–V9) for the `compact.v2` candidate policy.
+ *
+ * These are the musical claims v2 makes beyond the approved v1 default, so every
+ * case renders through v2 explicitly rather than through whatever policy happens
+ * to be active.
+ */
 import { wrapPc } from '../../humanTemplate/degreeRoles';
 import {
+  COMPACT_V2_POLICY,
   VOICING_POSITIONS,
   buildCompactBaseVoicings,
   compactCandidatesForHarmony,
@@ -8,13 +16,13 @@ import {
   type BaseVoicing,
   type VoicingPosition,
 } from '..';
+import { intervalRole, isTensionRole } from '../policy/intervalRoles';
 import { voicingQualityMetrics } from '../voicingAnalysis';
 import {
   VOICING_QUALITY_CASES,
   harmonyFromQualityCase,
   transposedHarmony,
 } from '../voicingQualityCorpus';
-import { intervalRole, isTensionRole } from '../voicingPolicy';
 
 const POSITIONS: VoicingPosition[] = ['root', 'first', 'second'];
 
@@ -26,7 +34,7 @@ function caseById(id: string) {
 
 function render(id: string, position: VoicingPosition = 'root', transpose = 0): BaseVoicing {
   const harmony = transposedHarmony(harmonyFromQualityCase(caseById(id)), transpose);
-  return buildCompactBaseVoicings([harmony], { position, octaveShift: 0 })[0]!;
+  return buildCompactBaseVoicings([harmony], { position, octaveShift: 0 }, COMPACT_V2_POLICY)[0]!;
 }
 
 function soundingRoles(voicing: BaseVoicing): Set<string> {
@@ -131,7 +139,8 @@ describe('Voicing Quality 12-key gate', () => {
             true,
           );
           expect(
-            compactCandidatesForHarmony(voicing.harmony, voicing.preference).length,
+            compactCandidatesForHarmony(voicing.harmony, voicing.preference, COMPACT_V2_POLICY)
+              .length,
           ).toBeGreaterThan(0);
           const availableTensions = voicing.harmony.chordIntervals.filter((interval) =>
             isTensionRole(intervalRole(interval)),
@@ -178,11 +187,14 @@ function availableRoles(voicing: BaseVoicing): Set<string> {
 describe('Voicing Quality style neutrality', () => {
   it('Shared Base pitches do not depend on a style name', () => {
     const harmony = harmonyFromQualityCase(caseById('V2'));
-    const pitches = buildCompactBaseVoicings([harmony]).map((voicing) =>
-      voicing.notes.map((note) => note.pitch),
+    const preference = { position: 'root' as VoicingPosition, octaveShift: 0 };
+    const pitches = buildCompactBaseVoicings([harmony], preference, COMPACT_V2_POLICY).map(
+      (voicing) => voicing.notes.map((note) => note.pitch),
     );
     const consumers = ['block', 'natural', 'city'].map(() =>
-      buildCompactBaseVoicings([harmony]).map((voicing) => voicing.notes.map((note) => note.pitch)),
+      buildCompactBaseVoicings([harmony], preference, COMPACT_V2_POLICY).map((voicing) =>
+        voicing.notes.map((note) => note.pitch),
+      ),
     );
     expect(consumers).toEqual([pitches, pitches, pitches]);
   });

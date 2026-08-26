@@ -8,6 +8,8 @@ import { classifyInterval, wrapPc, type HarmonicDegree } from '../humanTemplate/
 import type { ChordHarmonyInput } from '../strictV2';
 import { buildCompactBaseVoicings, compactCandidatesForHarmony } from './CompactVoicingEngine';
 import { baseVoicingTransitionCost } from './continuity';
+import { activeVoicingPolicy } from './policy/registry';
+import type { VoicingPolicySpec } from './policy/types';
 import type { BaseVoicing, BaseVoicingNote, BaseVoicingPreference, VoicingPosition } from './types';
 
 const NOTE_NAMES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'] as const;
@@ -124,8 +126,9 @@ export function voicingQualityMetrics(notes: readonly BaseVoicingNote[]): Voicin
 export function dumpSelectedVoicing(
   voicing: BaseVoicing,
   continuityCost: number,
+  policy: VoicingPolicySpec = activeVoicingPolicy(),
 ): SelectedVoicingDump {
-  const candidates = compactCandidatesForHarmony(voicing.harmony, voicing.preference);
+  const candidates = compactCandidatesForHarmony(voicing.harmony, voicing.preference, policy);
   const selectedKey = pitchSignature(voicing.notes);
   const selectedIndex = candidates.findIndex(
     (candidate) => pitchSignature(candidate.notes) === selectedKey,
@@ -167,8 +170,9 @@ export function dumpSelectedVoicing(
 export function dumpProgressionVoicings(
   harmonies: readonly ChordHarmonyInput[],
   preference: BaseVoicingPreference,
+  policy: VoicingPolicySpec = activeVoicingPolicy(),
 ): SelectedVoicingDump[] {
-  const voicings = buildCompactBaseVoicings(harmonies, preference);
+  const voicings = buildCompactBaseVoicings(harmonies, preference, policy);
   const closed = [...voicings, voicings[0]!];
   return voicings.map((voicing, index) => {
     const previous = closed[index]!;
@@ -176,16 +180,17 @@ export function dumpProgressionVoicings(
     const incoming =
       voicings.length > 1 ? baseVoicingTransitionCost(previous.notes, voicing.notes) : 0;
     const outgoing = voicings.length > 1 ? baseVoicingTransitionCost(voicing.notes, next.notes) : 0;
-    return dumpSelectedVoicing(voicing, incoming + outgoing);
+    return dumpSelectedVoicing(voicing, incoming + outgoing, policy);
   });
 }
 
 export function measureCandidateGeneration(
   harmony: ChordHarmonyInput,
   preference: BaseVoicingPreference,
+  policy: VoicingPolicySpec = activeVoicingPolicy(),
 ): { candidateCount: number; generationMs: number } {
   const started = process.hrtime.bigint();
-  const candidates = compactCandidatesForHarmony(harmony, preference);
+  const candidates = compactCandidatesForHarmony(harmony, preference, policy);
   const generationMs = Number(process.hrtime.bigint() - started) / 1e6;
   return { candidateCount: candidates.length, generationMs };
 }
