@@ -5,6 +5,7 @@
  */
 
 import type { InstrumentEffect } from '../effect';
+import type { HarmonyCollisionReport } from '../harmonyCollision';
 import type { HarmonyViolation } from '../harmonyGate';
 import type { NoteEvent } from '../NoteEvent';
 import type { PerfChord } from '../PerformanceEngine';
@@ -69,6 +70,13 @@ export type SessionPerformancePlan = {
   seed: number;
   /** Illegal pitches detected after generation. Never repaired by the gate. */
   harmonyViolations?: HarmonyViolation[];
+  /**
+   * Unintended dissonance detected after generation — non-chord tones, close
+   * semitones, undeclared minor ninths and low-register crowding. Reported, never
+   * repaired: repair belongs to the voicing policy, where octave placements are
+   * candidates and the harmony itself stays intact.
+   */
+  collisionReport?: HarmonyCollisionReport;
 };
 
 export type FinalMidiValidationResult = {

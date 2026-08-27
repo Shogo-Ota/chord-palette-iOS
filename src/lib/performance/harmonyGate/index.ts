@@ -1,6 +1,10 @@
 export {
+  allowedPcsFor,
   applyHarmonyGate,
+  chordIndexAtBeat,
   validateHarmony,
+  ANTICIPATION_BEATS,
+  GATED_TRACKS,
   type HarmonyGateResult,
   type HarmonyGateStats,
   type HarmonyViolation,

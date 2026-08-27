@@ -43,7 +43,9 @@ flowchart TD
 
   Engine --> HarmonyGate["harmonyGate"]
   HarmonyGate --> Effect["effect/applyInstrumentEffect.ts"]
+  Effect --> Collision["harmonyCollision (detect only)"]
   Effect --> Plan["SessionPerformancePlan"]
+  Collision --> Plan
 
   Plan --> RequestMap["services/audio/performanceMapper.ts"]
   Plan --> FinalMidi["finalMidi/buildFinalMidiSnapshot.ts"]
@@ -194,6 +196,18 @@ variants/catalog.ts
 - **Source of truth**: yes
 - **Safe to delete later**: no
 - **Replacement if deprecated**: n/a
+
+### P-08b Harmony collision validation
+
+- **Path**: `src/lib/performance/harmonyCollision/**`
+- **Purpose**: 生成後の実発音期間から、コード外音・近接半音・宣言のない短9度・低音域の詰まり・重複NoteOnを検出する。判定は必ず実MIDI note間の距離で行い、pitch class intervalでは判定しない（`B3+C4`と`C4+B4`は同じinterval classで逆の結論になる）。検出のみで、pitchは書き換えない。
+- **Imported by**: `buildSessionPerformancePlan.ts`（`collisionReport`）、contract test、debt test。
+- **Imports**: `harmonyGate`（Chord membershipは委譲）、`baseVoicing/policy/intervalRoles`（tension語彙）、`NoteEvent`、`PerfChord`。
+- **Production reachable**: yes（検出のみ。可聴出力は不変）
+- **Source of truth**: yes。不協和の合否判定の正規定義点。
+- **Safe to delete later**: no
+- **Replacement if deprecated**: n/a
+- **Governance**: Chord membershipは再実装せず`harmonyGate`へ委譲する。二重実装は層間で合否が食い違うため禁止。Rule閾値は`InstrumentCollisionProfile`に置き、`octaveShift`と一緒に移動させる。強制（Hard Gate化）はVoicing Policy側のhard rejectで行い、実機試聴87点以上とQuality Ledger更新を同一Commitで満たすまで既定にしない。仕様は`docs/harmony-collision-validator.md`。
 
 ### P-09 Instrument effect and sustain policy
 
@@ -580,7 +594,7 @@ variants/catalog.ts
 3. Session生成: `finalMidi/buildSessionPerformancePlan.ts`
 4. Chord定義: `theory/definitions` + `humanTemplate/chordHarmony.ts`
 5. Production Natural pitch: `humanTemplate/realize.ts` + `voiceStructureRealize.ts`
-6. Legal harmony: `strictV2/harmonyResolver.ts` + `harmonyGate`
+6. Legal harmony: `strictV2/harmonyResolver.ts` + `harmonyGate`（不協和判定は`harmonyCollision`）
 7. Note effect: `performance/effect/applyInstrumentEffect.ts`
 8. Canonical MIDI: `finalMidi/buildFinalMidiSnapshot.ts`
 9. Editor playback schedule: `playback/nativePlaybackPlan.ts`

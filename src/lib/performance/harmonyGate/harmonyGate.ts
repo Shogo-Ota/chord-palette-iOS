@@ -13,13 +13,13 @@ import type { PerfChord } from '../PerformanceEngine';
 import { resolveAllowed } from '../strictV2';
 
 /** Pitched voices. Drum voices carry percussion note numbers and are left alone. */
-const GATED_TRACKS: ReadonlySet<TrackId> = new Set<TrackId>(['chord', 'bass', 'top']);
+export const GATED_TRACKS: ReadonlySet<TrackId> = new Set<TrackId>(['chord', 'bass', 'top']);
 
 /**
  * An onset this far ahead of a chord change already belongs to the new chord —
  * micro-timing and strum spread can push an attack slightly early.
  */
-const ANTICIPATION_BEATS = 1 / 8;
+export const ANTICIPATION_BEATS = 1 / 8;
 
 export type HarmonyViolation = {
   timeBeat: number;
@@ -52,7 +52,7 @@ function pitchClass(pitch: number): number {
   return ((pitch % 12) + 12) % 12;
 }
 
-function allowedPcsFor(chord: PerfChord): readonly number[] {
+export function allowedPcsFor(chord: PerfChord): readonly number[] {
   const pcs = new Set<number>();
   if (chord.harmony) {
     for (const pc of resolveAllowed(chord.harmony).pcs) pcs.add(pc);
@@ -83,6 +83,22 @@ function windowIndexAt(windows: readonly ChordWindow[], beat: number): number {
     } else {
       hi = mid - 1;
     }
+  }
+  return found;
+}
+
+/**
+ * Which chord a note sounds over, by onset. Exported so any later validator binds
+ * notes to chords exactly as this gate does — two different bindings would let a
+ * note be legal for one layer and illegal for the other.
+ */
+export function chordIndexAtBeat(chords: readonly PerfChord[], beat: number): number {
+  if (chords.length === 0) return -1;
+  const cursor = beat + ANTICIPATION_BEATS;
+  let found = 0;
+  for (let i = 0; i < chords.length; i += 1) {
+    if (chords[i]!.startBeat <= cursor) found = i;
+    else break;
   }
   return found;
 }

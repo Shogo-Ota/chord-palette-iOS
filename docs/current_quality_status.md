@@ -482,21 +482,60 @@ quality and 87-point digest gates. Arbitrary-root dim/aug/dim7 UI is deferred.
 | v1.0.2 build 22 internal iOS build | PASS — `22f9f87b-fff5-41e3-a554-d112f2e8c260` |
 | v1.0.2 build 23 Production iOS build | PASS — `0a3f0799-8785-49ca-bb23-0bdbcde43586` |
 | Build 23 App Store Connect upload | PASS — `ccc7d6a2-6452-40ca-a6bc-7775a27b9176` |
+| Build 25 HarmonyCollisionValidator contract tests | PASS — 34 cases |
+| Build 25 collision debt pinned per variant | PASS — fixture recorded |
+| Build 25 non-chord tone / instrument range / low interval limit | PASS — 0 across all variants |
+| Build 25 approved 87-point release digests | PASS / unchanged |
+| Build 25 full regression | PASS — 141 suites / 2383 passed / 1 skipped |
+| Build 25 TypeScript / canonical lint | PASS / 0 errors, existing warnings only |
+
+## Build 25 — HarmonyCollisionValidator (detection phase)
+
+A hard gate for unintended dissonance, specified in
+`docs/harmony-collision-validator.md`. Every verdict reads real MIDI note distance,
+never a pitch class interval, because `B3 + C4` and `C4 + B4` share an interval class
+and must reach opposite conclusions.
+
+Phase 1 detects and reports only. No pitch is rewritten, no note is removed, and the
+approved 87-point digests are byte-identical. Chord membership is delegated to the
+existing harmony gate rather than reimplemented, so the two layers cannot disagree
+about what belongs to a chord.
+
+Measured against Golden A–I × every offered variant:
+
+- **Already clean, now asserted at zero:** non-chord tones, instrument range
+  escapes, and low-register crowding. These are real gates from today.
+- **Recorded as debt:** 87 close minor seconds, 88 low-register major seconds and
+  108 duplicate note-ons. The minor seconds are the same defect as the muddy `Cmaj7`
+  the user reported, whose approved voicing `C3 G3 B3 C4 E4` holds a B3–C4 semitone
+  over a doubled root.
+- **Arpeggio (`natural.type5`) already passes the entire contract.**
+- Minor ninths are zero: the only ones in the corpus are the ♭9 that `C7(♭9)` in
+  Golden F declares, which the contract permits.
+
+The candidate policy `compact.v2` removes all 87 minor seconds and roughly three
+quarters of the major seconds, but doubles minor ninths and does not touch duplicate
+notes. Neither shipped policy satisfies the contract, so enforcement needs a new
+policy rather than a switch.
 
 ## Known Blockers
 
 1. **P1** Build 12 Preview correction still needs explicit device confirmation.
 2. **P2** Legacy saved rhythms can reach passing/approach bass logic.
-3. Production build and App Store submission require final release approval;
+3. **P2** The approved accompaniment carries 87 close minor seconds, 88 low-register
+   major seconds and 108 duplicate note-ons. Detected and pinned; not yet enforced.
+4. Production build and App Store submission require final release approval;
    they are process boundaries, not quality failures.
 
 ## Next Action
 
-Freeze the accepted Build 22 output, create the Production iOS build and upload
-version 1.0.2 to App Store Connect. Do not change accompaniment behavior during
-release preparation.
+Build the enforcing voicing policy on top of the collision rules, confirm it reaches
+zero rejects across Golden A–I, then take it to real-device listening. Enforcement
+must not become the default before a listening score of at least 87 is recorded in
+the same commit.
 
 ## User Action Required
 
-All Style quality is device-approved. Final App Store metadata, compliance and
-review-submission confirmation are still required.
+Device listening for the enforcing voicing policy, once it exists. Version 1.0.2 is
+uploaded and its Style quality is already device-approved; nothing in Build 25 changes
+what that build sounds like.
