@@ -482,12 +482,15 @@ quality and 87-point digest gates. Arbitrary-root dim/aug/dim7 UI is deferred.
 | v1.0.2 build 22 internal iOS build | PASS — `22f9f87b-fff5-41e3-a554-d112f2e8c260` |
 | v1.0.2 build 23 Production iOS build | PASS — `0a3f0799-8785-49ca-bb23-0bdbcde43586` |
 | Build 23 App Store Connect upload | PASS — `ccc7d6a2-6452-40ca-a6bc-7775a27b9176` |
-| Build 25 HarmonyCollisionValidator contract tests | PASS — 34 cases |
+| Build 25 HarmonyCollisionValidator contract tests | PASS — 35 cases |
 | Build 25 collision debt pinned per variant | PASS — fixture recorded |
-| Build 25 non-chord tone / instrument range / low interval limit | PASS — 0 across all variants |
+| Build 25 non-chord tone / range / low interval / duplicate note | PASS — 0 across all variants |
+| Build 25 `compact.v3` collision gate | PASS — 0 rejects across Golden A–I × all variants |
+| Build 25 `compact.v3` harmony completeness | PASS — all guide tones and tensions kept, 3 inversions |
 | Build 25 approved 87-point release digests | PASS / unchanged |
-| Build 25 full regression | PASS — 141 suites / 2383 passed / 1 skipped |
+| Build 25 full regression | PASS — 144 suites / 2431 passed / 1 skipped |
 | Build 25 TypeScript / canonical lint | PASS / 0 errors, existing warnings only |
+| Build 25 `compact.v3` device listening | PENDING — user audition required |
 
 ## Build 25 — HarmonyCollisionValidator (detection phase)
 
@@ -503,39 +506,65 @@ about what belongs to a chord.
 
 Measured against Golden A–I × every offered variant:
 
-- **Already clean, now asserted at zero:** non-chord tones, instrument range
-  escapes, and low-register crowding. These are real gates from today.
-- **Recorded as debt:** 87 close minor seconds, 88 low-register major seconds and
-  108 duplicate note-ons. The minor seconds are the same defect as the muddy `Cmaj7`
-  the user reported, whose approved voicing `C3 G3 B3 C4 E4` holds a B3–C4 semitone
-  over a doubled root.
+- **Already clean, now asserted at zero:** non-chord tones, instrument range escapes,
+  low-register crowding, and simultaneous duplicate note-ons. These are real gates
+  from today.
+- **Recorded as debt:** 87 close minor seconds and 88 low-register major seconds. The
+  minor seconds are the same defect as the muddy `Cmaj7` the user reported, whose
+  approved voicing `C3 G3 B3 C4 E4` holds a B3–C4 semitone over a doubled root.
 - **Arpeggio (`natural.type5`) already passes the entire contract.**
-- Minor ninths are zero: the only ones in the corpus are the ♭9 that `C7(♭9)` in
-  Golden F declares, which the contract permits.
+- Minor ninths are zero under the approved policy: the only ones in the corpus are the
+  ♭9 that `C7(♭9)` in Golden F declares, which the contract permits.
+- All 108 same-pitch overlaps first measured as duplicates turned out to be
+  re-articulations at a later beat — an attack the rhythm asked for, not a doubled
+  note-on. There is no true duplicate anywhere, so nothing needed merging.
 
-The candidate policy `compact.v2` removes all 87 minor seconds and roughly three
-quarters of the major seconds, but doubles minor ninths and does not touch duplicate
-notes. Neither shipped policy satisfies the contract, so enforcement needs a new
-policy rather than a switch.
+## Build 25 — `compact.v3`, the enforcing voicing policy
+
+Rejects across the same corpus, by policy:
+
+| Policy | Total | Breakdown |
+| --- | --- | --- |
+| `compact.v1` (shipped) | 175 | MINOR_SECOND 87, MAJOR_SECOND 88 |
+| `compact.v2` (candidate) | 23 | MINOR_NINTH 23 |
+| `compact.v3` (candidate) | **0** | — |
+
+`compact.v2` clears both defects the approved policy carries and introduces one it
+never had: spreading a voicing to escape a semitone lands the same two pitch classes
+an octave and a semitone apart. Judging only the semitone moves the problem rather
+than solving it, which is why enforcement needed a third policy.
+
+`compact.v3` is `compact.v2` plus the collision gate, with every other judgement left
+identical, so a listening comparison isolates the gate. The rules are the same
+functions the validator runs, so a voicing the policy accepts is one the validator
+passes. Correction happens by candidate selection — the engine already enumerates
+every octave placement — so pitch class is never changed and harmony is never
+rewritten. Enforcement cost nothing musically: every chord keeps every guide tone and
+declared tension, holds at least three notes and stays inside the compact hand model
+across all three inversions.
+
+`compact.v3` is registered with `listeningApproved: false` and is reachable only
+through the admin-only dev listening screen. Production still resolves `compact.v1`.
 
 ## Known Blockers
 
 1. **P1** Build 12 Preview correction still needs explicit device confirmation.
 2. **P2** Legacy saved rhythms can reach passing/approach bass logic.
-3. **P2** The approved accompaniment carries 87 close minor seconds, 88 low-register
-   major seconds and 108 duplicate note-ons. Detected and pinned; not yet enforced.
+3. **P2** The approved accompaniment carries 87 close minor seconds and 88
+   low-register major seconds. Detected, pinned, and fixed by `compact.v3` — but
+   `compact.v3` has not been auditioned, so nothing is enforced yet.
 4. Production build and App Store submission require final release approval;
    they are process boundaries, not quality failures.
 
 ## Next Action
 
-Build the enforcing voicing policy on top of the collision rules, confirm it reaches
-zero rejects across Golden A–I, then take it to real-device listening. Enforcement
-must not become the default before a listening score of at least 87 is recorded in
-the same commit.
+Audition `compact.v3` on a real device against `compact.v1`. If it scores at least 87,
+promote it to the approved default and refresh the release digests in the same commit
+as the Quality Ledger entry.
 
 ## User Action Required
 
-Device listening for the enforcing voicing policy, once it exists. Version 1.0.2 is
-uploaded and its Style quality is already device-approved; nothing in Build 25 changes
-what that build sounds like.
+Device listening for `compact.v3` on the admin-only listening screen: `compact.v1`
+first as the reference, then `compact.v3`. Version 1.0.2 is uploaded and its Style
+quality is already device-approved; nothing in Build 25 changes what that build sounds
+like.

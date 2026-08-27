@@ -98,11 +98,18 @@ instrument ships a profile rather than a branch inside a rule, and they travel w
 
 ### 10. Duplicate MIDI note
 
-Two note-ons for the same MIDI number in the same air are harmonically nothing — the
-pitch was already there. They matter because the second retriggers the sampler, so the
-first voice's envelope is cut and the pair reads as an accidental accent. Recorded as
-`MERGE`, not as a harmonic error. `mergeDuplicateNotes` performs the merge; applying it
-removes a note and therefore changes the audible output, so the caller decides when.
+Two note-ons for the same MIDI number **at the same instant** are harmonically
+nothing — the pitch was already there. They matter because the second retriggers the
+sampler, so the first voice's envelope is cut and the pair reads as an accidental
+accent. Recorded as `MERGE`, not as a harmonic error.
+
+The same instant is the whole rule. A pitch struck again at a later beat while the
+first is still ringing is a re-articulation the rhythm asked for, and merging it would
+silently delete an attack. Measured across the corpus, every same-pitch overlap the
+accompaniment produces is of that second kind: there are no simultaneous duplicates at
+all. `mergeDuplicateNotes` therefore stays available and tested but is not wired into
+generation — if a real duplicate ever appears, the gate should fail loudly rather than
+quietly remove a note.
 
 ### 11. Auto correction
 
@@ -168,46 +175,96 @@ naming one:
 
 Golden Progressions A–I × every offered variant, piano, sustain:
 
-| Variant | MINOR_SECOND | MAJOR_SECOND | DUPLICATE_NOTE |
-| --- | --- | --- | --- |
-| `block.type1` | 4 | 4 | 0 |
-| `natural.type1` | 4 | 4 | 0 |
-| `natural.type2` | 16 | 16 | 0 |
-| `natural.type3` | 19 | 17 | 0 |
-| `natural.type4` | 16 | 16 | 72 |
-| `natural.type5` | 0 | 0 | 0 |
-| `natural.dance1` | 20 | 23 | 36 |
-| `city.type1` | 8 | 8 | 0 |
+| Variant | MINOR_SECOND | MAJOR_SECOND |
+| --- | --- | --- |
+| `block.type1` | 4 | 4 |
+| `natural.type1` | 4 | 4 |
+| `natural.type2` | 16 | 16 |
+| `natural.type3` | 19 | 17 |
+| `natural.type4` | 16 | 16 |
+| `natural.type5` | 0 | 0 |
+| `natural.dance1` | 20 | 23 |
+| `city.type1` | 8 | 8 |
 
-`NON_CHORD_TONE`, `INSTRUMENT_RANGE` and `LOW_INTERVAL_LIMIT` are zero everywhere and
-are asserted at zero rather than pinned, so they are real gates today. `MINOR_NINTH`
-is zero: the only minor ninths in the corpus are the ♭9 that `C7(♭9)` in Golden F
-declares. Arpeggio (`natural.type5`) already passes the whole contract.
+`NON_CHORD_TONE`, `INSTRUMENT_RANGE`, `LOW_INTERVAL_LIMIT` and `DUPLICATE_NOTE` are
+zero everywhere and are asserted at zero rather than pinned, so they are real gates
+today. `MINOR_NINTH` is zero under the approved policy: the only minor ninths in the
+corpus are the ♭9 that `C7(♭9)` in Golden F declares. Arpeggio (`natural.type5`)
+already passes the whole contract.
 
-The user-approved 87-point output therefore does **not** pass the contract yet. The
-87 close minor seconds are the same defect as the reported muddy `Cmaj7`, whose
-approved voicing is `C3 G3 B3 C4 E4` — a B3–C4 semitone with a doubled root.
+The user-approved 87-point output therefore does **not** pass the contract. The 87
+close minor seconds are the same defect as the reported muddy `Cmaj7`, whose approved
+voicing is `C3 G3 B3 C4 E4` — a B3–C4 semitone with a doubled root.
 
-The candidate voicing policy `compact.v2` removes every one of those 87 and cuts
-major seconds by roughly three quarters, which is independent confirmation that it
-addresses the right defect. It is not enough on its own: it doubles the number of
-minor ninths, and duplicate notes are a rhythm concern it never touches.
+## Why the enforcing policy is v3 and not v2
+
+Rejects across the same corpus, by policy:
+
+| Policy | Total | Breakdown |
+| --- | --- | --- |
+| `compact.v1` (shipped) | 175 | MINOR_SECOND 87, MAJOR_SECOND 88 |
+| `compact.v2` (candidate) | 23 | MINOR_NINTH 23 |
+| `compact.v3` (candidate) | **0** | — |
+
+`compact.v2` clears both defects the approved policy carries and then introduces one
+the approved policy never had. The reason is mechanical: spreading a voicing to escape
+a semitone lands the same two pitch classes an octave and a semitone apart, which is a
+minor ninth. Judging only the semitone moves the problem instead of solving it, and
+this is precisely the case a pitch-class-interval implementation cannot see — interval
+class 1 covers both, so it would either reject the maj7 that defines the chord or
+accept the mud.
+
+`compact.v3` is `compact.v2` plus the collision gate, with every other judgement —
+tone importance, spacing, missing-tone pricing, tension register, continuity, path
+search — left identical. A listening comparison therefore isolates the gate rather
+than confounding it with a second set of changes.
+
+Enforcing the rules costs nothing musically: across all three inversions and the whole
+corpus, every chord keeps every guide tone and every declared tension, holds at least
+three notes, and stays inside the compact hand model.
+
+## How correction works
+
+There is no post-hoc note surgery. The engine already enumerates every octave
+placement of every tone as a candidate, so the contract's ordered attempts — raise the
+upper voice an octave, lower the bass an octave, omit an optional tone — exist as
+siblings of the rejected candidate. Enforcing the rules as a rejection inside the
+policy reaches the same result deterministically, and pitch class is never changed.
+
+The rejection is priced at 100,000 rather than infinity: far above any soft cost or
+continuity cost, so a clean voicing always wins, but finite, so a chord that cannot be
+voiced cleanly inside the compact hand yields its least-bad voicing instead of failing
+generation. That is what the contract's "reject and regenerate" step has to mean for an
+engine where the same input always produces the same output.
 
 ## Governance
 
-Phase 1, recorded here, is detection only and changes no audible output — the release
-baseline digests are byte-identical. Enforcement belongs to a future voicing policy
-whose hard reject reuses these same rule functions, and cannot become the default
-until real-device listening scores at least 87 and the Quality Ledger records it in
-the same commit.
+Detection runs on the shipping path and changes nothing: the release baseline digests
+are byte-identical. `compact.v3` is registered as a candidate with
+`listeningApproved: false`, so production resolves `compact.v1` unless the admin-only
+dev listening screen overrides it. It cannot become the default until real-device
+listening scores at least 87 and the Quality Ledger records it in the same commit.
 
 ## Test gates
 
-- `src/lib/performance/harmonyCollision/__tests__/harmonyCollisionValidator.test.ts`
-  — the contract's own test list, plus the cases proving a verdict reads MIDI distance
-  rather than interval class.
-- `src/lib/performance/__tests__/harmonyCollisionDebt.test.ts` — the per-variant debt,
-  a change detector in both directions. Regenerate with
-  `WRITE_HARMONY_COLLISION_DEBT=1`, run prettier on the fixture, then rerun without
-  the flag; the write pass compares against the file it just overwrote and is expected
-  to fail.
+- `harmonyCollision/__tests__/harmonyCollisionValidator.test.ts` — the contract's own
+  test list, plus the cases proving a verdict reads MIDI distance rather than interval
+  class.
+- `__tests__/harmonyCollisionDebt.test.ts` — the per-variant debt, a change detector in
+  both directions. Regenerate with `WRITE_HARMONY_COLLISION_DEBT=1`, run prettier on
+  the fixture, then rerun without the flag; the write pass compares against the file it
+  just overwrote and is expected to fail.
+- `__tests__/harmonyCollisionGate.test.ts` — that `compact.v3` reaches zero rejects,
+  that v1 and v2 do not, and that reaching zero did not thin the harmony.
+- `baseVoicing/policy/__tests__/compactV3Costs.test.ts` — rejection pricing and the
+  agreement between policy and validator.
+- `__tests__/voicingPolicyV3Candidate.test.ts` — the pinned candidate pitches.
+  Regenerate with `WRITE_VOICING_V3_BASELINE=1`.
+
+## Device audition
+
+On a development build, open the admin-only listening screen and use the
+**Shared Base Voicing** selector. Listen to `compact.v1` first as the reference, then
+`compact.v3`. Chords worth comparing: `Cmaj7` (the reported defect), `Fmaj7` in first
+inversion, and Golden F's `Gm9 | C7(♭9) | Am7 | Dm7` for the ♭9 exception. Block Type1
+sounds the full Shared Base and is the clearest place to hear the difference.

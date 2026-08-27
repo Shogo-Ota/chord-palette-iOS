@@ -211,7 +211,19 @@ export function evaluateCompactV2Cost(
       totalSoftCost: Number.POSITIVE_INFINITY,
     };
   }
+  return softCostBreakdown(notes, preference, context);
+}
 
+/**
+ * The graded part of the model, with no rejection of its own. Split out so a later
+ * policy can keep this scoring while replacing the rejection rules — the numbers
+ * here stay exactly what `compact.v2` scores.
+ */
+export function softCostBreakdown(
+  notes: readonly BaseVoicingNote[],
+  preference: BaseVoicingPreference,
+  context: VoicingCostContext,
+): VoicingCostBreakdown {
   const right = rightHand(notes);
   const uniqueToneCount = new Set(context.availableIntervals.map((interval) => wrapPc(interval)))
     .size;

@@ -12,7 +12,16 @@ export {
   V2_COST_WEIGHTS,
   evaluateCompactV2Cost,
   minorSecondPenalty,
+  softCostBreakdown,
 } from './policy/compactV2Costs';
+export { COMPACT_V3_POLICY } from './policy/compactV3Policy';
+export {
+  COLLISION_REJECT_COST,
+  V3_COST_WEIGHTS,
+  collisionRejections,
+  evaluateCompactV3Cost,
+  type CollisionRejection,
+} from './policy/compactV3Costs';
 export {
   intervalRole,
   isGuideRole,

@@ -10,6 +10,7 @@ import { wrapPc } from '../../humanTemplate/degreeRoles';
 import {
   COMPACT_V1_POLICY,
   COMPACT_V2_POLICY,
+  COMPACT_V3_POLICY,
   VOICING_POSITIONS,
   buildCompactBaseVoicings,
   compactRegisterPolicy,
@@ -22,6 +23,7 @@ import {
 const POLICY_CASES: [string, VoicingPolicySpec][] = [
   [COMPACT_V1_POLICY.id, COMPACT_V1_POLICY],
   [COMPACT_V2_POLICY.id, COMPACT_V2_POLICY],
+  [COMPACT_V3_POLICY.id, COMPACT_V3_POLICY],
 ];
 
 function renderGolden(

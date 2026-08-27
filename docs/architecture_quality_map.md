@@ -140,7 +140,8 @@ variants/catalog.ts
 - **Source of truth**: yes。Shared Base pitchの正規決定点。
 - **Safe to delete later**: no
 - **Replacement if deprecated**: n/a
-- **Governance**: `registry.ts`の既定は`APPROVED_VOICING_POLICY_ID`（`compact.v1` = 87点承認済み）。`compact.v2`は候補で、admin専用のdev試聴画面の override からのみ到達する。仕様は`docs/voicing-policy-v2.md`。
+- **Governance**: `registry.ts`の既定は`APPROVED_VOICING_POLICY_ID`（`compact.v1` = 87点承認済み）。`compact.v2`と`compact.v3`は候補で、admin専用のdev試聴画面の override からのみ到達する。承認済みPolicyは常に1つだけであることをテストで固定している。仕様は`docs/voicing-policy-v2.md`と`docs/harmony-collision-validator.md`。
+- **Note**: `compact.v3`のhard rejectは`harmonyCollision`の`evaluateIntervalPair`をそのまま呼ぶ。衝突の定義は1箇所だけに存在し、Policyが受理するvoicingはValidatorが通すvoicingと構造的に一致する。修正はnote書き換えではなく候補選択で行うため、pitch classは変更しない。
 
 ### P-04 Performance orchestration
 

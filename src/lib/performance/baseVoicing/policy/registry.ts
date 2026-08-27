@@ -10,9 +10,10 @@
 
 import { COMPACT_V1_POLICY } from './compactV1Policy';
 import { COMPACT_V2_POLICY } from './compactV2Policy';
+import { COMPACT_V3_POLICY } from './compactV3Policy';
 import type { VoicingPolicyId, VoicingPolicySpec } from './types';
 
-export const VOICING_POLICY_IDS = ['compact.v1', 'compact.v2'] as const;
+export const VOICING_POLICY_IDS = ['compact.v1', 'compact.v2', 'compact.v3'] as const;
 
 /** The only policy allowed to be the default. */
 export const APPROVED_VOICING_POLICY_ID: VoicingPolicyId = 'compact.v1';
@@ -20,6 +21,7 @@ export const APPROVED_VOICING_POLICY_ID: VoicingPolicyId = 'compact.v1';
 const POLICIES: Record<VoicingPolicyId, VoicingPolicySpec> = {
   'compact.v1': COMPACT_V1_POLICY,
   'compact.v2': COMPACT_V2_POLICY,
+  'compact.v3': COMPACT_V3_POLICY,
 };
 
 let override: VoicingPolicyId | null = null;

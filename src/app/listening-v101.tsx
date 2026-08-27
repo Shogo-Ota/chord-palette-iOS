@@ -70,6 +70,8 @@ const VOICING_POLICY_HINT: Record<VoicingPolicyId, string> = {
   'compact.v1': '出荷中 — 87点で承認済みの Shared Base。基準としてこちらを先に聴く',
   'compact.v2':
     '候補 — 低域の濁りを回避し、必要音を音程単位で保持。未承認なので出荷経路では使われない',
+  'compact.v3':
+    '候補 — 衝突ゲート適用。近接半音と宣言のない短9度をゼロにする。Golden A–I で違反0件',
 };
 
 type ListeningCaseId = 'v101' | Phase3cCaseId;

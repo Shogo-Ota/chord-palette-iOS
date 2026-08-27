@@ -6,9 +6,10 @@
  * directions: a rise means a regression slipped in, a fall means a voicing policy
  * genuinely cleaned something up and the ledger should say so.
  *
- * Three rules are already clean and are asserted at zero rather than pinned, so they
+ * Four rules are already clean and are asserted at zero rather than pinned, so they
  * become real gates today: no accompaniment may invent a tone the chord symbol never
- * named, leave the instrument range, or crowd the bass register.
+ * named, leave the instrument range, crowd the bass register, or strike the same MIDI
+ * note twice at the same instant.
  *
  * Regenerate with `WRITE_HARMONY_COLLISION_DEBT=1`, then run prettier on the fixture
  * and rerun without the flag (the write pass compares against the file it just
@@ -30,6 +31,7 @@ const ZERO_TOLERANCE: HarmonyCollisionRuleId[] = [
   'NON_CHORD_TONE',
   'INSTRUMENT_RANGE',
   'LOW_INTERVAL_LIMIT',
+  'DUPLICATE_NOTE',
 ];
 
 type Counts = Partial<Record<HarmonyCollisionRuleId, number>>;

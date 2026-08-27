@@ -244,6 +244,18 @@ describe('duplicate notes', () => {
     expect(report.ok).toBe(true);
   });
 
+  it('leaves a re-articulation over a ringing note alone', () => {
+    // Same pitch, still sounding, struck again two beats later: the rhythm asked for
+    // this attack, so it is not the duplicate note-on the contract names.
+    const rearticulated: NoteEvent[] = [
+      { ...held([60])[0]!, durationBeat: 4 },
+      { ...held([60])[0]!, timeBeat: 2, durationBeat: 2 },
+    ];
+    const report = validateHarmonyCollisions(rearticulated, [chord('C', [60])]);
+    expect(report.countsByRule.DUPLICATE_NOTE ?? 0).toBe(0);
+    expect(report.ok).toBe(true);
+  });
+
   it('merges to one note keeping the longer span and louder velocity', () => {
     const doubled: NoteEvent[] = [
       { ...held([60])[0]!, velocity: 60, durationBeat: 1 },

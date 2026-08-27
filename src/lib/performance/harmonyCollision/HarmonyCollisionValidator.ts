@@ -38,6 +38,9 @@ import type {
 
 const DEFAULT_BEATS_PER_BAR = 4;
 
+/** Two attacks closer than this are the same instant. */
+const SAME_INSTANT_BEATS = 1e-6;
+
 type ViolationDraft = {
   ruleId: HarmonyCollisionRuleId;
   result: HarmonyCollisionViolation['result'];
@@ -126,6 +129,15 @@ export function validateHarmonyCollisions(
   for (const pair of pairs) {
     const chord = contextAt(pair.chordIndex);
     if (!chord) continue;
+    // A unison struck while the same pitch is still ringing is a re-articulation the
+    // rhythm asked for, not a duplicate note-on. Merging it would delete an attack,
+    // so only simultaneous unisons are the duplicate the contract names.
+    if (
+      pair.lower.midiNote === pair.upper.midiNote &&
+      Math.abs(pair.lower.startBeat - pair.upper.startBeat) > SAME_INSTANT_BEATS
+    ) {
+      continue;
+    }
     const verdict = evaluateIntervalPair(
       pair.lower.midiNote,
       pair.upper.midiNote,

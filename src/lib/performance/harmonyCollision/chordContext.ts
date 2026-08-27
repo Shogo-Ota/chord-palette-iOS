@@ -26,25 +26,45 @@ function wrap(pitchClass: number): number {
 }
 
 export function harmonyCollisionChordFor(chord: PerfChord): HarmonyCollisionChord {
-  const allowedPitchClasses = allowedPcsFor(chord);
-  const rootPc = chord.harmony ? wrap(chord.harmony.rootPc) : (allowedPitchClasses[0] ?? 0);
-  const intervals = chord.harmony?.chordIntervals ?? [];
+  return {
+    ...collisionChordFromIntervals(
+      chord.harmony ? wrap(chord.harmony.rootPc) : 0,
+      chord.harmony?.chordIntervals ?? [],
+    ),
+    symbol: chord.harmony?.symbol ?? '(untitled)',
+    allowedPitchClasses: allowedPcsFor(chord),
+    startBeat: chord.startBeat,
+  };
+}
+
+/**
+ * The same context derived from a root and an interval spelling alone, for callers
+ * that hold a harmony rather than a placed chord — a voicing policy judging a
+ * candidate before it has a position on the timeline.
+ */
+export function collisionChordFromIntervals(
+  rootPc: number,
+  intervals: readonly number[],
+): HarmonyCollisionChord {
+  const root = wrap(rootPc);
+  const allowedPitchClasses: number[] = [];
   const tensionPcs: number[] = [];
   const flatNinthPcs: number[] = [];
   let carriesNinth = false;
   for (const interval of intervals) {
-    const pc = wrap(rootPc + interval);
+    const pc = wrap(root + interval);
+    if (!allowedPitchClasses.includes(pc)) allowedPitchClasses.push(pc);
     if (isTensionRole(intervalRole(interval)) && !tensionPcs.includes(pc)) tensionPcs.push(pc);
     if (NINTH_INTERVALS.has(interval)) carriesNinth = true;
     if (FLAT_NINTH_INTERVALS.has(interval) && !flatNinthPcs.includes(pc)) flatNinthPcs.push(pc);
   }
   return {
-    symbol: chord.harmony?.symbol ?? '(untitled)',
-    rootPc,
-    allowedPitchClasses,
+    symbol: '(harmony)',
+    rootPc: root,
+    allowedPitchClasses: allowedPitchClasses.sort((left, right) => left - right),
     tensionPcs,
     flatNinthPcs,
     carriesNinth,
-    startBeat: chord.startBeat,
+    startBeat: 0,
   };
 }

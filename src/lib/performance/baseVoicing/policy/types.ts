@@ -24,7 +24,7 @@ export type VoicingToneSpec = {
   sourceOrder: number;
 };
 
-export type VoicingPolicyId = 'compact.v1' | 'compact.v2';
+export type VoicingPolicyId = 'compact.v1' | 'compact.v2' | 'compact.v3';
 
 export type ToneFamilyRequest = {
   harmony: ChordHarmonyInput;

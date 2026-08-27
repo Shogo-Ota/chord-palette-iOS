@@ -33,6 +33,12 @@ describe('voicing policy registry', () => {
   it('never allows an unapproved policy to be the default', () => {
     expect(voicingPolicyById(APPROVED_VOICING_POLICY_ID).listeningApproved).toBe(true);
     expect(voicingPolicyById('compact.v2').listeningApproved).toBe(false);
+    expect(voicingPolicyById('compact.v3').listeningApproved).toBe(false);
+  });
+
+  it('keeps exactly one approved policy however many candidates exist', () => {
+    const approved = VOICING_POLICY_IDS.filter((id) => voicingPolicyById(id).listeningApproved);
+    expect(approved).toEqual([APPROVED_VOICING_POLICY_ID]);
   });
 
   it('resolves every registered id and rejects anything else', () => {
@@ -44,10 +50,11 @@ describe('voicing policy registry', () => {
     expect(normalizeVoicingPolicyId(undefined)).toBe(APPROVED_VOICING_POLICY_ID);
   });
 
-  it('exposes both policies for the dev audition, approval state included', () => {
+  it('exposes every policy for the dev audition, approval state included', () => {
     expect(voicingPolicyOptions()).toEqual([
       { id: 'compact.v1', label: expect.any(String), listeningApproved: true },
       { id: 'compact.v2', label: expect.any(String), listeningApproved: false },
+      { id: 'compact.v3', label: expect.any(String), listeningApproved: false },
     ]);
   });
 
@@ -63,6 +70,10 @@ describe('voicing policy registry', () => {
     setVoicingPolicyOverride('compact.v2');
     expect(activeVoicingPolicyId()).toBe('compact.v2');
     expect(pitches()).toEqual(pitches(voicingPolicyById('compact.v2')));
+
+    setVoicingPolicyOverride('compact.v3');
+    expect(activeVoicingPolicyId()).toBe('compact.v3');
+    expect(pitches()).toEqual(pitches(voicingPolicyById('compact.v3')));
 
     setVoicingPolicyOverride(null);
     expect(activeVoicingPolicyId()).toBe(APPROVED_VOICING_POLICY_ID);
