@@ -1,9 +1,12 @@
 /**
- * `compact.v3` candidate checkpoint — a change detector, NOT an approval.
+ * `compact.v3` Shared Base checkpoint — the pitches that ship, in MIDI numbers a
+ * musician can read.
  *
- * Same role as the v2 checkpoint: pin what the candidate currently produces so
- * retuning shows up as a reviewable diff and the listening pass is run against a
- * known artifact. Pitches are stored as MIDI numbers so a musician can read them.
+ * This started as a candidate change detector and became the shipping record when
+ * v3 was approved by ear (87–89/100, device listening 2026-08-28). It sits one level
+ * below `releaseAccompanimentBaselineV87`: that test hashes the whole performance,
+ * this one names the individual pitches, so a voicing regression is legible instead
+ * of being a changed digest.
  *
  * Refresh after an intentional v3 change (the write pass fails by design, since it
  * compares against the fixture it just replaced):
@@ -58,8 +61,8 @@ function sharedBasePitches(policy: VoicingPolicySpec): Record<string, number[][]
   return result;
 }
 
-describe('compact.v3 candidate voicing checkpoint', () => {
-  it('keeps the candidate Shared Base pitches stable', () => {
+describe('compact.v3 shipping voicing checkpoint', () => {
+  it('keeps the shipping Shared Base pitches stable', () => {
     const actual = sharedBasePitches(COMPACT_V3_POLICY);
     if (process.env.WRITE_VOICING_V3_BASELINE === '1') {
       writeFileSync(
@@ -70,11 +73,11 @@ describe('compact.v3 candidate voicing checkpoint', () => {
     expect(actual).toEqual(expected.voicings);
   });
 
-  it('is recorded as a candidate, never as an approval', () => {
+  it('is the approved policy production actually resolves', () => {
     expect(expected.policy).toBe('compact.v3');
-    expect(expected.listeningApproved).toBe(false);
-    expect(COMPACT_V3_POLICY.listeningApproved).toBe(false);
-    expect(activeVoicingPolicy().id).toBe(COMPACT_V1_POLICY.id);
+    expect(expected.listeningApproved).toBe(true);
+    expect(COMPACT_V3_POLICY.listeningApproved).toBe(true);
+    expect(activeVoicingPolicy().id).toBe(COMPACT_V3_POLICY.id);
   });
 
   it('holds no semitone and no undeclared minor ninth anywhere', () => {
@@ -89,7 +92,7 @@ describe('compact.v3 candidate voicing checkpoint', () => {
     }
   });
 
-  it('differs from both shipped policies, so the audition has something to judge', () => {
+  it('differs from both superseded policies, so the promotion actually changed the sound', () => {
     const v3 = sharedBasePitches(COMPACT_V3_POLICY);
     for (const policy of [COMPACT_V1_POLICY, COMPACT_V2_POLICY]) {
       const other = sharedBasePitches(policy);

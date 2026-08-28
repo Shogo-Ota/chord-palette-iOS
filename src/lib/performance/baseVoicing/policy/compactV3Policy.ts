@@ -1,6 +1,9 @@
 /**
- * `compact.v3` — candidate Shared Base Voicing that satisfies the collision
- * contract. NOT listening-approved, so it is never the default.
+ * `compact.v3` — the shipping Shared Base Voicing. Listening-approved at 87–89/100
+ * (device listening 2026-08-28), where it removed v1's audible mud without thinning
+ * the harmony. `releaseAccompanimentBaselineV87` now pins its audible output byte
+ * for byte, so nothing here may be retuned or reordered; a better musical opinion
+ * ships as a new policy id and earns its own listening pass first.
  *
  * What it changes versus `compact.v2`:
  *   - a close minor second is rejected at any register, not only below E3;
@@ -23,8 +26,8 @@ import type { VoicingPolicySpec } from './types';
 
 export const COMPACT_V3_POLICY: VoicingPolicySpec = {
   id: 'compact.v3',
-  label: 'v3 候補（衝突ゲート）',
-  listeningApproved: false,
+  label: 'v3 承認済み（衝突ゲート）',
+  listeningApproved: true,
   toneFamilies: (request) => expandedToneFamilies(request),
   rightAnchorMode: 'SOFT',
   staticCost: (notes, preference, context) =>

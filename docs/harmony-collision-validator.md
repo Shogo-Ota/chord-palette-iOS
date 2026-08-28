@@ -173,7 +173,12 @@ naming one:
 
 ## Measured state of the shipping accompaniment
 
-Golden Progressions A–I × every offered variant, piano, sustain:
+Golden Progressions A–I × every offered variant, piano, sustain. **Every rule is zero
+in every variant** since `compact.v3` was promoted on 2026-08-28. The contract is met,
+not merely measured.
+
+What v3 removed, recorded so the promotion is auditable — these were the counts under
+`compact.v1`:
 
 | Variant | MINOR_SECOND | MAJOR_SECOND |
 | --- | --- | --- |
@@ -186,15 +191,14 @@ Golden Progressions A–I × every offered variant, piano, sustain:
 | `natural.dance1` | 20 | 23 |
 | `city.type1` | 8 | 8 |
 
-`NON_CHORD_TONE`, `INSTRUMENT_RANGE`, `LOW_INTERVAL_LIMIT` and `DUPLICATE_NOTE` are
-zero everywhere and are asserted at zero rather than pinned, so they are real gates
-today. `MINOR_NINTH` is zero under the approved policy: the only minor ninths in the
-corpus are the ♭9 that `C7(♭9)` in Golden F declares. Arpeggio (`natural.type5`)
-already passes the whole contract.
+The 87 close minor seconds were the same defect as the reported muddy `Cmaj7`, whose
+v1 voicing was `C3 G3 B3 C4 E4` — a B3–C4 semitone with a doubled root.
 
-The user-approved 87-point output therefore does **not** pass the contract. The 87
-close minor seconds are the same defect as the reported muddy `Cmaj7`, whose approved
-voicing is `C3 G3 B3 C4 E4` — a B3–C4 semitone with a doubled root.
+`NON_CHORD_TONE`, `INSTRUMENT_RANGE`, `LOW_INTERVAL_LIMIT` and `DUPLICATE_NOTE` were
+already zero under v1 and remain asserted at zero. `MINOR_NINTH` was zero under v1 too:
+the only minor ninths in the corpus are the ♭9 that `C7(♭9)` in Golden F declares, which
+the contract permits. Arpeggio (`natural.type5`) passed the whole contract before the
+promotion and is unchanged by it.
 
 ## Why the enforcing policy is v3 and not v2
 
@@ -202,9 +206,9 @@ Rejects across the same corpus, by policy:
 
 | Policy | Total | Breakdown |
 | --- | --- | --- |
-| `compact.v1` (shipped) | 175 | MINOR_SECOND 87, MAJOR_SECOND 88 |
-| `compact.v2` (candidate) | 23 | MINOR_NINTH 23 |
-| `compact.v3` (candidate) | **0** | — |
+| `compact.v1` (shipped 1.0.2, superseded) | 175 | MINOR_SECOND 87, MAJOR_SECOND 88 |
+| `compact.v2` (never promoted) | 23 | MINOR_NINTH 23 |
+| `compact.v3` (shipping) | **0** | — |
 
 `compact.v2` clears both defects the approved policy carries and then introduces one
 the approved policy never had. The reason is mechanical: spreading a voicing to escape
@@ -239,32 +243,44 @@ engine where the same input always produces the same output.
 
 ## Governance
 
-Detection runs on the shipping path and changes nothing: the release baseline digests
-are byte-identical. `compact.v3` is registered as a candidate with
-`listeningApproved: false`, so production resolves `compact.v1` unless the admin-only
-dev listening screen overrides it. It cannot become the default until real-device
-listening scores at least 87 and the Quality Ledger records it in the same commit.
+`compact.v3` scored 87–89/100 on device on 2026-08-28 and was promoted to the approved
+default in the same commit as the digest refresh and the Quality Ledger entry, as the
+rule requires. v1 and v2 stay registered with `listeningApproved: false` and remain
+reachable through the admin-only dev listening screen, so the promotion is reversible by
+ear and a future candidate has references to be judged against.
+
+The refresh changed 33 of the 45 tracked digests. The other 12 — Golden A, B, D and I
+across all three protected variants — are byte-identical, because those progressions had
+no collision to fix. A promotion that rewrote everything would have been the signal that
+the gate was doing more than it claimed.
+
+The same governance now protects v3: it may only be replaced by a policy that earns its
+own device listening pass at 87 or above.
 
 ## Test gates
 
 - `harmonyCollision/__tests__/harmonyCollisionValidator.test.ts` — the contract's own
   test list, plus the cases proving a verdict reads MIDI distance rather than interval
   class.
-- `__tests__/harmonyCollisionDebt.test.ts` — the per-variant debt, a change detector in
-  both directions. Regenerate with `WRITE_HARMONY_COLLISION_DEBT=1`, run prettier on
-  the fixture, then rerun without the flag; the write pass compares against the file it
-  just overwrote and is expected to fail.
+- `__tests__/harmonyCollisionContract.test.ts` — every rule at zero in every shipping
+  variant, read both from the per-variant counts and from the validator's own `ok`.
+  Regenerate the fixture with `WRITE_HARMONY_COLLISION_DEBT=1`, run prettier on it, then
+  rerun without the flag; the write pass compares against the file it just overwrote and
+  is expected to fail.
 - `__tests__/harmonyCollisionGate.test.ts` — that `compact.v3` reaches zero rejects,
   that v1 and v2 do not, and that reaching zero did not thin the harmony.
 - `baseVoicing/policy/__tests__/compactV3Costs.test.ts` — rejection pricing and the
   agreement between policy and validator.
-- `__tests__/voicingPolicyV3Candidate.test.ts` — the pinned candidate pitches.
-  Regenerate with `WRITE_VOICING_V3_BASELINE=1`.
+- `__tests__/voicingPolicyV3Candidate.test.ts` — the pinned shipping pitches, named
+  rather than hashed. Regenerate with `WRITE_VOICING_V3_BASELINE=1`.
 
 ## Device audition
 
-On a development build, open the admin-only listening screen and use the
-**Shared Base Voicing** selector. Listen to `compact.v1` first as the reference, then
-`compact.v3`. Chords worth comparing: `Cmaj7` (the reported defect), `Fmaj7` in first
-inversion, and Golden F's `Gm9 | C7(♭9) | Am7 | Dm7` for the ♭9 exception. Block Type1
-sounds the full Shared Base and is the clearest place to hear the difference.
+Completed 2026-08-28 at 87–89/100 on a development build, comparing `compact.v1` against
+`compact.v3` through the admin-only listening screen's **Shared Base Voicing** selector.
+The reported muddy `Cmaj7` was resolved.
+
+To repeat the comparison, or to audition a future candidate against v3: Block Type1
+sounds the full Shared Base and is the clearest place to hear a voicing difference.
+Chords worth comparing are `Cmaj7`, `Fmaj7` in first inversion, and Golden F's
+`Gm9 | C7(♭9) | Am7 | Dm7` for the ♭9 exception.

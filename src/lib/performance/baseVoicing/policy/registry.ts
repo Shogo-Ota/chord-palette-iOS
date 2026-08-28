@@ -3,9 +3,13 @@
  *
  * Every caller — product playback, MIDI export, video render — resolves the
  * Shared Base policy here, so an unapproved voicing cannot ship by accident:
- * the default is always the listening-approved policy. A candidate is reachable
- * only through an explicit, reversible override, which the dev listening screen
- * uses to compare policies by ear inside one build.
+ * the default is always the listening-approved policy. A non-default policy is
+ * reachable only through an explicit, reversible override, which the dev listening
+ * screen uses to compare policies by ear inside one build.
+ *
+ * Promotion history: v1 shipped 1.0.2; v3 replaced it on 2026-08-28 after a
+ * device listening pass. v1 and v2 stay registered as the comparison references,
+ * which is why "approved" is a property of the policy rather than of this file.
  */
 
 import { COMPACT_V1_POLICY } from './compactV1Policy';
@@ -16,7 +20,7 @@ import type { VoicingPolicyId, VoicingPolicySpec } from './types';
 export const VOICING_POLICY_IDS = ['compact.v1', 'compact.v2', 'compact.v3'] as const;
 
 /** The only policy allowed to be the default. */
-export const APPROVED_VOICING_POLICY_ID: VoicingPolicyId = 'compact.v1';
+export const APPROVED_VOICING_POLICY_ID: VoicingPolicyId = 'compact.v3';
 
 const POLICIES: Record<VoicingPolicyId, VoicingPolicySpec> = {
   'compact.v1': COMPACT_V1_POLICY,

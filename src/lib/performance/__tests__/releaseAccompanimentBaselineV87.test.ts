@@ -1,9 +1,15 @@
 /**
- * Exact audible-output checkpoint for the user-approved 87/100 baseline.
+ * Exact audible-output checkpoint for the user-approved baseline. Currently pins
+ * `compact.v3` at 87–89/100 (device listening 2026-08-28); the fixture also keeps
+ * the `compact.v1` 87/100 record it supersedes.
  *
  * Updating these digests requires all hard gates, a new real-device listening
  * score of at least 87, and a matching Quality Ledger update. New Types get new
  * keys; they must not rewrite existing keys.
+ *
+ * Coverage is deliberately narrower than the shipping surface: only the three
+ * variants of the original approval are hashed. Natural Type4/5 and Dance are
+ * guarded by their own style-quality tests instead, and by the collision contract.
  */
 import { createHash } from 'node:crypto';
 

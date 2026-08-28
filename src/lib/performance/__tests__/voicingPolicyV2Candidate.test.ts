@@ -77,16 +77,16 @@ describe('compact.v2 candidate voicing checkpoint', () => {
     expect(COMPACT_V2_POLICY.listeningApproved).toBe(false);
   });
 
-  it('leaves the approved policy as the one production resolves', () => {
-    expect(activeVoicingPolicy().id).toBe(COMPACT_V1_POLICY.id);
+  it('is not what production resolves — v2 was never promoted', () => {
+    expect(activeVoicingPolicy().id).not.toBe(COMPACT_V2_POLICY.id);
     expect(activeVoicingPolicy().listeningApproved).toBe(true);
   });
 
-  it('actually differs from the approved policy, so the audition has something to judge', () => {
-    const approved = sharedBasePitches(COMPACT_V1_POLICY);
-    const candidate = sharedBasePitches(COMPACT_V2_POLICY);
-    const changed = Object.keys(approved).filter(
-      (key) => JSON.stringify(approved[key]) !== JSON.stringify(candidate[key]),
+  it('actually differs from v1, so the intermediate step is a real step', () => {
+    const v1 = sharedBasePitches(COMPACT_V1_POLICY);
+    const v2 = sharedBasePitches(COMPACT_V2_POLICY);
+    const changed = Object.keys(v1).filter(
+      (key) => JSON.stringify(v1[key]) !== JSON.stringify(v2[key]),
     );
     expect(changed.length).toBeGreaterThan(0);
   });

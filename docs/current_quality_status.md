@@ -1,15 +1,17 @@
 # Chord Palette v1.0.2 Candidate — Current Quality Status
 
-Updated: 2026-08-23
-Branch: `quality/autonomous-pdca`  
+Updated: 2026-08-28
+Branch: `cursor/voicing-policy-v2-33d6`  
 Evidence rule: only confirmed code reachability, automated output, and real-device results may change a status to PASS.
 
 ## Release status
 
-**BUILD 22 RELEASE CANDIDATE — ALL STYLES DEVICE-APPROVED**
+**BUILD 26 — `compact.v3` IS THE APPROVED SHARED BASE**
 
-User listening baseline: **87/100** after the neutral-register and short-chord
-Natural corrections.
+User listening baseline: **87–89/100** for `compact.v3`, promoted 2026-08-28. It holds
+the collision contract at zero across all 8 shipping variants. The previous baseline,
+**87/100** for `compact.v1`, shipped as 1.0.2 build 23 and is recorded under
+`supersedes` in the release digest fixture. See Build 26 below.
 
 Build 11 remains the historical 87/100 checkpoint. Build 13 received **85/100**
 for overall candidate quality. Subsequent device listening
@@ -121,15 +123,12 @@ shipped sound was ever approved, so the digests and the test's update rule were
 restored. The candidate now has its own readable checkpoint
 (`voicingPolicyV2Candidate`), explicitly recorded as `listeningApproved: false`.
 
-`compact.v2` remains a CANDIDATE and is not reachable from any shipping path:
-`registry.ts` defaults to the approved id, and only the admin-only dev listening
-screen can override it, so v1 and v2 can be compared by ear inside one build.
-Measured against v1 across Golden and the V1–V9 corpus, v2 changes 25 of 30
-voicings, removes the low-mid `C/D♭` and `E/F` semitone clusters while keeping
-the ♭9 and the maj7, lifts a 13th chord's 13th to the top, and resolves 16 chords
-in 82.2 ms versus 143.3 ms. Whether it sounds better is unknown until the
-audition. Promotion to default requires a device score of at least 87 plus a
-digest refresh in the same commit as a Quality Ledger note.
+`compact.v2` was never promoted. Measured against v1 across Golden and the V1–V9
+corpus, it changes 25 of 30 voicings, removes the low-mid `C/D♭` and `E/F` semitone
+clusters while keeping the ♭9 and the maj7, lifts a 13th chord's 13th to the top,
+and resolves 16 chords in 82.2 ms versus 143.3 ms — but it introduces 23 minor
+ninths v1 never had, which is why enforcement needed v3. See Build 26 for the
+promotion that superseded v1.
 
 ## First Playback
 
@@ -490,7 +489,11 @@ quality and 87-point digest gates. Arbitrary-root dim/aug/dim7 UI is deferred.
 | Build 25 approved 87-point release digests | PASS / unchanged |
 | Build 25 full regression | PASS — 144 suites / 2431 passed / 1 skipped |
 | Build 25 TypeScript / canonical lint | PASS / 0 errors, existing warnings only |
-| Build 25 `compact.v3` device listening | PENDING — user audition required |
+| Build 26 `compact.v3` device listening | PASS — **87–89/100**, `Cmaj7` mud resolved |
+| Build 26 `compact.v3` promoted to approved default | PASS — registry, one approved policy held |
+| Build 26 collision contract met on the shipping path | PASS — every rule 0 in all 8 variants |
+| Build 26 release digests refreshed | PASS — 33 of 45 changed, Golden A/B/D/I byte-identical |
+| Build 26 full regression | PASS — 144 suites / 2432 passed / 1 skipped |
 
 ## Build 25 — HarmonyCollisionValidator (detection phase)
 
@@ -543,28 +546,70 @@ rewritten. Enforcement cost nothing musically: every chord keeps every guide ton
 declared tension, holds at least three notes and stays inside the compact hand model
 across all three inversions.
 
-`compact.v3` is registered with `listeningApproved: false` and is reachable only
-through the admin-only dev listening screen. Production still resolves `compact.v1`.
+## Build 26 — `compact.v3` promoted to the shipping default
+
+Device listening on 2026-08-28 scored `compact.v3` at **87–89/100** against `compact.v1`
+as the reference, and confirmed the reported muddy `Cmaj7` is gone. It was promoted in
+the same commit as the digest refresh and this ledger entry.
+
+The promotion is three registry values — the approved id, and the `listeningApproved`
+flag on v1 and v3. No engine, Style, Energy, rhythm or product UI file was touched,
+because the voicing engine has been policy-driven since Build 25. That the whole change
+is expressible in three values is the payoff of the provider layer.
+
+What changed in the shipping output, Golden A–I × all 8 variants:
+
+| Measure | `compact.v1` | `compact.v3` |
+| --- | --- | --- |
+| Collision rejects | 175 | **0** |
+| Base tones per chord | 4.417 | 4.222 |
+| Accompaniment notes | 4478 | 4331 |
+| Lowest / highest pitch | 36 / 65 | 36 / 70 |
+| Mean velocity | 86.23 | 86.27 |
+| CC64 events | 684 | 684 |
+
+The 4.4% drop in base tones is the intended mechanism, not attrition: resolving a
+semitone sometimes means omitting an optional tone — a perfect 5th — rather than keeping
+the clash. `harmonyCollisionGate` holds the floor, asserting that every chord still keeps
+every guide tone and declared tension, holds at least three notes, and stays inside the
+compact hand model across all three inversions. Pedal and dynamics are untouched.
+
+Of the 45 tracked release digests, 33 changed and 12 did not. The unchanged ones are
+Golden A, B, D and I across all three protected variants: those progressions had no
+collision to fix, so v3 reproduces v1 exactly. The gate changed only what it claimed to.
+
+`compact.v1` and `compact.v2` remain registered with `listeningApproved: false` and
+selectable on the admin-only listening screen, so the promotion is reversible by ear and
+a future candidate has references to be judged against. Exactly one policy is approved at
+any time, and `voicingPolicyRegistry` asserts it.
+
+`__tests__/harmonyCollisionDebt.test.ts` was renamed to `harmonyCollisionContract.test.ts`
+because its meaning inverted: it no longer records how far short the output falls, it
+holds the contract at zero and fails if any rule returns.
 
 ## Known Blockers
 
 1. **P1** Build 12 Preview correction still needs explicit device confirmation.
 2. **P2** Legacy saved rhythms can reach passing/approach bass logic.
-3. **P2** The approved accompaniment carries 87 close minor seconds and 88
-   low-register major seconds. Detected, pinned, and fixed by `compact.v3` — but
-   `compact.v3` has not been auditioned, so nothing is enforced yet.
+3. **P3** Release digest coverage is narrower than the shipping surface: 3 of 8
+   variants are hashed. Natural Type4/5 and Dance rely on their own style-quality
+   tests and the collision contract instead. Not a defect, but the promotion made it
+   visible — widening it would make the next promotion safer.
 4. Production build and App Store submission require final release approval;
    they are process boundaries, not quality failures.
 
 ## Next Action
 
-Audition `compact.v3` on a real device against `compact.v1`. If it scores at least 87,
-promote it to the approved default and refresh the release digests in the same commit
-as the Quality Ledger entry.
+`compact.v3` is on the branch as the approved default with the full regression green.
+Shipping it needs a production build and a store submission, which are release
+decisions rather than quality work.
+
+The open quality thread is the Theory DB gap analysis: `Available Tension`, `Avoid Note`
+and `Chord Scale` have no implementation, and `rootOmission` is narrower than the theory
+requires. The proposed Theory Layer would land as `compact.v4` behind the same provider,
+so it would earn its own listening pass before shipping.
 
 ## User Action Required
 
-Device listening for `compact.v3` on the admin-only listening screen: `compact.v1`
-first as the reference, then `compact.v3`. Version 1.0.2 is uploaded and its Style
-quality is already device-approved; nothing in Build 25 changes what that build sounds
-like.
+Nothing blocking. Version 1.0.2 build 23 is uploaded to App Store Connect and its Style
+quality is device-approved; the v3 promotion is on the branch and is not in that build.

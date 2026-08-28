@@ -1,8 +1,14 @@
 # Voicing Policy v2 — Specification
 
-Updated: 2026-08-27
+Updated: 2026-08-28
 Branch: `cursor/voicing-policy-v2-33d6`
-Status: **`compact.v2` is a CANDIDATE. `compact.v1` (87/100) remains the shipped default.**
+Status: **`compact.v3` is the shipped default (87–89/100, promoted 2026-08-28). `compact.v2`
+was never promoted; `compact.v1` is the superseded 1.0.2 baseline. Both stay registered as
+comparison references.**
+
+This document specifies the policy contract and the v2 cost model. `compact.v3` is that
+model plus the collision gate, specified in `docs/harmony-collision-validator.md`; read
+both to understand what ships. Section 7 records how the promotion actually went.
 
 ## 1. What a Voicing Policy is
 
@@ -71,10 +77,11 @@ interval role — never by chord symbol.
 
 The root ranks below the colors because the left hand usually already holds it.
 
-## 4. `compact.v1` — approved, frozen
+## 4. `compact.v1` — superseded, still frozen
 
 The Shared Base the owner approved by ear at 87/100 (build 1.0.2 (11), device
-listening 2026-08-20).
+listening 2026-08-20). Shipped 1.0.2; replaced as the default by `compact.v3` on
+2026-08-28.
 
 - One tone family: the most complete four-note right hand.
 - Inversion anchor is a **hard filter**: the right hand must start on the chord
@@ -84,16 +91,16 @@ listening 2026-08-20).
 - Voice leading weighs 1.0.
 - Path search restarts the lattice from every first-chord candidate.
 
-`releaseAccompanimentBaselineV87` pins its audible output byte for byte, so
-`compactV1Policy.ts` is frozen — including the order in which costs accumulate,
-because floating-point accumulation order is part of the approved result. A
-better musical opinion ships as a new policy id, not as a retune of this one.
+`compactV1Policy.ts` stays frozen — including the order in which costs accumulate,
+because floating-point accumulation order is part of the historical result. It is no
+longer what ships, but it is the reference every A/B on the listening screen is judged
+against, so retuning it would silently invalidate every past judgement.
 
-Known limits, documented rather than patched: low-register minor seconds are
-merely expensive instead of rejected, and the hard anchor can force a cluster in
-an inversion.
+Known limits, documented rather than patched — and precisely what v3 exists to fix:
+low-register minor seconds are merely expensive instead of rejected, and the hard anchor
+can force a cluster in an inversion.
 
-## 5. `compact.v2` — candidate
+## 5. `compact.v2` — never promoted
 
 ### 5.1 Musical intent
 
@@ -184,15 +191,15 @@ registry entry. The engine does not change.
 
 `registry.ts` resolves the active policy for every caller — playback, MIDI
 export, video render. Its default is `APPROVED_VOICING_POLICY_ID`, so an
-unapproved voicing cannot ship by accident. A candidate is reachable only
+unapproved voicing cannot ship by accident. A non-default policy is reachable only
 through `setVoicingPolicyOverride`, which the admin-only dev listening screen
 uses to A/B by ear inside one build.
 
-Promotion of `compact.v2` to default requires, in order:
+Promotion requires, in order:
 
-1. Device listening on the dev build, `compact.v1` heard first as the reference.
+1. Device listening on the dev build, the current default heard first as the reference.
 2. A score of at least 87/100 across all shipped Styles.
-3. `APPROVED_VOICING_POLICY_ID` changed to `compact.v2`.
+3. `APPROVED_VOICING_POLICY_ID` and the two `listeningApproved` flags changed together.
 4. `releaseAccompanimentBaselineV87` digests refreshed **in the same commit** as
    a Quality Ledger note recording the new listening score and date.
 
@@ -200,16 +207,37 @@ Until step 2 passes, the approved digests must not be touched. Refreshing them
 to match a candidate would make the regression suite green while silently
 discarding the only evidence that the shipped sound was ever approved.
 
+### How the v3 promotion went, 2026-08-28
+
+`compact.v3` scored 87–89/100 and replaced `compact.v1`. `compact.v2` was skipped: it
+cleared v1's semitones but introduced 23 minor ninths, so it was never a shipping
+candidate — it survives only as the record of why the gate had to judge MIDI distance
+rather than interval class.
+
+The whole promotion was three registry values. No engine, Style, Energy, rhythm or
+product UI file changed, which is the concrete payoff of this policy contract: a change
+to what every chord sounds like did not require touching anything that decides when
+chords sound.
+
+Of 45 tracked digests, 33 changed. The 12 that did not — Golden A, B, D and I across all
+three protected variants — had no collision to fix, so v3 reproduces v1 exactly there.
+Base tones per chord fell from 4.417 to 4.222, because resolving a semitone sometimes
+means omitting a perfect 5th rather than keeping the clash; guide tones, declared
+tensions, the three-note floor and the compact hand model all held.
+
 ## 8. Test gates
 
 | Gate | Scope |
 | --- | --- |
-| `releaseAccompanimentBaselineV87` | v1 audible output, byte-exact. Proof the refactor changed nothing shippable. |
-| `CompactVoicingEngine.test.ts` | Structural invariants, both policies, 12 keys × 3 positions. |
+| `releaseAccompanimentBaselineV87` | Shipping audible output, byte-exact. Now pins v3; keeps v1's record under `supersedes`. |
+| `CompactVoicingEngine.test.ts` | Structural invariants, all three policies, 12 keys × 3 positions. |
 | `voicingQuality.test.ts` | V1–V9 corpus claims, v2 only. |
 | `compactV2Costs.test.ts` | Cost model unit behaviour, including interval-level required tones. |
-| `voicingPolicyRegistry.test.ts` | An unapproved policy can never be the default; overrides are reversible. |
-| `voicingPolicyV2Candidate.test.ts` | Candidate Shared Base pitches, readable MIDI, change detector only. |
+| `compactV3Costs.test.ts` | Rejection pricing, and that v2's soft scoring survives underneath v3. |
+| `voicingPolicyRegistry.test.ts` | An unapproved policy can never be the default; overrides are reversible and actually move pitch. |
+| `voicingPolicyV3Candidate.test.ts` | Shipping Shared Base pitches, readable MIDI rather than a hash. |
+| `voicingPolicyV2Candidate.test.ts` | v2's pitches, kept as the never-promoted reference. |
+| `harmonyCollisionContract.test.ts` | Every collision rule at zero in all 8 shipping variants. |
 | `sharedBaseVoicingProduction.test.ts` | Style invariance and per-chord inversion on the production path. |
 
 Refresh the candidate checkpoint after an intentional v2 change. The write pass
@@ -227,17 +255,20 @@ Regenerate the approved-vs-candidate comparison dump:
 npm run quality:voicingPolicyV2
 ```
 
-## 9. Device audition — PENDING
+## 9. Device audition — COMPLETE for v3
 
-Dev build for the A/B:
-<https://expo.dev/accounts/shogoota/projects/chord-palette/builds/5f3498ee-dfb4-46c5-a5c3-04913d2c4188>
+`compact.v3` was auditioned against `compact.v1` on 2026-08-28 and scored 87–89/100. The
+reported muddy `Cmaj7` was resolved. `compact.v2` was never auditioned on its own; the
+measured minor ninths ruled it out before it reached a device.
+
+To audition a future candidate against v3:
 
 1. Home → **v1.01 実機リスニング（Human MIDI）** (dev builds only).
-2. **Shared Base Voicing（A/B）** → `v1 承認済み（87点）`, play, and keep it as the
+2. **Shared Base Voicing（A/B）** → the shipping policy, play, and keep it as the
    reference.
-3. Switch to `v2 候補（試聴前）` and replay the same Case. Style, rhythm, dynamics
-   and pedal are identical; only the chord pitches move.
-4. Repeat per Case and per Style, and report a score for v2 relative to v1.
+3. Switch to the candidate and replay the same Case. Style, rhythm, dynamics and pedal
+   are identical; only the chord pitches move.
+4. Repeat per Case and per Style, and report a score relative to the reference.
 
 What to listen for, from the measured differences:
 
@@ -246,10 +277,11 @@ What to listen for, from the measured differences:
 - `Fmaj7` first inversion: the E/F rub should be gone.
 - `C13`: the 13th on top should read as color, not as a clash under the 7th.
 - Anything that got **worse**: a voicing that now sounds thin, too open, or that
-  lost weight in the left hand.
+  lost weight in the left hand. v3 holds 4.222 base tones per chord against v1's 4.417,
+  so thinning is the specific risk a candidate in this family has to be checked for.
 
-The override is diagnostic and resets on app restart. Nothing in this build
-changes the App Store path, which still resolves `compact.v1`.
+The override is diagnostic and resets on app restart, so an audition can never leak into
+a release.
 
 ## 10. Open questions
 

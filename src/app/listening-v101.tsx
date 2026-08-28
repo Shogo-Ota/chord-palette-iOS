@@ -57,9 +57,10 @@ const ENGINE_HINT: Record<PlaybackEngineId, string> = {
 
 /**
  * Shared Base Voicing A/B (diagnostic only — never exposed in the product UI).
- * Unlike the engine switch, this one changes generation: the two policies choose
+ * Unlike the engine switch, this one changes generation: the policies choose
  * different pitches for the same chord, so Style / Rhythm stay identical while
- * the harmony under them moves. `compact.v1` is what ships.
+ * the harmony under them moves. `compact.v3` is what ships; v1 and v2 stay
+ * selectable as the references a future promotion is judged against.
  */
 const VOICING_POLICY_OPTIONS = voicingPolicyOptions().map((policy) => ({
   key: policy.id,
@@ -67,11 +68,9 @@ const VOICING_POLICY_OPTIONS = voicingPolicyOptions().map((policy) => ({
 }));
 
 const VOICING_POLICY_HINT: Record<VoicingPolicyId, string> = {
-  'compact.v1': '出荷中 — 87点で承認済みの Shared Base。基準としてこちらを先に聴く',
-  'compact.v2':
-    '候補 — 低域の濁りを回避し、必要音を音程単位で保持。未承認なので出荷経路では使われない',
-  'compact.v3':
-    '候補 — 衝突ゲート適用。近接半音と宣言のない短9度をゼロにする。Golden A–I で違反0件',
+  'compact.v1': '旧既定（1.0.2 / 87点）— 比較用の基準。近接半音87件を含む',
+  'compact.v2': '中間候補 — 半音は解消したが短9度を23件生む。昇格されなかった理由の記録',
+  'compact.v3': '出荷中 — 87〜89点で承認済み。衝突ゲート適用、Golden A–I で違反0件',
 };
 
 type ListeningCaseId = 'v101' | Phase3cCaseId;

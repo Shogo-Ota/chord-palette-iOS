@@ -1,15 +1,15 @@
 /**
- * `compact.v1` — the Shared Base Voicing a human approved by ear at 87/100
- * (build 1.0.2 (11), device listening 2026-08-20).
+ * `compact.v1` — the Shared Base Voicing that shipped 1.0.2, approved by ear at
+ * 87/100 (build 1.0.2 (11), device listening 2026-08-20) and superseded as the
+ * default by `compact.v3` on 2026-08-28.
  *
- * FROZEN. `releaseAccompanimentBaselineV87` pins its audible output byte for
- * byte, so nothing here may be retuned, reordered or "cleaned up": the cost
- * accumulation order is itself part of the approved result. A better musical
- * opinion ships as a new policy id, gets its own listening pass, and only then
- * becomes the default.
+ * STILL FROZEN, for a different reason than before: it is no longer what ships,
+ * but it is the reference the dev listening screen compares against, so retuning
+ * or "cleaning up" the cost accumulation would silently invalidate every past
+ * A/B judgement. Its arithmetic order is part of the historical record.
  *
- * Its known limits, documented rather than patched: low-register minor seconds
- * are merely expensive instead of rejected, and an explicit inversion filters
+ * Its known limits — the ones v3 exists to fix: low-register minor seconds are
+ * merely expensive instead of rejected, and an explicit inversion filters
  * candidates on the right-hand anchor, which can force a cluster.
  */
 
@@ -55,8 +55,8 @@ function legacyStaticVoicingCost(
 
 export const COMPACT_V1_POLICY: VoicingPolicySpec = {
   id: 'compact.v1',
-  label: 'v1 承認済み（87点）',
-  listeningApproved: true,
+  label: 'v1 旧既定（1.0.2）',
+  listeningApproved: false,
   toneFamilies: ({ specs, bass }) => [primaryToneFamily(specs, bass)],
   rightAnchorMode: 'HARD',
   staticCost: (notes, preference) => legacyStaticVoicingCost(notes, preference),
