@@ -6,3 +6,7 @@ ios
 android
 *.md
 package-lock.json
+
+# Source documents of record. Kept byte-identical to what was supplied; the working
+# copy lives in src/lib/musicTheory/.
+docs/music_theory/
