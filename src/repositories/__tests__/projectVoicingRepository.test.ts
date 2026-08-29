@@ -40,6 +40,22 @@ const LEGACY_ROW = {
   updated_at: 2,
 };
 
+/**
+ * Read a bound parameter by column name. The insert lists ~15 columns and gains one
+ * whenever a field ships, so resolving the position from the statement keeps these
+ * assertions pointed at the right value instead of at whatever slid into that index.
+ */
+function insertedValue(column: string): unknown {
+  const [sql, values] = mockDb.runAsync.mock.calls[0] as [string, unknown[]];
+  const columns = String(sql)
+    .match(/\(([^)]*)\)\s*VALUES/)![1]!
+    .split(',')
+    .map((name) => name.trim());
+  const index = columns.indexOf(column);
+  if (index < 0) throw new Error(`insert does not bind a column named ${column}`);
+  return values[index];
+}
+
 describe('project voicing persistence', () => {
   beforeEach(() => {
     mockDb.getFirstAsync.mockReset();
@@ -79,9 +95,10 @@ describe('project voicing persistence', () => {
       chordEvents: [{ voicingPosition: 'first' }],
     });
     expect(mockDb.runAsync).toHaveBeenCalledTimes(1);
-    const values = mockDb.runAsync.mock.calls[0]?.[1] as unknown[];
-    expect(values[10]).toBe('root');
-    expect(JSON.parse(String(values[11]))).toMatchObject([{ voicingPosition: 'first' }]);
+    expect(insertedValue('voicing_position')).toBe('root');
+    expect(JSON.parse(String(insertedValue('chord_events')))).toMatchObject([
+      { voicingPosition: 'first' },
+    ]);
   });
 
   it('defaults a new Project to root', async () => {

@@ -92,3 +92,65 @@ describe('suggestNext — determinism & mapping', () => {
     expect(ev).not.toHaveProperty('id');
   });
 });
+
+describe('suggestNext — natural minor strategy', () => {
+  const opts = { allowPro: true, maxResults: 20, mode: 'minor' as const };
+  const naturalMinorOffsets = new Set([0, 2, 3, 5, 7, 8, 10]);
+
+  it('opens with i / ♭VI / ♭III from the natural-minor inventory', () => {
+    const out = suggestNext([], 'C', opts);
+
+    expect(out.map((s) => `${s.degreeLabel}:${s.displayName}`)).toEqual([
+      'i:Cm',
+      '♭VI:A♭',
+      '♭III:E♭',
+    ]);
+  });
+
+  it('keeps basic candidates natural minor and uses only its own advanced V7', () => {
+    const out = suggestNext([c(0, 'tonic')], 'C', opts);
+    const basic = out.filter((suggestion) => !suggestion.isPro);
+
+    expect(basic.every((s) => naturalMinorOffsets.has(s.rootOffset))).toBe(true);
+    expect(basic.every((s) => ['functional', 'template', 'cadence'].includes(s.reason))).toBe(true);
+    expect(out.find((s) => s.rootOffset === 7)?.displayName).toBe('Gm');
+    expect(out).toContainEqual(
+      expect.objectContaining({ displayName: 'G7', reason: 'minorDominant' }),
+    );
+    expect(out.some((s) => s.reason === 'secondaryDominant' || s.reason === 'modal')).toBe(false);
+  });
+
+  it('keeps the harmonic-minor V7 out of free suggestions', () => {
+    const out = suggestNext([c(0, 'tonic')], 'C', {
+      ...opts,
+      allowPro: false,
+    });
+
+    expect(out.some((s) => s.displayName === 'G7')).toBe(false);
+    expect(out.find((s) => s.rootOffset === 7)?.displayName).toBe('Gm');
+  });
+
+  it('continues i–♭VI–♭III with ♭VII', () => {
+    const out = suggestNext([c(0, 'tonic'), c(8, 'subdominant'), c(3, 'tonic')], 'C', opts);
+
+    expect(out[0]).toMatchObject({
+      rootOffset: 10,
+      displayName: 'B♭',
+      degreeLabel: '♭VII',
+      reason: 'template',
+    });
+  });
+
+  it('resolves natural-minor v to i near a phrase end', () => {
+    const out = suggestNext([c(0, 'tonic'), c(5, 'subdominant'), c(7, 'dominant')], 'C', opts);
+
+    expect(out[0]).toMatchObject({ rootOffset: 0, displayName: 'Cm', reason: 'cadence' });
+  });
+
+  it('keeps omitted mode byte-for-byte equivalent to explicit major', () => {
+    const progression = [I, V, vi];
+    expect(suggestNext(progression, KEY, { allowPro: true })).toEqual(
+      suggestNext(progression, KEY, { allowPro: true, mode: 'major' }),
+    );
+  });
+});

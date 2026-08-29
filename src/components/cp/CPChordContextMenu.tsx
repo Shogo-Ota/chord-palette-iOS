@@ -3,6 +3,7 @@ import { Modal, Pressable, StyleSheet, Text, View } from 'react-native';
 import { Icon, type IconName } from '@/components/Icon';
 import { SegTrack } from '@/components/controls';
 import type { ChordContextActions } from '@/features/editor/useEditorActions';
+import { voicingPositionOptions } from '@/features/editor/voicingPositionOptions';
 import type { VoicingPosition } from '@/lib/performance/baseVoicing';
 import { colors, font, radius, spacing, typeSize } from '@/theme/tokens';
 import type { ChordDuration } from '@/types';
@@ -42,12 +43,6 @@ const DURATION_OPTIONS = [
   { key: '4', label: '1小節' },
   { key: '2', label: '1/2小節' },
   { key: '1', label: '1/4小節' },
-];
-
-const VOICING_OPTIONS = [
-  { key: 'root', label: '基本形' },
-  { key: 'first', label: '1st' },
-  { key: 'second', label: '2nd' },
 ];
 
 /** Derive a translucent tint from a token hex (keeps direct color values out). */
@@ -104,11 +99,7 @@ export function CPChordContextMenu({
   onSetVoicingPosition,
 }: CPChordContextMenuProps) {
   return (
-    <Modal
-      visible={visible}
-      transparent
-      animationType="slide"
-      onRequestClose={onRequestClose}>
+    <Modal visible={visible} transparent animationType="slide" onRequestClose={onRequestClose}>
       <Pressable style={styles.backdrop} onPress={onRequestClose}>
         <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
           <View style={styles.grabber} />
@@ -134,13 +125,11 @@ export function CPChordContextMenu({
             <View style={styles.durationBlock}>
               <Text style={styles.sectionLabel}>ボイシング</Text>
               <SegTrack
-                options={VOICING_OPTIONS}
+                options={voicingPositionOptions(voicingPosition)}
                 value={voicingPosition}
                 onChange={(key) => onSetVoicingPosition(key as VoicingPosition)}
               />
-              <Text style={styles.voicingHint}>
-                このコードだけの最低音と響きを変更します
-              </Text>
+              <Text style={styles.voicingHint}>このコードだけの最低音と響きを変更します</Text>
             </View>
           ) : null}
 

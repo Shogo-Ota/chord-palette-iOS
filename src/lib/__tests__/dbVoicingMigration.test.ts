@@ -6,7 +6,8 @@ const mockDb = {
     .fn()
     .mockResolvedValueOnce([{ name: 'accompaniment_variant' }])
     .mockResolvedValueOnce([{ name: 'accompaniment_energy' }])
-    .mockResolvedValueOnce([]),
+    // Every later column is reported as absent, so adding one does not starve the mock.
+    .mockResolvedValue([]),
 };
 
 jest.mock('expo-sqlite', () => ({

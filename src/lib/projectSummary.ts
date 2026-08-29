@@ -1,3 +1,4 @@
+import { keyLabel } from '@/data/music';
 import { totalBars } from '@/lib/progression';
 import type { Project, ProjectSummary } from '@/types';
 
@@ -39,7 +40,7 @@ export function toSummary(project: Project, now: number = Date.now()): ProjectSu
   return {
     id: project.id,
     title: project.title,
-    keyLabel: `${project.key} Major`,
+    keyLabel: keyLabel(project.key, project.mode),
     tempoBpm: project.tempoBpm,
     bars: totalBars(project.chordEvents),
     chordsDisplay: chordsDisplay(project),

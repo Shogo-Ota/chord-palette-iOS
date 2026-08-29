@@ -32,14 +32,15 @@ import {
   degreeIndexFromRootOffset,
   diatonicLibrary,
   diatonicSeventhLibrary,
+  keyDisplayName,
+  keyLabel,
   MAJOR_KEYS,
-  modalInterchange,
-  secondaryDominants,
   slashChord,
-  variationChord,
   type VariationId,
 } from '@/data/music';
+import { variationChordForMode } from '@/data/minorVariations';
 import { loadAdminMode, useAdminMode } from '@/features/admin/adminMode';
+import { advancedLibraryGroups } from '@/features/editor/advancedLibrary';
 import {
   beatsPerBarFor,
   chordPreviewRequest,
@@ -50,6 +51,16 @@ import { getSession, useEditorSession } from '@/features/editor/session';
 import { useAutosave } from '@/features/editor/useAutosave';
 import { useChordSuggestions } from '@/features/editor/useChordSuggestions';
 import { useEditorActions } from '@/features/editor/useEditorActions';
+import {
+  libraryTabOptions,
+  resolveLibraryTab,
+  supportsAdvancedTiers,
+  type LibraryTab,
+} from '@/features/editor/libraryTabs';
+import {
+  VOICING_POSITION_LABELS,
+  voicingPositionBadge,
+} from '@/features/editor/voicingPositionOptions';
 import { variationTiers } from '@/features/editor/variationPills';
 import { isLocked } from '@/lib/entitlements';
 import { isKeyLocked } from '@/lib/keyAccess';
@@ -84,7 +95,7 @@ import {
   spacing,
   typeSize,
 } from '@/theme/tokens';
-import type { ChordDuration, ChordFunction, LibraryChord, MajorKey } from '@/types';
+import type { ChordDuration, ChordFunction, KeyMode, LibraryChord, MajorKey } from '@/types';
 
 const H_PAD = 16;
 
@@ -101,8 +112,6 @@ const FUNCTION_BADGE: Record<ChordFunction, string> = {
   subdominant: 'SD',
   dominant: 'D',
 };
-
-type LibraryTab = 'diatonic' | 'advanced' | 'slash';
 
 function rgba(hex: string, a: number) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -132,7 +141,7 @@ function libToEvent(c: LibraryChord, durationBeats: ChordDuration = 4) {
 
 export default function EditorScreen() {
   const router = useRouter();
-  const { width } = useWindowDimensions();
+  const { width, height } = useWindowDimensions();
   const { id } = useLocalSearchParams<{ id?: string }>();
   const ent = useEntitlements();
   const s = useEditorSession();
@@ -176,6 +185,7 @@ export default function EditorScreen() {
 
   /* ---- session-backed state (aliased for the render below) ------ */
   const key = s.key;
+  const mode = s.mode;
   const progression = s.progression;
   const selected = s.selected;
   const bpm = s.tempoBpm;
@@ -186,7 +196,6 @@ export default function EditorScreen() {
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [playingIndex, setPlayingIndex] = useState(-1);
   const [keyPickerOpen, setKeyPickerOpen] = useState(false);
-  const [keyMode, setKeyMode] = useState<'change' | 'transpose'>('change');
   const [bpmPickerOpen, setBpmPickerOpen] = useState(false);
   const [contextMenuOpen, setContextMenuOpen] = useState(false);
   /** Collapsed on open — progression strip is the main stage; library on demand. */
@@ -326,12 +335,18 @@ export default function EditorScreen() {
 
   /* ---- derived library ------------------------------------------ */
   const diatonicGrid = useMemo(
-    () => (chordSize === 'seventh' ? diatonicSeventhLibrary(key) : diatonicLibrary(key)),
-    [key, chordSize],
+    () =>
+      chordSize === 'seventh' ? diatonicSeventhLibrary(key, mode) : diatonicLibrary(key, mode),
+    [key, mode, chordSize],
   );
-  const secDoms = useMemo(() => secondaryDominants(key), [key]);
-  const modals = useMemo(() => modalInterchange(key), [key]);
-  const bassNotes = useMemo(() => chromaticBassNotes(key), [key]);
+  const advancedGroups = useMemo(() => advancedLibraryGroups(key, mode), [key, mode]);
+  const bassNotes = useMemo(() => chromaticBassNotes(key, mode), [key, mode]);
+
+  const advancedTiersAvailable = supportsAdvancedTiers(mode);
+  const tabOptions = useMemo(() => libraryTabOptions(mode), [mode]);
+  useEffect(() => {
+    setTab((cur) => resolveLibraryTab(cur, mode));
+  }, [mode]);
 
   /* Multi-key (modulation) visualization: color each chord by its key context.
    * Only shown when the progression actually spans >1 key (single-key unchanged). */
@@ -344,7 +359,7 @@ export default function EditorScreen() {
   const totalBars = calcTotalBars(progression);
   const selectedEvent = selected >= 0 ? progression[selected] : undefined;
   const selectedDegree = selectedEvent
-    ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0)
+    ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0, mode)
     : -1;
 
   const {
@@ -353,8 +368,16 @@ export default function EditorScreen() {
     altered: alteredPills,
   } = useMemo(
     () =>
-      variationTiers({ key, degree: selectedDegree, selected: selectedEvent, entitlements: ent }),
-    [key, selectedDegree, selectedEvent, ent],
+      advancedTiersAvailable
+        ? variationTiers({
+            key,
+            mode,
+            degree: selectedDegree,
+            selected: selectedEvent,
+            entitlements: ent,
+          })
+        : { core: [], extended: [], altered: [] },
+    [advancedTiersAvailable, key, mode, selectedDegree, selectedEvent, ent],
   );
   /** Both folded tiers share one disclosure, so the toggle counts them together. */
   const moreTensionCount = extendedPills.length + alteredPills.length;
@@ -411,7 +434,7 @@ export default function EditorScreen() {
 
   /** Apply a variation pill to the selected degree (both tiers route through here). */
   function pickVariation(id: string) {
-    pickChord(variationChord(key, selectedDegree, id as VariationId));
+    pickChord(variationChordForMode(key, selectedDegree, id as VariationId, mode));
   }
 
   /**
@@ -427,13 +450,7 @@ export default function EditorScreen() {
         const s2 = getSession();
         audioService
           .previewChord(
-            chordPreviewRequest(
-              c,
-              s2.key,
-              s2.tempoBpm,
-              s2.instrumentId,
-              s2.octaveShift,
-            ),
+            chordPreviewRequest(c, s2.key, s2.tempoBpm, s2.instrumentId, s2.octaveShift),
           )
           .catch(() => undefined);
       }
@@ -457,17 +474,11 @@ export default function EditorScreen() {
     if (!isPlaying) {
       const s2 = getSession();
       const placedChord = editing
-        ? s2.progression[s2.selected] ?? c
-        : s2.progression[s2.progression.length - 1] ?? c;
+        ? (s2.progression[s2.selected] ?? c)
+        : (s2.progression[s2.progression.length - 1] ?? c);
       audioService
         .previewChord(
-          chordPreviewRequest(
-            placedChord,
-            s2.key,
-            s2.tempoBpm,
-            s2.instrumentId,
-            s2.octaveShift,
-          ),
+          chordPreviewRequest(placedChord, s2.key, s2.tempoBpm, s2.instrumentId, s2.octaveShift),
         )
         .catch(() => undefined);
     }
@@ -525,9 +536,21 @@ export default function EditorScreen() {
       upsell.show('C以外のキーは Palette Pro で解放されます');
       return;
     }
-    if (keyMode === 'transpose') session.transposeTo(k);
-    else session.setKey(k);
+    // Key selection has one predictable meaning: preserve degrees and move the song.
+    // The lower-level `setKey` operation remains available for future modulation UI,
+    // but exposing both here made the primary picker ambiguous.
+    session.transposeTo(k);
     setKeyPickerOpen(false);
+  }
+
+  /**
+   * Read the current tonic as major or minor. Not gated by entitlements: the paywall is
+   * on the tonic (free = C), and reading C as minor is the same tonic. The picker stays
+   * open so the key grid can be re-read in the new mode's spelling.
+   */
+  function changeMode(m: KeyMode) {
+    session.setMode(m);
+    track('key_mode_changed', { mode: m });
   }
 
   function changeTempo(next: number) {
@@ -602,7 +625,7 @@ export default function EditorScreen() {
         <View style={styles.settingChips}>
           <CPSettingChip
             label="KEY"
-            value={`${key} Major`}
+            value={keyLabel(key, mode)}
             accessibilityLabel="キー"
             accessibilityHint="タップしてキーを変更"
             onPress={() => setKeyPickerOpen(true)}
@@ -719,6 +742,8 @@ export default function EditorScreen() {
                   const isActivePlay = i === playingIndex;
                   const fn = functionColor[ev.function];
                   const neon = playNeonColor[ev.function];
+                  const voicing = normalizeVoicingPosition(ev.voicingPosition);
+                  const voicingBadge = voicingPositionBadge(voicing);
                   return (
                     <React.Fragment key={ev.id}>
                       <Pressable
@@ -726,13 +751,7 @@ export default function EditorScreen() {
                         onLongPress={() => openChordMenu(i)}
                         delayLongPress={350}
                         accessibilityRole="button"
-                        accessibilityLabel={`${ev.displayName} ${ev.degreeLabel} ${
-                          normalizeVoicingPosition(ev.voicingPosition) === 'root'
-                            ? '基本形'
-                            : normalizeVoicingPosition(ev.voicingPosition) === 'first'
-                              ? '1st'
-                              : '2nd'
-                        }`}
+                        accessibilityLabel={`${ev.displayName} ${ev.degreeLabel} ${VOICING_POSITION_LABELS[voicing]}`}
                         accessibilityHint="長押しで編集メニュー"
                         accessibilityState={{ selected: i === selected }}
                         onLayout={(e) => {
@@ -781,13 +800,7 @@ export default function EditorScreen() {
                             </Text>
                             <Text style={[styles.timeDegree, { color: isActivePlay ? neon : fn }]}>
                               {ev.degreeLabel}
-                              {normalizeVoicingPosition(ev.voicingPosition) === 'root'
-                                ? ''
-                                : ` · ${
-                                    normalizeVoicingPosition(ev.voicingPosition) === 'first'
-                                      ? '1st'
-                                      : '2nd'
-                                  }`}
+                              {voicingBadge ? ` · ${voicingBadge}` : ''}
                             </Text>
                           </View>
                           <View style={styles.timeDur}>
@@ -861,11 +874,7 @@ export default function EditorScreen() {
         {libOpen && (
           <>
             <SegTrack
-              options={[
-                { key: 'diatonic', label: 'ダイアトニック' },
-                { key: 'advanced', label: '応用' },
-                { key: 'slash', label: 'オンコード' },
-              ]}
+              options={tabOptions}
               value={tab}
               onChange={(k) => setTab(k as LibraryTab)}
               style={styles.tabTrack}
@@ -902,10 +911,12 @@ export default function EditorScreen() {
                   ))}
                 </View>
 
-                <Text style={styles.subHint}>
-                  バリエーション（飾り付け）— 選んだ進行コードに適用
-                </Text>
-                {!selectedEvent ? (
+                {advancedTiersAvailable && (
+                  <Text style={styles.subHint}>
+                    バリエーション（飾り付け）— 選んだ進行コードに適用
+                  </Text>
+                )}
+                {!advancedTiersAvailable ? null : !selectedEvent ? (
                   <Text style={styles.varEmptyHint}>
                     上のコード進行でカードをタップしてから、飾り付けを選んでください
                   </Text>
@@ -974,30 +985,24 @@ export default function EditorScreen() {
                 ) : (
                   <Text style={styles.subHint}>未選択時は末尾に追加</Text>
                 )}
-                <Text style={styles.groupTitle}>SECONDARY DOMINANT</Text>
-                <View style={styles.grid}>
-                  {secDoms.map((c) => (
-                    <LibraryCard
-                      key={c.id}
-                      chord={c}
-                      width={wAdv}
-                      unlocked={ent.palettePro}
-                      onPress={() => pickChord(c)}
-                    />
-                  ))}
-                </View>
-                <Text style={[styles.groupTitle, { marginTop: 8 }]}>MODAL INTERCHANGE</Text>
-                <View style={styles.grid}>
-                  {modals.map((c) => (
-                    <LibraryCard
-                      key={c.id}
-                      chord={c}
-                      width={wAdv}
-                      unlocked={ent.palettePro}
-                      onPress={() => pickChord(c)}
-                    />
-                  ))}
-                </View>
+                {advancedGroups.map((group, groupIndex) => (
+                  <View key={group.id}>
+                    <Text style={[styles.groupTitle, groupIndex > 0 && { marginTop: 8 }]}>
+                      {group.title}
+                    </Text>
+                    <View style={styles.grid}>
+                      {group.chords.map((chord) => (
+                        <LibraryCard
+                          key={chord.id}
+                          chord={chord}
+                          width={wAdv}
+                          unlocked={ent.palettePro}
+                          onPress={() => pickChord(chord)}
+                        />
+                      ))}
+                    </View>
+                  </View>
+                ))}
 
                 {/*
                 Future harmony techniques (diminished passing, augmented, …) are not
@@ -1171,59 +1176,65 @@ export default function EditorScreen() {
           animationType="fade"
           onRequestClose={() => setKeyPickerOpen(false)}>
           <Pressable style={styles.modalBackdrop} onPress={() => setKeyPickerOpen(false)}>
-            <View style={styles.keyPicker}>
-              <Text style={styles.keyPickerTitle}>キーを選択</Text>
-              <SegTrack
-                options={[
-                  { key: 'change', label: 'キー変更' },
-                  { key: 'transpose', label: '移調' },
-                ]}
-                value={keyMode}
-                onChange={(k) => setKeyMode(k as 'change' | 'transpose')}
-                style={styles.keyModeTrack}
-              />
-              <Text style={styles.keyModeHint}>
-                {keyMode === 'transpose'
-                  ? '曲全体を選んだキーへ移調します（配置済みコードも動きます）'
-                  : '配置済みコードはそのまま。ライブラリ／スケールの基準キーだけ変えます'}
-              </Text>
-              <View style={styles.keyGrid}>
-                {MAJOR_KEYS.map((k) => {
-                  const locked = isKeyLocked(k, ent);
-                  return (
-                    <Pressable
-                      key={k}
-                      onPress={() => changeKey(k)}
-                      style={[
-                        styles.keyOption,
-                        k === key && styles.keyOptionActive,
-                        locked && styles.keyOptionLocked,
-                      ]}>
-                      <Text
-                        style={[
-                          styles.keyOptionText,
-                          k === key && styles.keyOptionTextActive,
-                          locked && styles.keyOptionTextLocked,
-                        ]}>
-                        {k}
-                      </Text>
-                      {locked && (
-                        <Icon
-                          name="lock"
-                          size={11}
-                          color={colors.textFaint}
-                          style={styles.keyOptionLock}
-                        />
-                      )}
-                    </Pressable>
-                  );
-                })}
-              </View>
-              {!ent.palettePro && (
-                <Text style={styles.keyFreeHint}>
-                  無料版はCメジャーのみ。他のキーは Palette Pro で解放されます。
+            <View style={[styles.keyPicker, { height: Math.min(height - 64, 540) }]}>
+              <ScrollView
+                contentContainerStyle={styles.keyPickerContent}
+                showsVerticalScrollIndicator={false}
+                bounces={false}>
+                <Text style={styles.keyPickerTitle}>キーを選択</Text>
+                <SegTrack
+                  options={[
+                    { key: 'major', label: 'メジャー' },
+                    { key: 'minor', label: 'マイナー' },
+                  ]}
+                  value={mode}
+                  onChange={(m) => changeMode(m as KeyMode)}
+                  style={styles.keyModeTrack}
+                />
+                <Text style={styles.keyModeHint}>
+                  {mode === 'minor'
+                    ? 'ナチュラル・マイナーの 7 枚（i / ii° / ♭III / iv / v / ♭VI / ♭VII）になります'
+                    : 'メジャーの 7 枚（I / ii / iii / IV / V / vi / vii°）になります'}
                 </Text>
-              )}
+                <View style={styles.keyGrid}>
+                  {MAJOR_KEYS.map((k) => {
+                    const locked = isKeyLocked(k, ent);
+                    return (
+                      <Pressable
+                        key={k}
+                        onPress={() => changeKey(k)}
+                        style={[
+                          styles.keyOption,
+                          k === key && styles.keyOptionActive,
+                          locked && styles.keyOptionLocked,
+                        ]}>
+                        <Text
+                          style={[
+                            styles.keyOptionText,
+                            k === key && styles.keyOptionTextActive,
+                            locked && styles.keyOptionTextLocked,
+                          ]}>
+                          {keyDisplayName(k, mode)}
+                        </Text>
+                        {locked && (
+                          <Icon
+                            name="lock"
+                            size={11}
+                            color={colors.textFaint}
+                            style={styles.keyOptionLock}
+                          />
+                        )}
+                      </Pressable>
+                    );
+                  })}
+                </View>
+                {!ent.palettePro && (
+                  <Text style={styles.keyFreeHint}>
+                    無料版はキー C のみ（メジャー／マイナーはどちらも使えます）。他のキーは Palette
+                    Pro で解放されます。
+                  </Text>
+                )}
+              </ScrollView>
             </View>
           </Pressable>
         </Modal>
@@ -1970,7 +1981,10 @@ const styles = StyleSheet.create({
     borderColor: colors.borderStrong,
     borderRadius: radius['2xl'],
     padding: 18,
+    paddingBottom: 26,
+    overflow: 'hidden',
   },
+  keyPickerContent: { paddingBottom: 2 },
   keyPickerTitle: {
     fontSize: 14,
     fontFamily: font.bold,
@@ -1978,7 +1992,19 @@ const styles = StyleSheet.create({
     color: colors.textHeading,
     marginBottom: 12,
   },
-  keyModeTrack: { marginBottom: 8 },
+  keyModeTrack: {
+    /*
+     * SegTrack normally fills a height supplied by its parent (`flex: 1`). This modal
+     * sizes itself from its children, so leaving that flex basis in place collapses the
+     * track to a thin bar on iOS. Give only the key picker an intrinsic control height;
+     * the shared SegTrack stays unchanged for every other screen.
+     */
+    flexGrow: 0,
+    flexShrink: 0,
+    flexBasis: 'auto',
+    minHeight: 42,
+    marginBottom: 8,
+  },
   keyModeHint: {
     fontSize: typeSize.caption,
     color: colors.textFaint,

@@ -20,6 +20,7 @@ function project(overrides: Partial<Project> = {}): Project {
     id: 'proj-1',
     title: 'Morning Sketch',
     key: 'C',
+    mode: 'major',
     tempoBpm: 120,
     timeSignature: '4/4',
     instrumentId: 'piano',
