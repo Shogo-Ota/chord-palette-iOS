@@ -43,7 +43,9 @@ flowchart TD
 
   Engine --> HarmonyGate["harmonyGate"]
   HarmonyGate --> Effect["effect/applyInstrumentEffect.ts"]
+  Effect --> Collision["harmonyCollision (detect only)"]
   Effect --> Plan["SessionPerformancePlan"]
+  Collision --> Plan
 
   Plan --> RequestMap["services/audio/performanceMapper.ts"]
   Plan --> FinalMidi["finalMidi/buildFinalMidiSnapshot.ts"]
@@ -128,6 +130,19 @@ variants/catalog.ts
 - **Safe to delete later**: no
 - **Replacement if deprecated**: n/a
 
+### P-03b Shared Base Voicing policy provider
+
+- **Path**: `src/lib/performance/baseVoicing/policy/*`, `baseVoicing/CompactVoicingEngine.ts`, `baseVoicing/continuity.ts`
+- **Purpose**: Shared Base Voicingの音選択を`VoicingPolicySpec`へ分離する。Engineは合法な手形の列挙のみ、tone重要度/spacing・dissonance costs/必須音cost/進行全体のpath探索はPolicyが持つ。
+- **Imported by**: `progressionInput.ts`（Production全Style）、`features/editor/playback.ts`（preview）、`voicingAnalysis.ts`、QA harness。
+- **Imports**: `theory` harmony、`handModel` register窓、`degreeRoles`。
+- **Production reachable**: yes
+- **Source of truth**: yes。Shared Base pitchの正規決定点。
+- **Safe to delete later**: no
+- **Replacement if deprecated**: n/a
+- **Governance**: `registry.ts`の既定は`APPROVED_VOICING_POLICY_ID`（`compact.v3` = 87〜89点承認済み、2026-08-28昇格）。`compact.v1`（旧既定/87点）と`compact.v2`（未昇格）は比較基準として登録を残し、admin専用のdev試聴画面の override からのみ到達する。承認済みPolicyは常に1つだけであることをテストで固定している。Policy層を持つ利点はこの昇格が registry の3値の差し替えだけで完結したことに現れており、Engine/Style/Energy/UIは一切変更していない。仕様は`docs/voicing-policy-v2.md`と`docs/harmony-collision-validator.md`。
+- **Note**: `compact.v3`のhard rejectは`harmonyCollision`の`evaluateIntervalPair`をそのまま呼ぶ。衝突の定義は1箇所だけに存在し、Policyが受理するvoicingはValidatorが通すvoicingと構造的に一致する。修正はnote書き換えではなく候補選択で行うため、pitch classは変更しない。
+
 ### P-04 Performance orchestration
 
 - **Path**: `src/lib/performance/PerformanceEngine.ts`
@@ -182,6 +197,18 @@ variants/catalog.ts
 - **Source of truth**: yes
 - **Safe to delete later**: no
 - **Replacement if deprecated**: n/a
+
+### P-08b Harmony collision validation
+
+- **Path**: `src/lib/performance/harmonyCollision/**`
+- **Purpose**: 生成後の実発音期間から、コード外音・近接半音・宣言のない短9度・低音域の詰まり・重複NoteOnを検出する。判定は必ず実MIDI note間の距離で行い、pitch class intervalでは判定しない（`B3+C4`と`C4+B4`は同じinterval classで逆の結論になる）。検出のみで、pitchは書き換えない。
+- **Imported by**: `buildSessionPerformancePlan.ts`（`collisionReport`）、`harmonyCollisionContract` test、`harmonyCollisionGate` test、`compactV3Costs`（rejection定義の再利用）。
+- **Imports**: `harmonyGate`（Chord membershipは委譲）、`baseVoicing/policy/intervalRoles`（tension語彙）、`NoteEvent`、`PerfChord`。
+- **Production reachable**: yes（検出のみ。強制は`compact.v3`のhard reject側で行う）
+- **Source of truth**: yes。不協和の合否判定の正規定義点。
+- **Safe to delete later**: no
+- **Replacement if deprecated**: n/a
+- **Governance**: Chord membershipは再実装せず`harmonyGate`へ委譲する。二重実装は層間で合否が食い違うため禁止。Rule閾値は`InstrumentCollisionProfile`に置き、`octaveShift`と一緒に移動させる。強制はValidator側でnoteを書き換えるのではなくVoicing Policy側のhard rejectで行う。`compact.v3`が2026-08-28に昇格し、出荷経路の全8 variantで全ruleが0件になった（`harmonyCollisionContract`が維持）。仕様は`docs/harmony-collision-validator.md`。
 
 ### P-09 Instrument effect and sustain policy
 
@@ -568,7 +595,7 @@ variants/catalog.ts
 3. Session生成: `finalMidi/buildSessionPerformancePlan.ts`
 4. Chord定義: `theory/definitions` + `humanTemplate/chordHarmony.ts`
 5. Production Natural pitch: `humanTemplate/realize.ts` + `voiceStructureRealize.ts`
-6. Legal harmony: `strictV2/harmonyResolver.ts` + `harmonyGate`
+6. Legal harmony: `strictV2/harmonyResolver.ts` + `harmonyGate`（不協和判定は`harmonyCollision`）
 7. Note effect: `performance/effect/applyInstrumentEffect.ts`
 8. Canonical MIDI: `finalMidi/buildFinalMidiSnapshot.ts`
 9. Editor playback schedule: `playback/nativePlaybackPlan.ts`

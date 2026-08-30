@@ -9,6 +9,7 @@ import {
   type InstrumentEffect,
 } from '@/lib/performance/effect';
 import { DEFAULT_DRUM_MODE, normalizeDrumMode, type DrumMode } from '@/lib/drum/drumMode';
+import { DEFAULT_KEY_MODE, normalizeKeyMode } from '@/lib/keyMode';
 import {
   DEFAULT_ENERGY,
   normalizeEnergy,
@@ -33,7 +34,7 @@ import {
 import { PHASE3C_CASES, type Phase3cCaseId } from '@/lib/playback/phase3cCases';
 import { buildPresetProgression } from '@/lib/presets';
 import { appendWithinCap, canAdd, canSetDuration } from '@/lib/progression';
-import { rebaseProgression, relabelDegreesForKey, transposeProgression } from '@/lib/transpose';
+import { rebaseProgression, relabelDegreesForKey, transposeEvent } from '@/lib/transpose';
 import { createProject, getProject, saveProject } from '@/repositories/projectRepository';
 import { DEFAULT_OCTAVE_SHIFT, setLastProjectId } from '@/repositories/sessionPrefsRepository';
 import type {
@@ -42,6 +43,7 @@ import type {
   ChordEvent,
   GrooveId,
   InstrumentId,
+  KeyMode,
   MajorKey,
   Preset,
   Project,
@@ -58,6 +60,8 @@ export type EditorSession = {
   projectId: string | null;
   title: string;
   key: MajorKey;
+  /** How `key` is read. Decides the diatonic library and degree labels, never the pitches. */
+  mode: KeyMode;
   tempoBpm: number;
   instrumentId: InstrumentId;
   grooveId: GrooveId;
@@ -102,6 +106,7 @@ function initialState(): EditorSession {
     projectId: null,
     title: '新しい進行',
     key: 'C',
+    mode: DEFAULT_KEY_MODE,
     tempoBpm: 100,
     instrumentId: 'piano',
     grooveId: 'pop8',
@@ -223,6 +228,7 @@ function applyProject(p: Project): void {
     projectId: p.id,
     title: p.title,
     key: p.key,
+    mode: normalizeKeyMode(p.mode),
     tempoBpm: p.tempoBpm,
     instrumentId: normalizeInstrumentId(p.instrumentId),
     grooveId: p.grooveId,
@@ -230,16 +236,20 @@ function applyProject(p: Project): void {
     accompanimentPattern: publicAccompaniment.accompanimentPattern,
     accompanimentVariant: publicAccompaniment.accompanimentVariant,
     accompanimentEnergy: normalizeEnergy(p.accompanimentEnergy),
-    // Respell for the project's own key — a no-op for names, but canonicalizes any
-    // legacy slash-chord degree labels ("I/E") to the degree denominator ("I/III").
-    // Preserve any saved per-chord keyContext; legacy events fall back to the key.
-    progression: transposeProgression(p.chordEvents, p.key).map((e) => ({
-      ...e,
-      keyContext: e.keyContext ?? p.key,
-      // v1.0.2 stored one Project-wide position. Promote it into every legacy
-      // chord exactly once; from here on the event is the production authority.
-      voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
-    })),
+    // Respell each chord in the mode it was entered under. A mixed C-major/C-minor
+    // project must reload as I–IV–V–I–i–iv–v–i, not be flattened into the last mode.
+    progression: p.chordEvents.map((e) => {
+      const eventMode = normalizeKeyMode(e.modeContext ?? p.mode);
+      const transposed = transposeEvent(e, p.key, eventMode);
+      return {
+        ...transposed,
+        keyContext: e.keyContext ?? p.key,
+        modeContext: eventMode,
+        // v1.0.2 stored one Project-wide position. Promote it into every legacy
+        // chord exactly once; from here on the event is the production authority.
+        voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
+      };
+    }),
     selected: p.chordEvents.length > 0 ? 0 : -1,
     createdAt: p.createdAt,
   };
@@ -260,6 +270,7 @@ function toProject(id: string): Project {
     id,
     title: state.title,
     key: state.key,
+    mode: state.mode,
     tempoBpm: state.tempoBpm,
     timeSignature: '4/4',
     instrumentId: state.instrumentId,
@@ -290,6 +301,7 @@ export async function save(): Promise<void> {
     const created = await createProject({
       title: state.title.trim() || 'はじめての進行',
       key: state.key,
+      mode: state.mode,
       tempoBpm: state.tempoBpm,
       instrumentId: state.instrumentId,
       grooveId: state.grooveId,
@@ -332,6 +344,7 @@ export function addChord(chord: Omit<ChordEvent, 'id'>): void {
       ...chord,
       id: nextEventId(),
       keyContext: state.key,
+      modeContext: state.mode,
       voicingPosition: normalizeVoicingPosition(chord.voicingPosition),
     },
   ];
@@ -355,6 +368,7 @@ export function replaceSelected(
           id: cur.id,
           durationBeats: chord.durationBeats ?? cur.durationBeats,
           keyContext: state.key,
+          modeContext: state.mode,
           voicingPosition: normalizeVoicingPosition(chord.voicingPosition ?? cur.voicingPosition),
         }
       : e,
@@ -430,16 +444,31 @@ export function setKey(key: MajorKey): void {
   set({ key, progression: rebaseProgression(state.progression, state.key, key), dirty: true });
 }
 
-/** Transpose the whole song to `key` (moves every placed chord). */
+/** Transpose the whole song to `key`, preserving each chord's major/minor section. */
 export function transposeTo(key: MajorKey): void {
   if (key === state.key) return;
-  // Moving the whole song lands every chord in one key — collapse any prior
-  // multi-key contexts so the arrangement reads as a single key again.
-  const progression = transposeProgression(state.progression, key).map((e) => ({
-    ...e,
-    keyContext: key,
-  }));
+  const progression = state.progression.map((e) => {
+    const eventMode = normalizeKeyMode(e.modeContext ?? state.mode);
+    return {
+      ...transposeEvent(e, key, eventMode),
+      keyContext: key,
+      modeContext: eventMode,
+    };
+  });
   set({ key, progression, dirty: true });
+}
+
+/**
+ * Choose the mode used by the library and by chords added from this point onward.
+ *
+ * Existing events keep their `modeContext` and degree label. This makes a mode switch a
+ * section boundary: C–F–G–C entered in major remains I–IV–V–I after the user switches to
+ * minor and appends Cm–Fm–Gm–Cm as i–iv–v–i.
+ */
+export function setMode(mode: KeyMode): void {
+  const next = normalizeKeyMode(mode);
+  if (next === state.mode) return;
+  set({ mode: next, dirty: true });
 }
 
 export function setTempo(bpm: number): void {
@@ -624,6 +653,8 @@ export function startFromPreset(preset: Preset, targetKey: MajorKey = state.key)
     ...e,
     id: nextEventId(),
     keyContext: targetKey,
+    // Presets are written in major degrees, so `initialState()` reading below resets to major.
+    modeContext: DEFAULT_KEY_MODE,
     voicingPosition: DEFAULT_VOICING_POSITION,
   }));
   const { octaveShift, drumMode, drumBeat } = state;
@@ -660,6 +691,7 @@ function appendPrepared(incoming: Omit<ChordEvent, 'id'>[]): AppendOutcome {
     ...e,
     id: nextEventId(),
     keyContext: state.key,
+    modeContext: state.mode,
     voicingPosition: normalizeVoicingPosition(e.voicingPosition),
   }));
   const { events, appended, dropped } = appendWithinCap(state.progression, withIds);
@@ -674,8 +706,8 @@ function appendPrepared(incoming: Omit<ChordEvent, 'id'>[]): AppendOutcome {
  * Respects the 16-bar cap (extra chords are dropped and reported).
  */
 export function appendProject(project: Project): AppendOutcome {
-  const rebased = rebaseProgression(project.chordEvents, project.key, state.key).map(
-    relabelDegreesForKey,
+  const rebased = rebaseProgression(project.chordEvents, project.key, state.key).map((e) =>
+    relabelDegreesForKey(e, state.mode),
   );
   return appendPrepared(rebased);
 }

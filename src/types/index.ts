@@ -3,20 +3,25 @@ import type { VoicingPosition } from '@/lib/performance/baseVoicing/types';
 
 export type { ChordFunction, VoicingPosition };
 
-/** 12 major keys supported in the MVP (display names use ♭ where flat). */
-export type MajorKey =
-  | 'C'
-  | 'D♭'
-  | 'D'
-  | 'E♭'
-  | 'E'
-  | 'F'
-  | 'G♭'
-  | 'G'
-  | 'A♭'
-  | 'A'
-  | 'B♭'
-  | 'B';
+/**
+ * The 12 supported tonics (display names use ♭ where flat).
+ *
+ * Historically this doubled as "the key", because only major existed. It now names
+ * the *tonic* only; {@link KeyMode} says how that tonic is read. The name is kept so
+ * the ~50 modules that thread a key around do not all have to change at once.
+ */
+export type MajorKey = 'C' | 'D♭' | 'D' | 'E♭' | 'E' | 'F' | 'G♭' | 'G' | 'A♭' | 'A' | 'B♭' | 'B';
+
+/**
+ * How a tonic is read. `minor` means natural minor: the diatonic set the theory DB
+ * sources from 養父貴 Part 2 / ナチュラル・マイナー, not harmonic or melodic minor.
+ *
+ * Mode never reaches the accompaniment engine. `chordHarmonyFromEvent` builds pitches
+ * from the tonic pitch class plus each chord's `rootOffset`, so the same progression
+ * sounds identical whichever mode it was entered in. Mode decides which chords the
+ * library offers and how their degrees are labelled.
+ */
+export type KeyMode = 'major' | 'minor';
 
 /**
  * User-facing accompaniment choice. Three kinds live in one list, which is what the
@@ -47,14 +52,7 @@ export type AccompanimentPattern =
   | 'sixEight'
   | 'waltz';
 export type InstrumentId = 'piano' | 'ePiano' | 'acousticGuitar' | 'electricGuitar' | 'strings';
-export type GrooveId =
-  | 'pop8'
-  | 'pop16'
-  | 'rock8'
-  | 'rock16'
-  | 'soul16'
-  | 'clap'
-  | 'bossaNova';
+export type GrooveId = 'pop8' | 'pop16' | 'rock8' | 'rock16' | 'soul16' | 'clap' | 'bossaNova';
 
 /** A diatonic chord candidate offered for the currently selected key. */
 export type DiatonicChord = {
@@ -76,11 +74,21 @@ export type DiatonicChord = {
 
 export type ChordDuration = 1 | 2 | 4; // beats: 1/4, 1/2, 1 bar
 
+/** Degree-aware display spelling retained across key changes (e.g. #I, not bII). */
+export type ChordRootSpelling = {
+  degreeIndex: number;
+  alteration: -1 | 0 | 1;
+};
+
 /** Where a library chord comes from — drives the tab it lives in. */
 export type ChordCategory =
   | 'diatonic'
   | 'variation'
+  | 'primaryDominant'
   | 'secondaryDominant'
+  | 'passingDiminished'
+  | 'substituteChord'
+  | 'chromaticMediant'
   | 'modalInterchange'
   | 'slash';
 
@@ -94,12 +102,16 @@ export type LibraryChord = {
   id: string;
   /** Big center label, e.g. "F", "A7", "C/E". */
   displayName: string;
-  /** Small top label, e.g. "IV", "V7/ii", "♭III", "/E". */
+  /** Small top label, e.g. "IV", "VI7", "♭III", "/E". */
   degreeLabel: string;
   /** Harmonic function → accent color + T/SD/D badge. */
   function: ChordFunction;
   /** Bottom pill sub-text, e.g. "Fmaj7", "→Dm7", "bass E". */
   subLabel?: string;
+  /** Familiar practical name shown under the chord, e.g. "裏コード". */
+  commonName?: string;
+  /** Card-only badge override such as DIM or COLOR; function remains semantic. */
+  badgeLabel?: string;
   category: ChordCategory;
   /** Bass note for slash chords, e.g. "E". */
   bassNote?: string;
@@ -117,6 +129,8 @@ export type LibraryChord = {
    * before the catalog existed carry only a suffix.
    */
   definitionId?: string;
+  /** Degree-aware root spelling used when this card is placed or transposed. */
+  rootSpelling?: ChordRootSpelling;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
 };
@@ -143,6 +157,8 @@ export type ChordEvent = {
    * before the catalog existed still load and sound the same.
    */
   definitionId?: string;
+  /** Degree-aware root spelling retained when the project is transposed. */
+  rootSpelling?: ChordRootSpelling;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
   /** Bass note when this event is a slash/on-chord. */
@@ -159,6 +175,12 @@ export type ChordEvent = {
    * compatibility: legacy events without it fall back to the project/session key.
    */
   keyContext?: MajorKey;
+  /**
+   * Mode `keyContext` is read in. Travels with `keyContext` so a degree label stays
+   * correct after a modulation between a major and a minor section. Optional for
+   * projects written before minor keys existed; read paths normalize it to `major`.
+   */
+  modeContext?: KeyMode;
   /**
    * Compact inversion selected for this placed chord. Optional only for projects
    * written before per-chord voicing existed; read paths normalize it to `root`.
@@ -219,6 +241,8 @@ export type Project = {
   id: string;
   title: string;
   key: MajorKey;
+  /** How `key` is read. Rows written before minor keys existed read back as `major`. */
+  mode: KeyMode;
   tempoBpm: number;
   timeSignature: TimeSignature;
   instrumentId: InstrumentId;
@@ -253,6 +277,7 @@ export type NewProjectInput = Partial<
     Project,
     | 'title'
     | 'key'
+    | 'mode'
     | 'tempoBpm'
     | 'timeSignature'
     | 'instrumentId'

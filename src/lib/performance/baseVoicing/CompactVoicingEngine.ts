@@ -1,7 +1,25 @@
-import { classifyInterval, wrapPc, type HarmonicDegree } from '../humanTemplate/degreeRoles';
+/**
+ * Shared Compact Base Voicing generator.
+ *
+ * Enumeration only: it lists every legal way to place one left-hand note plus two
+ * to four right-hand notes inside the compact register, then asks the policy
+ * which of them to keep and how to chain them across the progression. Every
+ * musical judgement — which tones may be dropped, what a cluster costs, how much
+ * voice leading matters — lives in `policy/`, so a new opinion is a new policy
+ * rather than an edit here.
+ *
+ * The result is style-neutral by construction: Block, Natural, City and every
+ * Variation receive identical pitches and may differ only in timing, dynamics
+ * and subtractive masks.
+ */
+
+import { wrapPc } from '../humanTemplate/degreeRoles';
 import type { ChordHarmonyInput } from '../strictV2';
-import { selectContinuousCandidatePath } from './continuity';
 import { compactRegisterPolicy, isCompactHandModel } from './handModel';
+import { selectVoicingPath } from './policy/pathSearch';
+import { activeVoicingPolicy } from './policy/registry';
+import { bassToneSpec, preferredRightAnchorPc, toneSpecsForHarmony } from './policy/toneImportance';
+import type { VoicingCostContext, VoicingPolicySpec, VoicingToneSpec } from './policy/types';
 import {
   DEFAULT_BASE_VOICING_PREFERENCE,
   type BaseVoicing,
@@ -10,113 +28,7 @@ import {
   type BaseVoicingPreference,
 } from './types';
 
-type ToneSpec = {
-  id: string;
-  pc: number;
-  interval: number;
-  degree: HarmonicDegree;
-  sourceOrder: number;
-};
-
 const MAX_CANDIDATES_PER_CHORD = 64;
-
-function toneSpecs(harmony: ChordHarmonyInput): ToneSpec[] {
-  const seen = new Set<number>();
-  const specs: ToneSpec[] = [];
-  harmony.chordIntervals.forEach((interval, sourceOrder) => {
-    const pc = wrapPc(harmony.rootPc + interval);
-    if (seen.has(pc)) return;
-    seen.add(pc);
-    specs.push({
-      id: `${interval}:${sourceOrder}`,
-      pc,
-      interval,
-      degree: classifyInterval(interval),
-      sourceOrder,
-    });
-  });
-  return specs;
-}
-
-function inversionIndex(preference: BaseVoicingPreference): number {
-  if (preference.position === 'first') return 1;
-  if (preference.position === 'second') return 2;
-  return 0;
-}
-
-function bassSpec(
-  harmony: ChordHarmonyInput,
-  specs: readonly ToneSpec[],
-  preference: BaseVoicingPreference,
-): ToneSpec {
-  if (harmony.slashBassPc != null) {
-    const slashPc = wrapPc(harmony.slashBassPc);
-    return (
-      specs.find((spec) => spec.pc === slashPc) ?? {
-        id: 'slash',
-        pc: slashPc,
-        interval: wrapPc(slashPc - harmony.rootPc),
-        degree: classifyInterval(wrapPc(slashPc - harmony.rootPc)),
-        sourceOrder: -1,
-      }
-    );
-  }
-  return specs[Math.min(inversionIndex(preference), specs.length - 1)]!;
-}
-
-function tonePriority(spec: ToneSpec, harmony: ChordHarmonyInput, bass: ToneSpec): number {
-  const normalized = wrapPc(spec.interval);
-  if (spec.degree === 'third') return 120;
-  if (spec.degree === 'seventh') return 115;
-  if (spec.degree === 'ninth' || spec.degree === 'eleventh' || spec.degree === 'thirteenth') {
-    return 105 + Math.min(spec.sourceOrder, 9);
-  }
-  // Altered fifths define diminished/augmented quality and must survive omission.
-  if (spec.degree === 'fifth' && normalized !== 7) return 112;
-  if (spec.degree === 'root') return bass.pc === spec.pc ? 75 : 100;
-  return 70;
-}
-
-/**
- * Complex symbols remain simple arrangements: one LH note and at most four RH
- * notes. Guide tones, explicit colors, and altered fifths win over a plain fifth.
- */
-function bodySpecs(
-  harmony: ChordHarmonyInput,
-  specs: readonly ToneSpec[],
-  bass: ToneSpec,
-): ToneSpec[] {
-  if (specs.length <= 4) return [...specs];
-  return [...specs]
-    .sort((left, right) => {
-      const priority = tonePriority(right, harmony, bass) - tonePriority(left, harmony, bass);
-      return priority || left.sourceOrder - right.sourceOrder;
-    })
-    .slice(0, 4)
-    .sort((left, right) => left.sourceOrder - right.sourceOrder);
-}
-
-/**
- * Root keeps the approved 87-point candidate set unchanged. For explicit
- * inversions, anchor the RH on the next available chord tone above the requested
- * bass so the inversion changes the whole hand shape, not only one low note.
- */
-function preferredRightAnchorPc(
-  harmony: ChordHarmonyInput,
-  specs: readonly ToneSpec[],
-  body: readonly ToneSpec[],
-  bass: ToneSpec,
-  preference: BaseVoicingPreference,
-): number | undefined {
-  if (preference.position === 'root' || harmony.slashBassPc != null) return undefined;
-  const bassIndex = specs.findIndex((spec) => spec.pc === bass.pc);
-  if (bassIndex < 0) return undefined;
-  for (let offset = 1; offset <= specs.length; offset += 1) {
-    const candidate = specs[(bassIndex + offset) % specs.length]!;
-    if (body.some((spec) => spec.pc === candidate.pc)) return candidate.pc;
-  }
-  return undefined;
-}
 
 function permutations<T>(items: readonly T[]): T[][] {
   if (items.length <= 1) return [[...items]];
@@ -136,8 +48,9 @@ function pitchInstances(pc: number, lo: number, hi: number): number[] {
   return pitches;
 }
 
+/** Stack the requested tone order upward from the lowest legal right-hand seat. */
 function placeRightHand(
-  order: readonly ToneSpec[],
+  order: readonly VoicingToneSpec[],
   bass: number,
   preference: BaseVoicingPreference,
 ): BaseVoicingNote[][] {
@@ -180,52 +93,6 @@ function placeRightHand(
   return candidates;
 }
 
-function mean(values: readonly number[]): number {
-  return values.reduce((sum, value) => sum + value, 0) / values.length;
-}
-
-function staticVoicingCost(
-  notes: readonly BaseVoicingNote[],
-  preference: BaseVoicingPreference,
-): number {
-  const policy = compactRegisterPolicy(preference);
-  const left = notes.filter((note) => note.hand === 'LH');
-  const right = notes.filter((note) => note.hand === 'RH').sort((a, b) => a.pitch - b.pitch);
-  const bass = left[0]!.pitch;
-  const rightPitches = right.map((note) => note.pitch);
-  const rightLow = rightPitches[0]!;
-  const top = rightPitches[rightPitches.length - 1]!;
-  const rightSpan = top - rightLow;
-  const totalSpan = top - bass;
-  const targetRightSpan = right.length <= 3 ? 9 : 11;
-  const targetTotalSpan = right.length <= 3 ? 20 : 24;
-
-  let cost = Math.abs(bass - policy.lh.center) * 0.8;
-  cost += Math.abs(mean(rightPitches) - policy.rh.center) * 0.65;
-  cost += Math.abs(rightSpan - targetRightSpan) * 0.35;
-  cost += Math.abs(totalSpan - targetTotalSpan) * 0.25;
-
-  right.forEach((note, index) => {
-    if (
-      index < right.length - 1 &&
-      note.pitch < 55 + preference.octaveShift * 12 &&
-      right[index + 1]!.pitch - note.pitch <= 2
-    ) {
-      cost += 14;
-    }
-    if (
-      (note.degree === 'ninth' ||
-        note.degree === 'eleventh' ||
-        note.degree === 'thirteenth' ||
-        note.degree === 'seventh') &&
-      note.pitch < 53 + preference.octaveShift * 12
-    ) {
-      cost += (53 + preference.octaveShift * 12 - note.pitch) * 1.5;
-    }
-  });
-  return cost;
-}
-
 function candidateKey(candidate: BaseVoicingCandidate): string {
   return candidate.notes
     .map((note) => `${note.hand}:${note.pitch}:${note.degree}`)
@@ -236,17 +103,23 @@ function candidateKey(candidate: BaseVoicingCandidate): string {
 export function compactCandidatesForHarmony(
   harmony: ChordHarmonyInput,
   preference: BaseVoicingPreference = DEFAULT_BASE_VOICING_PREFERENCE,
+  policy: VoicingPolicySpec = activeVoicingPolicy(),
 ): BaseVoicingCandidate[] {
-  const specs = toneSpecs(harmony);
+  const specs = toneSpecsForHarmony(harmony);
   if (specs.length === 0) return [];
-  const bass = bassSpec(harmony, specs, preference);
-  const body = bodySpecs(harmony, specs, bass);
-  const rightAnchorPc = preferredRightAnchorPc(harmony, specs, body, bass, preference);
-  const policy = compactRegisterPolicy(preference);
+  const bass = bassToneSpec(harmony, specs, preference);
+  const families = policy.toneFamilies({ harmony, specs, bass });
+  const rightAnchorPc = preferredRightAnchorPc(harmony, specs, families[0] ?? [], bass, preference);
+  const registers = compactRegisterPolicy(preference);
+  const context: VoicingCostContext = {
+    rootPc: harmony.rootPc,
+    availableIntervals: harmony.chordIntervals,
+    preferredRightAnchorPc: rightAnchorPc,
+  };
   const candidates: BaseVoicingCandidate[] = [];
   const seen = new Set<string>();
 
-  for (const bassPitch of pitchInstances(bass.pc, policy.lh.lo, policy.lh.hi)) {
+  for (const bassPitch of pitchInstances(bass.pc, registers.lh.lo, registers.lh.hi)) {
     const bassNote: BaseVoicingNote = {
       pitch: bassPitch,
       pc: bass.pc,
@@ -256,22 +129,32 @@ export function compactCandidatesForHarmony(
       isBass: true,
       isDuplicate: false,
     };
-    for (const order of permutations(body)) {
-      for (const right of placeRightHand(order, bassPitch, preference)) {
-        if (rightAnchorPc != null && right[0]?.pc !== rightAnchorPc) continue;
-        const notes = [bassNote, ...right].sort((left, next) => left.pitch - next.pitch);
-        if (!isCompactHandModel(notes, policy)) continue;
-        const candidate: BaseVoicingCandidate = {
-          notes: notes.map((note) => ({
-            ...note,
-            isDuplicate: note.hand === 'RH' && note.pc === bass.pc,
-          })),
-          staticCost: staticVoicingCost(notes, preference),
-        };
-        const key = candidateKey(candidate);
-        if (seen.has(key)) continue;
-        seen.add(key);
-        candidates.push(candidate);
+    for (const family of families) {
+      for (const order of permutations(family)) {
+        for (const right of placeRightHand(order, bassPitch, preference)) {
+          if (
+            policy.rightAnchorMode === 'HARD' &&
+            rightAnchorPc != null &&
+            right[0]?.pc !== rightAnchorPc
+          ) {
+            continue;
+          }
+          const notes = [bassNote, ...right].sort((left, next) => left.pitch - next.pitch);
+          if (!isCompactHandModel(notes, registers)) continue;
+          const staticCost = policy.staticCost(notes, preference, context);
+          if (!Number.isFinite(staticCost)) continue;
+          const candidate: BaseVoicingCandidate = {
+            notes: notes.map((note) => ({
+              ...note,
+              isDuplicate: note.hand === 'RH' && note.pc === bass.pc,
+            })),
+            staticCost,
+          };
+          const key = candidateKey(candidate);
+          if (seen.has(key)) continue;
+          seen.add(key);
+          candidates.push(candidate);
+        }
       }
     }
   }
@@ -287,21 +170,24 @@ export function compactCandidatesForHarmony(
 export function buildCompactBaseVoicings(
   harmonies: readonly ChordHarmonyInput[],
   preference: BaseVoicingPreference = DEFAULT_BASE_VOICING_PREFERENCE,
+  policy: VoicingPolicySpec = activeVoicingPolicy(),
 ): BaseVoicing[] {
   return buildCompactBaseVoicingsWithPreferences(
     harmonies,
     harmonies.map(() => preference),
+    policy,
   );
 }
 
 /**
  * Resolve one continuous progression while honoring each chord's own inversion.
- * Candidate selection remains global, so per-chord control does not sacrifice
- * voice-leading or loop-boundary continuity.
+ * Candidate selection stays global, so per-chord control does not sacrifice
+ * voice leading or loop-boundary continuity.
  */
 export function buildCompactBaseVoicingsWithPreferences(
   harmonies: readonly ChordHarmonyInput[],
   preferences: readonly BaseVoicingPreference[],
+  policy: VoicingPolicySpec = activeVoicingPolicy(),
 ): BaseVoicing[] {
   if (harmonies.length !== preferences.length) {
     throw new Error(
@@ -309,7 +195,7 @@ export function buildCompactBaseVoicingsWithPreferences(
     );
   }
   const layers = harmonies.map((harmony, index) =>
-    compactCandidatesForHarmony(harmony, preferences[index]),
+    compactCandidatesForHarmony(harmony, preferences[index], policy),
   );
   const missing = layers.findIndex((layer) => layer.length === 0);
   if (missing >= 0) {
@@ -317,7 +203,7 @@ export function buildCompactBaseVoicingsWithPreferences(
       `No compact base voicing candidate for chord ${missing}: ${harmonies[missing]!.symbol}`,
     );
   }
-  const selected = selectContinuousCandidatePath(layers);
+  const selected = selectVoicingPath(layers, policy);
   return selected.map((candidate, chordIndex) => ({
     chordIndex,
     harmony: harmonies[chordIndex]!,

@@ -1,9 +1,10 @@
-import { MAJOR_KEYS } from '@/data/music';
+import { diatonicLibrary, diatonicSeventhLibrary, MAJOR_KEYS } from '@/data/music';
 import { GOLDEN_PROGRESSIONS } from '@/lib/midiQa/goldenProgressions';
 import type { VoicingPosition } from '@/lib/performance/baseVoicing';
 import { buildFinalMidiSnapshot } from '@/lib/performance/finalMidi/buildFinalMidiSnapshot';
 import { buildSessionPerformancePlan } from '@/lib/performance/finalMidi/buildSessionPerformancePlan';
-import type { ChordDuration } from '@/types';
+import { definitionIdForSuffix } from '@/lib/theory/definitions';
+import type { ChordDuration, ChordEvent } from '@/types';
 
 function render(
   progression: (typeof GOLDEN_PROGRESSIONS)[number],
@@ -34,6 +35,64 @@ function baseSignature(plan: ReturnType<typeof render>): string {
     .join('|');
 }
 
+function auditionChord(
+  displayName: string,
+  rootOffset: number,
+  suffix: string,
+  durationBeats: ChordDuration,
+  bassOffset?: number,
+): ChordEvent {
+  return {
+    id: `dance-half-${displayName}`,
+    chordId: `dance-half-${displayName}`,
+    displayName,
+    degreeLabel: '',
+    function: 'tonic',
+    durationBeats,
+    isPro: false,
+    rootOffset,
+    suffix,
+    definitionId: definitionIdForSuffix(suffix),
+    bassOffset,
+  };
+}
+
+const ATTACHED_HALF_BAR_PROGRESSION = {
+  ...GOLDEN_PROGRESSIONS[0]!,
+  name: 'Attached Dance half-bar audition',
+  bpm: 110,
+  chords: [
+    auditionChord('C', 0, '', 4),
+    auditionChord('Bdim', 11, 'dim', 2),
+    auditionChord('E7', 4, '7', 2),
+    auditionChord('Am7', 9, 'm7', 4),
+    auditionChord('Gm7', 7, 'm7', 2),
+    auditionChord('C7', 0, '7', 2),
+    auditionChord('Fsus2', 5, 'sus2', 4),
+    auditionChord('Em7', 4, 'm7', 2),
+    auditionChord('Am7', 9, 'm7', 2),
+    auditionChord('Dm7', 2, 'm7', 4),
+    auditionChord('Dm/G', 2, 'm', 4, 7),
+  ],
+};
+
+const ATTACHED_SPLIT_TERMINAL_PROGRESSION = {
+  ...GOLDEN_PROGRESSIONS[0]!,
+  name: 'Attached Dance split-terminal audition',
+  bpm: 130,
+  chords: [
+    auditionChord('Fmaj7', 5, 'maj7', 4),
+    auditionChord('G7', 7, '7', 4),
+    auditionChord('Em7', 4, 'm7', 4),
+    auditionChord('Am7', 9, 'm7', 4),
+    auditionChord('Dm7', 2, 'm7', 4),
+    auditionChord('E7', 4, '7', 4),
+    auditionChord('Am7', 9, 'm7', 4),
+    auditionChord('Gm7', 7, 'm7', 2),
+    auditionChord('C7', 0, '7', 2),
+  ],
+};
+
 describe('Variation Dance production quality', () => {
   it('plays the measured eight-bar phrase with dropout and terminal roll/fill', () => {
     const source = GOLDEN_PROGRESSIONS[0]!;
@@ -63,6 +122,174 @@ describe('Variation Dance production quality', () => {
       ];
       expect(onsets).toEqual(expected[chordIndex]);
     });
+  });
+
+  it('keeps the attached C–Bdim–E7 half-bar audition on the physical eight-bar phrase', () => {
+    const plan = render(ATTACHED_HALF_BAR_PROGRESSION);
+    const expected = [
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75],
+      [0, 0.5, 1.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75],
+      [0, 0.5, 1.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75],
+      [0, 0.5, 1.5],
+      [0, 1, 1.75, 2.5, 3.5],
+      [0, 0.0438, 1, 1.75, 2.5, 3, 3.5],
+    ];
+
+    plan.chords.forEach((chord, chordIndex) => {
+      const notes = plan.notes.filter(
+        (note) =>
+          note.trackId === 'chord' &&
+          note.timeBeat >= chord.startBeat - 1e-9 &&
+          note.timeBeat < chord.startBeat + chord.durationBeats - 1e-9,
+      );
+      const onsets = [
+        ...new Set(notes.map((note) => Number((note.timeBeat - chord.startBeat).toFixed(4)))),
+      ];
+      expect(onsets).toEqual(expected[chordIndex]);
+
+      const boundary = notes.filter((note) => Math.abs(note.timeBeat - chord.startBeat) <= 1e-9);
+      expect(boundary.length).toBeGreaterThan(0);
+      expect(Math.min(...boundary.map((note) => note.pitch))).toBe(chord.bassMidi[0]);
+
+      if (chord.durationBeats === 2) {
+        expect(Math.min(...notes.map((note) => note.durationBeat))).toBeGreaterThanOrEqual(0.5);
+      }
+    });
+
+    for (const firstHalfIndex of [1, 4, 7]) {
+      const firstHalf = plan.chords[firstHalfIndex]!;
+      const next = plan.chords[firstHalfIndex + 1]!;
+      const anticipation = plan.notes.filter(
+        (note) =>
+          note.trackId === 'chord' &&
+          Math.abs(note.timeBeat - (firstHalf.startBeat + 1.75)) <= 1e-9,
+      );
+      expect(anticipation.length).toBeGreaterThan(0);
+      expect(
+        anticipation.every((note) => note.harmonyTargetChordIndex === firstHalfIndex + 1),
+      ).toBe(true);
+      expect(
+        anticipation.every((note) => [...next.bassMidi, ...next.bodyMidi].includes(note.pitch)),
+      ).toBe(true);
+    }
+
+    expect(plan.harmonyViolations).toEqual([]);
+    expect(plan.collisionReport?.rejects).toEqual([]);
+  });
+
+  it('supports the attached Am7 dropout only when Gm7–C7 split the terminal bar', () => {
+    const plan = render(ATTACHED_SPLIT_TERMINAL_PROGRESSION);
+    const earlierAm7 = plan.chords[3]!;
+    const dropoutAm7 = plan.chords[6]!;
+    const notesIn = (chord: (typeof plan.chords)[number]) =>
+      plan.notes.filter(
+        (note) =>
+          note.trackId === 'chord' &&
+          note.timeBeat >= chord.startBeat - 1e-9 &&
+          note.timeBeat < chord.startBeat + chord.durationBeats - 1e-9,
+      );
+
+    expect(notesIn(earlierAm7)).toHaveLength(23);
+    expect(notesIn(dropoutAm7)).toHaveLength(18);
+    expect([
+      ...new Set(
+        notesIn(dropoutAm7).map((note) =>
+          Number((note.timeBeat - dropoutAm7.startBeat).toFixed(4)),
+        ),
+      ),
+    ]).toEqual([0, 1, 1.5, 1.75, 2.5, 3.5]);
+
+    const support = notesIn(dropoutAm7).filter(
+      (note) => Math.abs(note.timeBeat - (dropoutAm7.startBeat + 1.5)) <= 1e-9,
+    );
+    expect(support).toHaveLength(2);
+    expect(support.map((note) => note.velocity)).toEqual([80, 80]);
+    expect(plan.harmonyViolations).toEqual([]);
+    expect(plan.collisionReport?.rejects).toEqual([]);
+  });
+
+  it('uses the same split-terminal rhythm for every Golden harmony in all twelve keys', () => {
+    const expected = [
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 0.0438, 1, 1.75],
+      [0, 0.5, 1, 1.5],
+    ];
+
+    for (const source of GOLDEN_PROGRESSIONS) {
+      for (const key of MAJOR_KEYS) {
+        const chords = Array.from({ length: 9 }, (_, index) => ({
+          ...source.chords[index % source.chords.length]!,
+          id: `dance-general-${source.id}-${key}-${index}`,
+          durationBeats: (index < 7 ? 4 : 2) as ChordDuration,
+        }));
+        const plan = render({ ...source, key, bpm: 130, chords });
+        const actual = plan.chords.map((chord) => [
+          ...new Set(
+            plan.notes
+              .filter(
+                (note) =>
+                  note.trackId === 'chord' &&
+                  note.timeBeat >= chord.startBeat - 1e-9 &&
+                  note.timeBeat < chord.startBeat + chord.durationBeats - 1e-9,
+              )
+              .map((note) => Number((note.timeBeat - chord.startBeat).toFixed(4))),
+          ),
+        ]);
+
+        expect({ source: source.id, key, actual }).toEqual({
+          source: source.id,
+          key,
+          actual: expected,
+        });
+        expect({ source: source.id, key, violations: plan.harmonyViolations }).toEqual({
+          source: source.id,
+          key,
+          violations: [],
+        });
+      }
+    }
+  });
+
+  it('keeps every diatonic split-terminal transition collision-clean in all twelve keys', () => {
+    for (const key of MAJOR_KEYS) {
+      const library = [...diatonicLibrary(key), ...diatonicSeventhLibrary(key)];
+      for (let rotation = 0; rotation < library.length; rotation += 1) {
+        const chords = Array.from({ length: 9 }, (_, index) => {
+          const chord = library[(rotation + index) % library.length]!;
+          return auditionChord(
+            chord.displayName,
+            chord.rootOffset,
+            chord.suffix,
+            index < 7 ? 4 : 2,
+            chord.bassOffset,
+          );
+        });
+        const plan = render({
+          ...GOLDEN_PROGRESSIONS[0]!,
+          key,
+          bpm: 130,
+          chords,
+        });
+
+        expect({
+          key,
+          rotation,
+          violations: plan.harmonyViolations,
+          rejects: plan.collisionReport?.rejects,
+        }).toEqual({ key, rotation, violations: [], rejects: [] });
+      }
+    }
   });
 
   it('uses shaped block attacks and the measured Bass plus RH-bottom response', () => {
@@ -136,9 +363,9 @@ describe('Variation Dance production quality', () => {
     }
   });
 
-  it('uses uncompressed prefixes for 1/2/full-bar chords', () => {
+  it('keeps a full–half–half–full progression on one continuous Dance bar grid', () => {
     const source = GOLDEN_PROGRESSIONS[0]!;
-    const durations: readonly ChordDuration[] = [1, 2, 4, 1];
+    const durations: readonly ChordDuration[] = [4, 2, 2, 4];
     const plan = render({
       ...source,
       chords: source.chords.map((chord, index) => ({
@@ -146,7 +373,12 @@ describe('Variation Dance production quality', () => {
         durationBeats: durations[index]!,
       })),
     });
-    const expected = [[0], [0, 1, 1.5, 1.75], [0, 1, 1.5, 1.75, 2.5, 3.5], [0]];
+    const expected = [
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+      [0, 1, 1.5, 1.75],
+      [0, 0.5, 1.5],
+      [0, 1, 1.5, 1.75, 2.5, 3.5],
+    ];
     plan.chords.forEach((chord, index) => {
       const onsets = [
         ...new Set(

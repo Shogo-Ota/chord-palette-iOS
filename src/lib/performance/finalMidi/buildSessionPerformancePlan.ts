@@ -4,6 +4,7 @@
  */
 
 import { generatePerformance } from '../PerformanceEngine';
+import { collisionProfileFor, shiftProfile, validateHarmonyCollisions } from '../harmonyCollision';
 import { applyHarmonyGate } from '../harmonyGate';
 import { humanTemplateIdForPattern } from '../humanTemplate';
 import { remeterChords } from '../meter';
@@ -85,7 +86,8 @@ export function buildSessionPerformancePlan(
   const humanTemplateId =
     session.accompanimentPattern === 'block'
       ? undefined
-      : (resolvedVariant.humanTemplateId ?? humanTemplateIdForPattern(session.accompanimentPattern));
+      : (resolvedVariant.humanTemplateId ??
+        humanTemplateIdForPattern(session.accompanimentPattern));
   const raw = generatePerformance(
     { chords, bpm: session.tempoBpm, seed },
     {
@@ -105,6 +107,13 @@ export function buildSessionPerformancePlan(
   const gated = applyHarmonyGate(raw, chords);
   const effect = session.instrumentEffect ?? instrumentEffectFromReleaseCut(session.releaseCut);
   const notes = applyInstrumentEffect(gated.notes, effect);
+  // Judged after the effect: sustain is what lengthens gates into one another, so
+  // the notes that actually share air are only knowable here.
+  const collisionReport = validateHarmonyCollisions(notes, chords, {
+    profile: shiftProfile(collisionProfileFor(session.instrumentId), session.octaveShift),
+    styleId: resolvedVariant.id,
+    beatsPerBar,
+  });
 
   return {
     notes,
@@ -126,5 +135,6 @@ export function buildSessionPerformancePlan(
     humanTemplateId,
     seed,
     harmonyViolations: gated.violations,
+    collisionReport,
   };
 }

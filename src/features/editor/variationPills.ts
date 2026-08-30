@@ -20,11 +20,16 @@ import {
   alteredVariations,
   availableVariations,
   extendedVariations,
-  variationChord,
   type VariationId,
 } from '@/data/music';
+import {
+  minorAlteredVariations,
+  minorAvailableVariations,
+  minorExtendedVariations,
+  variationChordForMode,
+} from '@/data/minorVariations';
 import { isLocked, type Entitlements } from '@/lib/entitlements';
-import type { ChordEvent, MajorKey } from '@/types';
+import type { ChordEvent, KeyMode, MajorKey } from '@/types';
 
 /** A single pill: its caption, the chord it would produce, and its two states. */
 export interface VariationPillModel {
@@ -44,6 +49,7 @@ export interface VariationTiers {
 
 export interface VariationPillsInput {
   key: MajorKey;
+  mode: KeyMode;
   /** Scale degree of the selected chord, or a negative value when it is not diatonic. */
   degree: number;
   selected: ChordEvent | undefined;
@@ -52,7 +58,7 @@ export interface VariationPillsInput {
 
 function toPill(input: VariationPillsInput, id: VariationId): VariationPillModel {
   const meta = ALL_VARIATIONS.find((v) => v.id === id)!;
-  const preview = variationChord(input.key, input.degree, id);
+  const preview = variationChordForMode(input.key, input.degree, id, input.mode);
   return {
     id,
     label: meta.label,
@@ -70,9 +76,20 @@ function toPill(input: VariationPillsInput, id: VariationId): VariationPillModel
  */
 export function variationTiers(input: VariationPillsInput): VariationTiers {
   if (input.degree < 0) return { core: [], extended: [], altered: [] };
+  const core =
+    input.mode === 'minor'
+      ? minorAvailableVariations(input.degree)
+      : availableVariations(input.degree);
+  const extended =
+    input.mode === 'minor'
+      ? minorExtendedVariations(input.degree)
+      : extendedVariations(input.degree);
+  const altered =
+    input.mode === 'minor' ? minorAlteredVariations(input.degree) : alteredVariations(input.degree);
+
   return {
-    core: availableVariations(input.degree).map((id) => toPill(input, id)),
-    extended: extendedVariations(input.degree).map((id) => toPill(input, id)),
-    altered: alteredVariations(input.degree).map((id) => toPill(input, id)),
+    core: core.map((id) => toPill(input, id)),
+    extended: extended.map((id) => toPill(input, id)),
+    altered: altered.map((id) => toPill(input, id)),
   };
 }

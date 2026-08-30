@@ -1,5 +1,17 @@
 import { definitionIdForSuffix } from '@/lib/theory/definitions';
-import type { ChordFunction, DiatonicChord, LibraryChord, MajorKey } from '@/types';
+import type { ChordFunction, DiatonicChord, KeyMode, LibraryChord, MajorKey } from '@/types';
+
+import {
+  MINOR_DEGREE_FUNCTIONS,
+  MINOR_DEGREE_LABELS,
+  MINOR_SCALE_OFFSETS,
+  MINOR_SCALES,
+  MINOR_SEVENTH_SUFFIXES,
+  MINOR_SHARP_KEYS,
+  MINOR_TRIAD_SUFFIXES,
+  minorDegreeIndexFromRootOffset,
+  minorTonicName,
+} from './minorMode';
 
 /**
  * Major-scale note spellings for the 12 supported keys.
@@ -42,8 +54,12 @@ const DEGREE_LABELS = ['I', 'ii', 'iii', 'IV', 'V', 'vi', 'vii°'] as const;
 /** Semitones above the tonic for each major-scale degree (I..vii). */
 export const MAJOR_SCALE_OFFSETS = [0, 2, 4, 5, 7, 9, 11] as const;
 
-/** Diatonic degree index (0 = I … 6 = vii°) for a root offset, or -1 if non-diatonic. */
-export function degreeIndexFromRootOffset(rootOffset: number): number {
+/**
+ * Diatonic degree index (major: 0 = I … 6 = vii°; minor: 0 = i … 6 = ♭VII) for a root
+ * offset, or -1 if non-diatonic.
+ */
+export function degreeIndexFromRootOffset(rootOffset: number, mode: KeyMode = 'major'): number {
+  if (mode === 'minor') return minorDegreeIndexFromRootOffset(rootOffset);
   const pc = ((rootOffset % 12) + 12) % 12;
   return (MAJOR_SCALE_OFFSETS as readonly number[]).indexOf(pc);
 }
@@ -64,30 +80,44 @@ const SEVENTH_SUFFIXES = ['maj7', 'm7', 'm7', 'maj7', '7', 'm7', 'm7♭5'] as co
 /** Suffixes for diatonic triads per degree. */
 export const TRIAD_SUFFIXES = ['', 'm', 'm', '', '', 'm', 'dim'] as const;
 
-function build(key: MajorKey, suffixes: readonly string[]): DiatonicChord[] {
-  const scale = MAJOR_SCALES[key];
+/** The seven scale steps of `key` in `mode`, with the tables that describe them. */
+function degreeTables(key: MajorKey, mode: KeyMode) {
+  const minor = mode === 'minor';
+  return {
+    scale: (minor ? MINOR_SCALES[key] : MAJOR_SCALES[key]) as readonly string[],
+    labels: (minor ? MINOR_DEGREE_LABELS : DEGREE_LABELS) as readonly string[],
+    functions: (minor ? MINOR_DEGREE_FUNCTIONS : DEGREE_FUNCTIONS) as readonly ChordFunction[],
+    offsets: (minor ? MINOR_SCALE_OFFSETS : MAJOR_SCALE_OFFSETS) as readonly number[],
+  };
+}
+
+function build(key: MajorKey, suffixes: readonly string[], mode: KeyMode): DiatonicChord[] {
+  const { scale, labels, functions, offsets } = degreeTables(key, mode);
   return scale.map((root, i) => {
     const displayName = `${root}${suffixes[i]}`;
     return {
       id: displayName,
       displayName,
-      degreeLabel: DEGREE_LABELS[i],
-      function: DEGREE_FUNCTIONS[i],
-      rootOffset: MAJOR_SCALE_OFFSETS[i],
+      degreeLabel: labels[i],
+      function: functions[i],
+      rootOffset: offsets[i],
       suffix: suffixes[i],
       definitionId: definitionIdForSuffix(suffixes[i]),
     };
   });
 }
 
-/** Diatonic seventh chords for the given key (e.g. C → Cmaj7 Dm7 Em7 Fmaj7 G7 Am7 Bm7♭5). */
-export function diatonicSevenths(key: MajorKey): DiatonicChord[] {
-  return build(key, SEVENTH_SUFFIXES);
+/**
+ * Diatonic seventh chords for the given key (C major → Cmaj7 Dm7 Em7 Fmaj7 G7 Am7 Bm7♭5;
+ * A minor → Am7 Bm7♭5 Cmaj7 Dm7 Em7 Fmaj7 G7).
+ */
+export function diatonicSevenths(key: MajorKey, mode: KeyMode = 'major'): DiatonicChord[] {
+  return build(key, mode === 'minor' ? MINOR_SEVENTH_SUFFIXES : SEVENTH_SUFFIXES, mode);
 }
 
-/** Diatonic triads for the given key (e.g. C → C Dm Em F G Am Bdim). */
-export function diatonicTriads(key: MajorKey): DiatonicChord[] {
-  return build(key, TRIAD_SUFFIXES);
+/** Diatonic triads for the given key (C major → C Dm Em F G Am Bdim; A minor → Am Bdim C Dm Em F G). */
+export function diatonicTriads(key: MajorKey, mode: KeyMode = 'major'): DiatonicChord[] {
+  return build(key, mode === 'minor' ? MINOR_TRIAD_SUFFIXES : TRIAD_SUFFIXES, mode);
 }
 
 /** Color-extension chords available on top of the basic set (requirements §5.3). */
@@ -132,12 +162,16 @@ const SHARP_NAMES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#',
 /** Keys whose signature uses sharps → spell chromatic notes with sharps. */
 const SHARP_KEYS: MajorKey[] = ['G', 'D', 'A', 'E', 'B'];
 
-function chromaticName(key: MajorKey, pc: number): string {
-  const table = SHARP_KEYS.includes(key) ? SHARP_NAMES : FLAT_NAMES;
-  return table[((pc % 12) + 12) % 12];
+function chromaticName(key: MajorKey, pc: number, mode: KeyMode = 'major'): string {
+  const sharp = mode === 'minor' ? MINOR_SHARP_KEYS.includes(key) : SHARP_KEYS.includes(key);
+  return (sharp ? SHARP_NAMES : FLAT_NAMES)[((pc % 12) + 12) % 12];
 }
 
-/** Pitch class of the key's tonic. */
+/**
+ * Pitch class of the key's tonic. Mode-independent: a minor respelling changes the
+ * letters but not the pitch (`A♭` major and `G#` minor are both pitch class 8), which
+ * is why switching mode cannot move a single note of the accompaniment.
+ */
 function tonicPc(key: MajorKey): number {
   return NOTE_PC[MAJOR_SCALES[key][0]];
 }
@@ -147,19 +181,57 @@ export function keyTonicPc(key: MajorKey): number {
   return tonicPc(key);
 }
 
+/**
+ * How the tonic is written for display. Same pitch either way; a minor tonic is
+ * respelled where the flat name would need double flats (D♭ minor → C♯ minor).
+ */
+export function keyDisplayName(key: MajorKey, mode: KeyMode = 'major'): string {
+  return mode === 'minor' ? minorTonicName(key) : key;
+}
+
+/** The key as every screen writes it, e.g. `C Major` / `C# Minor`. */
+export function keyLabel(key: MajorKey, mode: KeyMode = 'major'): string {
+  return `${keyDisplayName(key, mode)} ${mode === 'minor' ? 'Minor' : 'Major'}`;
+}
+
 /** Note name `offset` semitones above the tonic, spelled for the key. */
-export function noteAt(key: MajorKey, offset: number): string {
-  return chromaticName(key, tonicPc(key) + offset);
+export function noteAt(key: MajorKey, offset: number, mode: KeyMode = 'major'): string {
+  return chromaticName(key, tonicPc(key) + offset, mode);
+}
+
+/**
+ * Spell an altered scale degree by its musical letter, not only its pitch class.
+ * This distinguishes direction-sensitive names such as #I (C#) from bII (Db).
+ * Double accidentals fall back to the app's simpler chromatic spelling.
+ */
+export function noteAtDegree(
+  key: MajorKey,
+  degreeIndex: number,
+  alteration: -1 | 0 | 1,
+  mode: KeyMode = 'major',
+): string {
+  const { scale, offsets } = degreeTables(key, mode);
+  const base = scale[degreeIndex];
+  const offset = offsets[degreeIndex];
+  if (base == null || offset == null) return noteAt(key, alteration, mode);
+  if (alteration === 0) return base;
+
+  const match = /^([A-G])([#♭]?)$/.exec(base);
+  if (!match) return noteAt(key, offset + alteration, mode);
+  const current = match[2] === '#' ? 1 : match[2] === '♭' ? -1 : 0;
+  const next = current + alteration;
+  if (Math.abs(next) > 1) return noteAt(key, offset + alteration, mode);
+  return `${match[1]}${next === 1 ? '#' : next === -1 ? '♭' : ''}`;
 }
 
 /** Note name (no octave) of a MIDI note, spelled for the key. Used by the keyboard visual. */
-export function midiNoteName(key: MajorKey, midi: number): string {
-  return chromaticName(key, midi);
+export function midiNoteName(key: MajorKey, midi: number, mode: KeyMode = 'major'): string {
+  return chromaticName(key, midi, mode);
 }
 
 /** Semitones a spelled note sits above the key's tonic (0..11). */
 export function offsetFromTonic(key: MajorKey, note: string): number {
-  return (((NOTE_PC[note] ?? 0) - tonicPc(key)) % 12 + 12) % 12;
+  return ((((NOTE_PC[note] ?? 0) - tonicPc(key)) % 12) + 12) % 12;
 }
 
 /**
@@ -198,9 +270,10 @@ export function degreeLabelFromOffset(offset: number): string {
  * back to the plain Roman degree (♭III, #IV, …). Used when re-labelling a recalled
  * progression relative to the current key (append feature).
  */
-export function rootDegreeLabel(offset: number): string {
-  const idx = degreeIndexFromRootOffset(offset);
-  return idx >= 0 ? DEGREE_LABELS[idx] : degreeLabelFromOffset(offset);
+export function rootDegreeLabel(offset: number, mode: KeyMode = 'major'): string {
+  const idx = degreeIndexFromRootOffset(offset, mode);
+  if (idx < 0) return degreeLabelFromOffset(offset);
+  return mode === 'minor' ? MINOR_DEGREE_LABELS[idx] : DEGREE_LABELS[idx];
 }
 
 /* ------------------------------------------------------------------ */
@@ -211,11 +284,11 @@ export function rootDegreeLabel(offset: number): string {
  * Diatonic library cards for a key: big name = triad (C, Dm…),
  * sub-label = the diatonic seventh (Cmaj7, Dm7…).
  */
-export function diatonicLibrary(key: MajorKey): LibraryChord[] {
-  const triads = diatonicTriads(key);
-  const sevenths = diatonicSevenths(key);
+export function diatonicLibrary(key: MajorKey, mode: KeyMode = 'major'): LibraryChord[] {
+  const triads = diatonicTriads(key, mode);
+  const sevenths = diatonicSevenths(key, mode);
   return triads.map((t, i) => ({
-    id: `dia-${t.id}-${key}`,
+    id: `dia-${t.id}-${key}-${mode}`,
     displayName: t.displayName,
     degreeLabel: t.degreeLabel,
     function: t.function,
@@ -233,11 +306,11 @@ export function diatonicLibrary(key: MajorKey): LibraryChord[] {
  * and the sub-label is the plain triad. Free tier — lets users place 4-note
  * diatonic chords directly (the triad grid keeps the sub-label as the seventh).
  */
-export function diatonicSeventhLibrary(key: MajorKey): LibraryChord[] {
-  const triads = diatonicTriads(key);
-  const sevenths = diatonicSevenths(key);
+export function diatonicSeventhLibrary(key: MajorKey, mode: KeyMode = 'major'): LibraryChord[] {
+  const triads = diatonicTriads(key, mode);
+  const sevenths = diatonicSevenths(key, mode);
   return sevenths.map((s, i) => ({
-    id: `dia7-${s.id}-${key}`,
+    id: `dia7-${s.id}-${key}-${mode}`,
     displayName: s.displayName,
     degreeLabel: s.degreeLabel,
     function: s.function,
@@ -336,7 +409,15 @@ export type VariationId = (typeof ALL_VARIATIONS)[number]['id'];
  */
 export const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
   0: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
-  1: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '6': 'm6', '9': 'm9', '11': 'm11', '13': 'm13' },
+  1: {
+    sus4: 'sus4',
+    sus2: 'sus2',
+    add9: 'm(add9)',
+    '6': 'm6',
+    '9': 'm9',
+    '11': 'm11',
+    '13': 'm13',
+  },
   2: { sus4: 'sus4', '11': 'm(add11)' },
   3: { sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
   4: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': '9', '13': '13' },
@@ -459,20 +540,21 @@ export function variationChord(
 }
 
 /* ------------------------------------------------------------------ */
-/* Library: secondary dominants (V7/ii … V7/vi)                        */
+/* Library: secondary dominants (displayed as VI7 … III7)              */
 /* ------------------------------------------------------------------ */
 
 const SECONDARY_TARGETS = [
-  { degreeIndex: 1, degree: 'ii' },
-  { degreeIndex: 2, degree: 'iii' },
-  { degreeIndex: 3, degree: 'IV' },
-  { degreeIndex: 4, degree: 'V' },
-  { degreeIndex: 5, degree: 'vi' },
+  { degreeIndex: 1, degree: 'ii', dominantDegree: 'VI7' },
+  { degreeIndex: 2, degree: 'iii', dominantDegree: 'VII7' },
+  { degreeIndex: 3, degree: 'IV', dominantDegree: 'I7' },
+  { degreeIndex: 4, degree: 'V', dominantDegree: 'II7' },
+  { degreeIndex: 5, degree: 'vi', dominantDegree: 'III7' },
 ] as const;
 
 /**
  * Secondary dominants for a key: the dominant-7th a fifth above each target
- * (V7/ii … V7/vi). Sub-label shows the chord they resolve to.
+ * (functionally V7/ii … V7/vi). The main label uses the simpler root degree
+ * (VI7 … III7); the sub-label preserves the resolution destination.
  */
 export function secondaryDominants(key: MajorKey): LibraryChord[] {
   const scale = MAJOR_SCALES[key];
@@ -483,7 +565,7 @@ export function secondaryDominants(key: MajorKey): LibraryChord[] {
     return {
       id: `secdom-${key}-${t.degree}`,
       displayName: `${root}7`,
-      degreeLabel: `V7/${t.degree}`,
+      degreeLabel: t.dominantDegree,
       function: 'dominant',
       subLabel: `→${sevenths[t.degreeIndex].displayName}`,
       category: 'secondaryDominant',
@@ -538,9 +620,9 @@ export function modalInterchange(key: MajorKey): LibraryChord[] {
 /* ------------------------------------------------------------------ */
 
 /** The 12 chromatic bass notes offered in the on-chord grid, spelled for the key. */
-export function chromaticBassNotes(key: MajorKey): string[] {
-  const table = SHARP_KEYS.includes(key) ? SHARP_NAMES : FLAT_NAMES;
-  return [...table];
+export function chromaticBassNotes(key: MajorKey, mode: KeyMode = 'major'): string[] {
+  const sharp = mode === 'minor' ? MINOR_SHARP_KEYS.includes(key) : SHARP_KEYS.includes(key);
+  return [...(sharp ? SHARP_NAMES : FLAT_NAMES)];
 }
 
 /** Combine a target chord with a bass note → slash chord (e.g. C + E → C/E). */

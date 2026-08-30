@@ -5,7 +5,13 @@ import type { ChordEvent } from '@/types';
 const FREE: Entitlements = { palettePro: false, communityPlus: false };
 const PRO: Entitlements = { palettePro: true, communityPlus: false };
 
-const base = { key: 'C', degree: 0, selected: undefined, entitlements: FREE } as const;
+const base = {
+  key: 'C',
+  mode: 'major',
+  degree: 0,
+  selected: undefined,
+  entitlements: FREE,
+} as const;
 
 describe('variationTiers', () => {
   it('has nothing to offer a chord that is not on a degree', () => {
@@ -72,5 +78,48 @@ describe('variationTiers', () => {
     const { core, extended } = variationTiers({ ...base, selected });
     expect(core.filter((p) => p.active).map((p) => p.id)).toEqual(['6']);
     expect(extended.every((p) => !p.active)).toBe(true);
+  });
+});
+
+describe('variationTiers — natural minor', () => {
+  const minor = { ...base, mode: 'minor' as const, entitlements: PRO };
+
+  it('uses i Aeolian available tensions and separates its avoid ♭13', () => {
+    const tiers = variationTiers(minor);
+
+    expect(tiers.core.map((pill) => pill.preview)).toEqual([
+      'Csus4',
+      'Cm(add9)',
+      'Csus2',
+      'Cm9',
+      'Cm11',
+    ]);
+    expect(tiers.altered.map((pill) => pill.preview)).toEqual(['Cm7(♭13)']);
+  });
+
+  it('gives iiø only its sourced 11 and ♭13 extensions', () => {
+    const tiers = variationTiers({ ...minor, degree: 1 });
+
+    expect(tiers.core).toEqual([]);
+    expect(tiers.extended.map((pill) => pill.preview)).toEqual(['Dm7♭5(11)', 'Dm7♭5(♭13)']);
+    expect(tiers.altered.map((pill) => pill.preview)).toEqual(['Dm7♭5(♭9)']);
+  });
+
+  it('keeps natural-minor v minor and refuses its avoid ♭9/♭13 in core', () => {
+    const tiers = variationTiers({ ...minor, degree: 4 });
+
+    expect(tiers.core.map((pill) => pill.preview)).toEqual(['Gsus4', 'Gm(add11)']);
+    expect(tiers.altered.map((pill) => pill.preview)).toEqual(['Gm7(♭9)', 'Gm7(♭13)']);
+  });
+
+  it('offers Lydian #11 on ♭VI as an available extension', () => {
+    const tiers = variationTiers({ ...minor, degree: 5 });
+
+    expect(tiers.extended.map((pill) => pill.preview)).toEqual([
+      'A♭6/9',
+      'A♭maj9(#11)',
+      'A♭maj13(#11)',
+    ]);
+    expect(tiers.altered).toEqual([]);
   });
 });

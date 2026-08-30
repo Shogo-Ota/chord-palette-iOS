@@ -3,8 +3,48 @@ export {
   buildCompactBaseVoicingsWithPreferences,
   compactCandidatesForHarmony,
 } from './CompactVoicingEngine';
-export { baseVoicingTransitionCost, selectContinuousCandidatePath } from './continuity';
+export { baseVoicingTransitionCost, orderedVoicingPitches } from './continuity';
 export { compactRegisterPolicy, isCompactHandModel } from './handModel';
+export { COMPACT_V1_POLICY } from './policy/compactV1Policy';
+export { COMPACT_V2_POLICY } from './policy/compactV2Policy';
+export {
+  LOW_CLUSTER_HARD_CEILING,
+  V2_COST_WEIGHTS,
+  evaluateCompactV2Cost,
+  minorSecondPenalty,
+  softCostBreakdown,
+} from './policy/compactV2Costs';
+export { COMPACT_V3_POLICY } from './policy/compactV3Policy';
+export {
+  COLLISION_REJECT_COST,
+  V3_COST_WEIGHTS,
+  collisionRejections,
+  evaluateCompactV3Cost,
+  type CollisionRejection,
+} from './policy/compactV3Costs';
+export {
+  intervalRole,
+  isGuideRole,
+  isTensionRole,
+  type IntervalRole,
+} from './policy/intervalRoles';
+export { selectVoicingPath } from './policy/pathSearch';
+export {
+  APPROVED_VOICING_POLICY_ID,
+  VOICING_POLICY_IDS,
+  activeVoicingPolicy,
+  activeVoicingPolicyId,
+  normalizeVoicingPolicyId,
+  setVoicingPolicyOverride,
+  voicingPolicyById,
+  voicingPolicyOptions,
+} from './policy/registry';
+export type {
+  VoicingCostContext,
+  VoicingPolicyId,
+  VoicingPolicySpec,
+  VoicingToneSpec,
+} from './policy/types';
 export {
   DEFAULT_BASE_VOICING_PREFERENCE,
   DEFAULT_VOICING_POSITION,

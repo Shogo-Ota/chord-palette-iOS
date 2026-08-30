@@ -1,5 +1,11 @@
-import { degreeLabelFromOffset, keyTonicPc, noteAt, rootDegreeLabel } from '@/data/music';
-import type { ChordEvent, MajorKey } from '@/types';
+import {
+  degreeLabelFromOffset,
+  keyTonicPc,
+  noteAt,
+  noteAtDegree,
+  rootDegreeLabel,
+} from '@/data/music';
+import type { ChordEvent, KeyMode, MajorKey } from '@/types';
 
 function mod12(n: number): number {
   return ((n % 12) + 12) % 12;
@@ -21,16 +27,22 @@ function degreeNumerator(degreeLabel: string): string {
  * (e.g. "I/III"), which also canonicalizes any legacy note-name denominators.
  * Events that predate degree data (legacy JSON) are returned unchanged.
  */
-export function transposeEvent(event: ChordEvent, key: MajorKey): ChordEvent {
+export function transposeEvent(
+  event: ChordEvent,
+  key: MajorKey,
+  mode: KeyMode = 'major',
+): ChordEvent {
   if (event.rootOffset == null) return event;
 
-  const root = noteAt(key, event.rootOffset);
+  const root = event.rootSpelling
+    ? noteAtDegree(key, event.rootSpelling.degreeIndex, event.rootSpelling.alteration, mode)
+    : noteAt(key, event.rootOffset, mode);
   let displayName = `${root}${event.suffix ?? ''}`;
   let degreeLabel = event.degreeLabel;
   let bassNote = event.bassNote;
 
   if (event.bassOffset != null) {
-    const bass = noteAt(key, event.bassOffset);
+    const bass = noteAt(key, event.bassOffset, mode);
     displayName = `${displayName}/${bass}`;
     bassNote = bass;
     degreeLabel = `${degreeNumerator(event.degreeLabel)}/${degreeLabelFromOffset(event.bassOffset)}`;
@@ -40,8 +52,12 @@ export function transposeEvent(event: ChordEvent, key: MajorKey): ChordEvent {
 }
 
 /** Transpose a whole progression to `key` (the "移調" action — moves the song). */
-export function transposeProgression(progression: ChordEvent[], key: MajorKey): ChordEvent[] {
-  return progression.map((e) => transposeEvent(e, key));
+export function transposeProgression(
+  progression: ChordEvent[],
+  key: MajorKey,
+  mode: KeyMode = 'major',
+): ChordEvent[] {
+  return progression.map((e) => transposeEvent(e, key, mode));
 }
 
 /**
@@ -51,9 +67,9 @@ export function transposeProgression(progression: ChordEvent[], key: MajorKey): 
  * the sound is preserved, but the label should read in the current key's context
  * (e.g. a source "I" landing on the 5th degree becomes "V"). Name/suffix untouched.
  */
-export function relabelDegreesForKey(event: ChordEvent): ChordEvent {
+export function relabelDegreesForKey(event: ChordEvent, mode: KeyMode = 'major'): ChordEvent {
   if (event.rootOffset == null) return event;
-  const base = rootDegreeLabel(event.rootOffset);
+  const base = rootDegreeLabel(event.rootOffset, mode);
   const degreeLabel =
     event.bassOffset != null ? `${base}/${degreeLabelFromOffset(event.bassOffset)}` : base;
   return { ...event, degreeLabel };

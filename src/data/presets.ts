@@ -78,12 +78,18 @@ export const PRESETS: Preset[] = [
     chordsDisplay: 'Fmaj7 · G7 · E7 · Am7',
     tags: ['王道', 'エモい', 'セカンダリー'],
     accent: '#d6409f',
-    // The free 王道進行 with the iii swapped for V7/vi — the smallest step from the
+    // The free 王道進行 with the iii swapped for III7 (functionally V7/vi) — the smallest step from the
     // free catalog into Pro territory, so the upgrade has an audible before/after.
     chords: [
-      { offset: 5, suffix: 'maj7', function: 'subdominant', degreeLabel: 'IVmaj7', durationBeats: 4 },
+      {
+        offset: 5,
+        suffix: 'maj7',
+        function: 'subdominant',
+        degreeLabel: 'IVmaj7',
+        durationBeats: 4,
+      },
       { offset: 7, suffix: '7', function: 'dominant', degreeLabel: 'V7', durationBeats: 4 },
-      { offset: 4, suffix: '7', function: 'dominant', degreeLabel: 'V7/vi', durationBeats: 4 },
+      { offset: 4, suffix: '7', function: 'dominant', degreeLabel: 'III7', durationBeats: 4 },
       { offset: 9, suffix: 'm7', function: 'tonic', degreeLabel: 'vim7', durationBeats: 4 },
     ],
   },
@@ -94,14 +100,20 @@ export const PRESETS: Preset[] = [
     chordsDisplay: 'Fmaj7 · E7 · Am7 · Gm7 · C7',
     tags: ['おしゃれ', 'ジャジー', '都会的'],
     accent: '#3b82f6',
-    // IVmaj7 - V7/vi - vim7 - vm7 - V7/IV. The last bar is a ii-V into IV, which is
+    // IVmaj7 - III7 - vim7 - vm7 - I7. The last bar is a ii-V into IV, which is
     // why it loops back onto the opening FM7 so smoothly.
     chords: [
-      { offset: 5, suffix: 'maj7', function: 'subdominant', degreeLabel: 'IVmaj7', durationBeats: 4 },
-      { offset: 4, suffix: '7', function: 'dominant', degreeLabel: 'V7/vi', durationBeats: 4 },
+      {
+        offset: 5,
+        suffix: 'maj7',
+        function: 'subdominant',
+        degreeLabel: 'IVmaj7',
+        durationBeats: 4,
+      },
+      { offset: 4, suffix: '7', function: 'dominant', degreeLabel: 'III7', durationBeats: 4 },
       { offset: 9, suffix: 'm7', function: 'tonic', degreeLabel: 'vim7', durationBeats: 4 },
       { offset: 7, suffix: 'm7', function: 'dominant', degreeLabel: 'vm7', durationBeats: 2 },
-      { offset: 0, suffix: '7', function: 'dominant', degreeLabel: 'V7/IV', durationBeats: 2 },
+      { offset: 0, suffix: '7', function: 'dominant', degreeLabel: 'I7', durationBeats: 2 },
     ],
   },
   {
@@ -111,12 +123,12 @@ export const PRESETS: Preset[] = [
     chordsDisplay: 'Dm7 · G7 · Em7 · A7',
     tags: ['爽やか', '夜景', '循環'],
     accent: '#22c55e',
-    // iim7 - V7 - iiim7 - V7/ii: descending fifths that land back on the opening Dm7.
+    // iim7 - V7 - iiim7 - VI7: descending fifths that land back on the opening Dm7.
     chords: [
       { offset: 2, suffix: 'm7', function: 'subdominant', degreeLabel: 'iim7', durationBeats: 4 },
       { offset: 7, suffix: '7', function: 'dominant', degreeLabel: 'V7', durationBeats: 4 },
       { offset: 4, suffix: 'm7', function: 'tonic', degreeLabel: 'iiim7', durationBeats: 4 },
-      { offset: 9, suffix: '7', function: 'dominant', degreeLabel: 'V7/ii', durationBeats: 4 },
+      { offset: 9, suffix: '7', function: 'dominant', degreeLabel: 'VI7', durationBeats: 4 },
     ],
   },
   {
@@ -144,11 +156,32 @@ export const PRESETS: Preset[] = [
     // A stepwise bass walk C-B-A-G-F-E-D-G built from slash chords, two beats each.
     chords: [
       { offset: 0, suffix: '', function: 'tonic', degreeLabel: 'I', durationBeats: 2 },
-      { offset: 7, suffix: '', function: 'dominant', degreeLabel: 'V', durationBeats: 2, bassOffset: 11 },
+      {
+        offset: 7,
+        suffix: '',
+        function: 'dominant',
+        degreeLabel: 'V',
+        durationBeats: 2,
+        bassOffset: 11,
+      },
       { offset: 9, suffix: 'm', function: 'tonic', degreeLabel: 'vi', durationBeats: 2 },
-      { offset: 9, suffix: 'm', function: 'tonic', degreeLabel: 'vi', durationBeats: 2, bassOffset: 7 },
+      {
+        offset: 9,
+        suffix: 'm',
+        function: 'tonic',
+        degreeLabel: 'vi',
+        durationBeats: 2,
+        bassOffset: 7,
+      },
       { offset: 5, suffix: '', function: 'subdominant', degreeLabel: 'IV', durationBeats: 2 },
-      { offset: 0, suffix: '', function: 'tonic', degreeLabel: 'I', durationBeats: 2, bassOffset: 4 },
+      {
+        offset: 0,
+        suffix: '',
+        function: 'tonic',
+        degreeLabel: 'I',
+        durationBeats: 2,
+        bassOffset: 4,
+      },
       { offset: 2, suffix: 'm7', function: 'subdominant', degreeLabel: 'iim7', durationBeats: 2 },
       { offset: 7, suffix: '7', function: 'dominant', degreeLabel: 'V7', durationBeats: 2 },
     ],

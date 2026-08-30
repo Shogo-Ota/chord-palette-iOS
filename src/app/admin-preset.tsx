@@ -12,6 +12,7 @@ import {
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { SegTrack } from '@/components/controls';
+import { keyLabel } from '@/data/music';
 import { useEditorSession } from '@/features/editor/session';
 import {
   PRESET_ACCENTS,
@@ -84,7 +85,7 @@ export default function AdminPresetScreen() {
           {/* Preview */}
           <View style={[styles.previewCard, { borderColor: accent }]}>
             <View style={[styles.stripe, { backgroundColor: accent }]} />
-            <Text style={styles.previewKey}>{session.key} Major · {events.length}コード</Text>
+            <Text style={styles.previewKey}>{keyLabel(session.key, session.mode)} · {events.length}コード</Text>
             <Text style={styles.previewChords}>{chordsDisplay || '（コードがありません）'}</Text>
           </View>
 

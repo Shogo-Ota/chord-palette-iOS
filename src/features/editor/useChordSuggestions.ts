@@ -40,16 +40,24 @@ export function useChordSuggestions(options: UseChordSuggestionsOptions = {}): C
   const maxResults = options.maxResults ?? 4;
 
   const suggestions = useMemo(
-    () => suggestNext(s.progression, s.key, { allowPro: tier === 'pro', maxResults }),
-    [s.progression, s.key, tier, maxResults],
+    () =>
+      suggestNext(s.progression, s.key, {
+        allowPro: tier === 'pro',
+        maxResults,
+        mode: s.mode,
+      }),
+    [s.progression, s.key, s.mode, tier, maxResults],
   );
 
-  const addSuggestion = useCallback((sugg: ProgressionSuggestion, durationBeats: ChordDuration = 4) => {
-    const event = suggestionToChordEvent(sugg, durationBeats);
-    // Guard here too so a full strip visibly stops accepting taps at the 16-bar cap.
-    if (!canAdd(session.getSession().progression, event.durationBeats)) return;
-    session.addChord(event);
-  }, []);
+  const addSuggestion = useCallback(
+    (sugg: ProgressionSuggestion, durationBeats: ChordDuration = 4) => {
+      const event = suggestionToChordEvent(sugg, durationBeats);
+      // Guard here too so a full strip visibly stops accepting taps at the 16-bar cap.
+      if (!canAdd(session.getSession().progression, event.durationBeats)) return;
+      session.addChord(event);
+    },
+    [],
+  );
 
   return { suggestions, addSuggestion };
 }

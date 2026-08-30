@@ -4,6 +4,7 @@ import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
+import { keyLabel } from '@/data/music';
 import { PRESETS } from '@/data/presets';
 import * as session from '@/features/editor/session';
 import type { AppendOutcome } from '@/features/editor/session';
@@ -74,7 +75,7 @@ export default function AppendProgressionScreen() {
 
       <View style={styles.capBar}>
         <Text style={styles.capText}>
-          追加先：{s.key} Major · 残り{' '}
+          追加先：{keyLabel(s.key, s.mode)} · 残り{' '}
           <Text style={full ? styles.capFull : styles.capOk}>{fmtBars(remainingBars)}小節</Text>
         </Text>
       </View>
@@ -107,7 +108,7 @@ export default function AppendProgressionScreen() {
                   accent={accentFor(p.id)}
                   name={p.title}
                   chords={chordsDisplay(p)}
-                  meta={`${p.key} Major · ${fmtBars(totalBars(p.chordEvents))}小節`}
+                  meta={`${keyLabel(p.key, p.mode)} · ${fmtBars(totalBars(p.chordEvents))}小節`}
                   disabled={full}
                   onPress={() => flash(session.appendProject(p))}
                 />

@@ -1,0 +1,2956 @@
+{
+  "phase": "approved-vs-candidate",
+  "capturedAt": "2026-08-26T16:42:13.300Z",
+  "shipped": "compact.v1",
+  "candidate": "compact.v2",
+  "highlights": {
+    "before": {
+      "Fmaj7": [
+        {
+          "position": "root",
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            "F2",
+            "F3",
+            "A3",
+            "C4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "root",
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            "F2",
+            "F3",
+            "A3",
+            "C4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            60,
+            64,
+            65,
+            69
+          ],
+          "notes": [
+            "A2",
+            "C4",
+            "E4",
+            "F4",
+            "A4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            1,
+            4
+          ],
+          "hasRhEFAdjacency": true,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            60,
+            64,
+            65,
+            69
+          ],
+          "notes": [
+            "A2",
+            "C4",
+            "E4",
+            "F4",
+            "A4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            1,
+            4
+          ],
+          "hasRhEFAdjacency": true,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            52,
+            57,
+            60,
+            65
+          ],
+          "notes": [
+            "C2",
+            "E3",
+            "A3",
+            "C4",
+            "F4"
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            52,
+            57,
+            60,
+            65
+          ],
+          "notes": [
+            "C2",
+            "E3",
+            "A3",
+            "C4",
+            "F4"
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        }
+      ],
+      "C7(♭9)": [
+        {
+          "position": "root",
+          "rhMidi": [
+            58,
+            60,
+            61,
+            64
+          ],
+          "notes": [
+            "C3",
+            "Bb3",
+            "C4",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            1,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 8
+        },
+        {
+          "position": "root",
+          "rhMidi": [
+            52,
+            58,
+            60,
+            61
+          ],
+          "notes": [
+            "C2",
+            "E3",
+            "Bb3",
+            "C4",
+            "Db4"
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            2,
+            1
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "root",
+          "rhMidi": [
+            52,
+            58,
+            60,
+            61
+          ],
+          "notes": [
+            "C2",
+            "E3",
+            "Bb3",
+            "C4",
+            "Db4"
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            2,
+            1
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            58,
+            60,
+            61,
+            64
+          ],
+          "notes": [
+            "E2",
+            "Bb3",
+            "C4",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            1,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            58,
+            60,
+            61,
+            64
+          ],
+          "notes": [
+            "E2",
+            "Bb3",
+            "C4",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            1,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            58,
+            60,
+            61,
+            64
+          ],
+          "notes": [
+            "E2",
+            "Bb3",
+            "C4",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            1,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "G2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 2
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            58,
+            60,
+            61,
+            64
+          ],
+          "notes": [
+            "G2",
+            "Bb3",
+            "C4",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            1,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            58,
+            60,
+            61,
+            64
+          ],
+          "notes": [
+            "G2",
+            "Bb3",
+            "C4",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            2,
+            1,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": true,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        }
+      ]
+    },
+    "after": {
+      "Fmaj7": [
+        {
+          "position": "root",
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            "F2",
+            "F3",
+            "A3",
+            "C4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "root",
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            "F2",
+            "F3",
+            "A3",
+            "C4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": true,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            53,
+            60,
+            64,
+            69
+          ],
+          "notes": [
+            "A2",
+            "F3",
+            "C4",
+            "E4",
+            "A4"
+          ],
+          "rhAdjacentIntervals": [
+            7,
+            4,
+            5
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 3
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            53,
+            57,
+            60,
+            64
+          ],
+          "notes": [
+            "A2",
+            "F3",
+            "A3",
+            "C4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            4,
+            3,
+            4
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            52,
+            57,
+            60,
+            65
+          ],
+          "notes": [
+            "C2",
+            "E3",
+            "A3",
+            "C4",
+            "F4"
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            52,
+            57,
+            60,
+            65
+          ],
+          "notes": [
+            "C2",
+            "E3",
+            "A3",
+            "C4",
+            "F4"
+          ],
+          "rhAdjacentIntervals": [
+            5,
+            3,
+            5
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": null,
+          "selectedCandidateRank": 1
+        }
+      ],
+      "C7(♭9)": [
+        {
+          "position": "root",
+          "rhMidi": [
+            55,
+            61,
+            64,
+            70
+          ],
+          "notes": [
+            "C3",
+            "G3",
+            "Db4",
+            "E4",
+            "Bb4"
+          ],
+          "rhAdjacentIntervals": [
+            6,
+            3,
+            6
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 7
+        },
+        {
+          "position": "root",
+          "rhMidi": [
+            55,
+            58,
+            61,
+            64
+          ],
+          "notes": [
+            "C2",
+            "G3",
+            "Bb3",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "root",
+          "rhMidi": [
+            55,
+            58,
+            61,
+            64
+          ],
+          "notes": [
+            "C2",
+            "G3",
+            "Bb3",
+            "Db4",
+            "E4"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            3
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "E2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "E2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "first",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "E2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "G2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "G2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        },
+        {
+          "position": "second",
+          "rhMidi": [
+            58,
+            61,
+            64,
+            72
+          ],
+          "notes": [
+            "G2",
+            "Bb3",
+            "Db4",
+            "E4",
+            "C5"
+          ],
+          "rhAdjacentIntervals": [
+            3,
+            3,
+            8
+          ],
+          "hasRhEFAdjacency": false,
+          "hasRhCDbAdjacency": false,
+          "bassRootDuplication": false,
+          "lowestTensionPitch": 61,
+          "selectedCandidateRank": 1
+        }
+      ]
+    }
+  },
+  "timing": {
+    "before": [
+      {
+        "id": "V1",
+        "label": "Fmaj7",
+        "candidates": 10,
+        "generationMs": 0.3716,
+        "dpMs": 0.4091
+      },
+      {
+        "id": "V2",
+        "label": "C7(♭9)",
+        "candidates": 15,
+        "generationMs": 0.5886,
+        "dpMs": 0.6264
+      },
+      {
+        "id": "V3",
+        "label": "Cmaj7",
+        "candidates": 16,
+        "generationMs": 0.6462,
+        "dpMs": 0.6261
+      },
+      {
+        "id": "V5",
+        "label": "Cadd9",
+        "candidates": 14,
+        "generationMs": 0.5499,
+        "dpMs": 0.5966
+      },
+      {
+        "id": "V6",
+        "label": "Cmaj9",
+        "candidates": 15,
+        "generationMs": 0.5379,
+        "dpMs": 0.6252
+      },
+      {
+        "id": "V7",
+        "label": "Cm9",
+        "candidates": 15,
+        "generationMs": 0.5467,
+        "dpMs": 0.6033
+      },
+      {
+        "id": "V8",
+        "label": "C13",
+        "candidates": 11,
+        "generationMs": 0.5114,
+        "dpMs": 0.5357
+      },
+      {
+        "id": "V9a",
+        "label": "C7(♭9)",
+        "candidates": 15,
+        "generationMs": 0.5735,
+        "dpMs": 0.6063
+      },
+      {
+        "id": "V9b",
+        "label": "C7(#9)",
+        "candidates": 15,
+        "generationMs": 0.5484,
+        "dpMs": 0.772
+      },
+      {
+        "id": "V9c",
+        "label": "C7(♭13)",
+        "candidates": 20,
+        "generationMs": 0.7079,
+        "dpMs": 0.7283
+      }
+    ],
+    "after": [
+      {
+        "id": "V1",
+        "label": "Fmaj7",
+        "candidates": 26,
+        "generationMs": 0.6542,
+        "dpMs": 0.5987
+      },
+      {
+        "id": "V2",
+        "label": "C7(♭9)",
+        "candidates": 32,
+        "generationMs": 1.187,
+        "dpMs": 1.2068
+      },
+      {
+        "id": "V3",
+        "label": "Cmaj7",
+        "candidates": 42,
+        "generationMs": 0.9635,
+        "dpMs": 0.9537
+      },
+      {
+        "id": "V5",
+        "label": "Cadd9",
+        "candidates": 35,
+        "generationMs": 0.9276,
+        "dpMs": 0.9742
+      },
+      {
+        "id": "V6",
+        "label": "Cmaj9",
+        "candidates": 34,
+        "generationMs": 1.3699,
+        "dpMs": 1.2774
+      },
+      {
+        "id": "V7",
+        "label": "Cm9",
+        "candidates": 30,
+        "generationMs": 1.4234,
+        "dpMs": 1.2925
+      },
+      {
+        "id": "V8",
+        "label": "C13",
+        "candidates": 11,
+        "generationMs": 0.5253,
+        "dpMs": 0.5401
+      },
+      {
+        "id": "V9a",
+        "label": "C7(♭9)",
+        "candidates": 32,
+        "generationMs": 1.2365,
+        "dpMs": 1.3172
+      },
+      {
+        "id": "V9b",
+        "label": "C7(#9)",
+        "candidates": 31,
+        "generationMs": 1.4647,
+        "dpMs": 1.8711
+      },
+      {
+        "id": "V9c",
+        "label": "C7(♭13)",
+        "candidates": 50,
+        "generationMs": 2.4805,
+        "dpMs": 3.3056
+      }
+    ],
+    "sixteenChordMs": {
+      "before": 143.3335,
+      "after": 82.1941
+    }
+  },
+  "qualityChords": [
+    {
+      "id": "V1",
+      "label": "Fmaj7",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          41,
+          53,
+          57,
+          60,
+          64
+        ],
+        "noteNames": [
+          "F2",
+          "F3",
+          "A3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "rhSpan": 11,
+        "staticCost": 1.225,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          41,
+          53,
+          57,
+          60,
+          64
+        ],
+        "noteNames": [
+          "F2",
+          "F3",
+          "A3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "rhSpan": 11,
+        "staticCost": 3.225,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V1",
+      "label": "Fmaj7",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          45,
+          60,
+          64,
+          65,
+          69
+        ],
+        "noteNames": [
+          "A2",
+          "C4",
+          "E4",
+          "F4",
+          "A4"
+        ],
+        "adjacentIntervals": [
+          4,
+          1,
+          4
+        ],
+        "rhSpan": 9,
+        "staticCost": 6.825,
+        "minorSecondCount": 1,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": true,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          45,
+          53,
+          57,
+          60,
+          64
+        ],
+        "noteNames": [
+          "A2",
+          "F3",
+          "A3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "rhSpan": 11,
+        "staticCost": 14.425,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V1",
+      "label": "Fmaj7",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          36,
+          52,
+          57,
+          60,
+          65
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "A3",
+          "C4",
+          "F4"
+        ],
+        "adjacentIntervals": [
+          5,
+          3,
+          5
+        ],
+        "rhSpan": 13,
+        "staticCost": 8.425,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3076923076923077,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          52,
+          57,
+          60,
+          65
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "A3",
+          "C4",
+          "F4"
+        ],
+        "adjacentIntervals": [
+          5,
+          3,
+          5
+        ],
+        "rhSpan": 13,
+        "staticCost": 6.925,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3076923076923077,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V2",
+      "label": "C7(♭9)",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          52,
+          58,
+          60,
+          61
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "Bb3",
+          "C4",
+          "Db4"
+        ],
+        "adjacentIntervals": [
+          6,
+          2,
+          1
+        ],
+        "rhSpan": 9,
+        "staticCost": 6.4125000000000005,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": true
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          55,
+          58,
+          61,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "G3",
+          "Bb3",
+          "Db4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          3
+        ],
+        "rhSpan": 9,
+        "staticCost": 6.025,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V2",
+      "label": "C7(♭9)",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          58,
+          60,
+          61,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "C4",
+          "Db4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          1,
+          3
+        ],
+        "rhSpan": 6,
+        "staticCost": 3.0375,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.6666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": true
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          58,
+          61,
+          64,
+          72
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "rhSpan": 14,
+        "staticCost": 7.7875,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V2",
+      "label": "C7(♭9)",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          58,
+          60,
+          61,
+          64
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "C4",
+          "Db4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          1,
+          3
+        ],
+        "rhSpan": 6,
+        "staticCost": 4.5875,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.6666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": true
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          58,
+          61,
+          64,
+          72
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "rhSpan": 14,
+        "staticCost": 6.3374999999999995,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V3",
+      "label": "Cmaj7",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          55,
+          59,
+          60,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "G3",
+          "B3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          4,
+          1,
+          4
+        ],
+        "rhSpan": 9,
+        "staticCost": 6.025,
+        "minorSecondCount": 1,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          55,
+          59,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "G3",
+          "B3",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          4,
+          5
+        ],
+        "rhSpan": 9,
+        "staticCost": 9.433333333333332,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3333333333333333,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V3",
+      "label": "Cmaj7",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          55,
+          59,
+          60,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "G3",
+          "B3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          4,
+          1,
+          4
+        ],
+        "rhSpan": 9,
+        "staticCost": 1.825,
+        "minorSecondCount": 1,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          55,
+          60,
+          64,
+          71
+        ],
+        "noteNames": [
+          "E2",
+          "G3",
+          "C4",
+          "E4",
+          "B4"
+        ],
+        "adjacentIntervals": [
+          5,
+          4,
+          7
+        ],
+        "rhSpan": 16,
+        "staticCost": 5.925,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.25,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V3",
+      "label": "Cmaj7",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          59,
+          60,
+          64,
+          67
+        ],
+        "noteNames": [
+          "G2",
+          "B3",
+          "C4",
+          "E4",
+          "G4"
+        ],
+        "adjacentIntervals": [
+          1,
+          4,
+          3
+        ],
+        "rhSpan": 8,
+        "staticCost": 4.275,
+        "minorSecondCount": 1,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.5,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          59,
+          64,
+          67,
+          72
+        ],
+        "noteNames": [
+          "G2",
+          "B3",
+          "E4",
+          "G4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          5,
+          3,
+          5
+        ],
+        "rhSpan": 13,
+        "staticCost": 7.125000000000001,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3076923076923077,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V5",
+      "label": "Cadd9",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          55,
+          60,
+          62,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "G3",
+          "C4",
+          "D4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          5,
+          2,
+          2
+        ],
+        "rhSpan": 9,
+        "staticCost": 5.8625,
+        "minorSecondCount": 0,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          52,
+          55,
+          62
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "G3",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          3,
+          7
+        ],
+        "rhSpan": 10,
+        "staticCost": 11.23333333333333,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V5",
+      "label": "Cadd9",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          55,
+          60,
+          62,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "G3",
+          "C4",
+          "D4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          5,
+          2,
+          2
+        ],
+        "rhSpan": 9,
+        "staticCost": 1.6625,
+        "minorSecondCount": 0,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          55,
+          60,
+          62,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "G3",
+          "C4",
+          "D4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          5,
+          2,
+          2
+        ],
+        "rhSpan": 9,
+        "staticCost": 12.295833333333333,
+        "minorSecondCount": 0,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V5",
+      "label": "Cadd9",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          62,
+          64,
+          67,
+          72
+        ],
+        "noteNames": [
+          "G2",
+          "D4",
+          "E4",
+          "G4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          2,
+          3,
+          5
+        ],
+        "rhSpan": 10,
+        "staticCost": 7.262499999999999,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          50,
+          55,
+          60,
+          64
+        ],
+        "noteNames": [
+          "G2",
+          "D3",
+          "G3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          5,
+          5,
+          4
+        ],
+        "rhSpan": 14,
+        "staticCost": 9.6875,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 50,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V6",
+      "label": "Cmaj9",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          52,
+          59,
+          60,
+          62
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "B3",
+          "C4",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          7,
+          1,
+          2
+        ],
+        "rhSpan": 10,
+        "staticCost": 5.9875,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          52,
+          55,
+          59,
+          62
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "G3",
+          "B3",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          3,
+          4,
+          3
+        ],
+        "rhSpan": 10,
+        "staticCost": 6.8,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V6",
+      "label": "Cmaj9",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          59,
+          60,
+          62,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "B3",
+          "C4",
+          "D4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          1,
+          2,
+          2
+        ],
+        "rhSpan": 5,
+        "staticCost": 3.7124999999999995,
+        "minorSecondCount": 1,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.8,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          59,
+          62,
+          64,
+          72
+        ],
+        "noteNames": [
+          "E2",
+          "B3",
+          "D4",
+          "E4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          3,
+          2,
+          8
+        ],
+        "rhSpan": 13,
+        "staticCost": 12.7675,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3076923076923077,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V6",
+      "label": "Cmaj9",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          59,
+          60,
+          62,
+          64
+        ],
+        "noteNames": [
+          "G2",
+          "B3",
+          "C4",
+          "D4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          1,
+          2,
+          2
+        ],
+        "rhSpan": 5,
+        "staticCost": 5.262499999999999,
+        "minorSecondCount": 1,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.8,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          59,
+          62,
+          64,
+          72
+        ],
+        "noteNames": [
+          "G2",
+          "B3",
+          "D4",
+          "E4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          3,
+          2,
+          8
+        ],
+        "rhSpan": 13,
+        "staticCost": 11.3175,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3076923076923077,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V7",
+      "label": "Cm9",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          51,
+          58,
+          60,
+          62
+        ],
+        "noteNames": [
+          "C2",
+          "Eb3",
+          "Bb3",
+          "C4",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          7,
+          2,
+          2
+        ],
+        "rhSpan": 11,
+        "staticCost": 5.9625,
+        "minorSecondCount": 0,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          51,
+          55,
+          58,
+          62
+        ],
+        "noteNames": [
+          "C2",
+          "Eb3",
+          "G3",
+          "Bb3",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          4,
+          3,
+          4
+        ],
+        "rhSpan": 11,
+        "staticCost": 6.775,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V7",
+      "label": "Cm9",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          39,
+          58,
+          60,
+          62,
+          63
+        ],
+        "noteNames": [
+          "Eb2",
+          "Bb3",
+          "C4",
+          "D4",
+          "Eb4"
+        ],
+        "adjacentIntervals": [
+          2,
+          2,
+          1
+        ],
+        "rhSpan": 5,
+        "staticCost": 4.1875,
+        "minorSecondCount": 1,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.8,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          39,
+          48,
+          51,
+          58,
+          62
+        ],
+        "noteNames": [
+          "Eb2",
+          "C3",
+          "Eb3",
+          "Bb3",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          3,
+          7,
+          4
+        ],
+        "rhSpan": 14,
+        "staticCost": 16.8125,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V7",
+      "label": "Cm9",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          58,
+          60,
+          62,
+          63
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "C4",
+          "D4",
+          "Eb4"
+        ],
+        "adjacentIntervals": [
+          2,
+          2,
+          1
+        ],
+        "rhSpan": 5,
+        "staticCost": 5.1875,
+        "minorSecondCount": 1,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.8,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          48,
+          51,
+          58,
+          62
+        ],
+        "noteNames": [
+          "G2",
+          "C3",
+          "Eb3",
+          "Bb3",
+          "D4"
+        ],
+        "adjacentIntervals": [
+          3,
+          7,
+          4
+        ],
+        "rhSpan": 14,
+        "staticCost": 16.3125,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V8",
+      "label": "C13",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          57,
+          58,
+          62,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "A3",
+          "Bb3",
+          "D4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          1,
+          4,
+          2
+        ],
+        "rhSpan": 7,
+        "staticCost": 6.5625,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.5714285714285714,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 57,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          58,
+          62,
+          64,
+          69
+        ],
+        "noteNames": [
+          "C2",
+          "Bb3",
+          "D4",
+          "E4",
+          "A4"
+        ],
+        "adjacentIntervals": [
+          4,
+          2,
+          5
+        ],
+        "rhSpan": 11,
+        "staticCost": 14.8675,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V8",
+      "label": "C13",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          58,
+          62,
+          64,
+          69
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "D4",
+          "E4",
+          "A4"
+        ],
+        "adjacentIntervals": [
+          4,
+          2,
+          5
+        ],
+        "rhSpan": 11,
+        "staticCost": 4.1625000000000005,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          58,
+          62,
+          64,
+          69
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "D4",
+          "E4",
+          "A4"
+        ],
+        "adjacentIntervals": [
+          4,
+          2,
+          5
+        ],
+        "rhSpan": 11,
+        "staticCost": 38.667500000000004,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V8",
+      "label": "C13",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          58,
+          62,
+          64,
+          69
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "D4",
+          "E4",
+          "A4"
+        ],
+        "adjacentIntervals": [
+          4,
+          2,
+          5
+        ],
+        "rhSpan": 11,
+        "staticCost": 4.2125,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          58,
+          62,
+          64,
+          69
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "D4",
+          "E4",
+          "A4"
+        ],
+        "adjacentIntervals": [
+          4,
+          2,
+          5
+        ],
+        "rhSpan": 11,
+        "staticCost": 37.2175,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 62,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9a",
+      "label": "C7(♭9)",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          52,
+          58,
+          60,
+          61
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "Bb3",
+          "C4",
+          "Db4"
+        ],
+        "adjacentIntervals": [
+          6,
+          2,
+          1
+        ],
+        "rhSpan": 9,
+        "staticCost": 6.4125000000000005,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": true
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          55,
+          58,
+          61,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "G3",
+          "Bb3",
+          "Db4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          3
+        ],
+        "rhSpan": 9,
+        "staticCost": 6.025,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4444444444444444,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9a",
+      "label": "C7(♭9)",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          58,
+          60,
+          61,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "C4",
+          "Db4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          1,
+          3
+        ],
+        "rhSpan": 6,
+        "staticCost": 3.0375,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.6666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": true
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          58,
+          61,
+          64,
+          72
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "rhSpan": 14,
+        "staticCost": 7.7875,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9a",
+      "label": "C7(♭9)",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          58,
+          60,
+          61,
+          64
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "C4",
+          "Db4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          1,
+          3
+        ],
+        "rhSpan": 6,
+        "staticCost": 4.5875,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.6666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": true
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          58,
+          61,
+          64,
+          72
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "Db4",
+          "E4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          8
+        ],
+        "rhSpan": 14,
+        "staticCost": 6.3374999999999995,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": 61,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9b",
+      "label": "C7(#9)",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          52,
+          58,
+          60,
+          63
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "Bb3",
+          "C4",
+          "Eb4"
+        ],
+        "adjacentIntervals": [
+          6,
+          2,
+          3
+        ],
+        "rhSpan": 11,
+        "staticCost": 5.8875,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          52,
+          55,
+          58,
+          63
+        ],
+        "noteNames": [
+          "C2",
+          "E3",
+          "G3",
+          "Bb3",
+          "Eb4"
+        ],
+        "adjacentIntervals": [
+          3,
+          3,
+          5
+        ],
+        "rhSpan": 11,
+        "staticCost": 6.7,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.36363636363636365,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9b",
+      "label": "C7(#9)",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          58,
+          60,
+          63,
+          64
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "C4",
+          "Eb4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          3,
+          1
+        ],
+        "rhSpan": 6,
+        "staticCost": 3.3625,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.6666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          48,
+          52,
+          58,
+          63
+        ],
+        "noteNames": [
+          "E2",
+          "C3",
+          "E3",
+          "Bb3",
+          "Eb4"
+        ],
+        "adjacentIntervals": [
+          4,
+          6,
+          5
+        ],
+        "rhSpan": 15,
+        "staticCost": 16.0375,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.26666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9b",
+      "label": "C7(#9)",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          58,
+          60,
+          63,
+          64
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "C4",
+          "Eb4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          3,
+          1
+        ],
+        "rhSpan": 6,
+        "staticCost": 4.9125,
+        "minorSecondCount": 1,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.6666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          48,
+          52,
+          58,
+          63
+        ],
+        "noteNames": [
+          "G2",
+          "C3",
+          "E3",
+          "Bb3",
+          "Eb4"
+        ],
+        "adjacentIntervals": [
+          4,
+          6,
+          5
+        ],
+        "rhSpan": 15,
+        "staticCost": 16.0875,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.26666666666666666,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9c",
+      "label": "C7(♭13)",
+      "position": "root",
+      "before": {
+        "selectedMidi": [
+          36,
+          56,
+          58,
+          60,
+          64
+        ],
+        "noteNames": [
+          "C2",
+          "Ab3",
+          "Bb3",
+          "C4",
+          "E4"
+        ],
+        "adjacentIntervals": [
+          2,
+          2,
+          4
+        ],
+        "rhSpan": 8,
+        "staticCost": 6.375,
+        "minorSecondCount": 0,
+        "majorSecondCount": 2,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.5,
+        "bassRootDuplication": true,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          36,
+          55,
+          58,
+          64,
+          68
+        ],
+        "noteNames": [
+          "C2",
+          "G3",
+          "Bb3",
+          "E4",
+          "Ab4"
+        ],
+        "adjacentIntervals": [
+          3,
+          6,
+          4
+        ],
+        "rhSpan": 13,
+        "staticCost": 7.5125,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.3076923076923077,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9c",
+      "label": "C7(♭13)",
+      "position": "first",
+      "before": {
+        "selectedMidi": [
+          40,
+          58,
+          60,
+          64,
+          68
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "C4",
+          "E4",
+          "Ab4"
+        ],
+        "adjacentIntervals": [
+          2,
+          4,
+          4
+        ],
+        "rhSpan": 10,
+        "staticCost": 3.775,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          40,
+          58,
+          64,
+          68,
+          72
+        ],
+        "noteNames": [
+          "E2",
+          "Bb3",
+          "E4",
+          "Ab4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          6,
+          4,
+          4
+        ],
+        "rhSpan": 14,
+        "staticCost": 8.925,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    },
+    {
+      "id": "V9c",
+      "label": "C7(♭13)",
+      "position": "second",
+      "before": {
+        "selectedMidi": [
+          43,
+          58,
+          60,
+          64,
+          68
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "C4",
+          "E4",
+          "Ab4"
+        ],
+        "adjacentIntervals": [
+          2,
+          4,
+          4
+        ],
+        "rhSpan": 10,
+        "staticCost": 3.825,
+        "minorSecondCount": 0,
+        "majorSecondCount": 1,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.4,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      },
+      "after": {
+        "selectedMidi": [
+          43,
+          58,
+          64,
+          68,
+          72
+        ],
+        "noteNames": [
+          "G2",
+          "Bb3",
+          "E4",
+          "Ab4",
+          "C5"
+        ],
+        "adjacentIntervals": [
+          6,
+          4,
+          4
+        ],
+        "rhSpan": 14,
+        "staticCost": 7.4750000000000005,
+        "minorSecondCount": 0,
+        "majorSecondCount": 0,
+        "lowMinorSecondCount": 0,
+        "clusterDensity": 0.2857142857142857,
+        "bassRootDuplication": false,
+        "lowestTensionPitch": null,
+        "rhHasEFAdjacency": false,
+        "rhHasCDbAdjacency": false
+      }
+    }
+  ]
+}

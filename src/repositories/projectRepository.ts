@@ -4,6 +4,7 @@ import { STARTER_PRESET } from '@/data/presets';
 import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompaniment';
 import { getDb } from '@/lib/db';
 import { normalizeGroove } from '@/lib/groove';
+import { DEFAULT_KEY_MODE, normalizeKeyMode } from '@/lib/keyMode';
 import {
   DEFAULT_VOICING_POSITION,
   normalizeVoicingPosition,
@@ -29,6 +30,8 @@ type ProjectRow = {
   accompaniment_energy: string | null;
   /** Compact inversion; missing/invalid on older rows → root. */
   voicing_position: string | null;
+  /** How `key` is read; missing on rows written before minor keys → major. */
+  key_mode: string | null;
   chord_events: string;
   created_at: number;
   updated_at: number;
@@ -37,6 +40,7 @@ type ProjectRow = {
 const DEFAULTS: Omit<Project, 'id' | 'createdAt' | 'updatedAt'> = {
   title: '新しい進行',
   key: 'C',
+  mode: DEFAULT_KEY_MODE,
   tempoBpm: 100,
   timeSignature: '4/4',
   instrumentId: 'piano',
@@ -71,6 +75,7 @@ function rowToProject(row: ProjectRow): Project {
     id: row.id,
     title: row.title,
     key: row.key as Project['key'],
+    mode: normalizeKeyMode(row.key_mode),
     tempoBpm: row.tempo_bpm,
     timeSignature: row.time_signature as Project['timeSignature'],
     instrumentId: row.instrument_id as Project['instrumentId'],
@@ -94,13 +99,14 @@ function rowToProject(row: ProjectRow): Project {
 async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
   await db.runAsync(
     `INSERT INTO projects
-       (id, title, key, tempo_bpm, time_signature, instrument_id, groove_id,
+       (id, title, key, key_mode, tempo_bpm, time_signature, instrument_id, groove_id,
         accompaniment_pattern, accompaniment_variant, accompaniment_energy,
         voicing_position, chord_events, created_at, updated_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
      ON CONFLICT(id) DO UPDATE SET
        title = excluded.title,
        key = excluded.key,
+       key_mode = excluded.key_mode,
        tempo_bpm = excluded.tempo_bpm,
        time_signature = excluded.time_signature,
        instrument_id = excluded.instrument_id,
@@ -115,6 +121,7 @@ async function upsert(db: SQLiteDatabase, p: Project): Promise<void> {
       p.id,
       p.title,
       p.key,
+      normalizeKeyMode(p.mode),
       p.tempoBpm,
       p.timeSignature,
       p.instrumentId,

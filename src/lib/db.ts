@@ -29,6 +29,13 @@ const ADDED_COLUMNS: readonly { table: string; column: string; definition: strin
     column: 'voicing_position',
     definition: "TEXT NOT NULL DEFAULT 'root'",
   },
+  {
+    table: 'projects',
+    // Named `key_mode` rather than `mode` so it reads as a property of `key` and
+    // cannot collide with SQLite's pragma vocabulary.
+    column: 'key_mode',
+    definition: "TEXT NOT NULL DEFAULT 'major'",
+  },
 ];
 
 async function addColumns(db: SQLite.SQLiteDatabase): Promise<void> {

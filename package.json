@@ -1,7 +1,7 @@
 {
   "name": "expoinit",
   "main": "expo-router/entry",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "dependencies": {
     "@expo-google-fonts/noto-sans-jp": "^0.4.3",
     "@react-native-async-storage/async-storage": "2.2.0",
@@ -82,7 +82,8 @@
     "quality:audit": "jest -c scripts/quality/jest.quality.config.js --testPathPattern architectureAudit.harness",
     "quality:gate01": "jest -c scripts/quality/jest.quality.config.js --testPathPattern gate01Sustain.harness",
     "quality:sharedVoicingPoc": "jest -c scripts/quality/jest.quality.config.js --testPathPattern sharedVoicingPoc.harness",
-    "quality:localAnalysis": "jest -c scripts/quality/jest.localAnalysis.config.js"
+    "quality:localAnalysis": "jest -c scripts/quality/jest.localAnalysis.config.js",
+    "quality:voicingPolicyV2": "jest -c scripts/quality/jest.quality.config.js --testPathPattern voicingPolicyV2.harness"
   },
   "private": true
 }

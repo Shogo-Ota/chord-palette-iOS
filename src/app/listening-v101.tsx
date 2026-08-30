@@ -25,6 +25,12 @@ import {
 } from '@/features/editor/session';
 import { PHASE3C_CASES } from '@/lib/playback/phase3cCases';
 import { logger } from '@/lib/logger';
+import {
+  activeVoicingPolicyId,
+  setVoicingPolicyOverride,
+  voicingPolicyOptions,
+  type VoicingPolicyId,
+} from '@/lib/performance/baseVoicing';
 import { V101_LISTENING_CHECKLIST } from '@/lib/performance/humanTemplate/listeningProgression';
 import { audioService } from '@/services/audio';
 import { activePlaybackEngine, setPlaybackEngineOverride } from '@/services/audio/playbackEngine';
@@ -32,7 +38,6 @@ import { getTier } from '@/services/billing';
 import type { PlaybackEngineId, PlaybackState } from '@/services/audio/types';
 import { colors, font, primaryGradient, radius } from '@/theme/tokens';
 import type { InstrumentId } from '@/types';
-
 
 /**
  * Playback engine A/B (diagnostic only — never exposed in the product UI).
@@ -50,6 +55,24 @@ const ENGINE_HINT: Record<PlaybackEngineId, string> = {
   sequencer: 'NEW — Final MIDI を Sampler へ送出（CC64あり・Pitch 0–127・clampなし）',
 };
 
+/**
+ * Shared Base Voicing A/B (diagnostic only — never exposed in the product UI).
+ * Unlike the engine switch, this one changes generation: the policies choose
+ * different pitches for the same chord, so Style / Rhythm stay identical while
+ * the harmony under them moves. `compact.v3` is what ships; v1 and v2 stay
+ * selectable as the references a future promotion is judged against.
+ */
+const VOICING_POLICY_OPTIONS = voicingPolicyOptions().map((policy) => ({
+  key: policy.id,
+  label: policy.label,
+}));
+
+const VOICING_POLICY_HINT: Record<VoicingPolicyId, string> = {
+  'compact.v1': '旧既定（1.0.2 / 87点）— 比較用の基準。近接半音87件を含む',
+  'compact.v2': '中間候補 — 半音は解消したが短9度を23件生む。昇格されなかった理由の記録',
+  'compact.v3': '出荷中 — 87〜89点で承認済み。衝突ゲート適用、Golden A–I で違反0件',
+};
+
 type ListeningCaseId = 'v101' | Phase3cCaseId;
 
 const CASE_OPTIONS: Array<{ id: ListeningCaseId; label: string }> = [
@@ -64,6 +87,7 @@ export default function ListeningV101Screen() {
   const [listeningCase, setListeningCase] = useState<ListeningCaseId>('natural-type1');
   const [patternIdx, setPatternIdx] = useState(0);
   const [engine, setEngine] = useState<PlaybackEngineId>(activePlaybackEngine());
+  const [voicingPolicy, setVoicingPolicy] = useState<VoicingPolicyId>(activeVoicingPolicyId());
   const [playbackState, setPlaybackState] = useState<PlaybackState>('idle');
   const [engineNote, setEngineNote] = useState('エンジン準備中…');
   const playing = playbackState === 'playing';
@@ -120,8 +144,7 @@ export default function ListeningV101Screen() {
         const count = rt?.scheduledEventCount;
         const pitchMin = rt?.sentPitchMin;
         const pitchMax = rt?.sentPitchMax;
-        const pitch =
-          pitchMin != null && pitchMax != null ? ` pitch=${pitchMin}-${pitchMax}` : '';
+        const pitch = pitchMin != null && pitchMax != null ? ` pitch=${pitchMin}-${pitchMax}` : '';
         const cc = rt?.sentCc64Count != null ? ` cc64=${rt.sentCc64Count}` : '';
         setEngineNote(
           err
@@ -163,6 +186,13 @@ export default function ListeningV101Screen() {
       .catch((e) => logger.warn('engine diagnostics failed', { error: String(e) }));
   };
 
+  /** The next take is generated from scratch, so the new policy applies on replay. */
+  const selectVoicingPolicy = (id: VoicingPolicyId) => {
+    audioService.stop().catch(() => {});
+    setVoicingPolicyOverride(id);
+    setVoicingPolicy(id);
+  };
+
   return (
     <ScreenScaffold scroll={false}>
       <Pressable
@@ -177,8 +207,8 @@ export default function ListeningV101Screen() {
       </Pressable>
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <Text style={styles.lead}>
-          Phase 3C: 同一 Final MIDI を OLD=sampled / NEW=sequencer で即時比較します。Generation
-          は変えません。
+          Playback Engine は同一 Final MIDI の比較（Generation は変わりません）。Shared Base Voicing
+          は Generation 側の比較で、Style と Rhythm は同じまま和音の音そのものが変わります。
         </Text>
 
         <Text style={styles.section}>Case</Text>
@@ -189,10 +219,7 @@ export default function ListeningV101Screen() {
               onPress={() => selectCase(c.id)}
               style={[styles.patternChip, listeningCase === c.id && styles.patternChipActive]}>
               <Text
-                style={[
-                  styles.patternLabel,
-                  listeningCase === c.id && styles.patternLabelActive,
-                ]}>
+                style={[styles.patternLabel, listeningCase === c.id && styles.patternLabelActive]}>
                 {c.label}
               </Text>
             </Pressable>
@@ -208,6 +235,15 @@ export default function ListeningV101Screen() {
         />
         <Text style={styles.engineHint}>{ENGINE_HINT[engine]}</Text>
         <Text style={styles.engineNote}>{engineNote}</Text>
+
+        <Text style={styles.section}>Shared Base Voicing（A/B）</Text>
+        <ChipRow
+          options={VOICING_POLICY_OPTIONS}
+          value={voicingPolicy}
+          onChange={(k) => selectVoicingPolicy(k as VoicingPolicyId)}
+          chipStyle={{ paddingVertical: 12 }}
+        />
+        <Text style={styles.engineHint}>{VOICING_POLICY_HINT[voicingPolicy]}</Text>
 
         {listeningCase === 'v101' ? (
           <>
@@ -293,9 +329,7 @@ export default function ListeningV101Screen() {
           </View>
         ))}
 
-        <Text style={styles.footer}>
-          各 Pattern を試聴後、PASS / FAIL を報告してください。
-        </Text>
+        <Text style={styles.footer}>各 Pattern を試聴後、PASS / FAIL を報告してください。</Text>
       </ScrollView>
     </ScreenScaffold>
   );
