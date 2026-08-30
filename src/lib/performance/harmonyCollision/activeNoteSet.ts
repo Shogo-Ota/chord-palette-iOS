@@ -10,7 +10,7 @@
  * matching the harmony gate.
  */
 
-import { GATED_TRACKS, chordIndexAtBeat } from '../harmonyGate';
+import { chordIndexForNote, GATED_TRACKS } from '../harmonyGate';
 import type { NoteEvent } from '../NoteEvent';
 import type { PerfChord } from '../PerformanceEngine';
 import type { HarmonyCollisionNote } from './types';
@@ -45,7 +45,7 @@ export function boundPitchedNotes(
       startBeat: note.timeBeat,
       endBeat: note.timeBeat + note.durationBeat,
       trackId: note.trackId,
-      chordIndex: chordIndexAtBeat(chords, note.timeBeat),
+      chordIndex: chordIndexForNote(chords, note),
     });
   }
   return bound.sort((a, b) => a.startBeat - b.startBeat || a.midiNote - b.midiNote);

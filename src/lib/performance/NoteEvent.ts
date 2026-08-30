@@ -51,6 +51,11 @@ export interface NoteEvent {
   rrIndex: number;
   /** Which voice this note belongs to. */
   trackId: TrackId;
+  /**
+   * Explicit harmony ownership for an intentional anticipation.
+   * Omitted notes are bound by timeline position; renderers ignore this metadata.
+   */
+  harmonyTargetChordIndex?: number;
   /** The project seed that produced this event (same seed ⇒ same performance). */
   seed: number;
 }

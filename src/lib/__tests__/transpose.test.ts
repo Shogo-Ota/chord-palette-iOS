@@ -1,9 +1,10 @@
+import { passingDiminishedChords, substituteChords } from '@/data/advancedHarmonyChords';
 import { diatonicLibrary, secondaryDominants, slashChord, variationChord } from '@/data/music';
 import { buildPresetProgression } from '@/lib/presets';
 import { SAMPLE_PRESETS } from '@/lib/testFixtures/samplePresets';
 import { rebaseProgression, transposeEvent, transposeProgression } from '@/lib/transpose';
 import { chordMidiNotes } from '@/lib/voicing';
-import type { ChordEvent, MajorKey } from '@/types';
+import type { ChordEvent, ChordRootSpelling, MajorKey } from '@/types';
 
 function preset(id: string) {
   const p = SAMPLE_PRESETS.find((x) => x.id === id);
@@ -77,6 +78,7 @@ describe('transposeEvent — library-built chords', () => {
     function: ChordEvent['function'];
     rootOffset: number;
     suffix: string;
+    rootSpelling?: ChordRootSpelling;
     bassOffset?: number;
     bassNote?: string;
   }): ChordEvent {
@@ -90,23 +92,32 @@ describe('transposeEvent — library-built chords', () => {
       isPro: true,
       rootOffset: chord.rootOffset,
       suffix: chord.suffix,
+      rootSpelling: chord.rootSpelling,
       bassOffset: chord.bassOffset,
       bassNote: chord.bassNote,
     };
   }
 
-  it('transposes a secondary dominant (V7/ii): C=A7 → G=E7', () => {
-    const v7ii = secondaryDominants('C').find((c) => c.degreeLabel === 'V7/ii')!;
-    expect(v7ii.displayName).toBe('A7');
-    const moved = transposeEvent(eventFromLibrary(v7ii), 'G');
+  it('transposes a secondary dominant (VI7): C=A7 → G=E7', () => {
+    const six7 = secondaryDominants('C').find((c) => c.degreeLabel === 'VI7')!;
+    expect(six7.displayName).toBe('A7');
+    const moved = transposeEvent(eventFromLibrary(six7), 'G');
     expect(moved.displayName).toBe('E7');
-    expect(moved.degreeLabel).toBe('V7/ii');
+    expect(moved.degreeLabel).toBe('VI7');
   });
 
   it('transposes a variation chord (I sus4): C=Csus4 → D=Dsus4', () => {
     const sus4 = variationChord('C', 0, 'sus4');
     const moved = transposeEvent(eventFromLibrary(sus4), 'D');
     expect(moved.displayName).toBe('Dsus4');
+  });
+
+  it('preserves directional altered-degree spelling across key changes', () => {
+    const sharpOne = passingDiminishedChords('C')[0]!;
+    const subV = substituteChords('C', 'major')[0]!;
+
+    expect(transposeEvent(eventFromLibrary(sharpOne), 'G').displayName).toBe('G#dim7');
+    expect(transposeEvent(eventFromLibrary(subV), 'G').displayName).toBe('A♭7');
   });
 
   it('transposes a slash chord and respells its bass: C/E → G becomes G/B', () => {

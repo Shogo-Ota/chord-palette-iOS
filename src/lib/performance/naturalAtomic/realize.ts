@@ -43,6 +43,8 @@ export function realizeAtomicNatural(
     const voicing = fullVoicings.find((candidate) => candidate.chordIndex === attack.chordIndex);
     if (!voicing) continue;
     const selectedNotes = selectNaturalAttackNotes(voicing, attack.selection);
+    const harmonyTargetChordIndex =
+      attack.onsetBeat < voicing.chord.startBeat - 1e-9 ? attack.chordIndex : undefined;
     for (const note of selectedNotes) {
       notes.push({
         timeBeat: attack.onsetBeat,
@@ -57,6 +59,7 @@ export function realizeAtomicNatural(
         articulation: 'normal',
         rrIndex: 0,
         trackId: 'chord',
+        ...(harmonyTargetChordIndex == null ? {} : { harmonyTargetChordIndex }),
         seed,
       });
     }

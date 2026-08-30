@@ -10,6 +10,7 @@
  */
 
 export * from './appPolicy';
+export * from './advancedPalette';
 export * from './chordFormulas';
 export * from './degrees';
 export * from './diatonic';

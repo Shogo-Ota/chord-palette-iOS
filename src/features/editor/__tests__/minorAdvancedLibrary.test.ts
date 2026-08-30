@@ -35,21 +35,26 @@ describe('minor advanced harmony provider', () => {
     }
   });
 
-  it('keeps major groups frozen and gives minor its own group', () => {
+  it('organizes major into four practical groups and keeps minor conservative', () => {
     expect(advancedLibraryGroups('C', 'major').map((group) => group.id)).toEqual([
       'secondary-dominant',
-      'modal-interchange',
+      'passing-diminished',
+      'substitute-chord',
+      'chromatic-mediant',
     ]);
     expect(advancedLibraryGroups('C', 'minor').map((group) => group.id)).toEqual([
       'minor-primary-dominant',
+      'substitute-chord',
     ]);
   });
 
   it('does not invent minor secondary dominants or reverse mixture', () => {
     const minor = advancedLibraryGroups('C', 'minor');
 
-    expect(minor.flatMap((group) => group.chords)).toHaveLength(3);
+    expect(minor.flatMap((group) => group.chords)).toHaveLength(4);
     expect(minor.some((group) => group.id.includes('secondary'))).toBe(false);
     expect(minor.some((group) => group.id.includes('modal'))).toBe(false);
+    expect(minor.some((group) => group.id.includes('passing'))).toBe(false);
+    expect(minor.some((group) => group.id.includes('chromatic'))).toBe(false);
   });
 });

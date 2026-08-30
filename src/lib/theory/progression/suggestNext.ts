@@ -39,7 +39,7 @@ export interface ProgressionSuggestion {
   suffix: string;
   /** Harmonic function → accent colour. */
   function: ChordFunction;
-  /** Roman-numeral degree label (e.g. 'IV', 'V7/ii', '♭VII'). */
+  /** Roman-numeral degree label (e.g. 'IV', 'VI7', '♭VII'). */
   degreeLabel: string;
   /** Chord name spelled for the key (e.g. 'G', 'Am', 'E7'). */
   displayName: string;

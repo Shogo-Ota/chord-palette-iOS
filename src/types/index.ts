@@ -74,9 +74,23 @@ export type DiatonicChord = {
 
 export type ChordDuration = 1 | 2 | 4; // beats: 1/4, 1/2, 1 bar
 
+/** Degree-aware display spelling retained across key changes (e.g. #I, not bII). */
+export type ChordRootSpelling = {
+  degreeIndex: number;
+  alteration: -1 | 0 | 1;
+};
+
 /** Where a library chord comes from — drives the tab it lives in. */
 export type ChordCategory =
-  'diatonic' | 'variation' | 'primaryDominant' | 'secondaryDominant' | 'modalInterchange' | 'slash';
+  | 'diatonic'
+  | 'variation'
+  | 'primaryDominant'
+  | 'secondaryDominant'
+  | 'passingDiminished'
+  | 'substituteChord'
+  | 'chromaticMediant'
+  | 'modalInterchange'
+  | 'slash';
 
 /**
  * A selectable chord card in the chord library (diatonic / advanced / slash).
@@ -88,12 +102,16 @@ export type LibraryChord = {
   id: string;
   /** Big center label, e.g. "F", "A7", "C/E". */
   displayName: string;
-  /** Small top label, e.g. "IV", "V7/ii", "♭III", "/E". */
+  /** Small top label, e.g. "IV", "VI7", "♭III", "/E". */
   degreeLabel: string;
   /** Harmonic function → accent color + T/SD/D badge. */
   function: ChordFunction;
   /** Bottom pill sub-text, e.g. "Fmaj7", "→Dm7", "bass E". */
   subLabel?: string;
+  /** Familiar practical name shown under the chord, e.g. "裏コード". */
+  commonName?: string;
+  /** Card-only badge override such as DIM or COLOR; function remains semantic. */
+  badgeLabel?: string;
   category: ChordCategory;
   /** Bass note for slash chords, e.g. "E". */
   bassNote?: string;
@@ -111,6 +129,8 @@ export type LibraryChord = {
    * before the catalog existed carry only a suffix.
    */
   definitionId?: string;
+  /** Degree-aware root spelling used when this card is placed or transposed. */
+  rootSpelling?: ChordRootSpelling;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
 };
@@ -137,6 +157,8 @@ export type ChordEvent = {
    * before the catalog existed still load and sound the same.
    */
   definitionId?: string;
+  /** Degree-aware root spelling retained when the project is transposed. */
+  rootSpelling?: ChordRootSpelling;
   /** Semitones of the bass above the tonic, for slash/on-chords. */
   bassOffset?: number;
   /** Bass note when this event is a slash/on-chord. */

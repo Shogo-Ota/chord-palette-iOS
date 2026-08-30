@@ -33,11 +33,39 @@ export function extractAtomicNaturalTimeline(
   const strategy = naturalRhythmStrategyFor(variantId);
 
   chords.forEach((chord, chordIndex) => {
-    const sourceAttacks = naturalRhythmForChord(strategy, chordIndex, chord.durationBeats);
+    const beatsPerBar = template.meter.beatsPerBar;
+    const nextChord = chords[chordIndex + 1];
+    const afterNextChord = chords[chordIndex + 2];
+    const chordEndBeat = chord.startBeat + chord.durationBeats;
+    const hasContiguousNextChord =
+      nextChord != null && Math.abs(nextChord.startBeat - chordEndBeat) <= 1e-9;
+    const halfBar = beatsPerBar / 2;
+    const endsAtBarBoundary =
+      Math.abs(chordEndBeat / beatsPerBar - Math.round(chordEndBeat / beatsPerBar)) <= 1e-9;
+    const nextBarIsSplitHalfPair =
+      hasContiguousNextChord &&
+      nextChord != null &&
+      endsAtBarBoundary &&
+      Math.abs(nextChord.durationBeats - halfBar) <= 1e-9 &&
+      afterNextChord != null &&
+      Math.abs(afterNextChord.startBeat - (nextChord.startBeat + nextChord.durationBeats)) <=
+        1e-9 &&
+      Math.abs(afterNextChord.durationBeats - halfBar) <= 1e-9;
+    const sourceAttacks = naturalRhythmForChord(
+      strategy,
+      chordIndex,
+      chord.durationBeats,
+      chord.startBeat,
+      beatsPerBar,
+      hasContiguousNextChord,
+      nextBarIsSplitHalfPair,
+    );
     for (const source of sourceAttacks) {
       const onsetBeat = chord.startBeat + source.onsetBeat;
+      const targetChordIndex = chordIndex + (source.targetChordOffset ?? 0);
+      if (!chords[targetChordIndex]) continue;
       groups.push({
-        chordIndex,
+        chordIndex: targetChordIndex,
         onsetBeat,
         durationBeat: source.durationBeat,
         velocity: clampVelocity(source.velocity),

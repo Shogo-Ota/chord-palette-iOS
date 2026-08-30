@@ -2,6 +2,7 @@ export {
   allowedPcsFor,
   applyHarmonyGate,
   chordIndexAtBeat,
+  chordIndexForNote,
   validateHarmony,
   ANTICIPATION_BEATS,
   GATED_TRACKS,

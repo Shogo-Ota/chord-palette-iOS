@@ -1,5 +1,6 @@
 import type { NaturalAttackVoicingSelection } from './attackVoicingPolicy';
 import type { NaturalAttackVelocityShape } from './attackVelocityPolicy';
+import { danceRhythmForChordWindow } from './danceChordWindowPolicy';
 import { GROOVE_PROFILE_REGISTRY, type ProfileGrooveVariantId } from './grooveProfileRegistry';
 
 export type NaturalRhythmAttackSpec = {
@@ -8,14 +9,27 @@ export type NaturalRhythmAttackSpec = {
   velocity: number;
   selection?: NaturalAttackVoicingSelection;
   velocityShape?: NaturalAttackVelocityShape;
+  /** Play this rhythmic attack with a following chord's voicing (Dance anticipation). */
+  targetChordOffset?: 0 | 1;
 };
 
 export type NaturalRhythmVariantId = 'natural.type1' | ProfileGrooveVariantId;
 export type NaturalPedalPolicy = 'TEMPLATE' | 'CANDIDATE' | 'NONE';
 
+export type NaturalRhythmChordContext = {
+  chordIndex: number;
+  chordStartBeat: number;
+  chordDurationBeats: number;
+  beatsPerBar: number;
+  hasContiguousNextChord: boolean;
+  nextBarIsSplitHalfPair: boolean;
+};
+
 export type NaturalRhythmStrategy = {
   id: NaturalRhythmVariantId;
   attacksForBar: (barInPhrase: number) => readonly NaturalRhythmAttackSpec[];
+  /** Optional duration-aware placement. Omitted strategies retain chord-local prefixes. */
+  attacksForChord?: (context: NaturalRhythmChordContext) => readonly NaturalRhythmAttackSpec[];
   /** Fixed subtractive mask; omitted means the adaptive Natural mask policy. */
   attackMask?: 'RIGHT_HAND';
   /** Keep the Shared Base LH note sounding independently under RH attacks. */
@@ -31,6 +45,11 @@ const TYPE1: readonly NaturalRhythmAttackSpec[] = [
   { onsetBeat: 2.5, durationBeat: 0.28, velocity: 76 },
   { onsetBeat: 3, durationBeat: 0.78, velocity: 86 },
 ];
+
+function danceAttacksForBar(barInPhrase: number): readonly NaturalRhythmAttackSpec[] {
+  const profile = GROOVE_PROFILE_REGISTRY['natural.dance1'];
+  return profile.bars[barInPhrase % profile.bars.length]!;
+}
 
 const STRATEGIES: Readonly<Record<NaturalRhythmStrategy['id'], NaturalRhythmStrategy>> = {
   'natural.type1': {
@@ -65,10 +84,16 @@ const STRATEGIES: Readonly<Record<NaturalRhythmStrategy['id'], NaturalRhythmStra
   },
   'natural.dance1': {
     id: 'natural.dance1',
-    attacksForBar: (barInPhrase) => {
-      const profile = GROOVE_PROFILE_REGISTRY['natural.dance1'];
-      return profile.bars[barInPhrase % profile.bars.length]!;
-    },
+    attacksForBar: danceAttacksForBar,
+    attacksForChord: (context) =>
+      danceRhythmForChordWindow({
+        chordStartBeat: context.chordStartBeat,
+        chordDurationBeats: context.chordDurationBeats,
+        beatsPerBar: context.beatsPerBar,
+        hasContiguousNextChord: context.hasContiguousNextChord,
+        nextBarIsSplitHalfPair: context.nextBarIsSplitHalfPair,
+        attacksForBar: danceAttacksForBar,
+      }),
     sustainBass: false,
     pedalPolicy: 'NONE',
   },
@@ -79,14 +104,30 @@ export function naturalRhythmStrategyFor(variantId: unknown): NaturalRhythmStrat
 }
 
 /**
- * Preserve authored rhythm on short chords: take the prefix that fits and clip
- * only the final gate. A one- or two-beat chord is never a compressed four-beat bar.
+ * Resolve rhythm for one chord. Duration-aware strategies may preserve a continuous
+ * physical-bar grid; the default contract keeps the historical uncompressed prefix.
  */
 export function naturalRhythmForChord(
   strategy: NaturalRhythmStrategy,
   chordIndex: number,
   chordDurationBeats: number,
+  chordStartBeat = chordIndex * 4,
+  beatsPerBar = 4,
+  hasContiguousNextChord = false,
+  nextBarIsSplitHalfPair = false,
 ): NaturalRhythmAttackSpec[] {
+  if (strategy.attacksForChord) {
+    return [
+      ...strategy.attacksForChord({
+        chordIndex,
+        chordStartBeat,
+        chordDurationBeats,
+        beatsPerBar,
+        hasContiguousNextChord,
+        nextBarIsSplitHalfPair,
+      }),
+    ];
+  }
   const duration = Math.max(0, chordDurationBeats);
   return strategy
     .attacksForBar(chordIndex)

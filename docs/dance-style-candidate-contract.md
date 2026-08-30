@@ -65,6 +65,9 @@ roll/fill, plus the absence of independent single-note pulse throughout bars
 - Bar 7 removes the `1.5` Bass/RH-bottom response
 - Bar 8 opens `BASS@0 → RIGHT_HAND@0.0438` and closes with split-gate
   `BASS@3 + RIGHT_HAND@3 → accented RIGHT_HAND@3.5`
+- If bar 8 is split into two half-bar chords, bar 7 restores one restrained
+  `BASS + RH_BOTTOM @ 1.5` (velocity 80). This prevents the measured dropout
+  and the already-light split roll from stacking; ordinary bar-7 dropouts remain unchanged.
 - Selected-note velocity is shaped only by piano hand and ascending rank
 - CC64: none; body comes from written gates and measured overlap
 - All regular attacks are grid-locked; no random Humanize is added
@@ -86,7 +89,11 @@ forbidden.
 - terminal roll offset: exactly 0.0438 beat
 - output RH bottom/top velocity hierarchy: preserved
 - CC64 events: 0
-- short chords: uncompressed prefix
+- short chords: physical-bar windows (the profile advances by bar, never by chord count)
+- two-beat first half: `0 / 1 / 1.5 / 1.75`; the `1.75` RH attack anticipates the next chord
+- two-beat second half: boundary `BASS@0`, then measured RH tail at `0.5 / 1.5`
+- boundary-clipped Dance gate floor: 0.5 beat
+- explicit anticipation ownership preserves the Harmony hard gate without globally widening it
 - releaseCut CC64: 0
 - live, MIDI and video schedules: identical
 - protected existing Style digest changes: 0
@@ -94,3 +101,12 @@ forbidden.
 Build 22 real-device listening is approved. This profile is the release
 authority for `natural.dance1` unless a future explicitly versioned candidate
 passes the same automated and device gates.
+
+The two-beat chord-window correction above was added after a user-exported
+110-BPM progression exposed quarter-beat gate truncation and premature phrase
+advancement. Its device audition remains pending.
+
+The contextual bar-7 support was added after a separate 130-BPM export measured
+23 notes in an earlier Am7, 16 in the dropout Am7, and 21 across the following
+Gm7/C7 split bar. The support raises only that dropout Am7 to 18 notes and awaits
+device audition.

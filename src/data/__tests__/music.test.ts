@@ -209,7 +209,21 @@ describe('Pro-only chord categories (requirements §7)', () => {
     const sec = secondaryDominants('C');
     expect(sec.length).toBeGreaterThan(0);
     expect(sec.every((c) => c.isPro === true)).toBe(true);
-    expect(sec[0]).toMatchObject({ displayName: 'A7', degreeLabel: 'V7/ii' });
+    expect(sec.map((c) => [c.displayName, c.degreeLabel])).toEqual([
+      ['A7', 'VI7'],
+      ['B7', 'VII7'],
+      ['C7', 'I7'],
+      ['D7', 'II7'],
+      ['E7', 'III7'],
+    ]);
+  });
+
+  it('uses the same simple root-degree labels in all 12 keys', () => {
+    for (const key of MAJOR_KEYS) {
+      const sec = secondaryDominants(key);
+      expect(sec.map((c) => c.degreeLabel)).toEqual(['VI7', 'VII7', 'I7', 'II7', 'III7']);
+      expect(sec.every((c) => c.subLabel?.startsWith('→'))).toBe(true);
+    }
   });
 
   it('marks all modal-interchange (borrowed) chords Pro', () => {

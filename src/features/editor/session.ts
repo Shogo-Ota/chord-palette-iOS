@@ -34,12 +34,7 @@ import {
 import { PHASE3C_CASES, type Phase3cCaseId } from '@/lib/playback/phase3cCases';
 import { buildPresetProgression } from '@/lib/presets';
 import { appendWithinCap, canAdd, canSetDuration } from '@/lib/progression';
-import {
-  rebaseProgression,
-  relabelDegreesForKey,
-  transposeEvent,
-  transposeProgression,
-} from '@/lib/transpose';
+import { rebaseProgression, relabelDegreesForKey, transposeEvent } from '@/lib/transpose';
 import { createProject, getProject, saveProject } from '@/repositories/projectRepository';
 import { DEFAULT_OCTAVE_SHIFT, setLastProjectId } from '@/repositories/sessionPrefsRepository';
 import type {
@@ -241,17 +236,20 @@ function applyProject(p: Project): void {
     accompanimentPattern: publicAccompaniment.accompanimentPattern,
     accompanimentVariant: publicAccompaniment.accompanimentVariant,
     accompanimentEnergy: normalizeEnergy(p.accompanimentEnergy),
-    // Respell for the project's own key — a no-op for names, but canonicalizes any
-    // legacy slash-chord degree labels ("I/E") to the degree denominator ("I/III").
-    // Preserve any saved per-chord keyContext; legacy events fall back to the key.
-    progression: transposeProgression(p.chordEvents, p.key, normalizeKeyMode(p.mode)).map((e) => ({
-      ...e,
-      keyContext: e.keyContext ?? p.key,
-      modeContext: normalizeKeyMode(e.modeContext ?? p.mode),
-      // v1.0.2 stored one Project-wide position. Promote it into every legacy
-      // chord exactly once; from here on the event is the production authority.
-      voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
-    })),
+    // Respell each chord in the mode it was entered under. A mixed C-major/C-minor
+    // project must reload as I–IV–V–I–i–iv–v–i, not be flattened into the last mode.
+    progression: p.chordEvents.map((e) => {
+      const eventMode = normalizeKeyMode(e.modeContext ?? p.mode);
+      const transposed = transposeEvent(e, p.key, eventMode);
+      return {
+        ...transposed,
+        keyContext: e.keyContext ?? p.key,
+        modeContext: eventMode,
+        // v1.0.2 stored one Project-wide position. Promote it into every legacy
+        // chord exactly once; from here on the event is the production authority.
+        voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
+      };
+    }),
     selected: p.chordEvents.length > 0 ? 0 : -1,
     createdAt: p.createdAt,
   };
@@ -446,36 +444,31 @@ export function setKey(key: MajorKey): void {
   set({ key, progression: rebaseProgression(state.progression, state.key, key), dirty: true });
 }
 
-/** Transpose the whole song to `key` (moves every placed chord). */
+/** Transpose the whole song to `key`, preserving each chord's major/minor section. */
 export function transposeTo(key: MajorKey): void {
   if (key === state.key) return;
-  // Moving the whole song lands every chord in one key — collapse any prior
-  // multi-key contexts so the arrangement reads as a single key again.
-  const progression = transposeProgression(state.progression, key, state.mode).map((e) => ({
-    ...e,
-    keyContext: key,
-    modeContext: state.mode,
-  }));
+  const progression = state.progression.map((e) => {
+    const eventMode = normalizeKeyMode(e.modeContext ?? state.mode);
+    return {
+      ...transposeEvent(e, key, eventMode),
+      keyContext: key,
+      modeContext: eventMode,
+    };
+  });
   set({ key, progression, dirty: true });
 }
 
 /**
- * Read the current tonic as major or as natural minor.
+ * Choose the mode used by the library and by chords added from this point onward.
  *
- * Nothing moves and nothing is re-pitched: `rootOffset` is measured from the tonic, and
- * the tonic does not change. What changes is how the same chords are *named* — a chord on
- * the 3rd degree reads `iii` in major and `♭III` in minor — and which seven cards the
- * library offers. Spelling follows too, because a minor key takes its relative major's
- * signature (the E♭ in C minor is the same pitch the app already writes as D♯ nowhere).
+ * Existing events keep their `modeContext` and degree label. This makes a mode switch a
+ * section boundary: C–F–G–C entered in major remains I–IV–V–I after the user switches to
+ * minor and appends Cm–Fm–Gm–Cm as i–iv–v–i.
  */
 export function setMode(mode: KeyMode): void {
   const next = normalizeKeyMode(mode);
   if (next === state.mode) return;
-  const progression = state.progression.map((e) => ({
-    ...transposeEvent(relabelDegreesForKey(e, next), state.key, next),
-    modeContext: next,
-  }));
-  set({ mode: next, progression, dirty: true });
+  set({ mode: next, dirty: true });
 }
 
 export function setTempo(bpm: number): void {

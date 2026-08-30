@@ -1,4 +1,10 @@
-import { degreeLabelFromOffset, keyTonicPc, noteAt, rootDegreeLabel } from '@/data/music';
+import {
+  degreeLabelFromOffset,
+  keyTonicPc,
+  noteAt,
+  noteAtDegree,
+  rootDegreeLabel,
+} from '@/data/music';
 import type { ChordEvent, KeyMode, MajorKey } from '@/types';
 
 function mod12(n: number): number {
@@ -28,7 +34,9 @@ export function transposeEvent(
 ): ChordEvent {
   if (event.rootOffset == null) return event;
 
-  const root = noteAt(key, event.rootOffset, mode);
+  const root = event.rootSpelling
+    ? noteAtDegree(key, event.rootSpelling.degreeIndex, event.rootSpelling.alteration, mode)
+    : noteAt(key, event.rootOffset, mode);
   let displayName = `${root}${event.suffix ?? ''}`;
   let degreeLabel = event.degreeLabel;
   let bassNote = event.bassNote;

@@ -103,6 +103,15 @@ export function chordIndexAtBeat(chords: readonly PerfChord[], beat: number): nu
   return found;
 }
 
+/** Bind intentional anticipations explicitly; ordinary notes stay time-bound. */
+export function chordIndexForNote(chords: readonly PerfChord[], note: NoteEvent): number {
+  const explicit = note.harmonyTargetChordIndex;
+  if (explicit != null && Number.isInteger(explicit) && explicit >= 0 && explicit < chords.length) {
+    return explicit;
+  }
+  return chordIndexAtBeat(chords, note.timeBeat);
+}
+
 /** Detect illegal pitches. Does not change any note. */
 export function validateHarmony(
   notes: readonly NoteEvent[],
@@ -113,7 +122,11 @@ export function validateHarmony(
   const violations: HarmonyViolation[] = [];
   for (const note of notes) {
     if (!GATED_TRACKS.has(note.trackId)) continue;
-    const pcs = windows[windowIndexAt(windows, note.timeBeat)]!.pcs;
+    const explicitIndex = note.harmonyTargetChordIndex;
+    const pcs =
+      explicitIndex != null && Number.isInteger(explicitIndex) && chords[explicitIndex]
+        ? allowedPcsFor(chords[explicitIndex])
+        : windows[windowIndexAt(windows, note.timeBeat)]!.pcs;
     const pc = pitchClass(note.pitch);
     if (pcs.length === 0 || pcs.includes(pc)) continue;
     violations.push({

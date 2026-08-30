@@ -132,6 +132,7 @@ function libToEvent(c: LibraryChord, durationBeats: ChordDuration = 4) {
     rootOffset: c.rootOffset,
     suffix: c.suffix,
     definitionId: c.definitionId,
+    rootSpelling: c.rootSpelling,
     bassOffset: c.bassOffset,
     bassNote: c.bassNote,
     variation: c.variation,
@@ -986,10 +987,11 @@ export default function EditorScreen() {
                   <Text style={styles.subHint}>未選択時は末尾に追加</Text>
                 )}
                 {advancedGroups.map((group, groupIndex) => (
-                  <View key={group.id}>
-                    <Text style={[styles.groupTitle, groupIndex > 0 && { marginTop: 8 }]}>
-                      {group.title}
-                    </Text>
+                  <View
+                    key={group.id}
+                    style={groupIndex > 0 ? styles.groupSectionSpaced : undefined}>
+                    <Text style={styles.groupTitle}>{group.title}</Text>
+                    <Text style={styles.groupSubtitle}>{group.subtitle}</Text>
                     <View style={styles.grid}>
                       {group.chords.map((chord) => (
                         <LibraryCard
@@ -1291,7 +1293,22 @@ function LibraryCard({
   return (
     <Pressable
       onPress={onPress}
-      style={[styles.libCard, { width }, locked && styles.libCardLocked]}>
+      accessibilityRole="button"
+      accessibilityLabel={[
+        chord.degreeLabel,
+        chord.displayName,
+        chord.subLabel,
+        chord.commonName,
+        chord.badgeLabel ?? FUNCTION_BADGE[chord.function],
+      ]
+        .filter(Boolean)
+        .join(' ')}
+      style={[
+        styles.libCard,
+        chord.commonName && styles.libCardWithCommonName,
+        { width },
+        locked && styles.libCardLocked,
+      ]}>
       <View style={styles.libTop}>
         <Text style={styles.libDegree} numberOfLines={1}>
           {chord.degreeLabel}
@@ -1301,6 +1318,11 @@ function LibraryCard({
       <Text style={[styles.libName, locked && styles.libNameLocked]} numberOfLines={1}>
         {chord.displayName}
       </Text>
+      {chord.commonName ? (
+        <Text style={styles.libCommonName} numberOfLines={1}>
+          {chord.commonName}
+        </Text>
+      ) : null}
       <View style={styles.libBottom}>
         {chord.subLabel ? (
           <View style={styles.libPill}>
@@ -1313,7 +1335,7 @@ function LibraryCard({
         )}
         <View style={[styles.libBadge, { backgroundColor: rgba(accent, 0.16) }]}>
           <Text style={[styles.libBadgeText, { color: accent }]}>
-            {FUNCTION_BADGE[chord.function]}
+            {chord.badgeLabel ?? FUNCTION_BADGE[chord.function]}
           </Text>
         </View>
       </View>
@@ -1726,6 +1748,7 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     overflow: 'hidden',
   },
+  libCardWithCommonName: { minHeight: 88 },
   libCardLocked: { backgroundColor: colors.surfaceLocked, borderColor: colors.borderFaint },
   libTop: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   libDegree: {
@@ -1744,6 +1767,12 @@ const styles = StyleSheet.create({
     marginVertical: 2,
   },
   libNameLocked: { color: colors.textFaint },
+  libCommonName: {
+    fontSize: 9,
+    color: colors.textDim,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   libBottom: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   libPill: {
     flexShrink: 1,
@@ -1777,9 +1806,19 @@ const styles = StyleSheet.create({
     color: colors.textFaint,
     fontFamily: font.bold,
     fontWeight: '700',
+    marginBottom: 2,
+    marginHorizontal: 2,
+  },
+  groupSubtitle: {
+    fontSize: 10.5,
+    lineHeight: 15,
+    color: colors.textDim,
+    fontFamily: font.medium,
+    fontWeight: '500',
     marginBottom: 8,
     marginHorizontal: 2,
   },
+  groupSectionSpaced: { marginTop: 8 },
   comingBadge: {
     paddingHorizontal: 7,
     paddingVertical: 2,

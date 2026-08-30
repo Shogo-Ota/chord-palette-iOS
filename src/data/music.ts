@@ -199,6 +199,31 @@ export function noteAt(key: MajorKey, offset: number, mode: KeyMode = 'major'): 
   return chromaticName(key, tonicPc(key) + offset, mode);
 }
 
+/**
+ * Spell an altered scale degree by its musical letter, not only its pitch class.
+ * This distinguishes direction-sensitive names such as #I (C#) from bII (Db).
+ * Double accidentals fall back to the app's simpler chromatic spelling.
+ */
+export function noteAtDegree(
+  key: MajorKey,
+  degreeIndex: number,
+  alteration: -1 | 0 | 1,
+  mode: KeyMode = 'major',
+): string {
+  const { scale, offsets } = degreeTables(key, mode);
+  const base = scale[degreeIndex];
+  const offset = offsets[degreeIndex];
+  if (base == null || offset == null) return noteAt(key, alteration, mode);
+  if (alteration === 0) return base;
+
+  const match = /^([A-G])([#♭]?)$/.exec(base);
+  if (!match) return noteAt(key, offset + alteration, mode);
+  const current = match[2] === '#' ? 1 : match[2] === '♭' ? -1 : 0;
+  const next = current + alteration;
+  if (Math.abs(next) > 1) return noteAt(key, offset + alteration, mode);
+  return `${match[1]}${next === 1 ? '#' : next === -1 ? '♭' : ''}`;
+}
+
 /** Note name (no octave) of a MIDI note, spelled for the key. Used by the keyboard visual. */
 export function midiNoteName(key: MajorKey, midi: number, mode: KeyMode = 'major'): string {
   return chromaticName(key, midi, mode);
@@ -515,20 +540,21 @@ export function variationChord(
 }
 
 /* ------------------------------------------------------------------ */
-/* Library: secondary dominants (V7/ii … V7/vi)                        */
+/* Library: secondary dominants (displayed as VI7 … III7)              */
 /* ------------------------------------------------------------------ */
 
 const SECONDARY_TARGETS = [
-  { degreeIndex: 1, degree: 'ii' },
-  { degreeIndex: 2, degree: 'iii' },
-  { degreeIndex: 3, degree: 'IV' },
-  { degreeIndex: 4, degree: 'V' },
-  { degreeIndex: 5, degree: 'vi' },
+  { degreeIndex: 1, degree: 'ii', dominantDegree: 'VI7' },
+  { degreeIndex: 2, degree: 'iii', dominantDegree: 'VII7' },
+  { degreeIndex: 3, degree: 'IV', dominantDegree: 'I7' },
+  { degreeIndex: 4, degree: 'V', dominantDegree: 'II7' },
+  { degreeIndex: 5, degree: 'vi', dominantDegree: 'III7' },
 ] as const;
 
 /**
  * Secondary dominants for a key: the dominant-7th a fifth above each target
- * (V7/ii … V7/vi). Sub-label shows the chord they resolve to.
+ * (functionally V7/ii … V7/vi). The main label uses the simpler root degree
+ * (VI7 … III7); the sub-label preserves the resolution destination.
  */
 export function secondaryDominants(key: MajorKey): LibraryChord[] {
   const scale = MAJOR_SCALES[key];
@@ -539,7 +565,7 @@ export function secondaryDominants(key: MajorKey): LibraryChord[] {
     return {
       id: `secdom-${key}-${t.degree}`,
       displayName: `${root}7`,
-      degreeLabel: `V7/${t.degree}`,
+      degreeLabel: t.dominantDegree,
       function: 'dominant',
       subLabel: `→${sevenths[t.degreeIndex].displayName}`,
       category: 'secondaryDominant',

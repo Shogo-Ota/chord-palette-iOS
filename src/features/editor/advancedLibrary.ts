@@ -1,4 +1,9 @@
-import { modalInterchange, secondaryDominants } from '@/data/music';
+import {
+  chromaticMediantChords,
+  passingDiminishedChords,
+  substituteChords,
+} from '@/data/advancedHarmonyChords';
+import { secondaryDominants } from '@/data/music';
 import { minorPrimaryDominants } from '@/data/minorAdvancedChords';
 import type { KeyMode, LibraryChord, MajorKey } from '@/types';
 
@@ -6,15 +11,16 @@ import type { KeyMode, LibraryChord, MajorKey } from '@/types';
 export interface AdvancedLibraryGroup {
   id: string;
   title: string;
+  subtitle: string;
   chords: LibraryChord[];
 }
 
 /**
  * Mode-specific advanced harmony provider.
  *
- * The screen renders groups and does not decide theory. Major preserves its existing
- * secondary-dominant / modal-interchange inventory. Minor exposes only the primary
- * harmonic-minor dominant family explicitly supported by the theory DB.
+ * The screen renders groups and does not decide theory. Major exposes four practical
+ * non-diatonic palettes. Minor stays conservative: the sourced primary dominant plus
+ * the mode-independent tritone substitute, without inventing missing minor tables.
  */
 export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLibraryGroup[] {
   if (mode === 'minor') {
@@ -22,7 +28,14 @@ export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLib
       {
         id: 'minor-primary-dominant',
         title: 'MINOR DOMINANT',
+        subtitle: 'マイナー・ドミナント（V7→i）',
         chords: minorPrimaryDominants(key),
+      },
+      {
+        id: 'substitute-chord',
+        title: 'SUBSTITUTE CHORD',
+        subtitle: '代理コード',
+        chords: substituteChords(key, mode),
       },
     ];
   }
@@ -31,12 +44,26 @@ export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLib
     {
       id: 'secondary-dominant',
       title: 'SECONDARY DOMINANT',
+      subtitle: 'セカンダリードミナント（副属和音）',
       chords: secondaryDominants(key),
     },
     {
-      id: 'modal-interchange',
-      title: 'MODAL INTERCHANGE',
-      chords: modalInterchange(key),
+      id: 'passing-diminished',
+      title: 'PASSING DIMINISHED',
+      subtitle: 'パッシングディミニッシュ（経過dim）',
+      chords: passingDiminishedChords(key),
+    },
+    {
+      id: 'substitute-chord',
+      title: 'SUBSTITUTE CHORD',
+      subtitle: '代理コード',
+      chords: substituteChords(key, mode),
+    },
+    {
+      id: 'chromatic-mediant',
+      title: 'CHROMATIC MEDIANT',
+      subtitle: 'クロマチック・メディアント（3度関係の色彩コード）',
+      chords: chromaticMediantChords(key),
     },
   ];
 }
