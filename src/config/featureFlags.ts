@@ -23,9 +23,17 @@ export type FeatureFlags = {
    * the engine gains a click track.
    */
   metronome: boolean;
+  /**
+   * Chord Evolution application boundary.
+   *
+   * Phase 2 defines adapters and contracts only. Keep false until a later,
+   * separately approved phase wires a complete UI.
+   */
+  chordEvolution: boolean;
 };
 
 /** Active flag values. */
 export const featureFlags: FeatureFlags = {
   metronome: false,
+  chordEvolution: false,
 };

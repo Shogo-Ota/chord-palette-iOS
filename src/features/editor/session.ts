@@ -327,6 +327,29 @@ function commit(next: ChordEvent[], selected = state.selected): void {
   });
 }
 
+/**
+ * Replace the complete progression as one history-aware transaction.
+ *
+ * `expectedCurrent` is an optimistic concurrency guard: callers must prepare
+ * against the exact progression reference that is still active. The function
+ * performs one `commit()` only, so one call always means one Undo entry.
+ */
+export function replaceProgressionAtomically(
+  expectedCurrent: readonly ChordEvent[],
+  next: readonly ChordEvent[],
+  selected = state.selected,
+): boolean {
+  if (state.progression !== expectedCurrent) return false;
+  const progression = next.map((event) => ({
+    ...event,
+    ...(event.rootSpelling ? { rootSpelling: { ...event.rootSpelling } } : {}),
+  }));
+  const nextSelected =
+    progression.length === 0 ? -1 : Math.min(Math.max(selected, -1), progression.length - 1);
+  commit(progression, nextSelected);
+  return true;
+}
+
 export function setSelected(index: number): void {
   set({ selected: index });
 }
