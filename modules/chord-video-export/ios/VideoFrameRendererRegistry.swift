@@ -15,8 +15,9 @@ enum VideoFrameRendererRegistry {
     switch NativeVideoVisualStyle(normalizing: value) {
     case .pulse:
       return PulseFrameRenderer()
-    case .classic, .flow:
-      // Flow remains Classic until Phase V4.
+    case .flow:
+      return FlowFrameRenderer()
+    case .classic:
       return ClassicFrameRendererAdapter()
     }
   }

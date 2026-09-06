@@ -18,14 +18,13 @@ describe('Pulse renderer architecture gate', () => {
     expect(pulse).not.toMatch(/beatDur|beatPhase|60(?:\.0)?\s*\//);
   });
 
-  it('dispatches Pulse separately while Classic, Flow and invalid values stay Classic', () => {
+  it('keeps Pulse separate while V4 owns Flow and invalid values stay Classic', () => {
     const registry = source('VideoFrameRendererRegistry.swift');
 
     expect(registry).toContain('NativeVideoVisualStyle(rawValue: value) ?? .classic');
     expect(registry).toMatch(/case \.pulse:\s+return PulseFrameRenderer\(\)/);
-    expect(registry).toMatch(
-      /case \.classic, \.flow:[\s\S]+return ClassicFrameRendererAdapter\(\)/,
-    );
+    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(\)/);
+    expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
   });
 
   it('derives Pulse timing only from segment start and duration values', () => {
