@@ -23,7 +23,7 @@ describe('Pulse renderer architecture gate', () => {
 
     expect(registry).toContain('NativeVideoVisualStyle(rawValue: value) ?? .classic');
     expect(registry).toMatch(/case \.pulse:\s+return PulseFrameRenderer\(\)/);
-    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(\)/);
+    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline\)/);
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
   });
 
@@ -40,9 +40,8 @@ describe('Pulse renderer architecture gate', () => {
     const bridge = source('ChordVideoExportModule.swift');
     const writer = source('VideoWriter.swift');
 
-    expect(bridge).toContain(
-      'let frameRenderer = VideoFrameRendererRegistry.renderer(for: planRecord.visualStyle)',
-    );
+    expect(bridge).toContain('let frameRenderer = VideoFrameRendererRegistry.renderer(');
+    expect(bridge).toContain('for: planRecord.visualStyle,');
     expect(bridge).toContain('frameRenderer: frameRenderer');
     expect(writer).toContain('frameRenderer: any VideoFrameRendering');
     expect(writer).toContain('frameRenderer.makeImage(plan: plan, timeSec: t)');

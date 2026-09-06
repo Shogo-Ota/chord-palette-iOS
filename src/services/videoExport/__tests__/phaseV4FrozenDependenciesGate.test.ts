@@ -7,6 +7,8 @@ const ROOT = path.resolve(__dirname, '../../../..');
 const FROZEN_SOURCES = {
   'modules/chord-video-export/ios/FrameRenderer.swift':
     'feeeaba31983d4921955d41c0392c670503285626d37d6a7c5df8d2df42c854c',
+  'modules/chord-video-export/ios/ClassicFrameRendererAdapter.swift':
+    'c20af4aa240f676caf184397c377d1aee603bc96669bebda126c9584da9e6154',
   'modules/chord-video-export/ios/PulseFrameRenderer.swift':
     'e33231555b532b35d1c14c8a3add2d8983cf935b6cb3fa3eda743973e73f4885',
   'modules/chord-video-export/ios/PulseFrameState.swift':

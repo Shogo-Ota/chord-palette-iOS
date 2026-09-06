@@ -5,6 +5,18 @@
 
 import type { VideoVisualStyle } from './videoVisualStyle';
 
+/** One read-only performance note used only by note-level video visuals. */
+export type VisualNoteEvent = Readonly<{
+  /** MIDI note number from the finalized performance. */
+  pitch: number;
+  /** Exact note-on time on the export timeline. */
+  startSec: number;
+  /** Exact sounding duration after Final MIDI's minimum-duration policy. */
+  durationSec: number;
+  /** Final MIDI velocity, 1..127. */
+  velocity: number;
+}>;
+
 /** One chord occurrence on the export timeline (already laid out in seconds). */
 export type ExportSegment = {
   /** Big chord name, e.g. "Cmaj7". */
@@ -58,6 +70,11 @@ export type ExportPlan = {
   segments: ExportSegment[];
   /** Optional for backwards compatibility; plan builders always normalize it. */
   visualStyle?: VideoVisualStyle;
+  /**
+   * Optional note-level visual sidecar. Classic and Pulse ignore it; Flow uses it
+   * for falling blocks and keyboard landing without regenerating performance data.
+   */
+  visualNoteEvents?: readonly VisualNoteEvent[];
 };
 
 export type ExportVideoResult = {

@@ -11,12 +11,15 @@ private enum NativeVideoVisualStyle: String {
 
 /// Resolves one renderer per export; rendering implementations never branch by style.
 enum VideoFrameRendererRegistry {
-  static func renderer(for value: String) -> any VideoFrameRendering {
+  static func renderer(
+    for value: String,
+    flowTimeline: FlowVisualNoteTimeline = .empty
+  ) -> any VideoFrameRendering {
     switch NativeVideoVisualStyle(normalizing: value) {
     case .pulse:
       return PulseFrameRenderer()
     case .flow:
-      return FlowFrameRenderer()
+      return FlowFrameRenderer(timeline: flowTimeline)
     case .classic:
       return ClassicFrameRendererAdapter()
     }

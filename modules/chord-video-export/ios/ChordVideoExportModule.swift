@@ -15,6 +15,15 @@ struct ExportSegmentRecord: Record {
   @Field var durationSec: Double = 0
 }
 
+/// Optional note-level visual sidecar. Audio remains owned by the canonical
+/// performance snapshot; these records only drive Flow frame geometry.
+struct VisualNoteEventRecord: Record {
+  @Field var pitch: Int = 60
+  @Field var startSec: Double = 0
+  @Field var durationSec: Double = 0
+  @Field var velocity: Int = 96
+}
+
 /// JS-facing render plan (mirrors ExportPlan in TS).
 struct ExportPlanRecord: Record {
   @Field var width: Int = 1080
@@ -32,7 +41,9 @@ struct ExportPlanRecord: Record {
   @Field var keyboardHigh: Int = 60
   @Field var pitchClassNames: [String] = []
   @Field var segments: [ExportSegmentRecord] = []
-  /// Visual style contract. V1 accepts the value; the renderer intentionally ignores it.
+  /// Missing/empty is backwards compatible and ignored outside Flow.
+  @Field var visualNoteEvents: [VisualNoteEventRecord] = []
+  /// Visual style contract. Unknown values fall back to Classic in the registry.
   @Field var visualStyle: String = "classic"
   /// Beats per bar for progression cycle length (default 4/4).
   @Field var beatsPerBar: Int = 4
@@ -83,7 +94,20 @@ public class ChordVideoExportModule: Module {
         pitchClassNames: planRecord.pitchClassNames,
         segments: segments
       )
-      let frameRenderer = VideoFrameRendererRegistry.renderer(for: planRecord.visualStyle)
+      let visualTimeline = FlowVisualNoteTimeline(
+        events: planRecord.visualNoteEvents.map {
+          FlowVisualNoteEvent(
+            pitch: $0.pitch,
+            startSec: $0.startSec,
+            durationSec: $0.durationSec,
+            velocity: $0.velocity
+          )
+        }
+      )
+      let frameRenderer = VideoFrameRendererRegistry.renderer(
+        for: planRecord.visualStyle,
+        flowTimeline: visualTimeline
+      )
 
       VideoWriter.write(
         plan: plan,

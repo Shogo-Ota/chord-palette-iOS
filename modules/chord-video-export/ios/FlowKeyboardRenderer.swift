@@ -2,7 +2,8 @@ import UIKit
 
 /// Compact, lower-priority keyboard strip for Flow.
 ///
-/// KeyboardLayout remains the single source of note geometry and highlighting.
+/// KeyboardLayout remains the single source of note geometry. Highlighting is driven
+/// only by note-level landing times, never by chord segments.
 enum FlowKeyboardRenderer {
   private static let paletteGreen = UIColor(
     red: 0x2c / 255, green: 0xe6 / 255, blue: 0x9f / 255, alpha: 1)
@@ -13,20 +14,21 @@ enum FlowKeyboardRenderer {
 
   static func draw(
     plan: RenderPlan,
-    currentSegment: RenderSegment,
+    events: [FlowVisualNoteEvent],
+    keys: [KeyRect],
+    frameTimeSec: Double,
     rect: CGRect,
     frameHeight height: CGFloat
   ) {
-    let keys = KeyboardLayout.layout(
-      low: plan.keyboardLow,
-      high: plan.keyboardHigh,
-      totalWidth: rect.width
-    )
-    let active = KeyboardLayout.highlighted(
-      currentSegment.midiNotes,
-      low: plan.keyboardLow,
-      high: plan.keyboardHigh
-    )
+    var landingByMidi: [Int: CGFloat] = [:]
+    for event in events {
+      let folded = KeyboardLayout.fold(event.pitch, low: plan.keyboardLow, high: plan.keyboardHigh)
+      let intensity = FlowFallingBlockStateResolver.landingIntensity(
+        event: event,
+        frameTimeSec: frameTimeSec
+      )
+      landingByMidi[folded] = max(landingByMidi[folded] ?? 0, intensity)
+    }
     let blackHeight = rect.height * 0.61
 
     for key in keys where !key.isBlack {
@@ -36,15 +38,16 @@ enum FlowKeyboardRenderer {
         width: key.width,
         height: rect.height
       )
-      if active.contains(key.midi) {
-        paletteGreen.withAlphaComponent(0.20).setFill()
+      let landing = landingByMidi[key.midi] ?? 0
+      if landing > 0 {
+        paletteGreen.withAlphaComponent(0.10 + landing * 0.20).setFill()
         UIBezierPath(
           roundedRect: keyRect.insetBy(dx: -height * 0.004, dy: -height * 0.005),
           cornerRadius: height * 0.005
         ).fill()
       }
-      (active.contains(key.midi)
-        ? paletteGreen.withAlphaComponent(0.90)
+      (landing > 0
+        ? paletteGreen.withAlphaComponent(0.34 + landing * 0.62)
         : whiteKey
       ).setFill()
       UIBezierPath(rect: keyRect).fill()
@@ -61,15 +64,16 @@ enum FlowKeyboardRenderer {
         width: key.width,
         height: blackHeight
       )
-      (active.contains(key.midi)
-        ? paletteGreen.withAlphaComponent(0.88)
+      let landing = landingByMidi[key.midi] ?? 0
+      (landing > 0
+        ? paletteGreen.withAlphaComponent(0.36 + landing * 0.58)
         : blackKey
       ).setFill()
       UIBezierPath(roundedRect: keyRect, cornerRadius: 2).fill()
     }
 
     guard !plan.pitchClassNames.isEmpty else { return }
-    for key in keys where active.contains(key.midi) {
+    for key in keys where (landingByMidi[key.midi] ?? 0) > 0 {
       let name = plan.pitchClassNames[KeyboardLayout.pitchClass(key.midi)]
       drawNoteName(
         name,

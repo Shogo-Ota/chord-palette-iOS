@@ -15,6 +15,7 @@ import { audioService } from '@/services/audio';
 import type { ChordEvent, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 import { videoPerformanceInput } from './performanceInput';
+import { buildVisualNoteTimeline } from './visualNoteTimeline';
 import type { VideoVisualStyle } from './videoVisualStyle';
 
 export { normalizeVideoVisualStyle, VIDEO_VISUAL_STYLES } from './videoVisualStyle';
@@ -91,6 +92,8 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   // Performance output is authoritative. Recompute here instead of accepting a UI
   // duration so remetered audio, visual segments and native muxing share one boundary.
   const durationSec = cycleDurationSec(performance.totalBeats, performance.bpm);
+  const visualNoteEvents =
+    input.visualStyle === 'flow' ? buildVisualNoteTimeline(performance, durationSec) : undefined;
   const audio = await audioService.renderAudioFile(
     buildVideoAudioRequest(performance, durationSec),
   );
@@ -98,7 +101,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     throw new VideoExportError('音声のレンダリングに失敗しました。');
   }
 
-  const plan = buildExportPlan({
+  const basePlan = buildExportPlan({
     progression: input.progression,
     key: input.key,
     bpm: input.bpm,
@@ -110,6 +113,9 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     beatsPerBar: performance.beatsPerBar,
     visualStyle: input.visualStyle,
   });
+  // Keep Classic/Pulse payloads byte-for-byte compatible: only Flow receives the
+  // note-level sidecar and both older styles continue to use segment timing alone.
+  const plan = visualNoteEvents ? { ...basePlan, visualNoteEvents } : basePlan;
 
   let sub: EventSubscription | null = null;
   if (opts.onProgress) {

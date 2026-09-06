@@ -41,7 +41,8 @@ describe('Classic renderer freeze gate', () => {
       'utf8',
     );
     expect(bridge).toContain('@Field var visualStyle: String = "classic"');
-    expect(bridge).toContain('VideoFrameRendererRegistry.renderer(for: planRecord.visualStyle)');
+    expect(bridge).toContain('let frameRenderer = VideoFrameRendererRegistry.renderer(');
+    expect(bridge).toContain('for: planRecord.visualStyle,');
     expect(bridge).not.toMatch(/FrameRenderer\..*visualStyle|VideoWriter\..*visualStyle/);
   });
 });

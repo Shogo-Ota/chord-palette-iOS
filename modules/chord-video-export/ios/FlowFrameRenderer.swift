@@ -1,10 +1,9 @@
 import CoreGraphics
 import UIKit
 
-/// Continuity and harmonic-motion visualization.
-///
-/// All animation state is resolved from RenderPlan.segments by FlowFrameStateResolver.
-struct FlowFrameRenderer: VideoFrameRendering {
+/// Performance motion visualization. Chord hierarchy comes from segments while
+/// falling notes and key landings come from an injected read-only sidecar.
+final class FlowFrameRenderer: VideoFrameRendering {
   private static let backgroundTop = UIColor(
     red: 0x11 / 255, green: 0x1a / 255, blue: 0x30 / 255, alpha: 1)
   private static let backgroundMid = UIColor(
@@ -16,6 +15,18 @@ struct FlowFrameRenderer: VideoFrameRendering {
   private static let textMuted = UIColor(
     red: 0x8e / 255, green: 0x9b / 255, blue: 0xae / 255, alpha: 1)
 
+  private let timeline: FlowVisualNoteTimeline
+  private var cachedKeys: (
+    low: Int,
+    high: Int,
+    width: CGFloat,
+    keys: [KeyRect]
+  )?
+
+  init(timeline: FlowVisualNoteTimeline = .empty) {
+    self.timeline = timeline
+  }
+
   func makeImage(plan: RenderPlan, timeSec: Double) -> CGImage? {
     let size = CGSize(width: plan.width, height: plan.height)
     let format = UIGraphicsImageRendererFormat()
@@ -25,13 +36,20 @@ struct FlowFrameRenderer: VideoFrameRendering {
     let state = FlowFrameStateResolver.resolve(plan: plan, timeSec: timeSec)
 
     return renderer.image { context in
-      draw(plan: plan, state: state, cg: context.cgContext, size: size)
+      draw(
+        plan: plan,
+        state: state,
+        timeSec: timeSec,
+        cg: context.cgContext,
+        size: size
+      )
     }.cgImage
   }
 
   private func draw(
     plan: RenderPlan,
     state: FlowFrameState,
+    timeSec: Double,
     cg: CGContext,
     size: CGSize
   ) {
@@ -40,22 +58,39 @@ struct FlowFrameRenderer: VideoFrameRendering {
     drawBackground(cg: cg, size: size)
     drawHeader(plan: plan, frameWidth: width, frameHeight: height)
 
-    if let current = state.currentSegment {
+    if state.currentSegment != nil {
       FlowHarmonicStageRenderer.draw(
         state: state,
-        cg: cg,
         frameWidth: width,
+        frameHeight: height
+      )
+      let keyboardRect = CGRect(
+        x: width * 0.10,
+        y: height * 0.73,
+        width: width * 0.80,
+        height: height * 0.11
+      )
+      let keys = keyboardKeys(plan: plan, totalWidth: keyboardRect.width)
+      let visibleEvents = timeline.visibleEvents(
+        at: timeSec,
+        lookAheadSec: FlowPerformanceMotionPreset.fallLeadSec,
+        postRollSec: FlowPerformanceMotionPreset.landingFadeSec
+      )
+      FlowFallingBlockRenderer.draw(
+        events: visibleEvents,
+        plan: plan,
+        keys: keys,
+        frameTimeSec: timeSec,
+        fallTopY: height * 0.43,
+        keyboardRect: keyboardRect,
         frameHeight: height
       )
       FlowKeyboardRenderer.draw(
         plan: plan,
-        currentSegment: current,
-        rect: CGRect(
-          x: width * 0.12,
-          y: height * 0.68,
-          width: width * 0.76,
-          height: height * 0.105
-        ),
+        events: visibleEvents,
+        keys: keys,
+        frameTimeSec: timeSec,
+        rect: keyboardRect,
         frameHeight: height
       )
     } else {
@@ -75,6 +110,23 @@ struct FlowFrameRenderer: VideoFrameRendering {
     if plan.watermark {
       FlowBrandRenderer.draw(frameWidth: width, frameHeight: height)
     }
+  }
+
+  private func keyboardKeys(plan: RenderPlan, totalWidth: CGFloat) -> [KeyRect] {
+    if let cache = cachedKeys,
+      cache.low == plan.keyboardLow,
+      cache.high == plan.keyboardHigh,
+      cache.width == totalWidth
+    {
+      return cache.keys
+    }
+    let keys = KeyboardLayout.layout(
+      low: plan.keyboardLow,
+      high: plan.keyboardHigh,
+      totalWidth: totalWidth
+    )
+    cachedKeys = (plan.keyboardLow, plan.keyboardHigh, totalWidth, keys)
+    return keys
   }
 
   private func drawBackground(cg: CGContext, size: CGSize) {

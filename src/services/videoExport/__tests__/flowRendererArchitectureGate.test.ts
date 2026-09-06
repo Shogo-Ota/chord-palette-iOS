@@ -8,103 +8,123 @@ function source(file: string): string {
   return fs.readFileSync(path.join(IOS, file), 'utf8').replace(/\r\n/g, '\n');
 }
 
-describe('Phase V4 Flow renderer architecture', () => {
-  it('dispatches Flow without changing the shared writer or frozen renderers', () => {
-    const registry = source('VideoFrameRendererRegistry.swift');
+describe('Phase V4 Flow performance-motion architecture', () => {
+  it('adds the sidecar only to Flow so Classic/Pulse payloads stay unchanged', () => {
+    const service = fs
+      .readFileSync(path.join(ROOT, 'src/services/videoExport/index.ts'), 'utf8')
+      .replace(/\r\n/g, '\n');
 
-    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(\)/);
+    expect(service).toContain("input.visualStyle === 'flow'");
+    expect(service).toContain('buildVisualNoteTimeline(performance, durationSec)');
+    expect(service).toContain(
+      'const plan = visualNoteEvents ? { ...basePlan, visualNoteEvents } : basePlan;',
+    );
+  });
+
+  it('injects the optional sidecar only into Flow without changing writer/protocol', () => {
+    const bridge = source('ChordVideoExportModule.swift');
+    const registry = source('VideoFrameRendererRegistry.swift');
+    const protocol = source('VideoFrameRendering.swift');
+    const writer = source('VideoWriter.swift');
+
+    expect(bridge).toContain('@Field var visualNoteEvents: [VisualNoteEventRecord] = []');
+    expect(bridge).toContain('FlowVisualNoteTimeline(');
+    expect(registry).toContain('flowTimeline: FlowVisualNoteTimeline = .empty');
+    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline\)/);
     expect(registry).toMatch(/case \.pulse:\s+return PulseFrameRenderer\(\)/);
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
+    expect(protocol).toContain('func makeImage(plan: RenderPlan, timeSec: Double)');
+    expect(writer).not.toContain('FlowVisualNote');
   });
 
-  it('keeps Flow additive and independent from Classic and Pulse rendering', () => {
+  it('keeps chord timing and note timing in separate resolvers', () => {
+    const chordState = source('FlowFrameState.swift');
+    const timeline = source('FlowVisualNoteTimeline.swift');
+    const motionState = source('FlowFallingBlockState.swift');
+
+    expect(chordState).toContain('currentSegment.startSec');
+    expect(chordState).not.toMatch(/FlowVisualNote|fallLeadSec|landing/);
+    expect(timeline).toContain('FlowVisualNoteEvent');
+    expect(timeline).not.toMatch(/RenderSegment|chordsPerCycle|currentSegment/);
+    expect(motionState).toContain('event.startSec - frameTimeSec');
+    expect(motionState).not.toMatch(/RenderSegment|segmentProgress|\.bpm\b|60(?:\.0)?\s*\//);
+  });
+
+  it('renders rounded performance blocks and note-driven keyboard landings', () => {
     const renderer = source('FlowFrameRenderer.swift');
-    const stage = source('FlowHarmonicStageRenderer.swift');
-
-    expect(renderer).toContain('struct FlowFrameRenderer: VideoFrameRendering');
-    expect(renderer).toContain('FlowFrameStateResolver.resolve');
-    expect(renderer).toContain('FlowHarmonicStageRenderer.draw');
-    expect(`${renderer}\n${stage}`).not.toContain('FrameRenderer.makeImage');
-    expect(`${renderer}\n${stage}`).not.toContain('PulseFrameRenderer');
-    expect(`${renderer}\n${stage}`).not.toContain('PulseFrameState');
-    expect(renderer.split('\n').length).toBeLessThan(500);
-  });
-
-  it('derives musical state only from segment boundaries and array order', () => {
-    const state = source('FlowFrameState.swift');
-
-    expect(state).toContain('currentSegment.startSec');
-    expect(state).toContain('currentSegment.durationSec');
-    expect(state).toContain('currentCycleIndex + 1');
-    expect(state).toContain('cycleSegments.count');
-    expect(state).not.toMatch(/\.bpm\b|beatsPerBar|frameIndex|audioURL|AVAudio|60(?:\.0)?\s*\//);
-  });
-
-  it('uses one centralized handoff target and smoothstep without bounce', () => {
-    const state = source('FlowFrameState.swift');
-
-    expect(state).toContain('static let handoffStartNormalized: CGFloat = 0.70');
-    expect(state.match(/handoffStartNormalized/g)).toHaveLength(3);
-    expect(state).toContain('return x * x * (3 - 2 * x)');
-    expect(state).not.toMatch(/spring|bounce|overshoot/i);
-  });
-
-  it('renders a stronger cubic light path and exactly one moving radial glow', () => {
-    const renderer = source('FlowFrameRenderer.swift');
-    const stage = source('FlowHarmonicStageRenderer.swift');
+    const blocks = source('FlowFallingBlockRenderer.swift');
     const keyboard = source('FlowKeyboardRenderer.swift');
-    const branding = source('FlowBrandRenderer.swift');
-    const flowSources = `${renderer}\n${stage}\n${keyboard}\n${branding}`;
+    const flowSources = `${renderer}\n${blocks}\n${keyboard}`;
 
-    expect(stage).toContain('fullPath.addCurve');
-    expect(stage).toContain('cg.setLineWidth(max(3, height * 0.0022))');
-    expect(stage).toContain('cg.setLineWidth(max(5, height * 0.0026))');
-    expect(flowSources.match(/drawRadialGradient/g)).toHaveLength(1);
-    expect(flowSources).not.toMatch(/waveform|particle|CIFilter|Gaussian|blur/i);
-    expect(flowSources).not.toContain('drawProgressTrace');
+    expect(renderer).toContain('final class FlowFrameRenderer: VideoFrameRendering');
+    expect(renderer).toContain('timeline.visibleEvents');
+    expect(renderer).toContain('FlowFallingBlockRenderer.draw');
+    expect(renderer).toContain('FlowKeyboardRenderer.draw');
+    expect(blocks).toContain('KeyboardLayout.fold');
+    expect(blocks).toContain('UIBezierPath(roundedRect:');
+    expect(keyboard).toContain('FlowFallingBlockStateResolver.landingIntensity');
+    expect(keyboard).not.toMatch(/currentSegment|midiNotes|KeyboardLayout\.highlighted/);
+    expect(flowSources).not.toMatch(
+      /waveform|particle|CIFilter|Gaussian|blur|game score|combo|judgement|random/i,
+    );
   });
 
-  it('uses the fixed Flow palette without harmonic-function colors', () => {
+  it('limits per-frame work to a binary-bounded visibility window', () => {
+    const timeline = source('FlowVisualNoteTimeline.swift');
+    const state = source('FlowFallingBlockState.swift');
     const renderer = source('FlowFrameRenderer.swift');
-    const stage = source('FlowHarmonicStageRenderer.swift');
-    const flowSources = `${renderer}\n${stage}`;
 
-    expect(stage).toContain('paletteGreen');
-    expect(stage).toContain('coolBlue');
-    expect(flowSources).not.toMatch(/segment\.color|functionColor|keyTint|random/i);
+    expect(state).toContain('static let fallLeadSec = 1.25');
+    expect(timeline).toContain('lowerBound(for:');
+    expect(timeline).toContain('upperBound(for:');
+    expect(timeline).toContain('events[lower..<upper].filter');
+    expect(renderer).toContain('cachedKeys');
+    expect(`${timeline}\n${renderer}`).not.toMatch(/CIFilter|Gaussian|blur/i);
   });
 
-  it('makes NOW and NEXT explicit with approved visual strength', () => {
+  it('keeps NOW dominant, hides one-chord NEXT and uses a thin full-cycle rail', () => {
     const state = source('FlowFrameState.swift');
     const stage = source('FlowHarmonicStageRenderer.swift');
 
     expect(stage).toContain('role: "NOW"');
+    expect(stage).toContain('nameSize: height * 0.105');
     expect(stage).toContain('role: "NEXT"');
-    expect(stage).toContain('height * 0.115 * scale');
-    expect(stage).toContain('drawSequenceRail');
-    expect(state).toContain('static let peakGlowIntensity: CGFloat = 0.30');
-    expect(state).toContain('static let stableNextOpacity: CGFloat = 0.68');
+    expect(stage).toContain('nameSize: height * 0.056');
+    expect(stage).toContain('opacity: 0.68');
+    expect(stage).toContain('state.cycleSegments.enumerated()');
+    expect(state).toContain('let hasNext = cycleSegments.count > 1');
+    expect(state).toContain('nextSegment: hasNext ? cycleSegments[nextIndex] : nil');
   });
 
-  it('keeps keyboard note mapping and uses measured non-ellipsis chord text', () => {
-    const renderer = source('FlowFrameRenderer.swift');
+  it('removes the superseded motion-line and moving-glow direction', () => {
     const stage = source('FlowHarmonicStageRenderer.swift');
-    const keyboard = source('FlowKeyboardRenderer.swift');
+    const renderer = source('FlowFrameRenderer.swift');
+    const flowSources = `${stage}\n${renderer}`;
 
-    expect(renderer).toContain('FlowKeyboardRenderer.draw');
-    expect(keyboard).toContain('KeyboardLayout.layout');
-    expect(keyboard).toContain('KeyboardLayout.highlighted');
-    expect(keyboard).toContain('currentSegment.midiNotes');
-    expect(stage).toContain('maxWidth / measuredWidth');
-    expect(stage).toContain('lineBreakMode = .byClipping');
-    expect(`${renderer}\n${stage}`).not.toContain('byTruncatingTail');
+    expect(flowSources).not.toMatch(
+      /drawMotionPath|drawMovingGlow|FlowStageCurve|partialPath|cubicPoint|drawRadialGradient/,
+    );
+    expect(flowSources).not.toMatch(/segment\.color|functionColor|keyTint|drawProgressTrace/);
   });
 
-  it('uses only the approved icon and does not construct a pseudo wordmark', () => {
+  it('uses only the approved official icon without pseudo branding', () => {
     const branding = source('FlowBrandRenderer.swift');
 
     expect(branding).toContain('path(forResource: "cp-watermark", ofType: "png")');
     expect(branding).not.toContain('"Chord Palette"');
     expect(branding).not.toMatch(/tagline|PLAY MORE COLORS|drawWordmark/i);
+  });
+
+  it('keeps each Flow rendering responsibility below the God-file limit', () => {
+    for (const file of [
+      'FlowFrameRenderer.swift',
+      'FlowHarmonicStageRenderer.swift',
+      'FlowFallingBlockRenderer.swift',
+      'FlowFallingBlockState.swift',
+      'FlowKeyboardRenderer.swift',
+      'FlowVisualNoteTimeline.swift',
+    ]) {
+      expect(source(file).split('\n').length).toBeLessThan(500);
+    }
   });
 });
