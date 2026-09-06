@@ -5,16 +5,20 @@ import {
 } from '@/features/editor/session';
 import type { EvolutionCandidate } from '@/lib/harmony/evolution';
 
-import { candidateHasChanges, materializeCandidateProgression } from './chordEventAdapter';
+import {
+  evolutionCandidateHasChanges,
+  materializeEvolutionCandidateProgression,
+  selectedIndexAfterEvolutionCandidate,
+} from './candidateMaterializer';
 import type { AtomicProgressionPatch, EvolutionAdapterResult, EvolutionApplyResult } from './types';
 
 export function prepareEvolutionApply(
   session: Readonly<EditorSession>,
   candidate: EvolutionCandidate,
 ): EvolutionAdapterResult<AtomicProgressionPatch> {
-  const materialized = materializeCandidateProgression(session, candidate);
+  const materialized = materializeEvolutionCandidateProgression(session, candidate);
   if (!materialized.ok) return materialized;
-  if (!candidateHasChanges(candidate)) {
+  if (!evolutionCandidateHasChanges(candidate)) {
     return { ok: false, reason: 'NO_CHANGES' };
   }
 
@@ -23,7 +27,7 @@ export function prepareEvolutionApply(
     value: {
       expectedCurrent: session.progression,
       progression: materialized.value,
-      selected: session.selected,
+      selected: selectedIndexAfterEvolutionCandidate(session.selected, candidate),
     },
   };
 }

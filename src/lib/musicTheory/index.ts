@@ -18,6 +18,7 @@ export * from './diminished';
 export * from './dominants';
 export * from './evolutionPolicies';
 export * from './functions';
+export * from './l3EvolutionPolicies';
 export * from './progressions';
 export * from './provenance';
 export * from './scales';

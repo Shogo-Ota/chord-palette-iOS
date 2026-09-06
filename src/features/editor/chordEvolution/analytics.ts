@@ -26,24 +26,25 @@ export function evolutionOpenedProps(scope: EvolutionScope, mode: KeyMode): Anal
 
 export function evolutionLevelProps(
   scope: EvolutionScope,
-  level: Extract<EvolutionLevel, 'original' | 'seventh' | 'tension'>,
+  level: Extract<EvolutionLevel, 'original' | 'seventh' | 'tension' | 'reharm'>,
   mode: KeyMode,
 ): AnalyticsProps {
   return {
     scope: evolutionScopeName(scope),
     level,
     mode,
-    requiredTier: level === 'tension' ? 'PRO' : 'FREE',
+    requiredTier: level === 'tension' || level === 'reharm' ? 'PRO' : 'FREE',
   };
 }
 
 export function evolutionCandidateProps(
   candidate: Pick<EvolutionCandidate, 'scope' | 'level' | 'technique' | 'requiredTier'>,
   mode: KeyMode,
+  displayedLevel: EvolutionLevel = candidate.level,
 ): AnalyticsProps {
   return {
     scope: evolutionScopeName(candidate.scope),
-    level: candidate.level,
+    level: displayedLevel,
     technique: candidate.technique,
     mode,
     requiredTier: candidate.requiredTier,

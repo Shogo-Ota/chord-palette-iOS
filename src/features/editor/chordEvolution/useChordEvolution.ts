@@ -17,8 +17,11 @@ import {
   type EvolutionTrack,
 } from './analytics';
 import { applyEvolutionCandidate } from './apply';
+import {
+  buildEvolutionUiModelWithReharm,
+  type EvolutionUiLevelWithReharm,
+} from './l3/reharmUiModel';
 import { buildEvolutionPreviewRequest } from './preview';
-import { buildEvolutionUiModel, type EvolutionUiLevel } from './uiModel';
 
 export type EvolutionUiApplyOutcome =
   ReturnType<typeof applyEvolutionCandidate> | { readonly status: 'PAYWALL' };
@@ -70,8 +73,8 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
   const [scope, setScope] = useState<EvolutionScope>({
     kind: 'progression',
   });
-  const [activeLevel, setActiveLevel] = useState<EvolutionUiLevel>('original');
-  const activeLevelRef = useRef<EvolutionUiLevel>('original');
+  const [activeLevel, setActiveLevel] = useState<EvolutionUiLevelWithReharm>('original');
+  const activeLevelRef = useRef<EvolutionUiLevelWithReharm>('original');
   const openGuardRef = useRef(false);
   const previewingRef = useRef(false);
   const applyingRef = useRef(false);
@@ -79,7 +82,7 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
   const undoMarkerRef = useRef<UndoMarker | null>(null);
 
   const model = useMemo(
-    () => (enabled && visible ? buildEvolutionUiModel(session, scope) : null),
+    () => (enabled && visible ? buildEvolutionUiModelWithReharm(session, scope) : null),
     [enabled, scope, session, visible],
   );
   const activeSection = useMemo(
@@ -95,6 +98,7 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
           title: viewModel.title,
           summary: viewModel.summary,
           changedCount: viewModel.changedCount,
+          rationale: 'rationale' in viewModel ? viewModel.rationale : undefined,
           applyLocked: !access.canApply,
           applyLabel: access.canApply ? ('適用' as const) : ('Proで適用' as const),
         };
@@ -132,7 +136,7 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
   }, [dependencies]);
 
   const selectLevel = useCallback(
-    (level: EvolutionUiLevel) => {
+    (level: EvolutionUiLevelWithReharm) => {
       if (!enabled || !visible || activeLevelRef.current === level) return;
       activeLevelRef.current = level;
       setActiveLevel(level);
@@ -171,7 +175,11 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
         await dependencies.play(request.value);
         dependencies.track(
           'evolution_candidate_previewed',
-          evolutionCandidateProps(candidate, session.mode),
+          evolutionCandidateProps(
+            candidate,
+            session.mode,
+            activeLevelRef.current === 'reharm' ? 'reharm' : candidate.level,
+          ),
         );
         return true;
       } catch {
@@ -198,7 +206,11 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
         openGuardRef.current = false;
         dependencies.track(
           'evolution_paywall_shown',
-          evolutionCandidateProps(candidate, session.mode),
+          evolutionCandidateProps(
+            candidate,
+            session.mode,
+            activeLevelRef.current === 'reharm' ? 'reharm' : candidate.level,
+          ),
         );
         onOpenPaywall();
         return { status: 'PAYWALL' };
@@ -209,7 +221,11 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
         void dependencies.stop().catch(() => undefined);
         const result = dependencies.apply(candidate);
         if (result.status === 'APPLIED') {
-          const props = evolutionCandidateProps(candidate, session.mode);
+          const props = evolutionCandidateProps(
+            candidate,
+            session.mode,
+            activeLevelRef.current === 'reharm' ? 'reharm' : candidate.level,
+          );
           undoMarkerRef.current = {
             progression: dependencies.getSession().progression,
             props,

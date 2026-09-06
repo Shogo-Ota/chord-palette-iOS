@@ -4,7 +4,7 @@ import type { EvolutionCandidate } from '@/lib/harmony/evolution';
 import type { Tier } from '@/lib/performance/tier';
 import type { PlaybackRequest } from '@/services/audio/types';
 
-import { materializeCandidateProgression } from './chordEventAdapter';
+import { materializeEvolutionCandidateProgression } from './candidateMaterializer';
 import type { EvolutionAdapterResult } from './types';
 
 /**
@@ -16,7 +16,7 @@ export function buildEvolutionPreviewRequest(
   candidate: EvolutionCandidate,
   tier: Tier = 'free',
 ): EvolutionAdapterResult<PlaybackRequest> {
-  const materialized = materializeCandidateProgression(session, candidate);
+  const materialized = materializeEvolutionCandidateProgression(session, candidate);
   if (!materialized.ok) return materialized;
 
   const playbackSession: EditorSession = {

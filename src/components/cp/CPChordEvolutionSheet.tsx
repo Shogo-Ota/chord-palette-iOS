@@ -4,8 +4,8 @@ import { Icon } from '@/components/Icon';
 import { colors, font, radius, spacing, typeSize } from '@/theme/tokens';
 
 export type CPChordEvolutionLevel = {
-  readonly level: 'original' | 'seventh' | 'tension';
-  readonly label: 'Original' | '7th' | 'Rich';
+  readonly level: 'original' | 'seventh' | 'tension' | 'reharm';
+  readonly label: 'Original' | '7th' | 'Rich' | 'Reharm';
 };
 
 export type CPChordEvolutionCandidate = {
@@ -13,6 +13,7 @@ export type CPChordEvolutionCandidate = {
   readonly title: string;
   readonly summary: string;
   readonly changedCount: number;
+  readonly rationale?: string;
   readonly applyLocked: boolean;
   readonly applyLabel: '適用' | 'Proで適用';
 };
@@ -20,13 +21,13 @@ export type CPChordEvolutionCandidate = {
 export type CPChordEvolutionSheetProps = {
   readonly visible: boolean;
   readonly scopeLabel: 'このコード' | '進行全体';
-  readonly activeLevel: 'original' | 'seventh' | 'tension';
+  readonly activeLevel: 'original' | 'seventh' | 'tension' | 'reharm';
   readonly levels: readonly CPChordEvolutionLevel[];
   readonly originalSummary: string;
   readonly candidates: readonly CPChordEvolutionCandidate[];
   readonly emptyMessage?: string;
   readonly onRequestClose: () => void;
-  readonly onSelectLevel: (level: 'original' | 'seventh' | 'tension') => void;
+  readonly onSelectLevel: (level: 'original' | 'seventh' | 'tension' | 'reharm') => void;
   readonly onPreviewOriginal: () => void;
   readonly onPreviewCandidate: (candidateId: string) => void;
   readonly onApplyCandidate: (candidateId: string) => void;
@@ -85,8 +86,14 @@ export function CPChordEvolutionSheet({
 }: CPChordEvolutionSheetProps) {
   return (
     <Modal visible={visible} transparent animationType="slide" onRequestClose={onRequestClose}>
-      <Pressable style={styles.backdrop} onPress={onRequestClose}>
-        <Pressable style={styles.sheet} onPress={(event) => event.stopPropagation()}>
+      <View style={styles.backdrop}>
+        <Pressable
+          style={styles.backdropDismiss}
+          onPress={onRequestClose}
+          accessibilityRole="button"
+          accessibilityLabel="コード発展の背景を閉じる"
+        />
+        <View style={styles.sheet}>
           <View style={styles.grabber} />
           <View style={styles.header}>
             <View style={styles.headerCopy}>
@@ -114,7 +121,12 @@ export function CPChordEvolutionSheet({
                   accessibilityLabel={`${option.label}レベル`}
                   accessibilityState={{ selected }}
                   style={[styles.level, selected && styles.levelSelected]}>
-                  <Text style={[styles.levelText, selected && styles.levelTextSelected]}>
+                  <Text
+                    style={[styles.levelText, selected && styles.levelTextSelected]}
+                    numberOfLines={1}
+                    adjustsFontSizeToFit
+                    minimumFontScale={0.72}
+                    maxFontSizeMultiplier={1.2}>
                     {option.label}
                   </Text>
                 </Pressable>
@@ -122,60 +134,65 @@ export function CPChordEvolutionSheet({
             })}
           </View>
 
-          {activeLevel === 'original' ? (
-            <View style={styles.original}>
-              <Text style={styles.sectionLabel}>現在のコード</Text>
-              <Text style={styles.summary} numberOfLines={3}>
-                {originalSummary}
-              </Text>
-              <ActionButton
-                label="試聴"
-                accessibilityLabel="Originalを試聴"
-                onPress={onPreviewOriginal}
-              />
-            </View>
-          ) : candidates.length === 0 ? (
-            <View style={styles.empty} accessibilityRole="text">
-              <Text style={styles.emptyText}>{emptyMessage}</Text>
-            </View>
-          ) : (
-            <ScrollView
-              style={styles.candidateScroll}
-              contentContainerStyle={styles.candidateList}
-              showsVerticalScrollIndicator={false}>
-              {candidates.map((candidate, index) => (
-                <View key={candidate.id} style={styles.candidate}>
-                  <View style={styles.candidateHeader}>
-                    <Text style={styles.candidateTitle}>{candidate.title}</Text>
-                    {candidate.changedCount > 1 ? (
-                      <Text style={styles.changedCount}>{candidate.changedCount}コード</Text>
+          <View style={styles.body}>
+            {activeLevel === 'original' ? (
+              <View style={styles.original}>
+                <Text style={styles.sectionLabel}>現在のコード</Text>
+                <Text style={styles.summary} numberOfLines={3}>
+                  {originalSummary}
+                </Text>
+                <ActionButton
+                  label="試聴"
+                  accessibilityLabel="Originalを試聴"
+                  onPress={onPreviewOriginal}
+                />
+              </View>
+            ) : candidates.length === 0 ? (
+              <View style={styles.empty} accessibilityRole="text">
+                <Text style={styles.emptyText}>{emptyMessage}</Text>
+              </View>
+            ) : (
+              <ScrollView
+                style={styles.candidateScroll}
+                contentContainerStyle={styles.candidateList}
+                showsVerticalScrollIndicator={false}>
+                {candidates.map((candidate, index) => (
+                  <View key={candidate.id} style={styles.candidate}>
+                    <View style={styles.candidateHeader}>
+                      <Text style={styles.candidateTitle}>{candidate.title}</Text>
+                      {candidate.changedCount > 1 ? (
+                        <Text style={styles.changedCount}>{candidate.changedCount}コード</Text>
+                      ) : null}
+                    </View>
+                    <Text style={styles.summary} numberOfLines={3}>
+                      {candidate.summary}
+                    </Text>
+                    {candidate.rationale ? (
+                      <Text style={styles.rationale}>{candidate.rationale}</Text>
                     ) : null}
+                    <View style={styles.actions}>
+                      <ActionButton
+                        label="試聴"
+                        accessibilityLabel={`${candidate.title}候補${index + 1}を試聴`}
+                        onPress={() => onPreviewCandidate(candidate.id)}
+                      />
+                      <ActionButton
+                        label={candidate.applyLabel}
+                        accessibilityLabel={`${candidate.title}候補${
+                          index + 1
+                        }を${candidate.applyLabel}`}
+                        primary={!candidate.applyLocked}
+                        locked={candidate.applyLocked}
+                        onPress={() => onApplyCandidate(candidate.id)}
+                      />
+                    </View>
                   </View>
-                  <Text style={styles.summary} numberOfLines={3}>
-                    {candidate.summary}
-                  </Text>
-                  <View style={styles.actions}>
-                    <ActionButton
-                      label="試聴"
-                      accessibilityLabel={`${candidate.title}候補${index + 1}を試聴`}
-                      onPress={() => onPreviewCandidate(candidate.id)}
-                    />
-                    <ActionButton
-                      label={candidate.applyLabel}
-                      accessibilityLabel={`${candidate.title}候補${
-                        index + 1
-                      }を${candidate.applyLabel}`}
-                      primary={!candidate.applyLocked}
-                      locked={candidate.applyLocked}
-                      onPress={() => onApplyCandidate(candidate.id)}
-                    />
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          )}
-        </Pressable>
-      </Pressable>
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </View>
+      </View>
     </Modal>
   );
 }
@@ -186,8 +203,12 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     backgroundColor: 'rgba(0,0,0,0.58)',
   },
+  backdropDismiss: {
+    ...StyleSheet.absoluteFillObject,
+  },
   sheet: {
-    maxHeight: '78%',
+    height: '82%',
+    maxHeight: '88%',
     paddingHorizontal: spacing.s16,
     paddingTop: spacing.s12,
     paddingBottom: spacing.s32,
@@ -233,10 +254,14 @@ const styles = StyleSheet.create({
   },
   levels: {
     flexDirection: 'row',
-    gap: spacing.s8,
+    gap: spacing.s4,
     padding: spacing.s4,
     borderRadius: radius.xl,
     backgroundColor: colors.surface,
+  },
+  body: {
+    flex: 1,
+    minHeight: 0,
   },
   level: {
     flex: 1,
@@ -281,6 +306,12 @@ const styles = StyleSheet.create({
     fontSize: typeSize.body,
     lineHeight: 20,
   },
+  rationale: {
+    color: colors.textMuted,
+    fontFamily: font.regular,
+    fontSize: typeSize.label,
+    lineHeight: 18,
+  },
   empty: {
     minHeight: 132,
     alignItems: 'center',
@@ -294,8 +325,11 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     textAlign: 'center',
   },
-  candidateScroll: { marginTop: spacing.s16 },
-  candidateList: { gap: spacing.s12 },
+  candidateScroll: { flex: 1, marginTop: spacing.s16 },
+  candidateList: {
+    gap: spacing.s12,
+    paddingBottom: spacing.s24,
+  },
   candidate: {
     gap: spacing.s12,
     padding: spacing.s16,

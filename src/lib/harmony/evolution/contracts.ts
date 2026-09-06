@@ -11,6 +11,7 @@ import type {
   ReharmTechnique,
   TechniqueSupport,
 } from './types';
+import type { L3ProviderDependencies } from './l3/contracts';
 
 export type TechniqueSupportReason =
   'ELIGIBLE' | 'CHORD_NOT_ELIGIBLE' | 'MODE_UNSUPPORTED' | 'TARGET_OUT_OF_RANGE';
@@ -71,7 +72,7 @@ export interface EvolutionSlashProvider {
   ): readonly SlashBassResolution[];
 }
 
-export type EvolutionRuleDependencies = {
+export type EvolutionRuleDependencies = L3ProviderDependencies & {
   readonly theory: EvolutionTheoryProvider;
   /** Optional so direct Phase 1 rule tests and custom callers remain compatible. */
   readonly tension?: EvolutionTensionProvider;
