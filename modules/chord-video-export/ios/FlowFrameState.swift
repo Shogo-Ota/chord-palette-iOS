@@ -3,17 +3,31 @@ import CoreGraphics
 /// Phase V4 design targets live in one place so rendering code never repeats magic values.
 enum FlowStylePreset {
   static let handoffStartNormalized: CGFloat = 0.70
-  static let entrySettleEndNormalized: CGFloat = 0.10
+  static let arrivalEndNormalized: CGFloat = 0.10
 
-  static let currentOpacity: CGFloat = 1.00
-  static let boundaryCurrentOpacity: CGFloat = 0.76
-  static let adjacentOpacity: CGFloat = 0.62
-  static let boundaryAdjacentOpacity: CGFloat = 0.75
+  static let stableCurrentOpacity: CGFloat = 1.00
+  static let boundaryCurrentOpacity: CGFloat = 0.86
+  static let stableNextOpacity: CGFloat = 0.68
+  static let boundaryNextOpacity: CGFloat = 0.76
 
-  static let currentScale: CGFloat = 1.02
-  static let boundaryCurrentScale: CGFloat = 0.991
-  static let adjacentScale: CGFloat = 0.97
-  static let boundaryAdjacentScale: CGFloat = 0.99
+  static let stableCurrentScale: CGFloat = 1.00
+  static let boundaryCurrentScale: CGFloat = 0.88
+  static let arrivalNextScale: CGFloat = 0.30
+  static let stableNextScale: CGFloat = 0.55
+  static let boundaryNextScale: CGFloat = 0.78
+
+  static let stableCurrentX: CGFloat = 0.31
+  static let boundaryCurrentX: CGFloat = 0.20
+  static let arrivalNextX: CGFloat = 0.88
+  static let stableNextX: CGFloat = 0.76
+  static let boundaryNextX: CGFloat = 0.58
+  static let currentY: CGFloat = 0.215
+  static let arrivalNextY: CGFloat = 0.290
+  static let stableNextY: CGFloat = 0.255
+  static let boundaryNextY: CGFloat = 0.215
+
+  static let stableGlowIntensity: CGFloat = 0.22
+  static let peakGlowIntensity: CGFloat = 0.30
 
   static func smoothstep(_ value: CGFloat) -> CGFloat {
     let x = min(1, max(0, value))
@@ -27,20 +41,21 @@ struct FlowFrameState {
   let previousSegment: RenderSegment?
   let currentSegment: RenderSegment?
   let nextSegment: RenderSegment?
+  let followingSegment: RenderSegment?
   let currentCycleIndex: Int
   let segmentProgress: CGFloat
-  let entryProgress: CGFloat
+  let arrivalProgress: CGFloat
   let handoffProgress: CGFloat
-  let previousOpacity: CGFloat
   let currentOpacity: CGFloat
   let nextOpacity: CGFloat
-  let previousScale: CGFloat
   let currentScale: CGFloat
   let nextScale: CGFloat
-  let previousX: CGFloat
   let currentX: CGFloat
   let nextX: CGFloat
-  let glowProgress: CGFloat
+  let currentY: CGFloat
+  let nextY: CGFloat
+  let pathProgress: CGFloat
+  let glowIntensity: CGFloat
   let motionEnabled: Bool
 }
 
@@ -71,9 +86,9 @@ enum FlowFrameStateResolver {
     let segmentProgress = CGFloat(min(1, max(0, rawProgress)))
     let motionEnabled = cycleSegments.count > 1
 
-    let entryLinear =
-      segmentProgress / max(0.000_001, FlowStylePreset.entrySettleEndNormalized)
-    let entryProgress = motionEnabled ? FlowStylePreset.smoothstep(entryLinear) : 1
+    let arrivalLinear =
+      segmentProgress / max(0.000_001, FlowStylePreset.arrivalEndNormalized)
+    let arrivalProgress = motionEnabled ? FlowStylePreset.smoothstep(arrivalLinear) : 1
     let handoffLinear =
       (segmentProgress - FlowStylePreset.handoffStartNormalized)
       / max(0.000_001, 1 - FlowStylePreset.handoffStartNormalized)
@@ -82,121 +97,120 @@ enum FlowFrameStateResolver {
     let previousIndex =
       (currentCycleIndex - 1 + cycleSegments.count) % cycleSegments.count
     let nextIndex = (currentCycleIndex + 1) % cycleSegments.count
+    let followingIndex = (currentCycleIndex + 2) % cycleSegments.count
 
-    // With two chords previous and next are the same event. Keep only the next
-    // representation so Flow never renders a duplicate visual label.
     let previousSegment =
       motionEnabled && cycleSegments.count > 2 ? cycleSegments[previousIndex] : nil
     let nextSegment = motionEnabled ? cycleSegments[nextIndex] : nil
+    let followingSegment =
+      cycleSegments.count > 3 ? cycleSegments[followingIndex] : nil
 
-    let settledCurrentOpacity = interpolate(
+    let arrivedCurrentOpacity = interpolate(
       FlowStylePreset.boundaryCurrentOpacity,
-      FlowStylePreset.currentOpacity,
-      entryProgress
+      FlowStylePreset.stableCurrentOpacity,
+      arrivalProgress
     )
     let currentOpacity = interpolate(
-      settledCurrentOpacity,
+      arrivedCurrentOpacity,
       FlowStylePreset.boundaryCurrentOpacity,
       handoffProgress
     )
-    let settledCurrentScale = interpolate(
+    let arrivedCurrentScale = interpolate(
       FlowStylePreset.boundaryCurrentScale,
-      FlowStylePreset.currentScale,
-      entryProgress
+      FlowStylePreset.stableCurrentScale,
+      arrivalProgress
     )
     let currentScale = interpolate(
-      settledCurrentScale,
+      arrivedCurrentScale,
       FlowStylePreset.boundaryCurrentScale,
       handoffProgress
     )
-
-    let settledPreviousOpacity = interpolate(
-      FlowStylePreset.boundaryAdjacentOpacity,
-      FlowStylePreset.adjacentOpacity,
-      entryProgress
-    )
-    let previousOpacity = previousSegment.map { _ in
-      interpolate(
-        settledPreviousOpacity,
-        0,
-        handoffProgress
-      )
-    } ?? 0
-    let settledPreviousScale = interpolate(
-      FlowStylePreset.boundaryAdjacentScale,
-      FlowStylePreset.adjacentScale,
-      entryProgress
-    )
-    let previousScale = previousSegment.map { _ in
-      interpolate(
-        settledPreviousScale,
-        FlowStylePreset.adjacentScale,
-        handoffProgress
-      )
-    } ?? FlowStylePreset.adjacentScale
 
     let introducedNextOpacity = interpolate(
       0,
-      FlowStylePreset.adjacentOpacity,
-      entryProgress
+      FlowStylePreset.stableNextOpacity,
+      arrivalProgress
     )
     let nextOpacity =
       nextSegment.map { _ in
         interpolate(
           introducedNextOpacity,
-          FlowStylePreset.boundaryAdjacentOpacity,
+          FlowStylePreset.boundaryNextOpacity,
           handoffProgress
         )
       } ?? 0
     let introducedNextScale = interpolate(
-      FlowStylePreset.adjacentScale,
-      FlowStylePreset.adjacentScale,
-      entryProgress
+      FlowStylePreset.arrivalNextScale,
+      FlowStylePreset.stableNextScale,
+      arrivalProgress
     )
     let nextScale =
       nextSegment.map { _ in
         interpolate(
           introducedNextScale,
-          FlowStylePreset.boundaryAdjacentScale,
+          FlowStylePreset.boundaryNextScale,
           handoffProgress
         )
-      } ?? FlowStylePreset.adjacentScale
+      } ?? FlowStylePreset.arrivalNextScale
 
-    // Current remains strictly more prominent than Next before the boundary:
-    // opacity 0.76 > 0.75 and scale 0.991 > 0.99.
-    let previousX: CGFloat = 0.17
-    let currentX: CGFloat = 0.50
-    let nextX: CGFloat = 0.83
+    let arrivedCurrentX = interpolate(
+      FlowStylePreset.boundaryNextX,
+      FlowStylePreset.stableCurrentX,
+      arrivalProgress
+    )
+    let currentX =
+      motionEnabled
+      ? interpolate(arrivedCurrentX, FlowStylePreset.boundaryCurrentX, handoffProgress)
+      : 0.50
+    let introducedNextX = interpolate(
+      FlowStylePreset.arrivalNextX,
+      FlowStylePreset.stableNextX,
+      arrivalProgress
+    )
+    let nextX =
+      nextSegment.map { _ in
+        interpolate(introducedNextX, FlowStylePreset.boundaryNextX, handoffProgress)
+      } ?? 0.50
+    let introducedNextY = interpolate(
+      FlowStylePreset.arrivalNextY,
+      FlowStylePreset.stableNextY,
+      arrivalProgress
+    )
+    let nextY =
+      nextSegment.map { _ in
+        interpolate(introducedNextY, FlowStylePreset.boundaryNextY, handoffProgress)
+      } ?? FlowStylePreset.currentY
 
-    // The glow reaches the same bridge point immediately before and after a
-    // boundary, then settles onto the newly-current chord without a position jump.
-    let glowProgress: CGFloat = {
-      guard motionEnabled else { return 0 }
-      if segmentProgress < FlowStylePreset.entrySettleEndNormalized {
-        return 0.5 * (1 - entryProgress)
-      }
-      return 0.5 * handoffProgress
-    }()
+    let transitionEnergy = max(1 - arrivalProgress, handoffProgress)
+    let glowIntensity =
+      motionEnabled
+      ? interpolate(
+        FlowStylePreset.stableGlowIntensity,
+        FlowStylePreset.peakGlowIntensity,
+        transitionEnergy
+      )
+      : 0
 
     return FlowFrameState(
       cycleSegments: cycleSegments,
       previousSegment: previousSegment,
       currentSegment: currentSegment,
       nextSegment: nextSegment,
+      followingSegment: followingSegment,
       currentCycleIndex: currentCycleIndex,
       segmentProgress: segmentProgress,
-      entryProgress: entryProgress,
+      arrivalProgress: arrivalProgress,
       handoffProgress: handoffProgress,
-      previousOpacity: previousOpacity,
       currentOpacity: currentOpacity,
       nextOpacity: nextOpacity,
-      previousScale: previousScale,
       currentScale: currentScale,
       nextScale: nextScale,
-      previousX: previousX,
       currentX: currentX,
       nextX: nextX,
-      glowProgress: glowProgress,
+      currentY: FlowStylePreset.currentY,
+      nextY: nextY,
+      pathProgress: motionEnabled ? FlowStylePreset.smoothstep(segmentProgress) : 0,
+      glowIntensity: glowIntensity,
       motionEnabled: motionEnabled
     )
   }
@@ -211,20 +225,21 @@ enum FlowFrameStateResolver {
       previousSegment: nil,
       currentSegment: nil,
       nextSegment: nil,
+      followingSegment: nil,
       currentCycleIndex: 0,
       segmentProgress: 0,
-      entryProgress: 0,
+      arrivalProgress: 0,
       handoffProgress: 0,
-      previousOpacity: 0,
       currentOpacity: 0,
       nextOpacity: 0,
-      previousScale: FlowStylePreset.adjacentScale,
-      currentScale: FlowStylePreset.currentScale,
-      nextScale: FlowStylePreset.adjacentScale,
-      previousX: 0.17,
+      currentScale: FlowStylePreset.stableCurrentScale,
+      nextScale: FlowStylePreset.arrivalNextScale,
       currentX: 0.50,
-      nextX: 0.83,
-      glowProgress: 0,
+      nextX: 0.50,
+      currentY: FlowStylePreset.currentY,
+      nextY: FlowStylePreset.currentY,
+      pathProgress: 0,
+      glowIntensity: 0,
       motionEnabled: false
     )
   }

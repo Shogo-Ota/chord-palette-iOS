@@ -37,14 +37,14 @@ enum FlowKeyboardRenderer {
         height: rect.height
       )
       if active.contains(key.midi) {
-        paletteGreen.withAlphaComponent(0.12).setFill()
+        paletteGreen.withAlphaComponent(0.20).setFill()
         UIBezierPath(
-          roundedRect: keyRect.insetBy(dx: -height * 0.003, dy: -height * 0.004),
-          cornerRadius: height * 0.004
+          roundedRect: keyRect.insetBy(dx: -height * 0.004, dy: -height * 0.005),
+          cornerRadius: height * 0.005
         ).fill()
       }
       (active.contains(key.midi)
-        ? paletteGreen.withAlphaComponent(0.84)
+        ? paletteGreen.withAlphaComponent(0.90)
         : whiteKey
       ).setFill()
       UIBezierPath(rect: keyRect).fill()
@@ -62,7 +62,7 @@ enum FlowKeyboardRenderer {
         height: blackHeight
       )
       (active.contains(key.midi)
-        ? paletteGreen.withAlphaComponent(0.80)
+        ? paletteGreen.withAlphaComponent(0.88)
         : blackKey
       ).setFill()
       UIBezierPath(roundedRect: keyRect, cornerRadius: 2).fill()

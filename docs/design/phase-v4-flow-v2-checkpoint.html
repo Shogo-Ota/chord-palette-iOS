@@ -1,0 +1,516 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Phase V4.1 Flow Visual Checkpoint</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        font-family:
+          -apple-system, BlinkMacSystemFont, 'Noto Sans JP', 'Helvetica Neue', sans-serif;
+        background: #05070d;
+        color: #eef3f8;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        padding: 34px;
+        background: #05070d;
+      }
+
+      header {
+        width: min(1180px, 100%);
+        margin: 0 auto 24px;
+      }
+
+      h1 {
+        margin: 0 0 7px;
+        font-size: 24px;
+      }
+
+      header p {
+        margin: 0;
+        color: #8e9bae;
+        font-size: 14px;
+      }
+
+      .states {
+        display: grid;
+        grid-template-columns: repeat(3, 360px);
+        gap: 28px;
+        width: min-content;
+        margin: 0 auto;
+      }
+
+      .state-title {
+        margin: 0 0 9px;
+        font-size: 13px;
+        color: #aab5c5;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+      }
+
+      .frame {
+        position: relative;
+        width: 360px;
+        height: 640px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 32% 41%, rgb(44 230 159 / 12%), transparent 30%),
+          linear-gradient(180deg, #111a30 0%, #08101f 53%, #04070d 100%);
+        border: 1px solid #1d2a3d;
+      }
+
+      .frame-header {
+        position: absolute;
+        top: 37px;
+        left: 24px;
+        right: 24px;
+        text-align: center;
+      }
+
+      .title {
+        font-size: 17px;
+        font-weight: 800;
+      }
+
+      .meta {
+        margin-top: 5px;
+        color: #8190a5;
+        font-size: 8px;
+        font-weight: 700;
+        letter-spacing: 0.14em;
+      }
+
+      .stage {
+        position: absolute;
+        top: 144px;
+        left: 0;
+        width: 100%;
+        height: 222px;
+      }
+
+      .chord {
+        position: absolute;
+        transform-origin: left center;
+        transition: none;
+      }
+
+      .role {
+        margin-bottom: 4px;
+        font-size: 9px;
+        font-weight: 900;
+        letter-spacing: 0.18em;
+      }
+
+      .name {
+        font-weight: 900;
+        line-height: 0.9;
+        letter-spacing: -0.04em;
+      }
+
+      .degree {
+        margin-top: 8px;
+        color: #d5dce6;
+        font-size: 11px;
+        font-weight: 750;
+      }
+
+      .current {
+        left: 36px;
+        top: 23px;
+        color: #2ce69f;
+      }
+
+      .current .name {
+        font-size: 88px;
+      }
+
+      .current .role {
+        color: #75f4c2;
+      }
+
+      .next {
+        left: 236px;
+        top: 67px;
+        color: #83c4ff;
+      }
+
+      .next .name {
+        font-size: 39px;
+      }
+
+      .next .role {
+        color: #4ba8ff;
+      }
+
+      .path {
+        position: absolute;
+        left: 31px;
+        top: 139px;
+        width: 298px;
+        height: 72px;
+        overflow: visible;
+      }
+
+      .path-base {
+        fill: none;
+        stroke: #314157;
+        stroke-width: 3;
+        stroke-linecap: round;
+      }
+
+      .path-accent {
+        fill: none;
+        stroke: url(#flow-gradient-onset);
+        stroke-width: 6;
+        stroke-linecap: round;
+        filter: url(#line-glow-onset);
+      }
+
+      .flow-head {
+        fill: #79c8ff;
+        filter: url(#head-glow-onset);
+      }
+
+      .rail {
+        position: absolute;
+        top: 363px;
+        left: 28px;
+        right: 28px;
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 4px;
+        padding-top: 13px;
+        border-top: 1px solid #27354a;
+      }
+
+      .rail-item {
+        color: #77859a;
+        font-size: 11px;
+        font-weight: 700;
+        text-align: center;
+      }
+
+      .rail-item.now {
+        color: #2ce69f;
+        font-size: 14px;
+      }
+
+      .rail-item.up-next {
+        color: #83c4ff;
+        font-size: 13px;
+      }
+
+      .keyboard {
+        position: absolute;
+        left: 39px;
+        top: 446px;
+        width: 282px;
+        height: 66px;
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        background: #cad3df;
+        border: 1px solid #607086;
+      }
+
+      .white-key {
+        position: relative;
+        border-right: 1px solid #728095;
+      }
+
+      .white-key.active {
+        background: #2ce69f;
+        box-shadow: 0 0 14px rgb(44 230 159 / 48%);
+      }
+
+      .black-key {
+        position: absolute;
+        top: 0;
+        right: -5px;
+        z-index: 2;
+        width: 10px;
+        height: 41px;
+        background: #0b111d;
+      }
+
+      .black-key.active {
+        background: #22bd84;
+        box-shadow: 0 0 10px rgb(44 230 159 / 55%);
+      }
+
+      .brand {
+        position: absolute;
+        left: 50%;
+        bottom: 30px;
+        width: 34px;
+        height: 34px;
+        transform: translateX(-50%);
+        border-radius: 8px;
+      }
+
+      .mid .path-accent {
+        stroke: url(#flow-gradient-mid);
+        filter: url(#line-glow-mid);
+      }
+
+      .mid .flow-head {
+        filter: url(#head-glow-mid);
+      }
+
+      .handoff .frame {
+        background:
+          radial-gradient(circle at 54% 42%, rgb(75 168 255 / 17%), transparent 34%),
+          linear-gradient(180deg, #111a30 0%, #08101f 53%, #04070d 100%);
+      }
+
+      .handoff .current {
+        left: 17px;
+        top: 39px;
+        opacity: 0.86;
+      }
+
+      .handoff .current .name {
+        font-size: 72px;
+      }
+
+      .handoff .next {
+        left: 181px;
+        top: 44px;
+        opacity: 0.76;
+      }
+
+      .handoff .next .name {
+        font-size: 64px;
+      }
+
+      .handoff .path-accent {
+        stroke: url(#flow-gradient-handoff);
+        filter: url(#line-glow-handoff);
+      }
+
+      .handoff .flow-head {
+        filter: url(#head-glow-handoff);
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>Flow V4.1 — Controlled Dramatic Direction</h1>
+      <p>
+        Currentを最大要素に保ち、NEXTを常時読める大きさで提示。後半30%だけ光路と文字が移動します。
+      </p>
+    </header>
+
+    <main class="states">
+      <section>
+        <h2 class="state-title">Onset · 0.00</h2>
+        <div class="frame onset">
+          <div class="frame-header">
+            <div class="title">はじめての進行</div>
+            <div class="meta">FLOW · BPM 130</div>
+          </div>
+          <div class="stage">
+            <div class="chord current">
+              <div class="role">NOW</div>
+              <div class="name">G7</div>
+              <div class="degree">V</div>
+            </div>
+            <div class="chord next">
+              <div class="role">NEXT</div>
+              <div class="name">Em7</div>
+              <div class="degree">iii7</div>
+            </div>
+            <svg class="path" viewBox="0 0 298 72" aria-hidden="true">
+              <defs>
+                <linearGradient id="flow-gradient-onset" x1="0" x2="1">
+                  <stop offset="0" stop-color="#2ce69f" />
+                  <stop offset="1" stop-color="#4ba8ff" />
+                </linearGradient>
+                <filter id="line-glow-onset">
+                  <feGaussianBlur stdDeviation="2.4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="head-glow-onset">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path class="path-base" d="M5 49 C78 12 205 62 293 19" />
+              <path class="path-accent" d="M5 49 C32 36 54 29 82 27" />
+              <circle class="flow-head" cx="82" cy="27" r="5" />
+            </svg>
+          </div>
+          <div class="rail">
+            <span class="rail-item">Fmaj7</span>
+            <span class="rail-item now">G7</span>
+            <span class="rail-item up-next">Em7</span>
+            <span class="rail-item">Am7</span>
+          </div>
+          <div class="keyboard">
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"><i class="black-key active"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key"></span>
+            <span class="white-key active"><i class="black-key"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"><i class="black-key"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key"></span>
+            <span class="white-key active"></span>
+          </div>
+          <img class="brand" src="../../modules/chord-video-export/ios/assets/cp-watermark.png" />
+        </div>
+      </section>
+
+      <section class="mid">
+        <h2 class="state-title">Stable · 0.50</h2>
+        <div class="frame">
+          <div class="frame-header">
+            <div class="title">はじめての進行</div>
+            <div class="meta">FLOW · BPM 130</div>
+          </div>
+          <div class="stage">
+            <div class="chord current">
+              <div class="role">NOW</div>
+              <div class="name">G7</div>
+              <div class="degree">V</div>
+            </div>
+            <div class="chord next">
+              <div class="role">NEXT</div>
+              <div class="name">Em7</div>
+              <div class="degree">iii7</div>
+            </div>
+            <svg class="path" viewBox="0 0 298 72" aria-hidden="true">
+              <defs>
+                <linearGradient id="flow-gradient-mid" x1="0" x2="1">
+                  <stop offset="0" stop-color="#2ce69f" />
+                  <stop offset="1" stop-color="#4ba8ff" />
+                </linearGradient>
+                <filter id="line-glow-mid">
+                  <feGaussianBlur stdDeviation="2.4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="head-glow-mid">
+                  <feGaussianBlur stdDeviation="4" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path class="path-base" d="M5 49 C78 12 205 62 293 19" />
+              <path class="path-accent" d="M5 49 C62 21 107 23 146 34" />
+              <circle class="flow-head" cx="146" cy="34" r="5" />
+            </svg>
+          </div>
+          <div class="rail">
+            <span class="rail-item">Fmaj7</span>
+            <span class="rail-item now">G7</span>
+            <span class="rail-item up-next">Em7</span>
+            <span class="rail-item">Am7</span>
+          </div>
+          <div class="keyboard">
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"><i class="black-key active"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key"></span>
+            <span class="white-key active"><i class="black-key"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"><i class="black-key"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key"></span>
+            <span class="white-key active"></span>
+          </div>
+          <img class="brand" src="../../modules/chord-video-export/ios/assets/cp-watermark.png" />
+        </div>
+      </section>
+
+      <section class="handoff">
+        <h2 class="state-title">Handoff · 0.99</h2>
+        <div class="frame">
+          <div class="frame-header">
+            <div class="title">はじめての進行</div>
+            <div class="meta">FLOW · BPM 130</div>
+          </div>
+          <div class="stage">
+            <div class="chord current">
+              <div class="role">NOW</div>
+              <div class="name">G7</div>
+              <div class="degree">V</div>
+            </div>
+            <div class="chord next">
+              <div class="role">NEXT</div>
+              <div class="name">Em7</div>
+              <div class="degree">iii7</div>
+            </div>
+            <svg class="path" viewBox="0 0 298 72" aria-hidden="true">
+              <defs>
+                <linearGradient id="flow-gradient-handoff" x1="0" x2="1">
+                  <stop offset="0" stop-color="#2ce69f" />
+                  <stop offset="1" stop-color="#4ba8ff" />
+                </linearGradient>
+                <filter id="line-glow-handoff">
+                  <feGaussianBlur stdDeviation="2.8" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+                <filter id="head-glow-handoff">
+                  <feGaussianBlur stdDeviation="5" result="blur" />
+                  <feMerge>
+                    <feMergeNode in="blur" />
+                    <feMergeNode in="SourceGraphic" />
+                  </feMerge>
+                </filter>
+              </defs>
+              <path class="path-base" d="M5 49 C78 12 205 62 293 19" />
+              <path class="path-accent" d="M5 49 C98 3 178 62 237 37" />
+              <circle class="flow-head" cx="237" cy="37" r="6" />
+            </svg>
+          </div>
+          <div class="rail">
+            <span class="rail-item">Fmaj7</span>
+            <span class="rail-item now">G7</span>
+            <span class="rail-item up-next">Em7</span>
+            <span class="rail-item">Am7</span>
+          </div>
+          <div class="keyboard">
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"><i class="black-key active"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key"></span>
+            <span class="white-key active"><i class="black-key"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key active"><i class="black-key"></i></span>
+            <span class="white-key"><i class="black-key"></i></span>
+            <span class="white-key"></span>
+            <span class="white-key active"></span>
+          </div>
+          <img class="brand" src="../../modules/chord-video-export/ios/assets/cp-watermark.png" />
+        </div>
+      </section>
+    </main>
+  </body>
+</html>

@@ -19,12 +19,15 @@ describe('Phase V4 Flow renderer architecture', () => {
 
   it('keeps Flow additive and independent from Classic and Pulse rendering', () => {
     const renderer = source('FlowFrameRenderer.swift');
+    const stage = source('FlowHarmonicStageRenderer.swift');
 
     expect(renderer).toContain('struct FlowFrameRenderer: VideoFrameRendering');
     expect(renderer).toContain('FlowFrameStateResolver.resolve');
-    expect(renderer).not.toContain('FrameRenderer.makeImage');
-    expect(renderer).not.toContain('PulseFrameRenderer');
-    expect(renderer).not.toContain('PulseFrameState');
+    expect(renderer).toContain('FlowHarmonicStageRenderer.draw');
+    expect(`${renderer}\n${stage}`).not.toContain('FrameRenderer.makeImage');
+    expect(`${renderer}\n${stage}`).not.toContain('PulseFrameRenderer');
+    expect(`${renderer}\n${stage}`).not.toContain('PulseFrameState');
+    expect(renderer.split('\n').length).toBeLessThan(500);
   });
 
   it('derives musical state only from segment boundaries and array order', () => {
@@ -46,34 +49,55 @@ describe('Phase V4 Flow renderer architecture', () => {
     expect(state).not.toMatch(/spring|bounce|overshoot/i);
   });
 
-  it('renders a low-amplitude cubic line and exactly one moving radial glow', () => {
+  it('renders a stronger cubic light path and exactly one moving radial glow', () => {
     const renderer = source('FlowFrameRenderer.swift');
+    const stage = source('FlowHarmonicStageRenderer.swift');
+    const keyboard = source('FlowKeyboardRenderer.swift');
+    const branding = source('FlowBrandRenderer.swift');
+    const flowSources = `${renderer}\n${stage}\n${keyboard}\n${branding}`;
 
-    expect(renderer).toContain('path.addCurve');
-    expect(renderer.match(/drawRadialGradient/g)).toHaveLength(1);
-    expect(renderer).not.toMatch(/waveform|particle|CIFilter|Gaussian|blur/i);
-    expect(renderer).not.toContain('drawProgressTrace');
+    expect(stage).toContain('fullPath.addCurve');
+    expect(stage).toContain('cg.setLineWidth(max(3, height * 0.0022))');
+    expect(stage).toContain('cg.setLineWidth(max(5, height * 0.0026))');
+    expect(flowSources.match(/drawRadialGradient/g)).toHaveLength(1);
+    expect(flowSources).not.toMatch(/waveform|particle|CIFilter|Gaussian|blur/i);
+    expect(flowSources).not.toContain('drawProgressTrace');
   });
 
   it('uses the fixed Flow palette without harmonic-function colors', () => {
     const renderer = source('FlowFrameRenderer.swift');
+    const stage = source('FlowHarmonicStageRenderer.swift');
+    const flowSources = `${renderer}\n${stage}`;
 
-    expect(renderer).toContain('paletteGreen');
-    expect(renderer).toContain('coolBlue');
-    expect(renderer).not.toMatch(/segment\.color|functionColor|keyTint|random/i);
+    expect(stage).toContain('paletteGreen');
+    expect(stage).toContain('coolBlue');
+    expect(flowSources).not.toMatch(/segment\.color|functionColor|keyTint|random/i);
+  });
+
+  it('makes NOW and NEXT explicit with approved visual strength', () => {
+    const state = source('FlowFrameState.swift');
+    const stage = source('FlowHarmonicStageRenderer.swift');
+
+    expect(stage).toContain('role: "NOW"');
+    expect(stage).toContain('role: "NEXT"');
+    expect(stage).toContain('height * 0.115 * scale');
+    expect(stage).toContain('drawSequenceRail');
+    expect(state).toContain('static let peakGlowIntensity: CGFloat = 0.30');
+    expect(state).toContain('static let stableNextOpacity: CGFloat = 0.68');
   });
 
   it('keeps keyboard note mapping and uses measured non-ellipsis chord text', () => {
     const renderer = source('FlowFrameRenderer.swift');
+    const stage = source('FlowHarmonicStageRenderer.swift');
     const keyboard = source('FlowKeyboardRenderer.swift');
 
     expect(renderer).toContain('FlowKeyboardRenderer.draw');
     expect(keyboard).toContain('KeyboardLayout.layout');
     expect(keyboard).toContain('KeyboardLayout.highlighted');
     expect(keyboard).toContain('currentSegment.midiNotes');
-    expect(renderer).toContain('maxWidth / measuredWidth');
-    expect(renderer).toContain('lineBreakMode = .byClipping');
-    expect(renderer).not.toContain('byTruncatingTail');
+    expect(stage).toContain('maxWidth / measuredWidth');
+    expect(stage).toContain('lineBreakMode = .byClipping');
+    expect(`${renderer}\n${stage}`).not.toContain('byTruncatingTail');
   });
 
   it('uses only the approved icon and does not construct a pseudo wordmark', () => {
