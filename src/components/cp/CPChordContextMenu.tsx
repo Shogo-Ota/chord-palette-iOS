@@ -31,6 +31,7 @@ export type CPChordContextMenuProps = {
   voicingPosition: VoicingPosition;
   context: ChordContextActions;
   onRequestClose: () => void;
+  onEvolve: () => void;
   onDuplicate: () => void;
   onMoveLeft: () => void;
   onMoveRight: () => void;
@@ -91,6 +92,7 @@ export function CPChordContextMenu({
   voicingPosition,
   context,
   onRequestClose,
+  onEvolve,
   onDuplicate,
   onMoveLeft,
   onMoveRight,
@@ -112,7 +114,6 @@ export function CPChordContextMenu({
 
           {context.canEditDuration ? (
             <View style={styles.durationBlock}>
-              <Text style={styles.sectionLabel}>長さ</Text>
               <SegTrack
                 options={DURATION_OPTIONS}
                 value={String(durationBeats)}
@@ -123,17 +124,18 @@ export function CPChordContextMenu({
 
           {context.canEditVoicing ? (
             <View style={styles.durationBlock}>
-              <Text style={styles.sectionLabel}>ボイシング</Text>
               <SegTrack
                 options={voicingPositionOptions(voicingPosition)}
                 value={voicingPosition}
                 onChange={(key) => onSetVoicingPosition(key as VoicingPosition)}
               />
-              <Text style={styles.voicingHint}>このコードだけの最低音と響きを変更します</Text>
             </View>
           ) : null}
 
           <View style={styles.rows}>
+            {context.canEvolve ? (
+              <MenuRow icon="rewind" label="このコードを発展" onPress={onEvolve} />
+            ) : null}
             {context.canDuplicate ? (
               <MenuRow icon="duplicate" label="複製" onPress={onDuplicate} />
             ) : null}
@@ -199,20 +201,6 @@ const styles = StyleSheet.create({
   },
   durationBlock: {
     marginBottom: spacing.s16,
-    gap: spacing.s8,
-  },
-  sectionLabel: {
-    color: colors.textDim,
-    fontFamily: font.semibold,
-    fontWeight: '600',
-    fontSize: typeSize.label,
-    paddingHorizontal: spacing.s4,
-  },
-  voicingHint: {
-    color: colors.textFaint,
-    fontFamily: font.regular,
-    fontSize: typeSize.caption,
-    paddingHorizontal: spacing.s4,
   },
   rows: {
     gap: spacing.s8,

@@ -21,11 +21,12 @@ export default ({ config }: ConfigContext): ExpoConfig => {
       posthogHost:
         process.env.EXPO_PUBLIC_POSTHOG_HOST ?? extra.posthogHost ?? 'https://us.i.posthog.com',
       sentryDsn: process.env.EXPO_PUBLIC_SENTRY_DSN ?? extra.sentryDsn ?? '',
-      revenueCatIosKey:
-        process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? extra.revenueCatIosKey ?? '',
+      revenueCatIosKey: process.env.EXPO_PUBLIC_REVENUECAT_IOS_KEY ?? extra.revenueCatIosKey ?? '',
       convexUrl: process.env.EXPO_PUBLIC_CONVEX_URL ?? extra.convexUrl ?? '',
       clerkPublishableKey:
         process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? extra.clerkPublishableKey ?? '',
+      chordEvolutionEnabled:
+        process.env.EXPO_PUBLIC_CHORD_EVOLUTION_ENABLED ?? extra.chordEvolutionEnabled ?? '',
     },
   };
 };

@@ -1,3 +1,5 @@
+import { env } from '@/lib/env';
+
 /**
  * Feature Flags — gate UNIMPLEMENTED actions OUT of the UI (sprint-7 §3 / §5).
  *
@@ -26,8 +28,8 @@ export type FeatureFlags = {
   /**
    * Chord Evolution application boundary.
    *
-   * Phase 2 defines adapters and contracts only. Keep false until a later,
-   * separately approved phase wires a complete UI.
+   * The UI is complete but remains dark by default. Internal QA builds opt in
+   * through EXPO_PUBLIC_CHORD_EVOLUTION_ENABLED=true.
    */
   chordEvolution: boolean;
 };
@@ -35,5 +37,5 @@ export type FeatureFlags = {
 /** Active flag values. */
 export const featureFlags: FeatureFlags = {
   metronome: false,
-  chordEvolution: false,
+  chordEvolution: env.chordEvolutionEnabled === 'true',
 };

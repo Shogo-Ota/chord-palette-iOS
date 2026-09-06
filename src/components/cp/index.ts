@@ -5,6 +5,7 @@
  */
 
 export { CPChordCard } from './CPChordCard';
+export { CPChordEvolutionSheet } from './CPChordEvolutionSheet';
 export { CPChordContextMenu } from './CPChordContextMenu';
 export { CPSessionCapsule } from './CPSessionCapsule';
 export { CPSettingChip } from './CPSettingChip';

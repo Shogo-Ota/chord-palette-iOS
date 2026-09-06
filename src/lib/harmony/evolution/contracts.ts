@@ -1,4 +1,4 @@
-import type { SourceRef } from '@/lib/musicTheory';
+import type { DegreeToken, SourceRef, TensionToken } from '@/lib/musicTheory';
 import type { KeyMode } from '@/types';
 
 import type {
@@ -28,6 +28,27 @@ export type DiatonicSeventhResolution = {
   readonly theorySources: readonly SourceRef[];
 };
 
+export type AvailableTensionResolution = {
+  readonly targetChordId: string;
+  readonly targetSymbol: EvolutionChordSymbol & { readonly definitionId: string };
+  readonly addedTensions: readonly TensionToken[];
+  /** Deterministic rule order; not a measured musical score. */
+  readonly priority: number;
+  readonly theorySources: readonly SourceRef[];
+};
+
+export type SlashBassResolution = {
+  readonly targetChordId: string;
+  readonly bassOffset: number;
+  readonly bassDegree: DegreeToken;
+  readonly totalMovement: number;
+  readonly maximumLeap: number;
+  readonly improvement: number;
+  /** Deterministic rule order; not a measured musical score. */
+  readonly priority: number;
+  readonly theorySources: readonly SourceRef[];
+};
+
 /** Port owned by Harmony Domain; the production provider reads existing theory data. */
 export interface EvolutionTheoryProvider {
   resolveDiatonicSeventh(
@@ -36,12 +57,32 @@ export interface EvolutionTheoryProvider {
   ): DiatonicSeventhResolution | null;
 }
 
+export interface EvolutionTensionProvider {
+  resolveAvailableTensions(
+    context: Pick<EvolutionContext, 'tonic' | 'mode'>,
+    chord: EvolutionChord,
+  ): readonly AvailableTensionResolution[];
+}
+
+export interface EvolutionSlashProvider {
+  resolveChordToneBassOptions(
+    context: EvolutionContext,
+    targetIndex: number,
+  ): readonly SlashBassResolution[];
+}
+
 export type EvolutionRuleDependencies = {
   readonly theory: EvolutionTheoryProvider;
+  /** Optional so direct Phase 1 rule tests and custom callers remain compatible. */
+  readonly tension?: EvolutionTensionProvider;
+  /** Optional so direct Phase 1 rule tests and custom callers remain compatible. */
+  readonly slash?: EvolutionSlashProvider;
 };
 
 export type EvolutionRuleApplication = {
   readonly change: EvolutionChange;
+  /** Deterministic rule order; absent means the rule has one result. */
+  readonly priority?: number;
   readonly theorySources: readonly SourceRef[];
 };
 

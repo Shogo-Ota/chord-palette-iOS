@@ -13,7 +13,7 @@ function sourceFiles(root: string): string[] {
   });
 }
 
-describe('Chord Evolution Phase 2 architecture gate', () => {
+describe('Chord Evolution UI architecture gate', () => {
   const featureRoot = path.resolve(__dirname, '..');
   const domainRoot = path.resolve(__dirname, '../../../../lib/harmony/evolution');
   const featureSources = sourceFiles(featureRoot).map((filePath) => ({
@@ -39,11 +39,21 @@ describe('Chord Evolution Phase 2 architecture gate', () => {
     }
   });
 
-  it('keeps repositories, billing and analytics out of the Feature boundary', () => {
+  it('keeps repositories and billing providers out of the Feature boundary', () => {
     for (const source of featureSources) {
       expect(source.contents).not.toMatch(
-        /@\/repositories\/|@\/services\/billing|@\/services\/analytics/,
+        /@\/repositories\/|@\/services\/billing|RevenueCat|react-native-purchases/,
       );
+    }
+  });
+
+  it('centralizes the existing Analytics abstraction in one Feature adapter', () => {
+    for (const source of featureSources) {
+      if (source.filePath.endsWith(`${path.sep}analytics.ts`)) {
+        expect(source.contents).toContain('@/services/analytics');
+      } else {
+        expect(source.contents).not.toContain('@/services/analytics');
+      }
     }
   });
 
@@ -61,9 +71,11 @@ describe('Chord Evolution Phase 2 architecture gate', () => {
     expect(apply).not.toContain('replaceSelected');
   });
 
-  it('defines the flag as off without exposing it in Editor UI', () => {
+  it('keeps the default flag off and gates both Editor entries', () => {
     expect(featureFlags.chordEvolution).toBe(false);
     const editorUi = fs.readFileSync(path.resolve(__dirname, '../../../../app/editor.tsx'), 'utf8');
-    expect(editorUi).not.toContain('chordEvolution');
+    expect(editorUi).toContain("visibleActions.evolutionProgression.state === 'ready'");
+    expect(editorUi).toContain('chordContext');
+    expect(editorUi).not.toContain('RevenueCat');
   });
 });

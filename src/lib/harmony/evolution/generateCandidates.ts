@@ -1,17 +1,20 @@
 import type { EvolutionRecipe, EvolutionRuleDependencies } from './contracts';
 import { chordCatalogEvolutionProvider } from './providers/chordCatalogEvolutionProvider';
+import { chordCatalogTensionProvider } from './providers/chordCatalogTensionProvider';
+import { chordToneSlashProvider } from './providers/chordToneSlashProvider';
+import { l2Recipe } from './recipes/l2Recipe';
 import { seventhRecipe } from './recipes/seventhRecipe';
-import { phase1EvolutionRuleRegistry } from './ruleRegistry';
+import { evolutionRuleRegistry } from './ruleRegistry';
 import type { EvolutionCandidate, EvolutionContext } from './types';
 
 export const MAX_EVOLUTION_CANDIDATES = 3;
 
-const PHASE_1_RECIPES: readonly EvolutionRecipe[] = [seventhRecipe];
+const EVOLUTION_RECIPES: readonly EvolutionRecipe[] = [seventhRecipe, l2Recipe];
 
 export type EvolutionGeneratorDependencies = Partial<EvolutionRuleDependencies>;
 
 /**
- * Pure deterministic boundary for Phase 1. Recipes are evaluated in declared
+ * Pure deterministic boundary. Recipes are evaluated in declared
  * order and truncated at one shared boundary; they are never cross-multiplied.
  */
 export function generateEvolutionCandidates(
@@ -20,10 +23,12 @@ export function generateEvolutionCandidates(
 ): readonly EvolutionCandidate[] {
   const resolvedDependencies: EvolutionRuleDependencies = {
     theory: dependencies.theory ?? chordCatalogEvolutionProvider,
+    tension: dependencies.tension ?? chordCatalogTensionProvider,
+    slash: dependencies.slash ?? chordToneSlashProvider,
   };
 
-  const candidates = PHASE_1_RECIPES.filter((recipe) => recipe.level === context.level).flatMap(
-    (recipe) => recipe.build(context, phase1EvolutionRuleRegistry, resolvedDependencies),
+  const candidates = EVOLUTION_RECIPES.filter((recipe) => recipe.level === context.level).flatMap(
+    (recipe) => recipe.build(context, evolutionRuleRegistry, resolvedDependencies),
   );
 
   return candidates.slice(0, MAX_EVOLUTION_CANDIDATES);

@@ -14,6 +14,7 @@ import type {
   EvolutionAdapterFailureReason,
   EvolutionAdapterResult,
 } from './types';
+import { validateCandidateShape } from './candidateShapePolicy';
 
 export type EvolutionSessionProjection = Pick<EditorSession, 'key' | 'mode' | 'progression'>;
 
@@ -164,10 +165,6 @@ function validateCandidate(
     return fail('STALE_BASELINE');
   }
 
-  if (candidate.level !== 'seventh' || candidate.technique !== 'add_seventh') {
-    return fail('UNSUPPORTED_CANDIDATE');
-  }
-
   if (candidate.after.length !== candidate.before.length) {
     return fail('LENGTH_CHANGED');
   }
@@ -192,21 +189,12 @@ function validateCandidate(
   ) {
     return fail('DURATION_CHANGED');
   }
-  if (
-    candidate.after.some((after, index) => {
-      const before = candidate.before[index];
-      return (
-        !before ||
-        after.function !== before.function ||
-        after.voicingPosition !== before.voicingPosition ||
-        after.symbol.rootOffset !== before.symbol.rootOffset ||
-        after.symbol.bassOffset !== before.symbol.bassOffset ||
-        !rootSpellingEquals(after.symbol.rootSpelling, before.symbol.rootSpelling) ||
-        !localContextEquals(after.localHarmonicContext, before.localHarmonicContext)
-      );
-    })
-  ) {
-    return fail('INVALID_CHANGE_SET', 'L1 may change chord quality only.');
+  const shape = validateCandidateShape(candidate);
+  if (!shape.supported) {
+    return fail(
+      shape.detail.startsWith('Unsupported') ? 'UNSUPPORTED_CANDIDATE' : 'INVALID_CHANGE_SET',
+      shape.detail,
+    );
   }
 
   return validateChangeSet(candidate);

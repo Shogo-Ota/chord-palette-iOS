@@ -15,6 +15,7 @@ import {
 
 import { Icon, type IconName } from '@/components/Icon';
 import {
+  CPChordEvolutionSheet,
   CPChordContextMenu,
   CPCoachMarks,
   CPSettingChip,
@@ -27,6 +28,7 @@ import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { UpsellToast, useUpsellToast } from '@/components/UpsellToast';
 import { Wordmark } from '@/components/Wordmark';
 import { styleSummaryText } from '@/features/editor/styleSummary';
+import { useChordEvolution } from '@/features/editor/chordEvolution';
 import {
   chromaticBassNotes,
   degreeIndexFromRootOffset,
@@ -208,6 +210,14 @@ export default function EditorScreen() {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [showMoreTensions, setShowMoreTensions] = useState(false);
   const isAdmin = useAdminMode();
+  const openEvolutionPaywall = useCallback(() => router.push('/paywall'), [router]);
+  const evolution = useChordEvolution({
+    session: s,
+    entitlements: ent,
+    tier: ent.palettePro ? 'pro' : 'free',
+    onOpenPaywall: openEvolutionPaywall,
+    onError: setAudioError,
+  });
   const playLift = useRef(new Animated.Value(0)).current;
   const stripScrollRef = useRef<ScrollView>(null);
   const stripViewportW = useRef(0);
@@ -394,7 +404,6 @@ export default function EditorScreen() {
     hapticSelection();
     session.setSelected(getSession().selected === i ? -1 : i);
   };
-  const undo = session.undo;
 
   const isPlaying = playbackState === 'playing';
 
@@ -658,7 +667,7 @@ export default function EditorScreen() {
           showLoop={visibleActions.loop.state === 'ready'}
           loopOn={loop}
           onPlayPause={actions.onPlayPause}
-          onUndo={undo}
+          onUndo={evolution.undo}
           onLoop={() => setLoop((v) => !v)}
         />
         {audioError ? (
@@ -680,6 +689,17 @@ export default function EditorScreen() {
           <View style={styles.stripHeader}>
             <View style={styles.stripTitleRow}>
               <Text style={styles.stripTitle}>コード進行</Text>
+              {visibleActions.evolutionProgression.state === 'ready' ? (
+                <Pressable
+                  onPress={() => evolution.open({ kind: 'progression' })}
+                  hitSlop={6}
+                  accessibilityRole="button"
+                  accessibilityLabel="コード進行を発展"
+                  style={styles.addProgBtn}>
+                  <Icon name="rewind" size={12} color={colors.primary} strokeWidth={2.4} />
+                  <Text style={styles.addProgBtnText}>発展</Text>
+                </Pressable>
+              ) : null}
               <Pressable
                 onPress={() => router.push('/append-progression')}
                 hitSlop={6}
@@ -704,7 +724,7 @@ export default function EditorScreen() {
             <View style={styles.stripMeta}>
               <Text style={styles.stripKey}>KEY {key}</Text>
               <Text style={styles.barCount}>
-                {totalBars} / {MAX_BARS}小節
+                {totalBars}/{MAX_BARS}小節
               </Text>
             </View>
           </View>
@@ -1081,6 +1101,11 @@ export default function EditorScreen() {
             voicingPosition={normalizeVoicingPosition(selectedEvent.voicingPosition)}
             context={chordContext}
             onRequestClose={() => setContextMenuOpen(false)}
+            onEvolve={() => {
+              const index = getSession().selected;
+              setContextMenuOpen(false);
+              evolution.open({ kind: 'chord', index });
+            }}
             onDuplicate={() => {
               actions.duplicateSelected();
               setContextMenuOpen(false);
@@ -1119,6 +1144,32 @@ export default function EditorScreen() {
             }}
           />
         )}
+
+        {evolution.model ? (
+          <CPChordEvolutionSheet
+            visible={evolution.visible}
+            scopeLabel={evolution.model.scopeLabel}
+            activeLevel={evolution.activeLevel}
+            levels={evolution.model.levels.map(({ level, label }) => ({
+              level,
+              label,
+            }))}
+            originalSummary={evolution.model.originalSummary}
+            candidates={evolution.sheetCandidates}
+            emptyMessage={evolution.activeSection?.emptyMessage}
+            onRequestClose={evolution.close}
+            onSelectLevel={evolution.selectLevel}
+            onPreviewOriginal={() => {
+              void evolution.previewOriginal();
+            }}
+            onPreviewCandidate={(candidateId) => {
+              void evolution.previewCandidateById(candidateId);
+            }}
+            onApplyCandidate={(candidateId) => {
+              evolution.applyCandidateById(candidateId);
+            }}
+          />
+        ) : null}
 
         {/* ── BPM picker modal ───────────────────────────── */}
         <Modal
@@ -1478,14 +1529,14 @@ const styles = StyleSheet.create({
     borderColor: rgba(colors.primary, 0.28),
   },
   stripHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.s4,
     marginBottom: spacing.s8,
     paddingHorizontal: 2,
   },
-  stripTitleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  stripTitleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.s8 },
   stripTitle: {
+    flex: 1,
+    flexShrink: 1,
     fontSize: typeSize.label,
     fontFamily: font.bold,
     fontWeight: '700',
@@ -1526,14 +1577,18 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: colors.primary,
   },
-  stripMeta: { flexDirection: 'row', alignItems: 'center', gap: spacing.s8 },
+  stripMeta: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
   stripKey: {
     fontSize: 11,
     fontFamily: font.bold,
     fontWeight: '700',
     color: colors.textSecondary,
   },
-  barCount: { fontSize: 10.5, color: colors.textFaint },
+  barCount: { flexShrink: 0, fontSize: 10.5, color: colors.textFaint },
   keyLegend: {
     flexDirection: 'row',
     flexWrap: 'wrap',

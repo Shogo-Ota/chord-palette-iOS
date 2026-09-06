@@ -43,6 +43,8 @@ export type VisibleActions = {
   play: { state: ActionState; mode: PlayMode };
   /** Metronome: hidden unless the feature flag is on (unimplemented → hidden). */
   metronome: { state: ActionState };
+  /** Progression-level Evolution entry. Hidden unless shipped and non-empty. */
+  evolutionProgression: { state: ActionState };
 };
 
 /**
@@ -59,6 +61,7 @@ export type ChordContextActions = {
   canDelete: boolean;
   canEditDuration: boolean;
   canEditVoicing: boolean;
+  canEvolve: boolean;
 };
 
 /* ------------------------------------------------------------------ */
@@ -72,7 +75,7 @@ export type VisibleActionsInput = Pick<EditorSession, 'progression' | 'history'>
 export function computeVisibleActions(
   input: VisibleActionsInput,
   playbackState: PlaybackState,
-  flags: Pick<FeatureFlags, 'metronome'> = featureFlags,
+  flags: Partial<Pick<FeatureFlags, 'metronome' | 'chordEvolution'>> = featureFlags,
 ): VisibleActions {
   const length = input.progression.length;
   const isPlaying = playbackState === 'playing';
@@ -85,6 +88,9 @@ export function computeVisibleActions(
     loop: { state: length >= 2 ? 'ready' : 'hidden' },
     play: { state: isPreparing ? 'loading' : 'ready', mode },
     metronome: { state: flags.metronome ? 'ready' : 'hidden' },
+    evolutionProgression: {
+      state: flags.chordEvolution && length > 0 ? 'ready' : 'hidden',
+    },
   };
 }
 
@@ -92,7 +98,10 @@ export function computeVisibleActions(
 export type ChordContextInput = Pick<EditorSession, 'progression' | 'selected'>;
 
 /** Derive per-selection capability flags for the chord Context Menu. */
-export function computeChordContext(input: ChordContextInput): ChordContextActions {
+export function computeChordContext(
+  input: ChordContextInput,
+  flags: Pick<FeatureFlags, 'chordEvolution'> = featureFlags,
+): ChordContextActions {
   const { progression, selected } = input;
   const visible = selected >= 0 && selected < progression.length;
   const event = visible ? progression[selected] : undefined;
@@ -104,6 +113,7 @@ export function computeChordContext(input: ChordContextInput): ChordContextActio
     canDelete: visible,
     canEditDuration: visible,
     canEditVoicing: visible,
+    canEvolve: visible && flags.chordEvolution,
   };
 }
 
@@ -140,10 +150,7 @@ export function useEditorActions(options: UseEditorActionsOptions): EditorAction
   const s = useEditorSession();
   const { playbackState, onTogglePlayback } = options;
 
-  const visibleActions = useMemo(
-    () => computeVisibleActions(s, playbackState),
-    [s, playbackState],
-  );
+  const visibleActions = useMemo(() => computeVisibleActions(s, playbackState), [s, playbackState]);
 
   const chordContext = useMemo(() => computeChordContext(s), [s]);
 

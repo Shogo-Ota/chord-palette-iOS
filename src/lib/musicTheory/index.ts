@@ -16,6 +16,7 @@ export * from './degrees';
 export * from './diatonic';
 export * from './diminished';
 export * from './dominants';
+export * from './evolutionPolicies';
 export * from './functions';
 export * from './progressions';
 export * from './provenance';

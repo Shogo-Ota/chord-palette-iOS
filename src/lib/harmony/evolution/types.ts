@@ -103,8 +103,12 @@ export type EvolutionScore =
       readonly components: readonly EvolutionScoreComponent[];
     };
 
-export type EvolutionTheoryLabel = 'DIATONIC_SEVENTH';
-export type EvolutionRationaleCode = 'DIATONIC_TRIAD_TO_SEVENTH';
+export type EvolutionTheoryLabel =
+  'DIATONIC_SEVENTH' | 'AVAILABLE_TENSION' | 'CHORD_TONE_INVERSION';
+export type EvolutionRationaleCode =
+  | 'DIATONIC_TRIAD_TO_SEVENTH'
+  | 'DIATONIC_SEVENTH_TO_AVAILABLE_TENSION'
+  | 'CHORD_TONE_BASS_SMOOTHING';
 
 export interface EvolutionCandidate {
   readonly id: string;

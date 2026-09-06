@@ -3,7 +3,12 @@ import {
   materializeCandidateProgression,
   sessionToEvolutionContext,
 } from '@/features/editor/chordEvolution/chordEventAdapter';
-import { diatonicEvent, phase1Candidate } from '@/features/editor/chordEvolution/testing/fixtures';
+import {
+  diatonicEvent,
+  diatonicSeventhEvent,
+  l2Candidates,
+  phase1Candidate,
+} from '@/features/editor/chordEvolution/testing/fixtures';
 import type { EvolutionCandidate, EvolutionChord } from '@/lib/harmony/evolution';
 import type { ChordEvent } from '@/types';
 
@@ -196,7 +201,7 @@ describe('ChordEvent evolution adapter', () => {
     ).toMatchObject({ ok: false, reason: 'DURATION_CHANGED' });
   });
 
-  it('rejects non-L1 candidates and L1 root mutations', () => {
+  it('rejects unsupported level/technique pairs and L1 root mutations', () => {
     const event = diatonicEvent('C', 'major', 0);
     const session = sessionWith([event]);
     const candidate = phase1Candidate(session);
@@ -204,7 +209,7 @@ describe('ChordEvent evolution adapter', () => {
     expect(
       materializeCandidateProgression(session, {
         ...candidate,
-        level: 'tension',
+        level: 'reharm',
         technique: 'add_tension',
       }),
     ).toMatchObject({ ok: false, reason: 'UNSUPPORTED_CANDIDATE' });
@@ -225,6 +230,99 @@ describe('ChordEvent evolution adapter', () => {
             after: moved,
           },
         ],
+      }),
+    ).toMatchObject({ ok: false, reason: 'INVALID_CHANGE_SET' });
+  });
+
+  it('materializes L2 tension and slash candidates through technique policies', () => {
+    const progression = [
+      diatonicSeventhEvent('C', 'major', 0, { id: 'a' }),
+      {
+        ...diatonicSeventhEvent('C', 'major', 3, { id: 'b' }),
+        isPro: true,
+        category: 'variation' as const,
+        variation: 'keep-me',
+      },
+      diatonicSeventhEvent('C', 'major', 4, { id: 'c' }),
+    ];
+    const session = sessionWith(progression);
+    const candidates = l2Candidates(session);
+    const tension = candidates.find((candidate) => candidate.technique === 'add_tension');
+    const slash = candidates.find((candidate) => candidate.technique === 'slash_chord');
+    expect(tension).toBeDefined();
+    expect(slash).toBeDefined();
+
+    const tensionResult = materializeCandidateProgression(session, tension!);
+    const slashResult = materializeCandidateProgression(session, slash!);
+    expect(tensionResult.ok).toBe(true);
+    expect(slashResult.ok).toBe(true);
+    if (!tensionResult.ok || !slashResult.ok) return;
+    expect(tensionResult.value.map((event) => event.id)).toEqual(['a', 'b', 'c']);
+    const changedSlash = slash!.changes[0];
+    expect(changedSlash?.kind).toBe('replace');
+    if (changedSlash?.kind !== 'replace') return;
+    const slashEvent = slashResult.value[changedSlash.index]!;
+    expect(slashEvent.bassOffset).toBe(changedSlash.after.symbol.bassOffset);
+    expect(slashEvent.bassNote).toBeDefined();
+    expect(progression[1]).toMatchObject({
+      isPro: true,
+      category: 'variation',
+      variation: 'keep-me',
+    });
+  });
+
+  it('rejects technique-specific attributes outside each L2 shape', () => {
+    const progression = [
+      diatonicSeventhEvent('C', 'major', 0, { id: 'a' }),
+      diatonicSeventhEvent('C', 'major', 3, { id: 'b' }),
+      diatonicSeventhEvent('C', 'major', 4, { id: 'c' }),
+    ];
+    const session = sessionWith(progression);
+    const candidates = l2Candidates(session);
+    const tension = candidates.find((candidate) => candidate.technique === 'add_tension')!;
+    const slash = candidates.find((candidate) => candidate.technique === 'slash_chord')!;
+
+    const tensionChange = tension.changes[0]!;
+    expect(tensionChange.kind).toBe('replace');
+    if (tensionChange.kind !== 'replace') return;
+    const tensionAfter = {
+      ...tensionChange.after,
+      symbol: { ...tensionChange.after.symbol, bassOffset: 4 },
+    };
+    expect(
+      materializeCandidateProgression(session, {
+        ...tension,
+        after: tension.after.map((chord, index) =>
+          index === tensionChange.index ? tensionAfter : chord,
+        ),
+        changes: [
+          {
+            ...tensionChange,
+            after: tensionAfter,
+          },
+          ...tension.changes.slice(1),
+        ],
+      }),
+    ).toMatchObject({ ok: false, reason: 'INVALID_CHANGE_SET' });
+
+    const slashChange = slash.changes[0]!;
+    expect(slashChange.kind).toBe('replace');
+    if (slashChange.kind !== 'replace') return;
+    const slashAfter = {
+      ...slashChange.after,
+      symbol: {
+        ...slashChange.after.symbol,
+        suffix: 'm7',
+        definitionId: 'm7',
+      },
+    };
+    expect(
+      materializeCandidateProgression(session, {
+        ...slash,
+        after: slash.after.map((chord, index) =>
+          index === slashChange.index ? slashAfter : chord,
+        ),
+        changes: [{ ...slashChange, after: slashAfter }],
       }),
     ).toMatchObject({ ok: false, reason: 'INVALID_CHANGE_SET' });
   });

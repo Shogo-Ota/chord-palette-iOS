@@ -67,19 +67,42 @@ describe('computeVisibleActions', () => {
 
   describe('metronome', () => {
     it('is hidden when the feature flag is off (unimplemented → hidden, not disabled)', () => {
-      expect(computeVisibleActions(base([ev('C')]), 'idle', { metronome: false }).metronome.state).toBe(
-        'hidden',
-      );
+      expect(
+        computeVisibleActions(base([ev('C')]), 'idle', { metronome: false }).metronome.state,
+      ).toBe('hidden');
     });
 
     it('becomes ready when the feature flag is on', () => {
-      expect(computeVisibleActions(base([ev('C')]), 'idle', { metronome: true }).metronome.state).toBe(
-        'ready',
-      );
+      expect(
+        computeVisibleActions(base([ev('C')]), 'idle', { metronome: true }).metronome.state,
+      ).toBe('ready');
     });
 
     it('defaults to hidden (project ships with metronome off)', () => {
       expect(computeVisibleActions(base([ev('C')]), 'idle').metronome.state).toBe('hidden');
+    });
+  });
+
+  describe('Chord Evolution progression entry', () => {
+    it('is hidden when the flag is off', () => {
+      expect(
+        computeVisibleActions(base([ev('C')]), 'idle', {
+          chordEvolution: false,
+        }).evolutionProgression.state,
+      ).toBe('hidden');
+    });
+
+    it('is ready only when the flag is on and progression is non-empty', () => {
+      expect(
+        computeVisibleActions(base([ev('C')]), 'idle', {
+          chordEvolution: true,
+        }).evolutionProgression.state,
+      ).toBe('ready');
+      expect(
+        computeVisibleActions(base([]), 'idle', {
+          chordEvolution: true,
+        }).evolutionProgression.state,
+      ).toBe('hidden');
     });
   });
 });
@@ -130,5 +153,16 @@ describe('computeChordContext', () => {
     expect(c.canDuplicate).toBe(false);
     // ...but delete/move stay available even when full.
     expect(c.canDelete).toBe(true);
+  });
+
+  it('shows the selected-chord Evolution entry only behind its flag', () => {
+    const selected = ctx([ev('C'), ev('G')], 0);
+    expect(computeChordContext(selected, { chordEvolution: false }).canEvolve).toBe(false);
+    expect(computeChordContext(selected, { chordEvolution: true }).canEvolve).toBe(true);
+    expect(
+      computeChordContext(ctx([ev('C')], -1), {
+        chordEvolution: true,
+      }).canEvolve,
+    ).toBe(false);
   });
 });

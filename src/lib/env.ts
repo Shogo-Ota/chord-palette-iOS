@@ -12,6 +12,7 @@ export type AppEnv = {
   revenueCatIosKey: string;
   convexUrl: string;
   clerkPublishableKey: string;
+  chordEvolutionEnabled: string;
 };
 
 const extra = (Constants.expoConfig?.extra ?? {}) as Partial<AppEnv>;
@@ -23,6 +24,7 @@ export const env: AppEnv = {
   revenueCatIosKey: extra.revenueCatIosKey ?? '',
   convexUrl: extra.convexUrl ?? '',
   clerkPublishableKey: extra.clerkPublishableKey ?? '',
+  chordEvolutionEnabled: extra.chordEvolutionEnabled ?? '',
 };
 
 /** Read a required env value, throwing a clear error when it is missing. */
