@@ -3,6 +3,8 @@
  * builder, its tests, the service, and the native wrapper can share them.
  */
 
+import type { VideoVisualStyle } from './videoVisualStyle';
+
 /** One chord occurrence on the export timeline (already laid out in seconds). */
 export type ExportSegment = {
   /** Big chord name, e.g. "Cmaj7". */
@@ -54,6 +56,8 @@ export type ExportPlan = {
   pitchClassNames: string[];
   /** Segments laid end-to-end, looped to fill `durationSec`. */
   segments: ExportSegment[];
+  /** Optional for backwards compatibility; plan builders always normalize it. */
+  visualStyle?: VideoVisualStyle;
 };
 
 export type ExportVideoResult = {

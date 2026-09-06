@@ -15,6 +15,10 @@ import { audioService } from '@/services/audio';
 import type { ChordEvent, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 import { videoPerformanceInput } from './performanceInput';
+import type { VideoVisualStyle } from './videoVisualStyle';
+
+export { normalizeVideoVisualStyle, VIDEO_VISUAL_STYLES } from './videoVisualStyle';
+export type { VideoVisualStyle, VideoVisualStyleDefinition } from './videoVisualStyle';
 
 /** Minimal snapshot the exporter needs (decoupled from the editor feature layer). */
 export type VideoExportInput = {
@@ -47,6 +51,8 @@ export type VideoExportInput = {
   instrumentEffect?: InstrumentEffect;
   /** Monetization tier — mirrors playback humanize/strum strength (default free). */
   tier?: Tier;
+  /** Visual rendering behavior. Omitted and invalid runtime values fall back to Classic. */
+  visualStyle?: VideoVisualStyle;
 };
 
 export type VideoExportOptions = {
@@ -102,6 +108,7 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     watermark: opts.watermark,
     octaveShift: input.octaveShift ?? 0,
     beatsPerBar: performance.beatsPerBar,
+    visualStyle: input.visualStyle,
   });
 
   let sub: EventSubscription | null = null;

@@ -10,6 +10,8 @@ import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { chordPreviewMidiNotes } from '@/features/editor/playback';
 import { useEditorSession } from '@/features/editor/session';
 import { useMidiExport } from '@/features/export/useMidiExport';
+import { VideoVisualStyleSelector } from '@/features/videoExport/VideoVisualStyleSelector';
+import { useVideoVisualStylePreference } from '@/features/videoExport/useVideoVisualStylePreference';
 import { VideoExportError } from '@/lib/errors';
 import { progressionCycleDurationSec } from '@/lib/exportCycleTiming';
 import { beatsPerBarFor } from '@/lib/performance/rhythms';
@@ -68,6 +70,7 @@ export default function ExportScreen() {
   const [progress, setProgress] = useState(0);
   const saving = busy !== 'idle';
   const midi = useMidiExport();
+  const { visualStyle, selectVisualStyle } = useVideoVisualStylePreference();
   const exportBeatsPerBar = beatsPerBarFor(s.accompanimentPattern);
   const cycleDurationSec = progressionCycleDurationSec(
     s.progression,
@@ -92,6 +95,7 @@ export default function ExportScreen() {
       drumBeat: s.drumBeat,
       instrumentEffect: s.instrumentEffect,
       tier: getTier(),
+      visualStyle,
     };
   }
 
@@ -242,6 +246,12 @@ export default function ExportScreen() {
           </GradientText>
         </View>
       </View>
+
+      <VideoVisualStyleSelector
+        value={visualStyle}
+        onChange={selectVisualStyle}
+        disabled={saving}
+      />
 
       {/* 長さ（BPM・小節数から自動算出） */}
       <View style={styles.optRow}>

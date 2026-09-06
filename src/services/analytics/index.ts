@@ -36,6 +36,7 @@ export type AnalyticsEvent =
   | 'style_card_selected'
   | 'instrument_selected'
   | 'export_duration_selected'
+  | 'video_style_selected'
   | 'video_export_started'
   | 'video_export_completed'
   | 'video_export_failed'

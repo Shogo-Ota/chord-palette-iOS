@@ -19,6 +19,7 @@ enum VideoExportError: LocalizedError {
 enum VideoWriter {
   static func write(
     plan: RenderPlan,
+    frameRenderer: any VideoFrameRendering,
     fps: Int,
     durationSec: Double,
     audioURL: URL,
@@ -116,7 +117,7 @@ enum VideoWriter {
             let t = Double(frameIndex) / Double(fps)
             let time = CMTime(value: CMTimeValue(frameIndex), timescale: CMTimeScale(fps))
             if let pb = makePixelBuffer(adaptor: adaptor, attrs: pbAttrs, plan: plan),
-              let img = FrameRenderer.makeImage(plan: plan, timeSec: t)
+              let img = frameRenderer.makeImage(plan: plan, timeSec: t)
             {
               fill(pb, with: img)
               adaptor.append(pb, withPresentationTime: time)

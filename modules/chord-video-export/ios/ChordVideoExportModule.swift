@@ -32,6 +32,8 @@ struct ExportPlanRecord: Record {
   @Field var keyboardHigh: Int = 60
   @Field var pitchClassNames: [String] = []
   @Field var segments: [ExportSegmentRecord] = []
+  /// Visual style contract. V1 accepts the value; the renderer intentionally ignores it.
+  @Field var visualStyle: String = "classic"
   /// Beats per bar for progression cycle length (default 4/4).
   @Field var beatsPerBar: Int = 4
 }
@@ -81,9 +83,11 @@ public class ChordVideoExportModule: Module {
         pitchClassNames: planRecord.pitchClassNames,
         segments: segments
       )
+      let frameRenderer = VideoFrameRendererRegistry.renderer(for: planRecord.visualStyle)
 
       VideoWriter.write(
         plan: plan,
+        frameRenderer: frameRenderer,
         fps: planRecord.fps,
         durationSec: planRecord.durationSec,
         audioURL: audioURL,

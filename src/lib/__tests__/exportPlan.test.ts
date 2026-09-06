@@ -218,5 +218,34 @@ describe('buildExportPlan', () => {
     expect(plan.pitchClassNames).toHaveLength(12);
     expect(plan.audioUri).toBe('file:///a.m4a');
     expect(plan.segments.length).toBeGreaterThan(0);
+    expect(plan.visualStyle).toBe('classic');
+  });
+
+  it.each(['pulse', 'flow'] as const)('preserves explicit %s visual style', (visualStyle) => {
+    const plan = buildExportPlan({
+      progression: PROG,
+      key: 'C',
+      bpm: 120,
+      title: 'Style',
+      durationSec: 4,
+      audioUri: 'file:///a.m4a',
+      watermark: false,
+      visualStyle,
+    });
+    expect(plan.visualStyle).toBe(visualStyle);
+  });
+
+  it('normalizes an invalid runtime style to Classic at the plan boundary', () => {
+    const plan = buildExportPlan({
+      progression: PROG,
+      key: 'C',
+      bpm: 120,
+      title: 'Invalid style',
+      durationSec: 4,
+      audioUri: 'file:///a.m4a',
+      watermark: false,
+      visualStyle: 'evolution' as unknown as 'classic',
+    });
+    expect(plan.visualStyle).toBe('classic');
   });
 });

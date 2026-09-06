@@ -11,6 +11,10 @@ import { remeterScale } from '@/lib/performance/meter';
 import { chordMidiNotes } from '@/lib/voicing';
 import { secondsPerBeat } from '@/services/audio/schedule';
 import type { ExportPlan, ExportSegment } from '@/services/videoExport/types';
+import {
+  normalizeVideoVisualStyle,
+  type VideoVisualStyle,
+} from '@/services/videoExport/videoVisualStyle';
 import { colors, functionColor, keyTintSolids } from '@/theme/tokens';
 import type { ChordEvent, MajorKey } from '@/types';
 
@@ -34,6 +38,8 @@ export type BuildExportPlanParams = {
   fps?: number;
   keyboardLow?: number;
   keyboardHigh?: number;
+  /** Optional at the caller boundary; normalized before entering the native plan. */
+  visualStyle?: VideoVisualStyle;
 };
 
 /** Key label spelling for each pitch class 0..11 (♭/♯ per key). */
@@ -131,5 +137,6 @@ export function buildExportPlan(params: BuildExportPlanParams): ExportPlan {
     keyboardHigh: keyboardHigh + kbShift,
     pitchClassNames: pitchClassNamesFor(key),
     segments: buildSegments(progression, key, bpm, durationSec, octaveShift, beatsPerBar),
+    visualStyle: normalizeVideoVisualStyle(params.visualStyle),
   };
 }
