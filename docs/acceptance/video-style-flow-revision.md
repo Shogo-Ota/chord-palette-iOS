@@ -1,14 +1,14 @@
 # Video Style Flow Revision Acceptance
 
-- Status: Keyboard color and branding correction ready for physical-device review
+- Status: Block color binding and header cleanup ready for physical-device review
 - Branch: `feature/video-style-flow-revision`
 - Base: `4ca43ef`
-- Implementation commit: `f3d3a1a`
-- Built commit: `4a72204c7a0456db22817d57556a2882bc025701`
-- Review build number: 27
-- Previous EAS build: `fbbc91be-289b-4528-959a-47cdb3d3fe20` (Build 26)
-- EAS build: `c22ba7cb-4441-43d0-acf8-81f2efe3ced0` (FINISHED)
-- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/c22ba7cb-4441-43d0-acf8-81f2efe3ced0
+- Implementation commit: `2fa6f11`
+- Built commit: `2fa6f11`
+- Review build number: 28
+- Previous EAS build: `c22ba7cb-4441-43d0-acf8-81f2efe3ced0` (Build 27)
+- EAS build: `ae253196-7cae-426d-9ea8-bb743302ff25`
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae253196-7cae-426d-9ea8-bb743302ff25
 - Device result: Not tested yet
 
 ## Approved direction
@@ -53,6 +53,23 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Flow branding is a horizontally centered lockup of the approved icon and the plain
   product name `Chord Palette`.
 
+## Falling block color binding and header cleanup
+
+- A falling block is colored by the chord whose voicing it plays, not by its own
+  onset. Micro-timing and the anticipation push ("食い") place an attack slightly
+  ahead of a chord change, which previously painted the incoming chord's notes in the
+  outgoing function color.
+- The owning chord is resolved by the existing Harmonic Gate binding
+  (`chordIndexForNote`: declared anticipation first, then its 1/8-beat early-attack
+  window), so video color and harmony validation can never disagree.
+- The sidecar carries that chord's onset as `harmonyStartSec`. Native color lookup
+  reads it and keeps a 1 ms boundary tolerance for float accumulation; a payload
+  without the field falls back to the note onset, so older plans still render.
+- Note timing, geometry, landing intensity and audio remain untouched — this is a
+  color-selection change only.
+- The header shows the title and BPM only; the `FLOW` style label is removed because
+  the style is already chosen in the export UI.
+
 ## Device acceptance
 
 - The selector shows only Classic and Flow.
@@ -62,6 +79,9 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Flow shows a large Classic-style chord label above moving note blocks.
 - Falling blocks remain readable behind the chord label.
 - Tonic, subdominant and dominant sections use green, yellow and red respectively.
+- Blocks landing on a chord change carry that chord's function color, including at
+  the loop boundary.
+- No `FLOW` label appears above the chord.
 - Falling-note landing and keyboard highlights remain synchronized to audio.
 - Save and Share remain functional.
 
@@ -74,7 +94,10 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Classic Hero + timing/Freeze focused: PASS (5 suites / 42 tests)
 - Video Export regression: PASS (17 suites / 121 tests)
 - Keyboard color and branding regression: PASS (17 suites / 121 tests)
-- Full Jest: 215 suites / 2,969 tests PASS, 1 skipped
+- Block color binding regression: PASS (15 suites / 125 tests), including new
+  harmony-anchor contracts for a micro-timed early attack, a declared anticipation and
+  anchor alignment with export segment boundaries
+- Full Jest: 215 suites / 2,974 tests PASS, 1 skipped
   - Known environment-only failures: 4 suites / 14 tests because the untracked
     teacher fixtures `P1_A1.mid` and `P1_C12.mid` are absent.
 - Classic renderer, Classic adapter, retired Pulse renderer/state and VideoWriter:
@@ -82,5 +105,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Preview config contains no Compare feature flag.
 - Build 26 native Swift compile, signing and IPA generation: PASS.
 - Build 27 native Swift compile, signing and IPA generation: PASS.
+- Build 28 native Swift compile, signing and IPA generation: see EAS build above.
 - Pixel review, color readability and audio landing sync remain physical-device
   checks.
