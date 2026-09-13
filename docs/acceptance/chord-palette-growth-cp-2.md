@@ -1,11 +1,13 @@
 # CP-2 Compare Device Review Acceptance
 
-- Status: Local verification complete; EAS Preview blocked by paid-usage gate
+- Status: EAS Preview ready for physical-device review
 - Branch: `feature/cp2-compare-device-review`
 - Base: `0d08af0`
 - Implementation commit: `4587c2063be6f4f764b0f7b65a093b3c9bcd86bc`
 - EAS profile: `preview` (internal distribution)
-- EAS attempt: `c0806744-8854-4b89-95cd-cedc93adea68` (canceled)
+- EAS build: `793f6ab7-ea9e-446e-bb2e-0fa36ae66cf4` (FINISHED)
+- Built commit: `4ef93720a0f9632106086df99ad5e3dae3f5d8eb`
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/793f6ab7-ea9e-446e-bb2e-0fa36ae66cf4
 - Device result: Not tested yet
 
 ## Scope
@@ -52,10 +54,9 @@ Native pixel Golden and Classic-relative export performance remain physical-devi
 checks. The Compare renderer bounds work to four cards per page and uses no blur,
 particles or per-frame music generation.
 
-The Preview build was uploaded successfully, but EAS reported that 100% of the
-included monthly build credits had already been used and that further usage would be
-charged pay-as-you-go. The build was canceled before compilation to honor the
-no-unapproved-charge gate. No install artifact was produced.
+The first attempt (`c0806744-8854-4b89-95cd-cedc93adea68`) was canceled at the
+paid-usage gate. After explicit approval, the second build completed successfully.
+Native Swift compilation, signing and IPA generation passed.
 
 ## Golden review points
 
