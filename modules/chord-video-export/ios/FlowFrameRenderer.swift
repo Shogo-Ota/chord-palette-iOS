@@ -175,7 +175,7 @@ final class FlowFrameRenderer: VideoFrameRendering {
       maxWidth: width * 0.86
     )
     drawFittedCenteredText(
-      "FLOW  ·  BPM \(plan.bpm)",
+      "BPM \(plan.bpm)",
       baseFontSize: height * 0.013,
       weight: .semibold,
       color: Self.textMuted,

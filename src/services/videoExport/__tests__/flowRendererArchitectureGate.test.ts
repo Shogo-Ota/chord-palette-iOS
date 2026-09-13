@@ -119,6 +119,23 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(flowSources).not.toMatch(/CIFilter|Gaussian|particle|random/i);
   });
 
+  it('colors a note by the chord it voices, resolved once in the domain', () => {
+    const timeline = fs
+      .readFileSync(path.join(ROOT, 'src/services/videoExport/visualNoteTimeline.ts'), 'utf8')
+      .replace(/\r\n/g, '\n');
+    const bridge = source('ChordVideoExportModule.swift');
+    const colors = source('FlowVisualColorResolver.swift');
+    const renderer = source('FlowFrameRenderer.swift');
+
+    expect(timeline).toContain("import { chordIndexForNote } from '@/lib/performance/harmonyGate'");
+    expect(timeline).toContain('chord.startBeat * secondsPerBeat');
+    expect(bridge).toContain('@Field var harmonyStartSec: Double = -1');
+    expect(bridge).toContain('harmonyStartSec: $0.harmonyStartSec');
+    expect(colors).toContain('event.harmonyStartSec >= 0 ? event.harmonyStartSec : event.startSec');
+    // The style name is carried by the export UI, never printed over the render.
+    expect(renderer).not.toContain('FLOW');
+  });
+
   it('matches the accepted Classic center font, pulse, transition and bloom constants', () => {
     const classic = source('FrameRenderer.swift');
     const hero = source('FlowClassicChordHeroRenderer.swift');

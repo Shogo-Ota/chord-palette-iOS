@@ -16,6 +16,13 @@ export type VisualNoteEvent = Readonly<{
   durationSec: number;
   /** Final MIDI velocity, 1..127. */
   velocity: number;
+  /**
+   * Onset of the chord whose voicing this note plays, resolved by the Harmonic Gate
+   * binding (explicit anticipation first, then the 1/8-beat early-attack window).
+   * Visuals color a note by this chord instead of the note's own onset, so an
+   * anticipated or micro-timed attack is never painted in the neighbouring function.
+   */
+  harmonyStartSec: number;
 }>;
 
 /** One chord occurrence on the export timeline (already laid out in seconds). */

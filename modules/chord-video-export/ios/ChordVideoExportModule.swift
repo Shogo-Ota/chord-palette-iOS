@@ -22,6 +22,9 @@ struct VisualNoteEventRecord: Record {
   @Field var startSec: Double = 0
   @Field var durationSec: Double = 0
   @Field var velocity: Int = 96
+  /// Onset of the chord this note voices. Negative means an older payload without the
+  /// field, which falls back to the note's own onset.
+  @Field var harmonyStartSec: Double = -1
 }
 
 /// JS-facing render plan (mirrors ExportPlan in TS).
@@ -104,7 +107,8 @@ public class ChordVideoExportModule: Module {
             pitch: $0.pitch,
             startSec: $0.startSec,
             durationSec: $0.durationSec,
-            velocity: $0.velocity
+            velocity: $0.velocity,
+            harmonyStartSec: $0.harmonyStartSec
           )
         }
       )

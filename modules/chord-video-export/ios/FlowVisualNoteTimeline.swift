@@ -7,6 +7,22 @@ struct FlowVisualNoteEvent {
   let startSec: Double
   let durationSec: Double
   let velocity: Int
+  /// Onset of the chord this note voices, resolved in TypeScript. Negative = absent.
+  let harmonyStartSec: Double
+
+  init(
+    pitch: Int,
+    startSec: Double,
+    durationSec: Double,
+    velocity: Int,
+    harmonyStartSec: Double = -1
+  ) {
+    self.pitch = pitch
+    self.startSec = startSec
+    self.durationSec = durationSec
+    self.velocity = velocity
+    self.harmonyStartSec = harmonyStartSec
+  }
 }
 
 struct FlowVisualNoteTimeline {

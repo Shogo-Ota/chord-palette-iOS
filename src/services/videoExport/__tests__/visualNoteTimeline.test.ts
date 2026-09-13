@@ -1,4 +1,6 @@
+import { buildExportPlan } from '@/lib/exportPlan';
 import type { NoteEvent, TrackId } from '@/lib/performance/NoteEvent';
+import type { PerfChord } from '@/lib/performance/PerformanceEngine';
 import type { SessionPerformancePlan } from '@/lib/performance/finalMidi/types';
 import { goldenProgressionById } from '@/lib/midiQa/goldenProgressions';
 import {
@@ -27,10 +29,21 @@ function note(
   };
 }
 
-function performance(notes: NoteEvent[], bpm = 120, totalBeats = 4): SessionPerformancePlan {
+/** Two four-beat chords so harmony ownership can be asserted around a boundary. */
+const TWO_CHORDS: PerfChord[] = [
+  { bodyMidi: [60, 64, 67], bassMidi: [48], startBeat: 0, durationBeats: 4 },
+  { bodyMidi: [62, 65, 69], bassMidi: [50], startBeat: 4, durationBeats: 4 },
+];
+
+function performance(
+  notes: NoteEvent[],
+  bpm = 120,
+  totalBeats = 4,
+  chords: PerfChord[] = [],
+): SessionPerformancePlan {
   return {
     notes,
-    chords: [],
+    chords,
     progression: [],
     bpm,
     totalBeats,
@@ -80,8 +93,8 @@ describe('Flow VisualNoteTimeline', () => {
     ]);
 
     expect(buildVisualNoteTimeline(plan, 2)).toEqual([
-      { pitch: 60, startSec: 0, durationSec: 0.5, velocity: 96 },
-      { pitch: 72, startSec: 0.25, durationSec: 0.375, velocity: 110 },
+      { pitch: 60, startSec: 0, durationSec: 0.5, velocity: 96, harmonyStartSec: 0 },
+      { pitch: 72, startSec: 0.25, durationSec: 0.375, velocity: 110, harmonyStartSec: 0.25 },
     ]);
   });
 
@@ -118,7 +131,7 @@ describe('Flow VisualNoteTimeline', () => {
     const plan = performance([note('chord', 60, -0.02, 1)], 120);
 
     expect(buildVisualNoteTimeline(plan, 2)).toEqual([
-      { pitch: 60, startSec: 0, durationSec: 0.49, velocity: 96 },
+      { pitch: 60, startSec: 0, durationSec: 0.49, velocity: 96, harmonyStartSec: 0 },
     ]);
   });
 
@@ -162,6 +175,54 @@ describe('Flow VisualNoteTimeline', () => {
 
       expect(noteOn?.b).toBe(visual.velocity);
       expect(noteOff).toBeDefined();
+    }
+  });
+
+  it('anchors a micro-timed early attack to the chord it voices', () => {
+    const plan = performance([note('chord', 62, 3.98), note('chord', 60, 2)], 120, 8, TWO_CHORDS);
+
+    expect(buildVisualNoteTimeline(plan, 4).map((event) => event.harmonyStartSec)).toEqual([0, 2]);
+  });
+
+  it('follows the declared harmony owner of an anticipation push', () => {
+    const anticipation = { ...note('chord', 65, 3.5, 0.5), harmonyTargetChordIndex: 1 };
+    const plan = performance([anticipation], 120, 8, TWO_CHORDS);
+
+    expect(buildVisualNoteTimeline(plan, 4)[0]).toEqual({
+      pitch: 65,
+      startSec: 1.75,
+      durationSec: 0.25,
+      velocity: 96,
+      harmonyStartSec: 2,
+    });
+  });
+
+  it('keeps every harmony anchor on an export segment boundary', () => {
+    const plan = generatedPerformance('A', 'natural.type1', true);
+    const durationSec = plan.totalBeats * (60 / plan.bpm);
+    const { segments } = buildExportPlan({
+      progression: plan.progression,
+      key: goldenProgressionById('A').key,
+      bpm: plan.bpm,
+      title: 'anchor',
+      durationSec,
+      audioUri: 'file://audio.wav',
+      watermark: true,
+      beatsPerBar: plan.beatsPerBar,
+      visualStyle: 'flow',
+    });
+    const boundaries = segments.map((segment) => segment.startSec);
+    const timeline = buildVisualNoteTimeline(plan, durationSec);
+
+    expect(timeline.length).toBeGreaterThan(0);
+    for (const visual of timeline) {
+      // Segment starts accumulate per chord while an anchor is one multiplication, so
+      // the two agree to float noise — well inside the renderer's 1ms boundary window.
+      const drift = Math.min(
+        ...boundaries.map((boundary) => Math.abs(boundary - visual.harmonyStartSec)),
+      );
+
+      expect(drift).toBeLessThan(1e-6);
     }
   });
 

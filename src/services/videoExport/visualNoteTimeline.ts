@@ -1,4 +1,6 @@
+import { chordIndexForNote } from '@/lib/performance/harmonyGate';
 import type { NoteEvent } from '@/lib/performance/NoteEvent';
+import type { PerfChord } from '@/lib/performance/PerformanceEngine';
 import type { SessionPerformancePlan } from '@/lib/performance/finalMidi/types';
 import type { VisualNoteEvent } from './types';
 
@@ -13,6 +15,21 @@ function compareVisualNotes(left: VisualNoteEvent, right: VisualNoteEvent): numb
     left.durationSec - right.durationSec ||
     left.velocity - right.velocity
   );
+}
+
+/**
+ * Onset of the chord this note actually voices. The Harmonic Gate already owns that
+ * binding (declared anticipations first, then its early-attack window), so the visual
+ * sidecar reuses it instead of re-deriving harmony ownership from the onset alone.
+ */
+function harmonyStartSecFor(
+  note: NoteEvent,
+  chords: readonly PerfChord[],
+  secondsPerBeat: number,
+  fallbackSec: number,
+): number {
+  const chord = chords[chordIndexForNote(chords, note)];
+  return chord ? Math.max(0, chord.startBeat * secondsPerBeat) : fallbackSec;
 }
 
 /**
@@ -44,6 +61,12 @@ export function buildVisualNoteTimeline(
         startSec,
         durationSec: Math.max(0, endSec - startSec),
         velocity: note.velocity,
+        harmonyStartSec: harmonyStartSecFor(
+          note,
+          performance.chords,
+          secondsPerBeat,
+          startSec,
+        ),
       });
     })
     .filter(
