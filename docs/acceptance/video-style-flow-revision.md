@@ -7,7 +7,7 @@
 - Built commit: `2fa6f11`
 - Review build number: 28
 - Previous EAS build: `c22ba7cb-4441-43d0-acf8-81f2efe3ced0` (Build 27)
-- EAS build: `ae253196-7cae-426d-9ea8-bb743302ff25`
+- EAS build: `ae253196-7cae-426d-9ea8-bb743302ff25` (FINISHED)
 - Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae253196-7cae-426d-9ea8-bb743302ff25
 - Device result: Not tested yet
 
@@ -105,6 +105,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Preview config contains no Compare feature flag.
 - Build 26 native Swift compile, signing and IPA generation: PASS.
 - Build 27 native Swift compile, signing and IPA generation: PASS.
-- Build 28 native Swift compile, signing and IPA generation: see EAS build above.
+- Build 28 native Swift compile, signing and IPA generation: PASS.
 - Pixel review, color readability and audio landing sync remain physical-device
   checks.
