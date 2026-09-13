@@ -213,6 +213,46 @@ describe('Variation Dance production quality', () => {
     expect(plan.collisionReport?.rejects).toEqual([]);
   });
 
+  it('closes a sixteen-bar progression as fully as the phrase before it', () => {
+    const source = GOLDEN_PROGRESSIONS[0]!;
+    const chords = Array.from({ length: 16 }, (_, index) => ({
+      ...source.chords[index % source.chords.length]!,
+      id: `dance-sixteen-${index}`,
+      durationBeats: 4 as ChordDuration,
+    }));
+    const plan = render({ ...source, chords });
+    const notesIn = (chord: (typeof plan.chords)[number]) =>
+      plan.notes.filter(
+        (note) =>
+          note.trackId === 'chord' &&
+          note.timeBeat >= chord.startBeat - 1e-9 &&
+          note.timeBeat < chord.startBeat + chord.durationBeats - 1e-9,
+      );
+    const onsetsIn = (chord: (typeof plan.chords)[number]) => [
+      ...new Set(notesIn(chord).map((note) => Number((note.timeBeat - chord.startBeat).toFixed(4)))),
+    ];
+
+    // The first phrase keeps its measured breath; the closing one is filled back in.
+    expect(onsetsIn(plan.chords[6]!)).toEqual([0, 1, 1.75, 2.5, 3.5]);
+    expect(onsetsIn(plan.chords[14]!)).toEqual([0, 1, 1.5, 1.75, 2.5, 3.5]);
+    expect(notesIn(plan.chords[14]!)).toHaveLength(notesIn(plan.chords[13]!).length);
+
+    const support = notesIn(plan.chords[14]!).filter(
+      (note) => Math.abs(note.timeBeat - (plan.chords[14]!.startBeat + 1.5)) <= 1e-9,
+    );
+    expect(support).toHaveLength(2);
+    expect(support.map((note) => note.velocity)).toEqual([80, 80]);
+    expect(support.map((note) => note.pitch)).toEqual([
+      plan.chords[14]!.bassMidi[0],
+      Math.min(...plan.chords[14]!.bodyMidi),
+    ]);
+
+    // The terminal roll/fill bar is untouched.
+    expect(onsetsIn(plan.chords[15]!)).toEqual([0, 0.0438, 1, 1.75, 2.5, 3, 3.5]);
+    expect(plan.harmonyViolations).toEqual([]);
+    expect(plan.collisionReport?.rejects).toEqual([]);
+  });
+
   it('uses the same split-terminal rhythm for every Golden harmony in all twelve keys', () => {
     const expected = [
       [0, 1, 1.5, 1.75, 2.5, 3.5],

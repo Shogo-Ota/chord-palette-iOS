@@ -4,13 +4,19 @@ import { danceRhythmForChordWindow } from '../danceChordWindowPolicy';
 const attacksForBar = (bar: number) =>
   DANCE_GROOVE_PROFILE.bars[bar % DANCE_GROOVE_PROFILE.bars.length]!;
 
-function window(start: number, duration: number, nextBarIsSplitHalfPair = false) {
+function window(
+  start: number,
+  duration: number,
+  nextBarIsSplitHalfPair = false,
+  progressionEndBeat = start + duration,
+) {
   return danceRhythmForChordWindow({
     chordStartBeat: start,
     chordDurationBeats: duration,
     beatsPerBar: 4,
     hasContiguousNextChord: true,
     nextBarIsSplitHalfPair,
+    progressionEndBeat,
     attacksForBar,
   });
 }
@@ -52,6 +58,20 @@ describe('Dance chord-window placement', () => {
       0, 1, 1.5, 1.75, 2.5, 3.5,
     ]);
     expect(window(28, 4, true).filter((attack) => attack.onsetBeat === 1.5)).toEqual([]);
+  });
+
+  it('fills the closing dropout of a repeated phrase and keeps the first one measured', () => {
+    // Sixteen bars: the breath at bar 7 stays, the one at bar 15 closes the progression.
+    expect(window(24, 4, false, 64).map((attack) => attack.onsetBeat)).toEqual([
+      0, 1, 1.75, 2.5, 3.5,
+    ]);
+    expect(window(56, 4, false, 64).map((attack) => attack.onsetBeat)).toEqual([
+      0, 1, 1.5, 1.75, 2.5, 3.5,
+    ]);
+    // Eight bars: the single breath is the measured one and stays untouched.
+    expect(window(24, 4, false, 32).map((attack) => attack.onsetBeat)).toEqual([
+      0, 1, 1.75, 2.5, 3.5,
+    ]);
   });
 
   it('allows only the explicit next-chord anticipation to cross a boundary', () => {

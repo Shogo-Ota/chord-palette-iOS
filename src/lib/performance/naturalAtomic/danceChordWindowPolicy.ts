@@ -1,5 +1,5 @@
 import type { NaturalRhythmAttackSpec } from './rhythmProfiles';
-import { splitTerminalBarSupportAttack } from './danceDensityPolicy';
+import { closesRepeatedDropoutPhrase, danceDropoutSupportAttack } from './danceDensityPolicy';
 
 const EPS = 1e-9;
 const MIN_TERMINAL_GATE_BEATS = 0.5;
@@ -10,6 +10,8 @@ export interface DanceChordWindowInput {
   beatsPerBar: number;
   hasContiguousNextChord: boolean;
   nextBarIsSplitHalfPair: boolean;
+  /** Absolute beat the progression ends on, so phrase-closing bars can be recognised. */
+  progressionEndBeat: number;
   attacksForBar: (barInPhrase: number) => readonly NaturalRhythmAttackSpec[];
 }
 
@@ -80,7 +82,17 @@ export function danceRhythmForChordWindow(input: DanceChordWindowInput): Natural
   const beatInBar = start - firstBar * beatsPerBar;
   const occupiesOneFullBar = Math.abs(beatInBar) <= EPS && Math.abs(duration - beatsPerBar) <= EPS;
   const support = occupiesOneFullBar
-    ? splitTerminalBarSupportAttack(input.attacksForBar(firstBar), input.nextBarIsSplitHalfPair)
+    ? danceDropoutSupportAttack(input.attacksForBar(firstBar), {
+        nextBarIsSplitHalfPair: input.nextBarIsSplitHalfPair,
+        closesRepeatedPhrase: closesRepeatedDropoutPhrase({
+          bar: firstBar,
+          lastBar: Math.max(
+            firstBar,
+            Math.ceil((Math.max(end, input.progressionEndBeat) - EPS) / beatsPerBar) - 1,
+          ),
+          attacksForBar: input.attacksForBar,
+        }),
+      })
     : null;
   if (support) attacks.push(support);
 

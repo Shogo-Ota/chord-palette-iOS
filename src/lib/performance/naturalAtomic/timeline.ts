@@ -31,6 +31,10 @@ export function extractAtomicNaturalTimeline(
     selection?: NaturalAttackVoicingSelection;
   })[] = [];
   const strategy = naturalRhythmStrategyFor(variantId);
+  const progressionEndBeat = chords.reduce(
+    (end, chord) => Math.max(end, chord.startBeat + chord.durationBeats),
+    0,
+  );
 
   chords.forEach((chord, chordIndex) => {
     const beatsPerBar = template.meter.beatsPerBar;
@@ -59,6 +63,7 @@ export function extractAtomicNaturalTimeline(
       beatsPerBar,
       hasContiguousNextChord,
       nextBarIsSplitHalfPair,
+      progressionEndBeat,
     );
     for (const source of sourceAttacks) {
       const onsetBeat = chord.startBeat + source.onsetBeat;

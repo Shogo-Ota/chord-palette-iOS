@@ -65,9 +65,14 @@ roll/fill, plus the absence of independent single-note pulse throughout bars
 - Bar 7 removes the `1.5` Bass/RH-bottom response
 - Bar 8 opens `BASS@0 → RIGHT_HAND@0.0438` and closes with split-gate
   `BASS@3 + RIGHT_HAND@3 → accented RIGHT_HAND@3.5`
-- If bar 8 is split into two half-bar chords, bar 7 restores one restrained
-  `BASS + RH_BOTTOM @ 1.5` (velocity 80). This prevents the measured dropout
-  and the already-light split roll from stacking; ordinary bar-7 dropouts remain unchanged.
+- A dropout bar restores one restrained `BASS + RH_BOTTOM @ 1.5` (velocity 80) in two
+  contexts only:
+  - the following bar is split into two half-bar chords, so the measured dropout and the
+    already-light split roll would stack;
+  - the progression breathes more than once and this is its last dropout, so the closing
+    phrase would end thinner than the phrase before it.
+- A progression with a single dropout — an eight-bar progression, for instance — keeps the
+  measured breath exactly as authored.
 - Selected-note velocity is shaped only by piano hand and ascending rank
 - CC64: none; body comes from written gates and measured overlap
 - All regular attacks are grid-locked; no random Humanize is added
@@ -110,3 +115,10 @@ The contextual bar-7 support was added after a separate 130-BPM export measured
 23 notes in an earlier Am7, 16 in the dropout Am7, and 21 across the following
 Gm7/C7 split bar. The support raises only that dropout Am7 to 18 notes and awaits
 device audition.
+
+The closing-phrase trigger was added after a 140-BPM sixteen-bar export
+(`Fadd9 … Gsus4 Fm C`) measured 16 notes in the bar-15 Fm against 18 in every other
+four-beat bar. Its first phrase had already been supported by the split-bar rule, so
+the same phrase position sounded full in the first half and thin in the second. The
+trigger raises only that closing Fm to 18 notes; the bar-15 roll/fill and the other
+seven Styles are byte-identical.

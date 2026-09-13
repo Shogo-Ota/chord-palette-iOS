@@ -226,6 +226,40 @@ describe('Flow VisualNoteTimeline', () => {
     }
   });
 
+  it('carries the restored Dance phrase support into the falling blocks', () => {
+    const fixture = goldenProgressionById('A');
+    const plan = buildSessionPerformancePlan(
+      {
+        key: fixture.key,
+        tempoBpm: fixture.bpm,
+        grooveId: 'pop8',
+        accompanimentPattern: 'natural',
+        accompanimentVariant: 'natural.dance1',
+        instrumentId: 'piano',
+        accompanimentEnergy: 'build',
+        octaveShift: 0,
+        releaseCut: false,
+        instrumentEffect: 'releaseCut',
+        drumMode: 'off',
+        progression: Array.from({ length: 16 }, (_, index) => ({
+          ...fixture.chords[index % fixture.chords.length]!,
+          id: `dance-sixteen-${index}`,
+          durationBeats: 4 as const,
+        })),
+      },
+      'free',
+    );
+    const secondsPerBeat = 60 / plan.bpm;
+    const at = (beat: number) =>
+      buildVisualNoteTimeline(plan, plan.totalBeats * secondsPerBeat).filter(
+        (event) => Math.abs(event.startSec - beat * secondsPerBeat) <= 1e-9,
+      );
+
+    // Bar 15 beat 1.5 is the restored closing support; bar 7 keeps the measured breath.
+    expect(at(14 * 4 + 1.5).map((event) => event.velocity)).toEqual([80, 80]);
+    expect(at(6 * 4 + 1.5)).toEqual([]);
+  });
+
   it.each([
     ['four-chord block', generatedPerformance('A', 'block.type1')],
     ['eight-chord progression', generatedPerformance('A', 'block.type1', true)],

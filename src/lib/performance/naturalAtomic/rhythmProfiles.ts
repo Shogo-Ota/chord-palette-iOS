@@ -23,6 +23,8 @@ export type NaturalRhythmChordContext = {
   beatsPerBar: number;
   hasContiguousNextChord: boolean;
   nextBarIsSplitHalfPair: boolean;
+  /** Absolute beat the progression ends on. Defaults to this chord's own end. */
+  progressionEndBeat: number;
 };
 
 export type NaturalRhythmStrategy = {
@@ -92,6 +94,7 @@ const STRATEGIES: Readonly<Record<NaturalRhythmStrategy['id'], NaturalRhythmStra
         beatsPerBar: context.beatsPerBar,
         hasContiguousNextChord: context.hasContiguousNextChord,
         nextBarIsSplitHalfPair: context.nextBarIsSplitHalfPair,
+        progressionEndBeat: context.progressionEndBeat,
         attacksForBar: danceAttacksForBar,
       }),
     sustainBass: false,
@@ -115,6 +118,7 @@ export function naturalRhythmForChord(
   beatsPerBar = 4,
   hasContiguousNextChord = false,
   nextBarIsSplitHalfPair = false,
+  progressionEndBeat = chordStartBeat + chordDurationBeats,
 ): NaturalRhythmAttackSpec[] {
   if (strategy.attacksForChord) {
     return [
@@ -125,6 +129,7 @@ export function naturalRhythmForChord(
         beatsPerBar,
         hasContiguousNextChord,
         nextBarIsSplitHalfPair,
+        progressionEndBeat,
       }),
     ];
   }
