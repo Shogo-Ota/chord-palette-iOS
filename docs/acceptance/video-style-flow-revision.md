@@ -1,13 +1,11 @@
 # Video Style Flow Revision Acceptance
 
-- Status: Classic Hero refinement ready for physical-device review
+- Status: Keyboard color and branding correction locally verified; EAS Preview pending
 - Branch: `feature/video-style-flow-revision`
 - Base: `4ca43ef`
-- Implementation commit: `dea8d30c25bf995efbbfb11ce1190a964a7fd39f`
-- Review build number: 26
-- Previous EAS build: `c9c33bd7-c867-48bd-aa01-a79ae80b8993` (Build 25)
-- EAS build: `fbbc91be-289b-4528-959a-47cdb3d3fe20` (FINISHED)
-- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/fbbc91be-289b-4528-959a-47cdb3d3fe20
+- Implementation commit: `f3d3a1a`
+- Review build number: 27
+- Previous EAS build: `fbbc91be-289b-4528-959a-47cdb3d3fe20` (Build 26)
 - Device result: Not tested yet
 
 ## Approved direction
@@ -43,6 +41,15 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - This is implemented by a Flow-only Hero renderer; `FrameRenderer.swift` remains
   byte-for-byte unchanged.
 
+## Keyboard color and branding correction
+
+- Landing intensity remains driven by each exact visual note event.
+- Every sounding-key highlight uses the current chord segment color, preventing a
+  previous sustained note from carrying the wrong harmonic-function color forward.
+- Future falling blocks retain their owning segment color as harmonic anticipation.
+- Flow branding is a horizontally centered lockup of the approved icon and the plain
+  product name `Chord Palette`.
+
 ## Device acceptance
 
 - The selector shows only Classic and Flow.
@@ -63,6 +70,7 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Post-fix focused: PASS (7 suites / 46 tests)
 - Classic Hero + timing/Freeze focused: PASS (5 suites / 42 tests)
 - Video Export regression: PASS (17 suites / 121 tests)
+- Keyboard color and branding regression: PASS (17 suites / 121 tests)
 - Full Jest: 215 suites / 2,969 tests PASS, 1 skipped
   - Known environment-only failures: 4 suites / 14 tests because the untracked
     teacher fixtures `P1_A1.mid` and `P1_C12.mid` are absent.
@@ -70,5 +78,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
   unchanged from `4ca43ef`.
 - Preview config contains no Compare feature flag.
 - Build 26 native Swift compile, signing and IPA generation: PASS.
+- Build 27 native compile is pending.
 - Pixel review, color readability and audio landing sync remain physical-device
   checks.
