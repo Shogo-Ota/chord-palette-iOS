@@ -163,15 +163,71 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     const branding = source('FlowBrandRenderer.swift');
 
     expect(branding).toContain('path(forResource: "cp-watermark", ofType: "png")');
-    expect(branding).toContain('private static let productName = "Chord Palette"');
+    expect(branding).toContain('FlowBrandWordmarkRenderer.size(fontSize: fontSize)');
     expect(branding).toContain('let totalWidth = iconWidth + textSize.width');
-    expect(branding).toContain('x: startX + iconWidth');
-    expect(branding).not.toMatch(/tagline|PLAY MORE COLORS|drawWordmark/i);
+    expect(branding).toContain('left: startX + iconWidth');
+    expect(branding).not.toMatch(/tagline|PLAY MORE COLORS/i);
+  });
+
+  it('paints the Flow wordmark with the same rainbow lockup as Classic', () => {
+    const classic = source('FrameRenderer.swift');
+    const wordmark = source('FlowBrandWordmarkRenderer.swift');
+    const tokens = fs
+      .readFileSync(path.join(ROOT, 'src/theme/tokens.ts'), 'utf8')
+      .replace(/\r\n/g, '\n');
+
+    for (const contract of [
+      '"Chord "',
+      '"Palette"',
+      'NotoSansJP-ExtraBold',
+      'setTextDrawingMode(.clip)',
+      'CTLineDraw(line, cg)',
+      '0.012',
+    ]) {
+      expect(classic).toContain(contract);
+      expect(wordmark).toContain(contract);
+    }
+    // Both renderers restate theme token `rainbow`; drift here would split the brand.
+    const rainbowChannels = [
+      '0xef',
+      '0x44',
+      '0xf9',
+      '0x73',
+      '0xea',
+      '0xb3',
+      '0x22',
+      '0xc5',
+      '0x3b',
+      '0x82',
+      '0x8b',
+      '0x5c',
+    ];
+    for (const channel of rainbowChannels) {
+      expect(wordmark).toContain(channel);
+    }
+    expect(tokens).toContain(
+      "export const rainbow = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#3b82f6', '#8b5cf6']",
+    );
+  });
+
+  it('spells harmonic roles on the rail instead of repeating chord names', () => {
+    const stage = source('FlowClassicChordStageRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+
+    // Chord name stays the hero; the rail carries position plus nearby degrees only.
+    expect(hero).toContain('segment.displayName');
+    expect(stage).not.toContain('segment.displayName');
+    expect(stage).toContain('segment.degreeLabel');
+    expect(stage).toContain('private static let labelledNeighbours = 2');
+    expect(stage).toContain('let forward = ((index - currentIndex) % count + count) % count');
+    expect(stage).toContain('min(forward, count - forward) <= Self.labelledNeighbours');
   });
 
   it('keeps each Flow rendering responsibility below the God-file limit', () => {
     for (const file of [
       'FlowFrameRenderer.swift',
+      'FlowBrandRenderer.swift',
+      'FlowBrandWordmarkRenderer.swift',
       'FlowClassicChordStageRenderer.swift',
       'FlowClassicChordHeroRenderer.swift',
       'FlowFallingBlockRenderer.swift',

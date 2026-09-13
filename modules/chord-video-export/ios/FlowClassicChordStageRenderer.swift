@@ -9,6 +9,9 @@ enum FlowClassicChordStageRenderer {
     red: 0x8d / 255, green: 0x98 / 255, blue: 0xaa / 255, alpha: 1)
   private static let rail = UIColor(
     red: 0x31 / 255, green: 0x41 / 255, blue: 0x57 / 255, alpha: 1)
+  /// Slots this far from the current chord carry a degree label; the rest stay dots, so
+  /// the rail reads as position plus the nearest role context instead of a chord list.
+  private static let labelledNeighbours = 2
 
   static func draw(
     plan: RenderPlan,
@@ -64,8 +67,16 @@ enum FlowClassicChordStageRenderer {
           height: radius * 2
         )
       ).fill()
+      // The chord name is already the hero above, so the rail spells the harmonic role.
+      guard
+        isLabelled(
+          index: index,
+          currentIndex: state.currentCycleIndex,
+          count: state.cycleSegments.count
+        )
+      else { continue }
       drawFittedCentered(
-        segment.displayName,
+        segment.degreeLabel,
         baseFontSize: height * (active ? 0.015 : 0.012),
         weight: active ? .black : .semibold,
         color: active ? segment.color : textMuted,
@@ -75,6 +86,13 @@ enum FlowClassicChordStageRenderer {
         maxWidth: slotWidth * 0.90
       )
     }
+  }
+
+  /// Cycle distance, so the chords either side of the loop seam keep their context.
+  private static func isLabelled(index: Int, currentIndex: Int, count: Int) -> Bool {
+    guard count > 0 else { return false }
+    let forward = ((index - currentIndex) % count + count) % count
+    return min(forward, count - forward) <= Self.labelledNeighbours
   }
 
   private static func drawFittedCentered(

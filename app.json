@@ -15,7 +15,7 @@
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       },
-      "buildNumber": "28"
+      "buildNumber": "29"
     },
     "android": {
       "package": "app.chordpalette",

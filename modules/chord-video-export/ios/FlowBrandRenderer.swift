@@ -2,9 +2,10 @@ import UIKit
 
 /// Flow-only official brand lockup.
 ///
-/// Uses the approved icon plus the product name as a compact horizontal lockup.
+/// Places the approved icon and the "Chord Palette" wordmark side by side; the wordmark
+/// itself is owned by FlowBrandWordmarkRenderer so this file only resolves layout.
 enum FlowBrandRenderer {
-  private static let productName = "Chord Palette"
+  private static let wordmarkAlpha: CGFloat = 0.92
   private static let officialIcon: UIImage? = {
     guard let path = Bundle.main.path(forResource: "cp-watermark", ofType: "png") else {
       return nil
@@ -17,12 +18,8 @@ enum FlowBrandRenderer {
 
     let side = height * 0.046
     let gap = width * 0.016
-    let font = UIFont.systemFont(ofSize: height * 0.024, weight: .bold)
-    let attributes: [NSAttributedString.Key: Any] = [
-      .font: font,
-      .foregroundColor: UIColor(white: 0.92, alpha: 0.84),
-    ]
-    let textSize = (productName as NSString).size(withAttributes: attributes)
+    let fontSize = height * 0.024
+    let textSize = FlowBrandWordmarkRenderer.size(fontSize: fontSize)
     let iconWidth = officialIcon == nil ? 0 : side + gap
     let totalWidth = iconWidth + textSize.width
     let startX = (width - totalWidth) / 2
@@ -36,12 +33,11 @@ enum FlowBrandRenderer {
       context.restoreGState()
     }
 
-    (productName as NSString).draw(
-      at: CGPoint(
-        x: startX + iconWidth,
-        y: top + (side - textSize.height) / 2
-      ),
-      withAttributes: attributes
+    FlowBrandWordmarkRenderer.draw(
+      left: startX + iconWidth,
+      top: top + (side - textSize.height) / 2,
+      fontSize: fontSize,
+      alpha: Self.wordmarkAlpha
     )
   }
 }
