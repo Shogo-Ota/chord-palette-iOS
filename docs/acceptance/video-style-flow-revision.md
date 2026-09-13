@@ -1,14 +1,14 @@
 # Video Style Flow Revision Acceptance
 
-- Status: Block color binding and header cleanup ready for physical-device review
+- Status: Brand wordmark and rail degree revision ready for physical-device review
 - Branch: `feature/video-style-flow-revision`
 - Base: `4ca43ef`
-- Implementation commit: `2fa6f11`
-- Built commit: `2fa6f11`
-- Review build number: 28
-- Previous EAS build: `c22ba7cb-4441-43d0-acf8-81f2efe3ced0` (Build 27)
-- EAS build: `ae253196-7cae-426d-9ea8-bb743302ff25` (FINISHED)
-- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae253196-7cae-426d-9ea8-bb743302ff25
+- Implementation commit: `f98f115`
+- Built commit: `f98f115`
+- Review build number: 29
+- Previous EAS build: `ae253196-7cae-426d-9ea8-bb743302ff25` (Build 28)
+- EAS build: `58e95c75-fa15-4b45-81f1-5d81d2835638`
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/58e95c75-fa15-4b45-81f1-5d81d2835638
 - Device result: Not tested yet
 
 ## Approved direction
@@ -70,6 +70,24 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - The header shows the title and BPM only; the `FLOW` style label is removed because
   the style is already chosen in the export UI.
 
+## Brand wordmark and rail degree revision
+
+- Approved information priority: chord name, degree, progression position, keyboard and
+  note motion, then branding.
+- Flow's bottom lockup now draws the in-app wordmark: brand font with `Chord ` in bright
+  text and `Palette` filled with the theme `rainbow` gradient, clipped to its glyphs.
+- Wordmark drawing lives in its own Flow renderer; the brand renderer only resolves the
+  icon and wordmark layout. Classic keeps its identical lockup inside the frozen
+  renderer, and the architecture gate compares both definitions against theme tokens so
+  the brand cannot drift.
+- The rail no longer repeats chord names, which duplicated the hero. It spells the
+  harmonic role (`degreeLabel`) of the current chord and up to two chords on each side;
+  every other slot stays a position dot.
+- Neighbour selection uses cycle distance, so the chords on either side of the loop seam
+  keep their context.
+- Classic already draws position dots only and the rainbow lockup, so it needs no change
+  and stays frozen.
+
 ## Device acceptance
 
 - The selector shows only Classic and Flow.
@@ -82,6 +100,10 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Blocks landing on a chord change carry that chord's function color, including at
   the loop boundary.
 - No `FLOW` label appears above the chord.
+- The bottom lockup reads `Chord` plus a rainbow `Palette` next to the icon, matching
+  Classic and the in-app wordmark.
+- The rail shows the current degree with at most two neighbours; remaining slots are
+  dots, and the chord name is never repeated there.
 - Falling-note landing and keyboard highlights remain synchronized to audio.
 - Save and Share remain functional.
 
@@ -97,7 +119,9 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Block color binding regression: PASS (15 suites / 125 tests), including new
   harmony-anchor contracts for a micro-timed early attack, a declared anticipation and
   anchor alignment with export segment boundaries
-- Full Jest: 215 suites / 2,974 tests PASS, 1 skipped
+- Brand wordmark and rail degree regression: PASS (13 suites / 105 tests), including new
+  Classic-parity contracts for the rainbow lockup and the rail degree window
+- Full Jest: 215 suites / 2,976 tests PASS, 1 skipped
   - Known environment-only failures: 4 suites / 14 tests because the untracked
     teacher fixtures `P1_A1.mid` and `P1_C12.mid` are absent.
 - Classic renderer, Classic adapter, retired Pulse renderer/state and VideoWriter:
@@ -106,5 +130,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Build 26 native Swift compile, signing and IPA generation: PASS.
 - Build 27 native Swift compile, signing and IPA generation: PASS.
 - Build 28 native Swift compile, signing and IPA generation: PASS.
+- Build 29 native Swift compile, signing and IPA generation: see EAS build above.
 - Pixel review, color readability and audio landing sync remain physical-device
   checks.
