@@ -18,6 +18,13 @@ import {
 } from './analytics';
 import { applyEvolutionCandidate } from './apply';
 import {
+  clearComparisonDraft,
+  prepareComparisonDraft,
+  publishComparisonDraft,
+  type ComparisonDraft,
+  type PrepareComparisonDraftResult,
+} from './comparisonDraftStore';
+import {
   buildEvolutionUiModelWithReharm,
   type EvolutionUiLevelWithReharm,
 } from './l3/reharmUiModel';
@@ -31,6 +38,15 @@ type UndoMarker = {
   readonly props: ReturnType<typeof evolutionCandidateProps>;
 };
 
+export type ComparisonDraftBoundary = {
+  readonly prepare: (
+    session: Readonly<EditorSession>,
+    candidate: EvolutionCandidate,
+  ) => PrepareComparisonDraftResult;
+  readonly publish: (draft: ComparisonDraft) => void;
+  readonly clear: () => void;
+};
+
 export type ChordEvolutionControllerDependencies = {
   readonly play: typeof audioService.play;
   readonly stop: typeof audioService.stop;
@@ -38,6 +54,13 @@ export type ChordEvolutionControllerDependencies = {
   readonly getSession: typeof getSession;
   readonly undo: typeof undoSession;
   readonly track: EvolutionTrack;
+  readonly comparisonDrafts?: ComparisonDraftBoundary;
+};
+
+const DEFAULT_COMPARISON_DRAFTS: ComparisonDraftBoundary = {
+  prepare: prepareComparisonDraft,
+  publish: publishComparisonDraft,
+  clear: clearComparisonDraft,
 };
 
 const DEFAULT_DEPENDENCIES: ChordEvolutionControllerDependencies = {
@@ -69,6 +92,7 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
     onError,
     dependencies = DEFAULT_DEPENDENCIES,
   } = options;
+  const comparisonDrafts = dependencies.comparisonDrafts ?? DEFAULT_COMPARISON_DRAFTS;
   const [visible, setVisible] = useState(false);
   const [scope, setScope] = useState<EvolutionScope>({
     kind: 'progression',
@@ -219,8 +243,14 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
       applyingRef.current = true;
       try {
         void dependencies.stop().catch(() => undefined);
+        const preparedDraft = comparisonDrafts.prepare(dependencies.getSession(), candidate);
         const result = dependencies.apply(candidate);
         if (result.status === 'APPLIED') {
+          if (preparedDraft.ok) {
+            comparisonDrafts.publish(preparedDraft.value);
+          } else {
+            comparisonDrafts.clear();
+          }
           const props = evolutionCandidateProps(
             candidate,
             session.mode,
@@ -241,7 +271,16 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
         applyingRef.current = false;
       }
     },
-    [dependencies, enabled, entitlements, onError, onOpenPaywall, session.mode, visible],
+    [
+      comparisonDrafts,
+      dependencies,
+      enabled,
+      entitlements,
+      onError,
+      onOpenPaywall,
+      session.mode,
+      visible,
+    ],
   );
 
   const undo = useCallback(() => {
@@ -251,10 +290,11 @@ export function useChordEvolution(options: UseChordEvolutionOptions) {
       marker != null && current.history.length > 0 && current.progression === marker.progression;
     dependencies.undo();
     if (isEvolutionUndo) {
+      comparisonDrafts.clear();
       dependencies.track('evolution_undo', marker.props);
       undoMarkerRef.current = null;
     }
-  }, [dependencies]);
+  }, [comparisonDrafts, dependencies]);
 
   const previewCandidateById = useCallback(
     (candidateId: string) => {

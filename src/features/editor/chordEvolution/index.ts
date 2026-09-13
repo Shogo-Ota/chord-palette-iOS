@@ -3,6 +3,7 @@ export * from './analytics';
 export * from './apply';
 export * from './candidateMaterializer';
 export * from './chordEventAdapter';
+export * from './comparisonDraftStore';
 export * from './l3/reharmCandidateAdapter';
 export * from './l3/reharmUiModel';
 export * from './preview';

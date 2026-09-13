@@ -3,6 +3,11 @@ import { act, renderHook } from '@testing-library/react-native';
 import { applyEvolutionCandidate } from '@/features/editor/chordEvolution/apply';
 import { sessionToEvolutionContext } from '@/features/editor/chordEvolution/chordEventAdapter';
 import {
+  clearComparisonDraft,
+  getComparisonDraft,
+  resolveComparisonDraft,
+} from '@/features/editor/chordEvolution/comparisonDraftStore';
+import {
   diatonicEvent,
   diatonicSeventhEvent,
   withoutEventId,
@@ -70,6 +75,8 @@ function renderController(
 }
 
 describe('useChordEvolution', () => {
+  beforeEach(() => clearComparisonDraft());
+
   it('does nothing when the Feature Flag is off', () => {
     startTriadSession();
     const dependencies = controllerDependencies();
@@ -127,6 +134,7 @@ describe('useChordEvolution', () => {
 
     expect(getSession().progression).toBe(progression);
     expect(getSession().history).toBe(history);
+    expect(getComparisonDraft()).toBeNull();
     expect(dependencies.play).toHaveBeenCalledTimes(1);
     expect(
       dependencies.track.mock.calls.filter(([event]) => event === 'evolution_level_previewed'),
@@ -160,6 +168,7 @@ describe('useChordEvolution', () => {
     });
 
     expect(getSession().progression).toBe(before);
+    expect(getComparisonDraft()).toBeNull();
     expect(dependencies.play).toHaveBeenCalledTimes(1);
     expect(onOpenPaywall).toHaveBeenCalledTimes(1);
     expect(
@@ -187,9 +196,14 @@ describe('useChordEvolution', () => {
     expect(
       sessionToEvolutionContext(getSession(), { kind: 'progression' }, 'seventh').progression,
     ).toEqual(candidateView!.candidate.after);
+    expect(resolveComparisonDraft(getSession())).toMatchObject({
+      status: 'available',
+      draft: { candidateId: candidateView!.candidate.id },
+    });
 
     act(() => result.current.undo());
     expect(getSession().progression).toEqual(before);
+    expect(getComparisonDraft()).toBeNull();
     act(() => result.current.undo());
     expect(
       dependencies.track.mock.calls.filter(([event]) => event === 'evolution_undo'),
@@ -216,6 +230,31 @@ describe('useChordEvolution', () => {
     expect(
       sessionToEvolutionContext(getSession(), { kind: 'progression' }, 'tension').progression,
     ).toEqual(candidateView!.candidate.after);
+  });
+
+  it('does not publish a Comparison Draft when Apply is rejected', () => {
+    startTriadSession();
+    const dependencies: ChordEvolutionControllerDependencies = {
+      ...controllerDependencies(),
+      apply: jest.fn(() => ({
+        status: 'REJECTED' as const,
+        reason: 'SESSION_CHANGED' as const,
+      })),
+    };
+    const { result } = renderController(dependencies);
+    act(() => result.current.open({ kind: 'progression' }));
+    act(() => result.current.selectLevel('seventh'));
+    const candidateId = result.current.sheetCandidates[0]?.id;
+    expect(candidateId).toBeDefined();
+
+    act(() => {
+      expect(result.current.applyCandidateById(candidateId!)).toEqual({
+        status: 'REJECTED',
+        reason: 'SESSION_CHANGED',
+      });
+    });
+
+    expect(getComparisonDraft()).toBeNull();
   });
 
   it('sends only low-cardinality candidate analytics payloads', async () => {
