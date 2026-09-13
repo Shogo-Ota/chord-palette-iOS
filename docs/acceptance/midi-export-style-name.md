@@ -4,6 +4,9 @@
 - Branch: `fix/midi-export-style-name`
 - Base: `ce8b638` (`feature/video-style-flow-revision`)
 - Review build number: 30
+- Implementation commit: `fe74486`
+- EAS build: `d5afbc35-442b-48f5-af13-f1fa6fce47ce` (FINISHED, built commit `fe74486`)
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d5afbc35-442b-48f5-af13-f1fa6fce47ce
 - Device result: Not tested yet
 
 ## Defect
