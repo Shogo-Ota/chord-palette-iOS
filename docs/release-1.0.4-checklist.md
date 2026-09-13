@@ -91,7 +91,8 @@ https://expo.dev/accounts/shogoota/projects/chord-palette/builds/078ff3a2-a4a3-4
 
 1. [x] `npx eas-cli build --platform ios --profile production`
 2. [x] `npx eas-cli submit --platform ios --profile production --id ae369dff…`
-3. [ ] Apple processing completes and build 32 appears in TestFlight
-4. [ ] Owner confirms the device checks above on build 32 through TestFlight
-5. [ ] Complete `docs/app-store-release-1.0.4.md` submission checks in App Store
-      Connect and submit for review
+3. [x] Apple processing completed and build 32 attached to version `1.0.4`
+4. [x] Submitted for App Review on 2026-09-14 — Waiting for Review
+5. [ ] Owner confirms the device checks above on build 32 through TestFlight
+      (the submission can still be withdrawn if anything is wrong)
+6. [ ] Review outcome recorded in `docs/app-store-release-1.0.4.md`

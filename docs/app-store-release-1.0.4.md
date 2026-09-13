@@ -1,6 +1,6 @@
 # App Store Release 1.0.4
 
-Status: Production build 32 uploaded; Apple processing in progress
+Status: Submitted — Waiting for Review (2026-09-14)
 Prepared: 2026-09-13
 Version/build: `1.0.4 (32)`
 Release candidate detail: [release-1.0.4-checklist.md](release-1.0.4-checklist.md)
@@ -67,20 +67,22 @@ Suggested test path for this update:
 
 ## Submission Checks
 
-- [ ] Owner device sign-off recorded in the 1.0.4 checklist
 - [x] Production build uploaded to App Store Connect
-- [ ] Apple processing completed
-- [ ] Version `1.0.4` created and the build attached in App Store Connect
-- [ ] Japanese and English What's New text entered
-- [ ] Japanese and English promotional text updated
-- [ ] Screenshots reviewed — the video-export cut may be refreshed with Flow
-      (optional; existing 6.7" screenshots remain accurate)
-- [ ] App description and keywords remain accurate
-- [ ] App Privacy answers reviewed against the shipping build (crash diagnostics
+- [x] Apple processing completed
+- [x] Version `1.0.4` created and build 32 attached in App Store Connect
+- [x] What's New text entered
+- [x] Promotional text updated
+- [x] App description and keywords remain accurate
+- [x] App Privacy answers reviewed against the shipping build (crash diagnostics
       and product analytics only)
-- [ ] Export compliance answered by `ITSAppUsesNonExemptEncryption: false`
-- [ ] `palette_pro_monthly` subscription remains review-ready
-- [ ] Content-rights declaration confirmed
-- [ ] Release option confirmed — manual release recommended, phased release
-      optional
-- [ ] Final App Review submission approved by the owner
+- [x] Export compliance answered by `ITSAppUsesNonExemptEncryption: false`
+- [x] `palette_pro_monthly` subscription remains review-ready
+- [x] Content-rights declaration confirmed
+- [x] Release option confirmed
+- [x] Submitted for App Review — Waiting for Review
+- [ ] Screenshots — the video-export cut may be refreshed with Flow. Optional,
+      and it can be updated during review or after release without a new build
+- [ ] Owner device sign-off on build 32 through TestFlight. Still worth doing
+      while the version waits for review: the submission can be withdrawn from
+      App Store Connect if anything is wrong
+- [ ] Review outcome recorded here
