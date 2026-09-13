@@ -3,6 +3,7 @@
  * builder, its tests, the service, and the native wrapper can share them.
  */
 
+import type { CompareSceneManifestV1, VideoTemplateId } from '@/lib/videoExport/comparison';
 import type { VideoVisualStyle } from './videoVisualStyle';
 
 /** One read-only performance note used only by note-level video visuals. */
@@ -70,6 +71,10 @@ export type ExportPlan = {
   segments: ExportSegment[];
   /** Optional for backwards compatibility; plan builders always normalize it. */
   visualStyle?: VideoVisualStyle;
+  /** Missing/unknown remains the existing Standard export. */
+  templateId?: VideoTemplateId;
+  /** Versioned read-only sidecar consumed only by the Compare renderer. */
+  compareScene?: CompareSceneManifestV1;
   /**
    * Optional note-level visual sidecar. Classic and Pulse ignore it; Flow uses it
    * for falling blocks and keyboard landing without regenerating performance data.

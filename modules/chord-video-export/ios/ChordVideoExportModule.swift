@@ -45,6 +45,10 @@ struct ExportPlanRecord: Record {
   @Field var visualNoteEvents: [VisualNoteEventRecord] = []
   /// Visual style contract. Unknown values fall back to Classic in the registry.
   @Field var visualStyle: String = "classic"
+  /// Story template. Missing/unknown values preserve the existing Standard render.
+  @Field var templateId: String = "standard"
+  /// Optional Compare-only scene. Standard renderers never read this sidecar.
+  @Field var compareScene: CompareSceneRecord? = nil
   /// Beats per bar for progression cycle length (default 4/4).
   @Field var beatsPerBar: Int = 4
 }
@@ -104,8 +108,21 @@ public class ChordVideoExportModule: Module {
           )
         }
       )
+      let compareScene = planRecord.compareScene?.makeScene()
+      if planRecord.templateId == "compare" {
+        guard let compareScene else {
+          promise.reject("ERR_COMPARE_SCENE", "Compare template requires a scene")
+          return
+        }
+        if let validationError = CompareSceneValidator.validate(compareScene) {
+          promise.reject("ERR_COMPARE_SCENE", validationError)
+          return
+        }
+      }
       let frameRenderer = VideoFrameRendererRegistry.renderer(
         for: planRecord.visualStyle,
+        templateId: planRecord.templateId,
+        compareScene: compareScene,
         flowTimeline: visualTimeline
       )
 

@@ -32,10 +32,13 @@ export type FeatureFlags = {
    * through EXPO_PUBLIC_CHORD_EVOLUTION_ENABLED=true.
    */
   chordEvolution: boolean;
+  /** CP-2 Compare template. Preview QA builds opt in explicitly. */
+  growthCompareExport: boolean;
 };
 
 /** Active flag values. */
 export const featureFlags: FeatureFlags = {
   metronome: false,
   chordEvolution: env.chordEvolutionEnabled === 'true',
+  growthCompareExport: env.growthCompareExportEnabled === 'true',
 };

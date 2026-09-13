@@ -1,15 +1,18 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from 'react';
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import React, { useState } from 'react';
+import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 
-import { ChordKeyboard } from '@/components/ChordKeyboard';
-import { GradientText } from '@/components/GradientText';
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
-import { chordPreviewMidiNotes } from '@/features/editor/playback';
+import { featureFlags } from '@/config/featureFlags';
 import { useEditorSession } from '@/features/editor/session';
 import { useMidiExport } from '@/features/export/useMidiExport';
+import { CompareVideoPreview } from '@/features/videoExport/CompareVideoPreview';
+import { StandardVideoPreview } from '@/features/videoExport/StandardVideoPreview';
+import { useCompareVideoExport } from '@/features/videoExport/useCompareVideoExport';
+import { VideoMotionSelector } from '@/features/videoExport/VideoMotionSelector';
+import { VideoTemplateSelector } from '@/features/videoExport/VideoTemplateSelector';
 import { VideoVisualStyleSelector } from '@/features/videoExport/VideoVisualStyleSelector';
 import { useVideoVisualStylePreference } from '@/features/videoExport/useVideoVisualStylePreference';
 import { VideoExportError } from '@/lib/errors';
@@ -18,46 +21,7 @@ import { beatsPerBarFor } from '@/lib/performance/rhythms';
 import { track } from '@/services/analytics';
 import { getTier } from '@/services/billing';
 import { videoExportService } from '@/services/videoExport';
-import { colors, font, functionColor, primaryGradient, radius, rainbow } from '@/theme/tokens';
-import type { ChordEvent } from '@/types';
-
-const ICON = require('../../assets/icon/icon.png');
-
-const PREVIEW_W = 214;
-const PREVIEW_PAD = 14;
-const KEYBOARD_W = PREVIEW_W - PREVIEW_PAD * 2;
-
-/** Preview dot sizing (mirrors the native encoder's fit-to-width behavior). */
-const DOT_MAX = 8;
-const DOT_MIN = 3.5;
-const DOT_GAP_RATIO = 0.8; // gap = size * ratio
-
-/**
- * Cycle through the progression for the in-app preview, honoring each chord's beat
- * length at the project's tempo. This is a preview only — the real synced render is
- * done natively (Phase 4), so a JS timer here is fine.
- */
-function usePreviewIndex(progression: ChordEvent[], bpm: number): number {
-  const [idx, setIdx] = useState(0);
-  useEffect(() => {
-    setIdx(0);
-    if (progression.length === 0) return;
-    let cur = 0;
-    let timer: ReturnType<typeof setTimeout>;
-    const secPerBeat = 60 / Math.max(1, bpm);
-    const schedule = () => {
-      const dur = Math.max(0.25, (progression[cur]?.durationBeats ?? 4) * secPerBeat);
-      timer = setTimeout(() => {
-        cur = (cur + 1) % progression.length;
-        setIdx(cur);
-        schedule();
-      }, dur * 1000);
-    };
-    schedule();
-    return () => clearTimeout(timer);
-  }, [progression, bpm]);
-  return progression.length === 0 ? 0 : idx % progression.length;
-}
+import { colors, font, primaryGradient, radius } from '@/theme/tokens';
 
 export default function ExportScreen() {
   const router = useRouter();
@@ -68,9 +32,19 @@ export default function ExportScreen() {
   const watermark = true;
   const [busy, setBusy] = useState<'idle' | 'save' | 'share'>('idle');
   const [progress, setProgress] = useState(0);
-  const saving = busy !== 'idle';
+  const [compareTitle, setCompareTitle] = useState(s.title);
   const midi = useMidiExport();
   const { visualStyle, selectVisualStyle } = useVideoVisualStylePreference();
+  const tier = getTier();
+  const compare = useCompareVideoExport({
+    session: s,
+    tier,
+    visualStyle,
+    enabled: featureFlags.growthCompareExport,
+    watermark,
+    title: compareTitle,
+  });
+  const saving = busy !== 'idle' || compare.busy;
   const exportBeatsPerBar = beatsPerBarFor(s.accompanimentPattern);
   const cycleDurationSec = progressionCycleDurationSec(
     s.progression,
@@ -94,7 +68,7 @@ export default function ExportScreen() {
       drumMode: s.drumMode,
       drumBeat: s.drumBeat,
       instrumentEffect: s.instrumentEffect,
-      tier: getTier(),
+      tier,
       visualStyle,
     };
   }
@@ -103,6 +77,23 @@ export default function ExportScreen() {
     if (busy !== 'idle') return;
     if (s.progression.length === 0) {
       Alert.alert('コードがありません', '動画を書き出す前に進行を作成してください。');
+      return;
+    }
+    if (compare.template === 'compare') {
+      void compare.run(kind).then((ok) => {
+        if (ok && kind === 'save') {
+          Alert.alert('保存しました', '聴き比べ動画を写真アプリに保存しました。');
+        } else if (!ok) {
+          Alert.alert(
+            '書き出しに失敗',
+            compare.job.error ?? '聴き比べ動画を書き出せませんでした。もう一度お試しください。',
+            [
+              { text: '再試行', onPress: () => runExport(kind) },
+              { text: '閉じる', style: 'cancel' },
+            ],
+          );
+        }
+      });
       return;
     }
     setBusy(kind);
@@ -141,117 +132,106 @@ export default function ExportScreen() {
     if (!outcome.ok) Alert.alert('MIDIを書き出せません', outcome.message);
   }
 
-  const idx = usePreviewIndex(s.progression, s.tempoBpm);
-  const current = s.progression[idx];
-  const accent = current ? functionColor[current.function] : colors.primary;
-  const notes = current
-    ? chordPreviewMidiNotes(current, s.key, s.octaveShift)
-    : [];
   const totalBeats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
   const bars = Math.max(1, Math.ceil(totalBeats / 4));
-  const autoDurationLabel = Number.isInteger(cycleDurationSec)
-    ? String(cycleDurationSec)
-    : cycleDurationSec.toFixed(1);
+  const selectedDurationSec =
+    compare.template === 'compare'
+      ? compare.scene
+        ? compare.scene.timePlan.durationSamples / compare.scene.timePlan.sampleRate
+        : cycleDurationSec * 2
+      : cycleDurationSec;
+  const autoDurationLabel = Number.isInteger(selectedDurationSec)
+    ? String(selectedDurationSec)
+    : selectedDurationSec.toFixed(1);
+  const displayProgress = compare.template === 'compare' ? compare.job.progress : progress;
+  const saveLabel =
+    compare.template === 'compare'
+      ? saving
+        ? `${compare.preparing ? '準備中' : '書き出し中'}… ${Math.round(displayProgress * 100)}%`
+        : '写真に保存'
+      : busy === 'save'
+        ? `書き出し中… ${Math.round(progress * 100)}%`
+        : '写真に保存';
+  const shareLabel =
+    compare.template === 'compare'
+      ? saving
+        ? `${compare.preparing ? '準備中' : '書き出し中'}… ${Math.round(displayProgress * 100)}%`
+        : '共有する'
+      : busy === 'share'
+        ? `書き出し中… ${Math.round(progress * 100)}%`
+        : '共有する';
 
   return (
     <ScreenScaffold>
       <View style={styles.header}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
+        <Pressable
+          style={[styles.backBtn, compare.busy && styles.saveBtnDisabled]}
+          onPress={() => router.back()}
+          disabled={compare.busy}
+          hitSlop={8}>
           <Icon name="chevronLeft" size={17} color={colors.textSecondary} strokeWidth={2.4} />
         </Pressable>
         <Text style={styles.title}>動画を書き出し</Text>
       </View>
 
-      {/* 9:16 preview — matches the exported frame composition */}
-      <View style={styles.preview}>
-        <LinearGradient
-          colors={[colors.screenGradientTop, colors.screenGradientMid, colors.appBg]}
-          locations={[0, 0.55, 1]}
-          style={StyleSheet.absoluteFill}
+      {featureFlags.growthCompareExport ? (
+        <VideoTemplateSelector
+          value={compare.template}
+          onChange={compare.selectTemplate}
+          compareEnabled={compare.compareEnabled}
+          compareReason={compare.compareReason}
+          disabled={saving}
         />
-        <View style={styles.pvTop}>
-          <Text style={styles.pvTitle} numberOfLines={1}>
-            {s.title}
-          </Text>
-          <Text style={styles.pvMeta}>
-            {s.key} · BPM {s.tempoBpm} · {bars}小節
-          </Text>
+      ) : null}
+
+      {/* 9:16 preview — matches the exported frame composition */}
+      {compare.template === 'compare' ? (
+        <CompareVideoPreview
+          scene={compare.scene}
+          preparing={compare.preparing}
+          error={compare.job.error}
+        />
+      ) : (
+        <StandardVideoPreview
+          title={s.title}
+          musicKey={s.key}
+          bpm={s.tempoBpm}
+          bars={bars}
+          progression={s.progression}
+          octaveShift={s.octaveShift}
+        />
+      )}
+
+      {compare.template === 'standard' ? (
+        <VideoVisualStyleSelector
+          value={visualStyle}
+          onChange={selectVisualStyle}
+          disabled={saving}
+        />
+      ) : (
+        <VideoMotionSelector
+          value={compare.motion}
+          onChange={compare.selectMotion}
+          disabled={saving}
+        />
+      )}
+
+      {compare.template === 'compare' ? (
+        <View style={styles.titleInputRow}>
+          <Text style={styles.optLabel}>タイトル</Text>
+          <TextInput
+            value={compareTitle}
+            onChangeText={setCompareTitle}
+            editable={!saving}
+            maxLength={48}
+            placeholder="タイトルなし"
+            placeholderTextColor={colors.textFaint}
+            selectionColor={colors.primaryBlue}
+            style={styles.titleInput}
+            accessibilityLabel="聴き比べ動画のタイトル"
+          />
         </View>
-
-        <View style={styles.pvCenter}>
-          {current ? (
-            <>
-              <Text style={[styles.bigChord, { color: accent }]} numberOfLines={1}>
-                {current.displayName}
-              </Text>
-              <Text style={styles.degree}>{current.degreeLabel}</Text>
-            </>
-          ) : (
-            <Text style={styles.emptyChord}>コードがありません</Text>
-          )}
-        </View>
-
-        {s.progression.length > 0 && (
-          <View style={styles.pvStrip}>
-            {(() => {
-              // Mirror the native encoder: one dot per chord, sized to fit the strip
-              // width for any count (up to the 16-bar max). The active dot stays
-              // circular and is emphasized by full-color fill + a soft glow — never
-              // stretched into a pill.
-              const count = s.progression.length;
-              const denom = count + DOT_GAP_RATIO * Math.max(0, count - 1);
-              const size = Math.max(DOT_MIN, Math.min(DOT_MAX, KEYBOARD_W / denom));
-              const gap = size * DOT_GAP_RATIO;
-              return s.progression.map((c, i) => {
-                const on = i === idx;
-                const col = functionColor[c.function];
-                return (
-                  <View
-                    key={c.id}
-                    style={[
-                      {
-                        width: size,
-                        height: size,
-                        borderRadius: size / 2,
-                        borderWidth: 1.2,
-                        marginHorizontal: gap / 2,
-                        borderColor: col,
-                      },
-                      on
-                        ? {
-                            backgroundColor: col,
-                            shadowColor: col,
-                            shadowOpacity: 0.9,
-                            shadowRadius: size * 0.9,
-                            shadowOffset: { width: 0, height: 0 },
-                          }
-                        : { opacity: 0.4 },
-                    ]}
-                  />
-                );
-              });
-            })()}
-          </View>
-        )}
-
-        <View style={[styles.pvKeyboard, styles.pvKeyboardWithWatermark]}>
-          <ChordKeyboard notes={notes} musicKey={s.key} color={accent} width={KEYBOARD_W} />
-        </View>
-
-        <View style={styles.watermarkRow}>
-          <Image source={ICON} style={styles.wmIcon} />
-          <Text style={styles.wmText}>Chord </Text>
-          <GradientText colors={rainbow} style={styles.wmText}>
-            Palette
-          </GradientText>
-        </View>
-      </View>
-
-      <VideoVisualStyleSelector
-        value={visualStyle}
-        onChange={selectVisualStyle}
-        disabled={saving}
-      />
+      ) : null}
 
       {/* 長さ（BPM・小節数から自動算出） */}
       <View style={styles.optRow}>
@@ -259,7 +239,9 @@ export default function ExportScreen() {
         <View style={styles.formatVal}>
           <Text style={styles.formatMain}>約{autoDurationLabel}秒</Text>
           <Text style={styles.formatSub}>
-            自動（{bars}小節 · BPM {s.tempoBpm}）
+            {compare.template === 'compare'
+              ? `原型＋変奏 · BPM ${s.tempoBpm}`
+              : `自動（${bars}小節 · BPM ${s.tempoBpm}）`}
           </Text>
         </View>
       </View>
@@ -272,9 +254,7 @@ export default function ExportScreen() {
           end={{ x: 1, y: 1 }}
           style={[styles.saveBtn, saving && styles.saveBtnDisabled]}>
           <Icon name="download" size={17} color="#fff" strokeWidth={2.2} />
-          <Text style={styles.saveBtnText}>
-            {busy === 'save' ? `書き出し中… ${Math.round(progress * 100)}%` : '写真に保存'}
-          </Text>
+          <Text style={styles.saveBtnText}>{saveLabel}</Text>
         </LinearGradient>
       </Pressable>
       <Pressable
@@ -282,9 +262,7 @@ export default function ExportScreen() {
         onPress={() => runExport('share')}
         disabled={saving}>
         <Icon name="share" size={16} color={colors.textSecondary} strokeWidth={2.2} />
-        <Text style={styles.shareBtnText}>
-          {busy === 'share' ? `書き出し中… ${Math.round(progress * 100)}%` : '共有する'}
-        </Text>
+        <Text style={styles.shareBtnText}>{shareLabel}</Text>
       </Pressable>
 
       {/* MIDI — the same performance the app plays, as a Standard MIDI File */}
@@ -325,71 +303,6 @@ const styles = StyleSheet.create({
   },
   title: { fontSize: 20, fontFamily: font.extrabold, fontWeight: '800', color: colors.textPrimary },
 
-  preview: {
-    width: PREVIEW_W,
-    height: 380,
-    alignSelf: 'center',
-    marginBottom: 20,
-    borderRadius: radius['4xl'],
-    overflow: 'hidden',
-    borderWidth: 1,
-    borderColor: colors.borderFaint,
-    paddingHorizontal: PREVIEW_PAD,
-    paddingTop: 22,
-    paddingBottom: 16,
-  },
-  pvTop: { alignItems: 'center' },
-  pvTitle: {
-    fontSize: 15,
-    fontFamily: font.extrabold,
-    fontWeight: '800',
-    color: colors.textPrimary,
-    letterSpacing: 0.3,
-  },
-  pvMeta: {
-    fontSize: 10,
-    color: colors.textMuted,
-    marginTop: 3,
-    fontFamily: font.semibold,
-    fontWeight: '600',
-  },
-
-  pvCenter: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  bigChord: { fontSize: 46, fontFamily: font.black, fontWeight: '900', lineHeight: 50 },
-  degree: {
-    fontSize: 15,
-    color: colors.textSecondary,
-    marginTop: 4,
-    fontFamily: font.bold,
-    fontWeight: '700',
-    letterSpacing: 0.5,
-  },
-  emptyChord: { fontSize: 13, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
-
-  pvStrip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 12,
-  },
-
-  pvKeyboard: { alignItems: 'center' },
-  pvKeyboardWithWatermark: { marginBottom: 26 },
-
-  watermarkRow: {
-    position: 'absolute',
-    bottom: 8,
-    left: 0,
-    right: 0,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: 6,
-    opacity: 0.55,
-  },
-  wmIcon: { width: 16, height: 16 },
-  wmText: { fontSize: 9.5, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
-
   optRow: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -407,6 +320,26 @@ const styles = StyleSheet.create({
     fontFamily: font.semibold,
     fontWeight: '600',
     color: colors.textSecondary,
+  },
+  titleInputRow: {
+    marginBottom: 11,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 14,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
+    paddingVertical: 9,
+    paddingHorizontal: 14,
+  },
+  titleInput: {
+    flex: 1,
+    color: colors.textPrimary,
+    textAlign: 'right',
+    fontSize: 12,
+    fontFamily: font.medium,
+    paddingVertical: 4,
   },
 
   formatVal: { flexDirection: 'row', alignItems: 'center', gap: 8 },

@@ -16,6 +16,9 @@ import type { ChordEvent, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 import { videoPerformanceInput } from './performanceInput';
 import { buildVisualNoteTimeline } from './visualNoteTimeline';
+import { buildCompareExportPlan, type PreparedCompareExport } from './buildCompareExportPlan';
+import type { ExportPlan } from './types';
+import { removeTemporaryVideoExportFile, validateExportedVideo } from './validateExportedVideo';
 import type { VideoVisualStyle } from './videoVisualStyle';
 
 export { normalizeVideoVisualStyle, VIDEO_VISUAL_STYLES } from './videoVisualStyle';
@@ -117,6 +120,15 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   // note-level sidecar and both older styles continue to use segment timing alone.
   const plan = visualNoteEvents ? { ...basePlan, visualNoteEvents } : basePlan;
 
+  return encodePlan(plan, opts);
+}
+
+async function encodePlan(plan: ExportPlan, opts: VideoExportOptions): Promise<string> {
+  if (!ChordVideoExportNative || !ChordVideoExportNative.isAvailable()) {
+    throw new VideoExportError(
+      '動画書き出しはこのビルドで利用できません。開発ビルドで再度お試しください。',
+    );
+  }
   let sub: EventSubscription | null = null;
   if (opts.onProgress) {
     sub = ChordVideoExportNative.addListener('onProgress', (e) => opts.onProgress?.(e.progress));
@@ -159,11 +171,46 @@ async function share(uri: string): Promise<void> {
   });
 }
 
+async function exportPreparedCompareToFile(
+  prepared: PreparedCompareExport,
+  opts: VideoExportOptions,
+): Promise<string> {
+  const uri = await encodePlan(prepared.plan, opts);
+  if (!(await validateExportedVideo(uri))) {
+    throw new VideoExportError('完成した動画ファイルを確認できませんでした。');
+  }
+  return uri;
+}
+
 export const videoExportService = {
   isAvailable,
   exportToFile,
   saveToPhotos,
   share,
+  buildCompareExportPlan,
+  async disposePreparedCompareExport(prepared: PreparedCompareExport): Promise<void> {
+    await removeTemporaryVideoExportFile(prepared.audio.uri).catch(() => undefined);
+  },
+
+  exportPreparedCompareToFile,
+
+  async exportPreparedCompareAndSave(
+    prepared: PreparedCompareExport,
+    opts: VideoExportOptions,
+  ): Promise<string> {
+    const uri = await exportPreparedCompareToFile(prepared, opts);
+    await saveToPhotos(uri);
+    return uri;
+  },
+
+  async exportPreparedCompareAndShare(
+    prepared: PreparedCompareExport,
+    opts: VideoExportOptions,
+  ): Promise<string> {
+    const uri = await exportPreparedCompareToFile(prepared, opts);
+    await share(uri);
+    return uri;
+  },
 
   /**
    * Full export pipeline: offline-render the audio, build the render plan, encode
@@ -194,3 +241,6 @@ export const videoExportService = {
     }
   },
 };
+
+export type { BuildCompareExportPlanInput, PreparedCompareExport } from './buildCompareExportPlan';
+export { normalizeVideoTemplateId } from './videoTemplate';

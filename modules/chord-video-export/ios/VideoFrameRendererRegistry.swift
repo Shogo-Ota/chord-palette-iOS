@@ -13,8 +13,13 @@ private enum NativeVideoVisualStyle: String {
 enum VideoFrameRendererRegistry {
   static func renderer(
     for value: String,
+    templateId: String = "standard",
+    compareScene: CompareScene? = nil,
     flowTimeline: FlowVisualNoteTimeline = .empty
   ) -> any VideoFrameRendering {
+    if templateId == "compare", let compareScene {
+      return CompareFrameRenderer(scene: compareScene)
+    }
     switch NativeVideoVisualStyle(normalizing: value) {
     case .pulse:
       return PulseFrameRenderer()
