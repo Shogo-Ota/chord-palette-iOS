@@ -1,11 +1,14 @@
 # Video Style Flow Revision Acceptance
 
-- Status: Keyboard color and branding correction locally verified; EAS Preview pending
+- Status: Keyboard color and branding correction ready for physical-device review
 - Branch: `feature/video-style-flow-revision`
 - Base: `4ca43ef`
 - Implementation commit: `f3d3a1a`
+- Built commit: `4a72204c7a0456db22817d57556a2882bc025701`
 - Review build number: 27
 - Previous EAS build: `fbbc91be-289b-4528-959a-47cdb3d3fe20` (Build 26)
+- EAS build: `c22ba7cb-4441-43d0-acf8-81f2efe3ced0` (FINISHED)
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/c22ba7cb-4441-43d0-acf8-81f2efe3ced0
 - Device result: Not tested yet
 
 ## Approved direction
@@ -78,6 +81,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
   unchanged from `4ca43ef`.
 - Preview config contains no Compare feature flag.
 - Build 26 native Swift compile, signing and IPA generation: PASS.
-- Build 27 native compile is pending.
+- Build 27 native Swift compile, signing and IPA generation: PASS.
 - Pixel review, color readability and audio landing sync remain physical-device
   checks.
