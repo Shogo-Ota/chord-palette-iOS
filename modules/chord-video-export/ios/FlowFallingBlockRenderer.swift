@@ -2,15 +2,12 @@ import UIKit
 
 /// Draws visible harmonic performance notes as compact rounded blocks.
 enum FlowFallingBlockRenderer {
-  private static let coolCyan = UIColor(
-    red: 0x51 / 255, green: 0xd9 / 255, blue: 0xe8 / 255, alpha: 1)
-  private static let paletteGreen = UIColor(
-    red: 0x2c / 255, green: 0xe6 / 255, blue: 0x9f / 255, alpha: 1)
-
   static func draw(
     events: [FlowVisualNoteEvent],
     plan: RenderPlan,
     keys: [KeyRect],
+    segments: [RenderSegment],
+    fallbackColor: UIColor,
     frameTimeSec: Double,
     fallTopY: CGFloat,
     keyboardRect: CGRect,
@@ -38,7 +35,12 @@ enum FlowFallingBlockRenderer {
       else { continue }
 
       let cornerRadius = min(frameHeight * 0.005, state.rect.width * 0.20)
-      coolCyan.withAlphaComponent(state.opacity).setFill()
+      let color = FlowVisualColorResolver.color(
+        for: event,
+        segments: segments,
+        fallback: fallbackColor
+      )
+      color.withAlphaComponent(state.opacity * 0.82).setFill()
       UIBezierPath(roundedRect: state.rect, cornerRadius: cornerRadius).fill()
 
       // One thin leading edge makes the exact landing point legible without a trail.
@@ -49,7 +51,7 @@ enum FlowFallingBlockRenderer {
         width: state.rect.width,
         height: edgeHeight
       )
-      paletteGreen.withAlphaComponent(min(1, state.opacity + 0.02)).setFill()
+      color.withAlphaComponent(min(1, state.opacity + 0.08)).setFill()
       UIBezierPath(
         roundedRect: edgeRect,
         cornerRadius: min(cornerRadius, edgeHeight / 2)

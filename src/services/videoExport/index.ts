@@ -116,8 +116,8 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
     beatsPerBar: performance.beatsPerBar,
     visualStyle: input.visualStyle,
   });
-  // Keep Classic/Pulse payloads byte-for-byte compatible: only Flow receives the
-  // note-level sidecar and both older styles continue to use segment timing alone.
+  // Keep the Classic payload byte-for-byte compatible: only Flow receives the
+  // note-level sidecar while Classic continues to use segment timing alone.
   const plan = visualNoteEvents ? { ...basePlan, visualNoteEvents } : basePlan;
 
   return encodePlan(plan, opts);

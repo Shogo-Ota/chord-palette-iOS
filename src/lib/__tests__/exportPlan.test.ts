@@ -221,7 +221,8 @@ describe('buildExportPlan', () => {
     expect(plan.visualStyle).toBe('classic');
   });
 
-  it.each(['pulse', 'flow'] as const)('preserves explicit %s visual style', (visualStyle) => {
+  it('preserves explicit Flow visual style', () => {
+    const visualStyle = 'flow';
     const plan = buildExportPlan({
       progression: PROG,
       key: 'C',

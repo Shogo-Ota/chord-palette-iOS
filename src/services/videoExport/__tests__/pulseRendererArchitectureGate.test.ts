@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { createHash } from 'node:crypto';
 
 const ROOT = path.resolve(__dirname, '../../../..');
 const IOS = path.join(ROOT, 'modules/chord-video-export/ios');
@@ -9,31 +10,24 @@ function source(file: string): string {
 }
 
 describe('Pulse renderer architecture gate', () => {
-  it('keeps Classic behind an adapter and does not call it from Pulse', () => {
-    const adapter = source('ClassicFrameRendererAdapter.swift');
-    const pulse = source('PulseFrameRenderer.swift');
-
-    expect(adapter).toContain('FrameRenderer.makeImage(plan: plan, timeSec: timeSec)');
-    expect(pulse).not.toContain('FrameRenderer.makeImage');
-    expect(pulse).not.toMatch(/beatDur|beatPhase|60(?:\.0)?\s*\//);
+  it('keeps the retired Pulse sources frozen', () => {
+    expect(createHash('sha256').update(source('PulseFrameRenderer.swift')).digest('hex')).toBe(
+      'e33231555b532b35d1c14c8a3add2d8983cf935b6cb3fa3eda743973e73f4885',
+    );
+    expect(createHash('sha256').update(source('PulseFrameState.swift')).digest('hex')).toBe(
+      '10c7dcb206f3c9a72e2d4710feff09a34cff5e3230244986555ca3e19296120b',
+    );
   });
 
-  it('keeps Pulse separate while V4 owns Flow and invalid values stay Classic', () => {
+  it('makes Pulse unreachable and normalizes its legacy value to Classic', () => {
     const registry = source('VideoFrameRendererRegistry.swift');
 
     expect(registry).toContain('NativeVideoVisualStyle(rawValue: value) ?? .classic');
-    expect(registry).toMatch(/case \.pulse:\s+return PulseFrameRenderer\(\)/);
+    expect(registry).not.toContain('case pulse');
+    expect(registry).not.toContain('case .pulse');
+    expect(registry).not.toContain('PulseFrameRenderer()');
     expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline\)/);
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
-  });
-
-  it('derives Pulse timing only from segment start and duration values', () => {
-    const state = source('PulseFrameState.swift');
-
-    expect(state).toContain('activeSegment.startSec');
-    expect(state).toContain('activeSegment.durationSec');
-    expect(state).toContain('cycleSegments');
-    expect(state).not.toMatch(/\.bpm\b|beatsPerBar|60(?:\.0)?\s*\//);
   });
 
   it('resolves the renderer once at the bridge and injects it into the shared writer', () => {

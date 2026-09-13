@@ -15,8 +15,6 @@ const FROZEN_SOURCES = {
     '10c7dcb206f3c9a72e2d4710feff09a34cff5e3230244986555ca3e19296120b',
   'modules/chord-video-export/ios/VideoWriter.swift':
     '81b3fbf0def45a534ef2d87921cc5e04a9c9d7572de48190a2b84b04944bb17f',
-  'src/services/videoExport/videoVisualStyle.ts':
-    '0b349621c6a33b5c0b9cfb5dcbfec2034e422c28ef3a78f9460232914e34b760',
   'src/features/videoExport/VideoVisualStyleSelector.tsx':
     '6a2f934ba89760a4f1ab0fc5712d7fdc46cb5a80dd5ef5ec7703c8d53311940e',
 } as const;

@@ -19,7 +19,7 @@ describe('video visual style preference repository', () => {
     mockRunAsync.mockReset();
   });
 
-  it.each([null, { value: 'evolution' }, { value: '' }])(
+  it.each([null, { value: 'evolution' }, { value: '' }, { value: 'pulse' }])(
     'falls back to Classic for missing or invalid stored value %p',
     async (stored) => {
       mockGetFirstAsync.mockResolvedValue(stored);
@@ -31,18 +31,18 @@ describe('video visual style preference repository', () => {
     },
   );
 
-  it.each(['classic', 'pulse', 'flow'] as const)('restores valid %s value', async (stored) => {
+  it.each(['classic', 'flow'] as const)('restores valid %s value', async (stored) => {
     mockGetFirstAsync.mockResolvedValue({ value: stored });
 
     await expect(getVideoVisualStylePreference()).resolves.toBe(stored);
   });
 
   it('writes the selected style to app_meta without a migration', async () => {
-    await setVideoVisualStylePreference('pulse');
+    await setVideoVisualStylePreference('flow');
 
     expect(mockRunAsync).toHaveBeenCalledWith(
       'INSERT OR REPLACE INTO app_meta (key, value) VALUES (?, ?);',
-      ['video_visual_style', 'pulse'],
+      ['video_visual_style', 'flow'],
     );
   });
 });

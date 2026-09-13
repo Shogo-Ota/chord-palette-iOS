@@ -15,7 +15,6 @@ const FROZEN = {
     'c20af4aa240f676caf184397c377d1aee603bc96669bebda126c9584da9e6154',
   'PulseFrameRenderer.swift': 'e33231555b532b35d1c14c8a3add2d8983cf935b6cb3fa3eda743973e73f4885',
   'PulseFrameState.swift': '10c7dcb206f3c9a72e2d4710feff09a34cff5e3230244986555ca3e19296120b',
-  'FlowFrameRenderer.swift': '0dff50bd36424634c393e16c3a3e7e1dbaca320080a01311cd3e6dd013be4c35',
   'VideoWriter.swift': '81b3fbf0def45a534ef2d87921cc5e04a9c9d7572de48190a2b84b04944bb17f',
 } as const;
 

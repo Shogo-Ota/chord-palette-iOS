@@ -1,18 +1,13 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Alert, Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { Icon } from '@/components/Icon';
 import { ScreenScaffold } from '@/components/ScreenScaffold';
-import { featureFlags } from '@/config/featureFlags';
 import { useEditorSession } from '@/features/editor/session';
 import { useMidiExport } from '@/features/export/useMidiExport';
-import { CompareVideoPreview } from '@/features/videoExport/CompareVideoPreview';
 import { StandardVideoPreview } from '@/features/videoExport/StandardVideoPreview';
-import { useCompareVideoExport } from '@/features/videoExport/useCompareVideoExport';
-import { VideoMotionSelector } from '@/features/videoExport/VideoMotionSelector';
-import { VideoTemplateSelector } from '@/features/videoExport/VideoTemplateSelector';
 import { VideoVisualStyleSelector } from '@/features/videoExport/VideoVisualStyleSelector';
 import { useVideoVisualStylePreference } from '@/features/videoExport/useVideoVisualStylePreference';
 import { VideoExportError } from '@/lib/errors';
@@ -32,19 +27,10 @@ export default function ExportScreen() {
   const watermark = true;
   const [busy, setBusy] = useState<'idle' | 'save' | 'share'>('idle');
   const [progress, setProgress] = useState(0);
-  const [compareTitle, setCompareTitle] = useState(s.title);
   const midi = useMidiExport();
   const { visualStyle, selectVisualStyle } = useVideoVisualStylePreference();
   const tier = getTier();
-  const compare = useCompareVideoExport({
-    session: s,
-    tier,
-    visualStyle,
-    enabled: featureFlags.growthCompareExport,
-    watermark,
-    title: compareTitle,
-  });
-  const saving = busy !== 'idle' || compare.busy;
+  const saving = busy !== 'idle';
   const exportBeatsPerBar = beatsPerBarFor(s.accompanimentPattern);
   const cycleDurationSec = progressionCycleDurationSec(
     s.progression,
@@ -77,23 +63,6 @@ export default function ExportScreen() {
     if (busy !== 'idle') return;
     if (s.progression.length === 0) {
       Alert.alert('コードがありません', '動画を書き出す前に進行を作成してください。');
-      return;
-    }
-    if (compare.template === 'compare') {
-      void compare.run(kind).then((ok) => {
-        if (ok && kind === 'save') {
-          Alert.alert('保存しました', '聴き比べ動画を写真アプリに保存しました。');
-        } else if (!ok) {
-          Alert.alert(
-            '書き出しに失敗',
-            compare.job.error ?? '聴き比べ動画を書き出せませんでした。もう一度お試しください。',
-            [
-              { text: '再試行', onPress: () => runExport(kind) },
-              { text: '閉じる', style: 'cancel' },
-            ],
-          );
-        }
-      });
       return;
     }
     setBusy(kind);
@@ -134,115 +103,43 @@ export default function ExportScreen() {
 
   const totalBeats = s.progression.reduce((sum, e) => sum + e.durationBeats, 0);
   const bars = Math.max(1, Math.ceil(totalBeats / 4));
-  const selectedDurationSec =
-    compare.template === 'compare'
-      ? compare.scene
-        ? compare.scene.timePlan.durationSamples / compare.scene.timePlan.sampleRate
-        : cycleDurationSec * 2
-      : cycleDurationSec;
-  const autoDurationLabel = Number.isInteger(selectedDurationSec)
-    ? String(selectedDurationSec)
-    : selectedDurationSec.toFixed(1);
-  const displayProgress = compare.template === 'compare' ? compare.job.progress : progress;
-  const saveLabel =
-    compare.template === 'compare'
-      ? saving
-        ? `${compare.preparing ? '準備中' : '書き出し中'}… ${Math.round(displayProgress * 100)}%`
-        : '写真に保存'
-      : busy === 'save'
-        ? `書き出し中… ${Math.round(progress * 100)}%`
-        : '写真に保存';
-  const shareLabel =
-    compare.template === 'compare'
-      ? saving
-        ? `${compare.preparing ? '準備中' : '書き出し中'}… ${Math.round(displayProgress * 100)}%`
-        : '共有する'
-      : busy === 'share'
-        ? `書き出し中… ${Math.round(progress * 100)}%`
-        : '共有する';
+  const autoDurationLabel = Number.isInteger(cycleDurationSec)
+    ? String(cycleDurationSec)
+    : cycleDurationSec.toFixed(1);
+  const saveLabel = busy === 'save' ? `書き出し中… ${Math.round(progress * 100)}%` : '写真に保存';
+  const shareLabel = busy === 'share' ? `書き出し中… ${Math.round(progress * 100)}%` : '共有する';
 
   return (
     <ScreenScaffold>
       <View style={styles.header}>
-        <Pressable
-          style={[styles.backBtn, compare.busy && styles.saveBtnDisabled]}
-          onPress={() => router.back()}
-          disabled={compare.busy}
-          hitSlop={8}>
+        <Pressable style={styles.backBtn} onPress={() => router.back()} hitSlop={8}>
           <Icon name="chevronLeft" size={17} color={colors.textSecondary} strokeWidth={2.4} />
         </Pressable>
         <Text style={styles.title}>動画を書き出し</Text>
       </View>
 
-      {featureFlags.growthCompareExport ? (
-        <VideoTemplateSelector
-          value={compare.template}
-          onChange={compare.selectTemplate}
-          compareEnabled={compare.compareEnabled}
-          compareReason={compare.compareReason}
-          disabled={saving}
-        />
-      ) : null}
-
       {/* 9:16 preview — matches the exported frame composition */}
-      {compare.template === 'compare' ? (
-        <CompareVideoPreview
-          scene={compare.scene}
-          preparing={compare.preparing}
-          error={compare.job.error}
-        />
-      ) : (
-        <StandardVideoPreview
-          title={s.title}
-          musicKey={s.key}
-          bpm={s.tempoBpm}
-          bars={bars}
-          progression={s.progression}
-          octaveShift={s.octaveShift}
-        />
-      )}
+      <StandardVideoPreview
+        title={s.title}
+        musicKey={s.key}
+        bpm={s.tempoBpm}
+        bars={bars}
+        progression={s.progression}
+        octaveShift={s.octaveShift}
+      />
 
-      {compare.template === 'standard' ? (
-        <VideoVisualStyleSelector
-          value={visualStyle}
-          onChange={selectVisualStyle}
-          disabled={saving}
-        />
-      ) : (
-        <VideoMotionSelector
-          value={compare.motion}
-          onChange={compare.selectMotion}
-          disabled={saving}
-        />
-      )}
-
-      {compare.template === 'compare' ? (
-        <View style={styles.titleInputRow}>
-          <Text style={styles.optLabel}>タイトル</Text>
-          <TextInput
-            value={compareTitle}
-            onChangeText={setCompareTitle}
-            editable={!saving}
-            maxLength={48}
-            placeholder="タイトルなし"
-            placeholderTextColor={colors.textFaint}
-            selectionColor={colors.primaryBlue}
-            style={styles.titleInput}
-            accessibilityLabel="聴き比べ動画のタイトル"
-          />
-        </View>
-      ) : null}
+      <VideoVisualStyleSelector
+        value={visualStyle}
+        onChange={selectVisualStyle}
+        disabled={saving}
+      />
 
       {/* 長さ（BPM・小節数から自動算出） */}
       <View style={styles.optRow}>
         <Text style={styles.optLabel}>長さ</Text>
         <View style={styles.formatVal}>
           <Text style={styles.formatMain}>約{autoDurationLabel}秒</Text>
-          <Text style={styles.formatSub}>
-            {compare.template === 'compare'
-              ? `原型＋変奏 · BPM ${s.tempoBpm}`
-              : `自動（${bars}小節 · BPM ${s.tempoBpm}）`}
-          </Text>
+          <Text style={styles.formatSub}>{`自動（${bars}小節 · BPM ${s.tempoBpm}）`}</Text>
         </View>
       </View>
 
@@ -321,27 +218,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: colors.textSecondary,
   },
-  titleInputRow: {
-    marginBottom: 11,
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 14,
-    borderRadius: radius.xl,
-    borderWidth: 1,
-    borderColor: colors.border,
-    backgroundColor: colors.surface,
-    paddingVertical: 9,
-    paddingHorizontal: 14,
-  },
-  titleInput: {
-    flex: 1,
-    color: colors.textPrimary,
-    textAlign: 'right',
-    fontSize: 12,
-    fontFamily: font.medium,
-    paddingVertical: 4,
-  },
-
   formatVal: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   formatMain: { fontSize: 13, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
   formatSub: { fontSize: 11, color: '#7f8aa0' },

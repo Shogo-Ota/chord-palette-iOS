@@ -1,7 +1,6 @@
 /// Native boundary representation. Unknown values fail closed to Classic.
 private enum NativeVideoVisualStyle: String {
   case classic
-  case pulse
   case flow
 
   init(normalizing value: String) {
@@ -21,8 +20,6 @@ enum VideoFrameRendererRegistry {
       return CompareFrameRenderer(scene: compareScene)
     }
     switch NativeVideoVisualStyle(normalizing: value) {
-    case .pulse:
-      return PulseFrameRenderer()
     case .flow:
       return FlowFrameRenderer(timeline: flowTimeline)
     case .classic:

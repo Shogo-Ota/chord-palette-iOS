@@ -9,7 +9,7 @@ function source(file: string): string {
 }
 
 describe('Phase V4 Flow performance-motion architecture', () => {
-  it('adds the sidecar only to Flow so Classic/Pulse payloads stay unchanged', () => {
+  it('adds the sidecar only to Flow so the Classic payload stays unchanged', () => {
     const service = fs
       .readFileSync(path.join(ROOT, 'src/services/videoExport/index.ts'), 'utf8')
       .replace(/\r\n/g, '\n');
@@ -31,7 +31,7 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(bridge).toContain('FlowVisualNoteTimeline(');
     expect(registry).toContain('flowTimeline: FlowVisualNoteTimeline = .empty');
     expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline\)/);
-    expect(registry).toMatch(/case \.pulse:\s+return PulseFrameRenderer\(\)/);
+    expect(registry).not.toContain('PulseFrameRenderer()');
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
     expect(protocol).toContain('func makeImage(plan: RenderPlan, timeSec: Double)');
     expect(writer).not.toContain('FlowVisualNote');
@@ -82,29 +82,36 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(`${timeline}\n${renderer}`).not.toMatch(/CIFilter|Gaussian|blur/i);
   });
 
-  it('keeps NOW dominant, hides one-chord NEXT and uses a thin full-cycle rail', () => {
-    const state = source('FlowFrameState.swift');
-    const stage = source('FlowHarmonicStageRenderer.swift');
+  it('draws falling notes behind a Classic-style chord hierarchy and thin rail', () => {
+    const renderer = source('FlowFrameRenderer.swift');
+    const stage = source('FlowClassicChordStageRenderer.swift');
 
-    expect(stage).toContain('role: "NOW"');
-    expect(stage).toContain('nameSize: height * 0.105');
-    expect(stage).toContain('role: "NEXT"');
-    expect(stage).toContain('nameSize: height * 0.056');
-    expect(stage).toContain('opacity: 0.68');
+    expect(stage).toContain('current.displayName');
+    expect(stage).toContain('baseFontSize: height * 0.100');
+    expect(stage).toContain('current.degreeLabel');
     expect(stage).toContain('state.cycleSegments.enumerated()');
-    expect(state).toContain('let hasNext = cycleSegments.count > 1');
-    expect(state).toContain('nextSegment: hasNext ? cycleSegments[nextIndex] : nil');
+    expect(stage).not.toContain('"NEXT"');
+    expect(renderer.indexOf('FlowFallingBlockRenderer.draw')).toBeLessThan(
+      renderer.indexOf('FlowClassicChordStageRenderer.draw'),
+    );
   });
 
-  it('removes the superseded motion-line and moving-glow direction', () => {
-    const stage = source('FlowHarmonicStageRenderer.swift');
+  it('uses segment function colors without changing visual-note timing', () => {
+    const stage = source('FlowClassicChordStageRenderer.swift');
     const renderer = source('FlowFrameRenderer.swift');
-    const flowSources = `${stage}\n${renderer}`;
+    const colors = source('FlowVisualColorResolver.swift');
+    const blocks = source('FlowFallingBlockRenderer.swift');
+    const keyboard = source('FlowKeyboardRenderer.swift');
+    const flowSources = `${stage}\n${renderer}\n${colors}\n${blocks}\n${keyboard}`;
 
-    expect(flowSources).not.toMatch(
-      /drawMotionPath|drawMovingGlow|FlowStageCurve|partialPath|cubicPoint|drawRadialGradient/,
-    );
-    expect(flowSources).not.toMatch(/segment\.color|functionColor|keyTint|drawProgressTrace/);
+    expect(stage).toContain('fill: current.color');
+    expect(stage).toContain('segment.color.withAlphaComponent');
+    expect(colors).toContain('while lower < upper');
+    expect(colors).toContain('return segment.color');
+    expect(blocks).toContain('FlowVisualColorResolver.color');
+    expect(keyboard).toContain('FlowVisualColorResolver.color');
+    expect(colors).not.toMatch(/bpm|beat|durationSec\s*=|startSec\s*=/i);
+    expect(flowSources).not.toMatch(/CIFilter|Gaussian|blur|particle|random/i);
   });
 
   it('uses only the approved official icon without pseudo branding', () => {
@@ -118,10 +125,11 @@ describe('Phase V4 Flow performance-motion architecture', () => {
   it('keeps each Flow rendering responsibility below the God-file limit', () => {
     for (const file of [
       'FlowFrameRenderer.swift',
-      'FlowHarmonicStageRenderer.swift',
+      'FlowClassicChordStageRenderer.swift',
       'FlowFallingBlockRenderer.swift',
       'FlowFallingBlockState.swift',
       'FlowKeyboardRenderer.swift',
+      'FlowVisualColorResolver.swift',
       'FlowVisualNoteTimeline.swift',
     ]) {
       expect(source(file).split('\n').length).toBeLessThan(500);

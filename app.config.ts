@@ -27,10 +27,6 @@ export default ({ config }: ConfigContext): ExpoConfig => {
         process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY ?? extra.clerkPublishableKey ?? '',
       chordEvolutionEnabled:
         process.env.EXPO_PUBLIC_CHORD_EVOLUTION_ENABLED ?? extra.chordEvolutionEnabled ?? '',
-      growthCompareExportEnabled:
-        process.env.EXPO_PUBLIC_GROWTH_COMPARE_EXPORT_ENABLED ??
-        extra.growthCompareExportEnabled ??
-        '',
     },
   };
 };

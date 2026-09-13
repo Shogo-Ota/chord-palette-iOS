@@ -56,19 +56,13 @@ final class FlowFrameRenderer: VideoFrameRendering {
     let width = size.width
     let height = size.height
     drawBackground(cg: cg, size: size)
-    drawHeader(plan: plan, frameWidth: width, frameHeight: height)
 
-    if state.currentSegment != nil {
-      FlowHarmonicStageRenderer.draw(
-        state: state,
-        frameWidth: width,
-        frameHeight: height
-      )
+    if let current = state.currentSegment {
       let keyboardRect = CGRect(
         x: width * 0.10,
-        y: height * 0.73,
+        y: height * 0.71,
         width: width * 0.80,
-        height: height * 0.11
+        height: height * 0.12
       )
       let keys = keyboardKeys(plan: plan, totalWidth: keyboardRect.width)
       let visibleEvents = timeline.visibleEvents(
@@ -80,15 +74,24 @@ final class FlowFrameRenderer: VideoFrameRendering {
         events: visibleEvents,
         plan: plan,
         keys: keys,
+        segments: plan.segments,
+        fallbackColor: current.color,
         frameTimeSec: timeSec,
-        fallTopY: height * 0.43,
+        fallTopY: height * 0.14,
         keyboardRect: keyboardRect,
+        frameHeight: height
+      )
+      FlowClassicChordStageRenderer.draw(
+        state: state,
+        frameWidth: width,
         frameHeight: height
       )
       FlowKeyboardRenderer.draw(
         plan: plan,
         events: visibleEvents,
         keys: keys,
+        segments: plan.segments,
+        fallbackColor: current.color,
         frameTimeSec: timeSec,
         rect: keyboardRect,
         frameHeight: height
@@ -107,6 +110,7 @@ final class FlowFrameRenderer: VideoFrameRendering {
       )
     }
 
+    drawHeader(plan: plan, frameWidth: width, frameHeight: height)
     if plan.watermark {
       FlowBrandRenderer.draw(frameWidth: width, frameHeight: height)
     }

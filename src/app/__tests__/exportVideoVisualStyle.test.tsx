@@ -75,14 +75,10 @@ jest.mock('@/services/analytics', () => ({ track: jest.fn() }));
 jest.mock('@/services/billing', () => ({ getTier: () => 'free' }));
 jest.mock('@/services/videoExport', () => ({
   videoExportService: {
-    exportAndSave: (
-      input: Record<string, unknown>,
-      options: Record<string, unknown>,
-    ) => mockExportAndSave(input, options),
-    exportAndShare: (
-      input: Record<string, unknown>,
-      options: Record<string, unknown>,
-    ) => mockExportAndShare(input, options),
+    exportAndSave: (input: Record<string, unknown>, options: Record<string, unknown>) =>
+      mockExportAndSave(input, options),
+    exportAndShare: (input: Record<string, unknown>, options: Record<string, unknown>) =>
+      mockExportAndShare(input, options),
   },
 }));
 
@@ -108,14 +104,21 @@ describe('ExportScreen video visual style propagation', () => {
     mockUseVideoVisualStylePreference.mockReset();
   });
 
-  it('passes Pulse through the Save export input', async () => {
-    const view = await renderWithStyle('pulse');
+  it('does not expose the retired Compare template', async () => {
+    const view = await renderWithStyle('classic');
+
+    expect(view.queryByText('聴き比べ')).toBeNull();
+    expect(view.queryByText('原型＋変奏')).toBeNull();
+  });
+
+  it('passes Classic through the Save export input', async () => {
+    const view = await renderWithStyle('classic');
 
     fireEvent.press(view.getByText('写真に保存'));
 
     await waitFor(() => expect(mockExportAndSave).toHaveBeenCalledTimes(1));
     expect(mockExportAndSave.mock.calls[0][0]).toMatchObject({
-      visualStyle: 'pulse',
+      visualStyle: 'classic',
     });
     expect(mockExportAndShare).not.toHaveBeenCalled();
   });

@@ -76,8 +76,8 @@ export type ExportPlan = {
   /** Versioned read-only sidecar consumed only by the Compare renderer. */
   compareScene?: CompareSceneManifestV1;
   /**
-   * Optional note-level visual sidecar. Classic and Pulse ignore it; Flow uses it
-   * for falling blocks and keyboard landing without regenerating performance data.
+   * Optional note-level visual sidecar. Classic ignores it; Flow uses it for falling
+   * blocks and keyboard landing without regenerating performance data.
    */
   visualNoteEvents?: readonly VisualNoteEvent[];
 };

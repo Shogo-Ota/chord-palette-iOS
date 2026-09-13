@@ -3,15 +3,15 @@ import { fireEvent, render } from '@testing-library/react-native';
 import { VideoVisualStyleSelector } from '../VideoVisualStyleSelector';
 
 describe('VideoVisualStyleSelector', () => {
-  it('shows the three concise options with Classic selected by default value', () => {
+  it('shows only Classic and Flow with Classic selected by default value', () => {
     const view = render(<VideoVisualStyleSelector value="classic" onChange={jest.fn()} />);
 
     expect(view.getByText('動画スタイル')).toBeTruthy();
     expect(view.getByText('クラシック')).toBeTruthy();
-    expect(view.getByText('パルス')).toBeTruthy();
+    expect(view.queryByText('パルス')).toBeNull();
     expect(view.getByText('フロー')).toBeTruthy();
     expect(view.getByText('シンプル')).toBeTruthy();
-    expect(view.getByText('リズムと進行を強調')).toBeTruthy();
+    expect(view.queryByText('リズムと進行を強調')).toBeNull();
     expect(view.getByText('なめらかな流れ')).toBeTruthy();
     expect(view.getByLabelText('クラシック、シンプル').props.accessibilityState).toEqual({
       selected: true,
@@ -21,7 +21,6 @@ describe('VideoVisualStyleSelector', () => {
 
   it.each([
     ['クラシック、シンプル', 'classic'],
-    ['パルス、リズムと進行を強調', 'pulse'],
     ['フロー、なめらかな流れ', 'flow'],
   ] as const)('forwards %s as %s', (accessibilityLabel, expected) => {
     const onChange = jest.fn();
@@ -37,14 +36,14 @@ describe('VideoVisualStyleSelector', () => {
 
   it('disables every option while export is running', () => {
     const onChange = jest.fn();
-    const view = render(<VideoVisualStyleSelector value="pulse" onChange={onChange} disabled />);
+    const view = render(<VideoVisualStyleSelector value="flow" onChange={onChange} disabled />);
 
-    const pulse = view.getByLabelText('パルス、リズムと進行を強調');
-    expect(pulse.props.accessibilityState).toEqual({
+    const flow = view.getByLabelText('フロー、なめらかな流れ');
+    expect(flow.props.accessibilityState).toEqual({
       selected: true,
       disabled: true,
     });
-    fireEvent.press(pulse);
+    fireEvent.press(flow);
     expect(onChange).not.toHaveBeenCalled();
   });
 });

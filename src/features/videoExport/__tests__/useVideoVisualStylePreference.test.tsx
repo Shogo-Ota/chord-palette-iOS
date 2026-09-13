@@ -39,15 +39,15 @@ function dependencies(
 
 describe('useVideoVisualStylePreference', () => {
   it('renders Classic first, then restores a valid saved style', async () => {
-    const deps = dependencies({ load: jest.fn(async () => 'pulse') });
+    const deps = dependencies({ load: jest.fn(async () => 'flow') });
     const { result } = renderHook(() => useVideoVisualStylePreference(deps));
 
     expect(result.current.visualStyle).toBe('classic');
-    await waitFor(() => expect(result.current.visualStyle).toBe('pulse'));
+    await waitFor(() => expect(result.current.visualStyle).toBe('flow'));
     expect(deps.trackSelection).not.toHaveBeenCalled();
   });
 
-  it.each(['classic', 'pulse', 'flow'] as const)(
+  it.each(['classic', 'flow'] as const)(
     'selects, persists and tracks %s exactly once',
     async (visualStyle) => {
       const load = deferred<VideoVisualStyle>();
@@ -93,7 +93,7 @@ describe('useVideoVisualStylePreference', () => {
     const { result } = renderHook(() => useVideoVisualStylePreference(deps));
 
     act(() => result.current.selectVisualStyle('flow'));
-    await act(async () => load.resolve('pulse'));
+    await act(async () => load.resolve('classic'));
 
     expect(result.current.visualStyle).toBe('flow');
   });

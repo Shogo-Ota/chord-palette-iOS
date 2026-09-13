@@ -19,7 +19,6 @@
       "env": {
         "SENTRY_DISABLE_AUTO_UPLOAD": "true",
         "EXPO_PUBLIC_CHORD_EVOLUTION_ENABLED": "true",
-        "EXPO_PUBLIC_GROWTH_COMPARE_EXPORT_ENABLED": "true",
         "EXPO_PUBLIC_REVENUECAT_IOS_KEY": "appl_pvtOeoypbsxyNISsAmVzpTUxCvy",
         "EXPO_PUBLIC_POSTHOG_KEY": "phc_uMw5t8USktRgC889pQRYxiT4anAiujzmfBeBZ8dbPLJM",
         "EXPO_PUBLIC_POSTHOG_HOST": "https://us.i.posthog.com"

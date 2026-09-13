@@ -1,4 +1,4 @@
-export type VideoVisualStyle = 'classic' | 'pulse' | 'flow';
+export type VideoVisualStyle = 'classic' | 'flow';
 
 export interface VideoVisualStyleDefinition {
   id: VideoVisualStyle;
@@ -11,11 +11,6 @@ export const VIDEO_VISUAL_STYLES = {
     id: 'classic',
     label: 'クラシック',
     description: 'シンプル',
-  },
-  pulse: {
-    id: 'pulse',
-    label: 'パルス',
-    description: 'リズムと進行を強調',
   },
   flow: {
     id: 'flow',
