@@ -82,7 +82,10 @@ final class FlowFrameRenderer: VideoFrameRendering {
         frameHeight: height
       )
       FlowClassicChordStageRenderer.draw(
+        plan: plan,
         state: state,
+        timeSec: timeSec,
+        cg: cg,
         frameWidth: width,
         frameHeight: height
       )

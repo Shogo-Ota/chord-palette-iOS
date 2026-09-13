@@ -85,10 +85,12 @@ describe('Phase V4 Flow performance-motion architecture', () => {
   it('draws falling notes behind a Classic-style chord hierarchy and thin rail', () => {
     const renderer = source('FlowFrameRenderer.swift');
     const stage = source('FlowClassicChordStageRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
 
-    expect(stage).toContain('current.displayName');
-    expect(stage).toContain('baseFontSize: height * 0.100');
-    expect(stage).toContain('current.degreeLabel');
+    expect(stage).toContain('FlowClassicChordHeroRenderer.draw');
+    expect(hero).toContain('segment.displayName');
+    expect(hero).toContain('height * 0.085, weight: .black');
+    expect(hero).toContain('segment.degreeLabel');
     expect(stage).toContain('state.cycleSegments.enumerated()');
     expect(stage).not.toContain('"NEXT"');
     expect(renderer.indexOf('FlowFallingBlockRenderer.draw')).toBeLessThan(
@@ -98,20 +100,44 @@ describe('Phase V4 Flow performance-motion architecture', () => {
 
   it('uses segment function colors without changing visual-note timing', () => {
     const stage = source('FlowClassicChordStageRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
     const renderer = source('FlowFrameRenderer.swift');
     const colors = source('FlowVisualColorResolver.swift');
     const blocks = source('FlowFallingBlockRenderer.swift');
     const keyboard = source('FlowKeyboardRenderer.swift');
-    const flowSources = `${stage}\n${renderer}\n${colors}\n${blocks}\n${keyboard}`;
+    const flowSources = `${stage}\n${hero}\n${renderer}\n${colors}\n${blocks}\n${keyboard}`;
 
-    expect(stage).toContain('fill: current.color');
+    expect(hero).toContain('color: segment.color');
     expect(stage).toContain('segment.color.withAlphaComponent');
     expect(colors).toContain('while lower < upper');
     expect(colors).toContain('return segment.color');
     expect(blocks).toContain('FlowVisualColorResolver.color');
     expect(keyboard).toContain('FlowVisualColorResolver.color');
     expect(colors).not.toMatch(/bpm|beat|durationSec\s*=|startSec\s*=/i);
-    expect(flowSources).not.toMatch(/CIFilter|Gaussian|blur|particle|random/i);
+    expect(flowSources).not.toMatch(/CIFilter|Gaussian|particle|random/i);
+  });
+
+  it('matches the accepted Classic center font, pulse, transition and bloom constants', () => {
+    const classic = source('FrameRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+
+    for (const contract of [
+      '60.0 /',
+      'exp(-beatPhase * 3.2)',
+      'min(0.16,',
+      '* 0.45',
+      '* 0.085, weight: .black',
+      '* 0.30 + slide',
+      '1.0 + 0.045 * pulse * ease',
+      '* 0.02 * (0.5 + pulse)',
+      '* 0.030, weight: .bold',
+      '* 0.40 + slide * 0.5',
+    ]) {
+      expect(classic).toContain(contract);
+      expect(hero).toContain(contract);
+    }
+    expect(hero).toContain('cg.drawRadialGradient');
+    expect(hero).toContain('cg.setShadow');
   });
 
   it('uses only the approved official icon without pseudo branding', () => {
@@ -126,6 +152,7 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     for (const file of [
       'FlowFrameRenderer.swift',
       'FlowClassicChordStageRenderer.swift',
+      'FlowClassicChordHeroRenderer.swift',
       'FlowFallingBlockRenderer.swift',
       'FlowFallingBlockState.swift',
       'FlowKeyboardRenderer.swift',
