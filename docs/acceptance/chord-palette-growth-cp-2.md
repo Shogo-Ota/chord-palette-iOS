@@ -1,9 +1,11 @@
 # CP-2 Compare Device Review Acceptance
 
-- Status: Local verification complete; EAS Preview build pending
+- Status: Local verification complete; EAS Preview blocked by paid-usage gate
 - Branch: `feature/cp2-compare-device-review`
 - Base: `0d08af0`
+- Implementation commit: `4587c2063be6f4f764b0f7b65a093b3c9bcd86bc`
 - EAS profile: `preview` (internal distribution)
+- EAS attempt: `c0806744-8854-4b89-95cd-cedc93adea68` (canceled)
 - Device result: Not tested yet
 
 ## Scope
@@ -49,6 +51,11 @@
 Native pixel Golden and Classic-relative export performance remain physical-device
 checks. The Compare renderer bounds work to four cards per page and uses no blur,
 particles or per-frame music generation.
+
+The Preview build was uploaded successfully, but EAS reported that 100% of the
+included monthly build credits had already been used and that further usage would be
+charged pay-as-you-go. The build was canceled before compilation to honor the
+no-unapproved-charge gate. No install artifact was produced.
 
 ## Golden review points
 
