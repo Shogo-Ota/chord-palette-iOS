@@ -3,6 +3,9 @@
 - Status: Ready for physical-device review
 - Branch: `fix/midi-export-style-name`
 - Review build number: 31
+- Implementation commit: `8ff82e1`
+- EAS build: `078ff3a2-a4a3-426f-95b2-98d69da71d69` (FINISHED)
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/078ff3a2-a4a3-426f-95b2-98d69da71d69
 - Device result: Not tested yet
 
 ## Report
