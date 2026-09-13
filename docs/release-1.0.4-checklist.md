@@ -1,9 +1,12 @@
 # Chord Palette 1.0.4 Release Candidate
 
 Updated: 2026-09-13
-Version/build: `1.0.4 (32 planned)` — production uses `autoIncrement`, so the
-uploaded build number is one above the last local value (`31`).
+Version/build: `1.0.4 (32)` — `autoIncrement` bumped `expo.ios.buildNumber` from
+`31` to `32` during the production build.
 Branch: `fix/midi-export-style-name`
+Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae369dff-1922-4d42-b128-972d832cfdba
+Submission: [app-store-release-1.0.4.md](app-store-release-1.0.4.md)
 Baseline release: `1.0.3 (24)`, production build
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/80e17ed1-6885-4962-b88c-fbe15c39e4e7
 (commit `7384f96`)
@@ -66,6 +69,7 @@ https://expo.dev/accounts/shogoota/projects/chord-palette/builds/80e17ed1-6885-4
 | 29 | Flow rainbow wordmark and degree rail — **visuals approved on device** |
 | 30 | MIDI export STYLE name fix |
 | 31 | Variation / Dance closing-phrase support |
+| 32 | Production build, signed and uploaded to App Store Connect |
 
 Latest internal build:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/078ff3a2-a4a3-426f-95b2-98d69da71d69
@@ -85,9 +89,9 @@ https://expo.dev/accounts/shogoota/projects/chord-palette/builds/078ff3a2-a4a3-4
 
 ## Release steps
 
-1. Owner confirms the device checks above.
-2. `npx eas-cli build --platform ios --profile production` (20–60 min).
-3. `npx eas-cli submit --platform ios --profile production --latest` (10–30 min
-      including Apple processing).
-4. Complete `docs/app-store-release-1.0.4.md` submission checks in App Store
-   Connect and submit for review.
+1. [x] `npx eas-cli build --platform ios --profile production`
+2. [x] `npx eas-cli submit --platform ios --profile production --id ae369dff…`
+3. [ ] Apple processing completes and build 32 appears in TestFlight
+4. [ ] Owner confirms the device checks above on build 32 through TestFlight
+5. [ ] Complete `docs/app-store-release-1.0.4.md` submission checks in App Store
+      Connect and submit for review

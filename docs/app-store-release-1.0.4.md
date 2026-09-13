@@ -1,12 +1,15 @@
 # App Store Release 1.0.4
 
-Status: Prepared, waiting on device sign-off before the production build
+Status: Production build 32 uploaded; Apple processing in progress
 Prepared: 2026-09-13
-Version/build: `1.0.4 (32 planned)`
+Version/build: `1.0.4 (32)`
 Release candidate detail: [release-1.0.4-checklist.md](release-1.0.4-checklist.md)
 
-Production build: _pending_
-EAS submission: _pending_
+Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae369dff-1922-4d42-b128-972d832cfdba
+
+EAS submission:
+https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/2e27aa22-30e2-4815-907e-f2cdafd6e441
 
 ## What's New — Japanese
 
@@ -48,7 +51,7 @@ Suggested test path for this update:
 ## Submission Checks
 
 - [ ] Owner device sign-off recorded in the 1.0.4 checklist
-- [ ] Production build uploaded to App Store Connect
+- [x] Production build uploaded to App Store Connect
 - [ ] Apple processing completed
 - [ ] Version `1.0.4` created and the build attached in App Store Connect
 - [ ] Japanese and English What's New text entered
