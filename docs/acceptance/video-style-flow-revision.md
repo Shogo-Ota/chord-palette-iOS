@@ -1,9 +1,12 @@
 # Video Style Flow Revision Acceptance
 
-- Status: Local verification complete; EAS Preview pending
+- Status: EAS Preview ready for physical-device review
 - Branch: `feature/video-style-flow-revision`
 - Base: `4ca43ef`
+- Implementation commit: `77c449b232f4cff6fb09cd44d49c003a6116a798`
 - Review build number: 25
+- EAS build: `c9c33bd7-c867-48bd-aa01-a79ae80b8993` (FINISHED)
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/c9c33bd7-c867-48bd-aa01-a79ae80b8993
 - Device result: Not tested yet
 
 ## Approved direction
@@ -54,5 +57,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Classic renderer, Classic adapter, retired Pulse renderer/state and VideoWriter:
   unchanged from `4ca43ef`.
 - Preview config contains no Compare feature flag.
-- Native compile, pixel review, color readability and audio landing sync remain EAS
-  and physical-device checks.
+- Native Swift compile, signing and IPA generation: PASS.
+- Pixel review, color readability and audio landing sync remain physical-device
+  checks.
