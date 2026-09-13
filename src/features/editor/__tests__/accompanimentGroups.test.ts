@@ -4,8 +4,45 @@ import {
   typeForSelection,
 } from '@/features/editor/accompanimentGroups';
 import { styleSummaryParts } from '@/features/editor/styleSummary';
+import { midiExportStyleToken } from '@/lib/midiExport';
+import { PUBLIC_STYLE_GROUPS } from '@/lib/performance/publicStyleCatalog';
 
 describe('release accompaniment presentation groups', () => {
+  it('shows exactly the STYLEs the export names, from one catalog', () => {
+    expect(
+      PUBLIC_ACCOMPANIMENT_GROUPS.map((group) => ({
+        id: group.id,
+        label: group.label,
+        types: group.types,
+      })),
+    ).toEqual(
+      PUBLIC_STYLE_GROUPS.map((group) => ({
+        id: group.id,
+        label: group.label,
+        types: group.styles.map((style) => ({
+          pattern: style.pattern,
+          variant: style.variant,
+          label: style.typeLabel,
+          hint: style.hint,
+        })),
+      })),
+    );
+
+    const named = PUBLIC_ACCOMPANIMENT_GROUPS.flatMap((group) =>
+      group.types.map((type) => midiExportStyleToken(type.pattern, type.variant)),
+    );
+    expect(named).toEqual([
+      'Block',
+      'Natural-Type1',
+      'Natural-Type2',
+      'Variation-City',
+      'Variation-Funk',
+      'Variation-Driving',
+      'Variation-Dance',
+      'Arpeggio',
+    ]);
+  });
+
   it('regroups the approved profiles without changing playback ids', () => {
     expect(PUBLIC_ACCOMPANIMENT_GROUPS.map((group) => group.id)).toEqual([
       'block',

@@ -18,6 +18,5 @@ export {
   midiExportInstrumentToken,
   midiExportProgressionToken,
   midiExportStyleToken,
-  midiExportTypeToken,
 } from './fileName';
 export { assertExportValid, validateFinalMidiSnapshot, validateSmfBytes } from './validate';

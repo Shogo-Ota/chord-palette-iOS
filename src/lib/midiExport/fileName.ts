@@ -1,22 +1,15 @@
 /**
  * MIDI export file name. Pure, no RN/Expo.
  *
- * chord-palette-{Style}-{Type}-{Instrument}-{BPM}bpm-{Progression}-{Timestamp}.mid
+ * chord-palette-{Style}-{Instrument}-{BPM}bpm-{Progression}-{Timestamp}.mid
  *
- * Deterministic except the Unix-ms timestamp. The rhythm id `arpeggio` is Variation.
+ * Deterministic except the Unix-ms timestamp. The STYLE segment names what the player
+ * selected, read from the public STYLE catalog — never the internal pattern or variant
+ * id that happens to implement it.
  */
 
-import { defaultVariantFor } from '@/lib/performance/variants';
+import { publicStyleExportLabel } from '@/lib/performance/publicStyleCatalog';
 import type { AccompanimentPattern, InstrumentId } from '@/types';
-
-const STYLE_SLUG: Partial<Record<AccompanimentPattern, string>> = {
-  block: 'Block',
-  natural: 'Natural',
-  city: 'City',
-  arpeggio: 'Variation',
-  relaxed: 'Ballad',
-  driving: 'Driving',
-};
 
 const INSTRUMENT_SLUG: Partial<Record<InstrumentId, string>> = {
   piano: 'Piano',
@@ -44,20 +37,12 @@ function chordToken(displayName: string): string {
   );
 }
 
-export function midiExportStyleToken(pattern: AccompanimentPattern): string {
-  return STYLE_SLUG[pattern] ?? sanitize(pattern, 'Style');
-}
-
-export function midiExportTypeToken(
+/** The STYLE the player selected, spelled for a file name. */
+export function midiExportStyleToken(
   pattern: AccompanimentPattern,
   variantId?: string,
 ): string {
-  const resolved = variantId ?? defaultVariantFor(pattern).id;
-  const raw = resolved.startsWith(`${pattern}.`)
-    ? resolved.slice(pattern.length + 1)
-    : resolved;
-  const typeMatch = /^type(\d+)$/i.exec(raw);
-  return typeMatch ? `Type${typeMatch[1]}` : sanitize(raw, 'Type1');
+  return sanitize(publicStyleExportLabel(pattern, variantId), 'Style');
 }
 
 export function midiExportInstrumentToken(instrumentId: InstrumentId): string {
@@ -86,11 +71,10 @@ export function midiExportFileName(input: {
   progression: readonly { displayName: string }[];
   now?: number;
 }): string {
-  const style = midiExportStyleToken(input.accompanimentPattern);
-  const type = midiExportTypeToken(input.accompanimentPattern, input.accompanimentVariant);
+  const style = midiExportStyleToken(input.accompanimentPattern, input.accompanimentVariant);
   const instrument = midiExportInstrumentToken(input.instrumentId);
   const bpm = midiExportBpmToken(input.tempoBpm);
   const chords = midiExportProgressionToken(input.progression);
   const now = input.now ?? Date.now();
-  return `chord-palette-${style}-${type}-${instrument}-${bpm}-${chords}-${now}.mid`;
+  return `chord-palette-${style}-${instrument}-${bpm}-${chords}-${now}.mid`;
 }
