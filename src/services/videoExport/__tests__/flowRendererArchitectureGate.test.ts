@@ -112,7 +112,9 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(colors).toContain('while lower < upper');
     expect(colors).toContain('return segment.color');
     expect(blocks).toContain('FlowVisualColorResolver.color');
-    expect(keyboard).toContain('FlowVisualColorResolver.color');
+    expect(keyboard).not.toContain('FlowVisualColorResolver.color');
+    expect(keyboard).toContain('fallbackColor.withAlphaComponent');
+    expect(renderer).toContain('fallbackColor: current.color');
     expect(colors).not.toMatch(/bpm|beat|durationSec\s*=|startSec\s*=/i);
     expect(flowSources).not.toMatch(/CIFilter|Gaussian|particle|random/i);
   });
@@ -140,11 +142,13 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(hero).toContain('cg.setShadow');
   });
 
-  it('uses only the approved official icon without pseudo branding', () => {
+  it('uses the approved icon and product-name horizontal lockup', () => {
     const branding = source('FlowBrandRenderer.swift');
 
     expect(branding).toContain('path(forResource: "cp-watermark", ofType: "png")');
-    expect(branding).not.toContain('"Chord Palette"');
+    expect(branding).toContain('private static let productName = "Chord Palette"');
+    expect(branding).toContain('let totalWidth = iconWidth + textSize.width');
+    expect(branding).toContain('x: startX + iconWidth');
     expect(branding).not.toMatch(/tagline|PLAY MORE COLORS|drawWordmark/i);
   });
 

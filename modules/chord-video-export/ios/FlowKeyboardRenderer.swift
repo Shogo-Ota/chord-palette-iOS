@@ -12,14 +12,12 @@ enum FlowKeyboardRenderer {
 
   private struct LandingVisual {
     let intensity: CGFloat
-    let color: UIColor
   }
 
   static func draw(
     plan: RenderPlan,
     events: [FlowVisualNoteEvent],
     keys: [KeyRect],
-    segments: [RenderSegment],
     fallbackColor: UIColor,
     frameTimeSec: Double,
     rect: CGRect,
@@ -33,14 +31,7 @@ enum FlowKeyboardRenderer {
         frameTimeSec: frameTimeSec
       )
       if intensity > (landingByMidi[folded]?.intensity ?? 0) {
-        landingByMidi[folded] = LandingVisual(
-          intensity: intensity,
-          color: FlowVisualColorResolver.color(
-            for: event,
-            segments: segments,
-            fallback: fallbackColor
-          )
-        )
+        landingByMidi[folded] = LandingVisual(intensity: intensity)
       }
     }
     let blackHeight = rect.height * 0.61
@@ -54,16 +45,15 @@ enum FlowKeyboardRenderer {
       )
       let landing = landingByMidi[key.midi]
       let intensity = landing?.intensity ?? 0
-      let color = landing?.color ?? fallbackColor
       if intensity > 0 {
-        color.withAlphaComponent(0.10 + intensity * 0.20).setFill()
+        fallbackColor.withAlphaComponent(0.10 + intensity * 0.20).setFill()
         UIBezierPath(
           roundedRect: keyRect.insetBy(dx: -height * 0.004, dy: -height * 0.005),
           cornerRadius: height * 0.005
         ).fill()
       }
       (intensity > 0
-        ? color.withAlphaComponent(0.34 + intensity * 0.62)
+        ? fallbackColor.withAlphaComponent(0.34 + intensity * 0.62)
         : whiteKey
       ).setFill()
       UIBezierPath(rect: keyRect).fill()
@@ -82,9 +72,8 @@ enum FlowKeyboardRenderer {
       )
       let landing = landingByMidi[key.midi]
       let intensity = landing?.intensity ?? 0
-      let color = landing?.color ?? fallbackColor
       (intensity > 0
-        ? color.withAlphaComponent(0.36 + intensity * 0.58)
+        ? fallbackColor.withAlphaComponent(0.36 + intensity * 0.58)
         : blackKey
       ).setFill()
       UIBezierPath(roundedRect: keyRect, cornerRadius: 2).fill()
@@ -95,7 +84,7 @@ enum FlowKeyboardRenderer {
       let name = plan.pitchClassNames[KeyboardLayout.pitchClass(key.midi)]
       drawNoteName(
         name,
-        color: landingByMidi[key.midi]?.color ?? fallbackColor,
+        color: fallbackColor,
         centerX: rect.minX + key.left + key.width / 2,
         y: rect.minY - height * 0.020,
         maxWidth: key.width * 2.6,

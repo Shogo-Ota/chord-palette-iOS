@@ -93,7 +93,6 @@ final class FlowFrameRenderer: VideoFrameRendering {
         plan: plan,
         events: visibleEvents,
         keys: keys,
-        segments: plan.segments,
         fallbackColor: current.color,
         frameTimeSec: timeSec,
         rect: keyboardRect,
