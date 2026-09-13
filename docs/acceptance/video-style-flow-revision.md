@@ -1,11 +1,13 @@
 # Video Style Flow Revision Acceptance
 
-- Status: Classic Hero refinement locally verified; EAS Preview pending
+- Status: Classic Hero refinement ready for physical-device review
 - Branch: `feature/video-style-flow-revision`
 - Base: `4ca43ef`
-- Implementation commit: `77c449b232f4cff6fb09cd44d49c003a6116a798`
+- Implementation commit: `dea8d30c25bf995efbbfb11ce1190a964a7fd39f`
 - Review build number: 26
 - Previous EAS build: `c9c33bd7-c867-48bd-aa01-a79ae80b8993` (Build 25)
+- EAS build: `fbbc91be-289b-4528-959a-47cdb3d3fe20` (FINISHED)
+- Install: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/fbbc91be-289b-4528-959a-47cdb3d3fe20
 - Device result: Not tested yet
 
 ## Approved direction
@@ -67,7 +69,6 @@ user-facing Compare requirement. The previously approved plan files are not edit
 - Classic renderer, Classic adapter, retired Pulse renderer/state and VideoWriter:
   unchanged from `4ca43ef`.
 - Preview config contains no Compare feature flag.
-- Build 25 native Swift compile, signing and IPA generation: PASS.
-- Build 26 native compile is pending.
+- Build 26 native Swift compile, signing and IPA generation: PASS.
 - Pixel review, color readability and audio landing sync remain physical-device
   checks.
