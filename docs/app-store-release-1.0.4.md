@@ -31,6 +31,23 @@ This update adds Flow, a new look for video export.
 - Fixed exported MIDI file names so they match the selected accompaniment style
 - Balanced the closing bars of Variation / Dance with the phrase before them
 
+## Promotional Text
+
+The 170-character slot that updates without review. Full history lives in
+[app-store-listing.md](app-store-listing.md) §3.
+
+Japanese (84 characters):
+
+```
+思いついたコード進行を、その場で鳴らして・並べて・縦動画に。新ビジュアル「フロー」はノートが鍵盤へ落ち、ディグリー表示で進行の役割まで伝わります。キー変更もワンタップ。
+```
+
+English (153 characters):
+
+```
+Sketch a chord progression, hear it instantly, and share it as a 9:16 video. The new Flow style drops your notes onto the keyboard and names each degree.
+```
+
 ## App Review Notes
 
 Existing notes in [app-store-listing.md](app-store-listing.md) §8 still apply
@@ -55,6 +72,7 @@ Suggested test path for this update:
 - [ ] Apple processing completed
 - [ ] Version `1.0.4` created and the build attached in App Store Connect
 - [ ] Japanese and English What's New text entered
+- [ ] Japanese and English promotional text updated
 - [ ] Screenshots reviewed — the video-export cut may be refreshed with Flow
       (optional; existing 6.7" screenshots remain accurate)
 - [ ] App description and keywords remain accurate
