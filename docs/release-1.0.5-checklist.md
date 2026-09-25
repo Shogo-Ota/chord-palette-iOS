@@ -15,9 +15,8 @@ Baseline release: `1.0.4 (32)`, production build
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae369dff-1922-4d42-b128-972d832cfdba
 (commit `ed365f1`)
 
-`1.0.4` was submitted on 2026-09-14 and is Waiting for Review. `1.0.5` cannot be
-submitted until that version leaves review, so the App Store Connect step below is
-the gate, not the build.
+`1.0.4` has since been approved and is Live, and App Store Connect reports
+`In review: none`. The only step left before submission is device sign-off on build 34.
 
 ## Scope — what ships to players
 
@@ -106,11 +105,11 @@ the gate, not the build.
 1. [x] Commit the feature work and the 1.0.5 version bump
 2. [x] `npx eas-cli build --platform ios --profile production`
 3. [x] Record the produced build number and commit it
-4. [ ] `npx eas-cli submit --platform ios --profile production --id 008b2740` — scheduled
-      2026-09-26 02:48 JST and still `in progress` two hours later. Confirm in TestFlight
-      whether build 34 arrived; re-run this command if it did not
-5. [ ] Apple processing completed and the build visible in TestFlight
+4. [x] `npx eas-cli submit --platform ios --profile production --id 008b2740` — the first
+      attempt was canceled after two hours without reaching TestFlight; a re-run
+      succeeded in four minutes
+5. [x] Apple processing completed and the build visible in TestFlight
 6. [ ] Owner device sign-off on build 34 through TestFlight
-7. [ ] Confirm in App Store Connect that `1.0.4` has left review, so `1.0.5` can be created
+7. [x] `1.0.4` is Live and `In review: none`, so `1.0.5` can be created
 8. [ ] Attach build 34, enter What's New and review notes, then submit for App Review
 9. [ ] Review outcome recorded in `docs/app-store-release-1.0.5.md`

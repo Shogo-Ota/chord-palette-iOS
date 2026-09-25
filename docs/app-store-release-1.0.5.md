@@ -1,6 +1,6 @@
 # App Store Release 1.0.5
 
-Status: Binary uploaded — not submitted for review (blocked on 1.0.4 leaving review)
+Status: Binary in TestFlight — not submitted for review
 Prepared: 2026-09-25
 Version/build: `1.0.5 (34)`
 
@@ -18,24 +18,21 @@ https://expo.dev/accounts/shogoota/projects/chord-palette/builds/008b2740-78d6-4
 Superseded build 33:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 
-EAS submission for build 34 is **stuck**. It was scheduled 2026-09-26 02:48 JST and was
-still `in progress` at 04:37, nearly two hours later; build 33's equivalent finished in
-four minutes. Check TestFlight before doing anything: if build 34 is already there, the
-stuck record is cosmetic, and if it is not, re-run
-`npx eas-cli submit --platform ios --profile production --id 008b2740`. Re-submitting
-while the first attempt is live is safe — Apple rejects a duplicate build number rather
-than accepting two.
-https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/6075b227-befd-4208-b81f-17db5b44535f
+EAS submission for build 34, uploaded 2026-09-26 and confirmed in TestFlight:
+https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/d0034f77-10a1-4aed-b3dd-ec11ec8fa944
+
+The first attempt at this upload (`6075b227`) sat `in progress` for nearly two hours and
+was then canceled, and build 34 never reached TestFlight. Re-running the same command
+worked in four minutes. If an upload runs long again, check TestFlight rather than
+trusting the submission record, and re-submit: Apple rejects a duplicate build number
+rather than accepting two.
 
 Build 33 was uploaded on 2026-09-25 and is superseded:
 https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/81868bc5-1bcc-4cc8-866d-a14f57d19458
 
-`1.0.4 (32)` was submitted on 2026-09-14 and is Waiting for Review. App Store Connect
-will not accept a `1.0.5` version record until that version is approved, released,
-rejected or removed from review. Uploading the binary is independent of that, so
-build 34 goes to TestFlight and can be signed off on a device now. Creating the
-`1.0.5` version and submitting for review are the only steps left, and both belong to
-the owner.
+`1.0.4 (32)` is now Live and App Store Connect reports `In review: none`, so the version
+record for `1.0.5` can be created. Nothing is blocking submission except the owner's own
+device sign-off on build 34.
 
 ## What's New — Japanese
 
@@ -109,10 +106,9 @@ Suggested test path for this update:
 - [x] Promotional text drafted in Japanese and English
 - [x] Sandbox purchase and restore verified on Preview build `2e8fa4ff`
 - [x] Production build created — `1.0.5 (34)`
-- [ ] Production build uploaded — submission 6075b227 stuck `in progress`; confirm in
-      TestFlight whether build 34 arrived, and re-submit if it did not
-- [ ] Apple processing completed
-- [ ] `1.0.4` has left review, so version `1.0.5` can be created
+- [x] Production build uploaded and visible in TestFlight as `1.0.5 (34)`
+- [x] Apple processing completed
+- [x] `1.0.4` has left review — it is Live and `In review: none`, so `1.0.5` can be created
 - [ ] Version `1.0.5` created and the build attached in App Store Connect
 - [ ] What's New text entered
 - [ ] Promotional text updated
