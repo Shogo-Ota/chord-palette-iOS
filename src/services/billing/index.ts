@@ -6,7 +6,11 @@ import { env } from '@/lib/env';
 import { NO_ENTITLEMENTS, type Entitlements } from '@/lib/entitlements';
 import { logger } from '@/lib/logger';
 import type { Tier } from '@/lib/performance/tier';
-import { track as trackEvent, type AnalyticsEvent, type AnalyticsProps } from '@/services/analytics';
+import {
+  track as trackEvent,
+  type AnalyticsEvent,
+  type AnalyticsProps,
+} from '@/services/analytics';
 
 import type { BillingProduct, BillingProvider, BillingResult } from './BillingProvider';
 import { DisabledBillingProvider } from './DisabledBillingProvider';
@@ -49,7 +53,7 @@ function subscribe(cb: () => void) {
  * `useSyncExternalStore` never sees a new reference (no render loop).
  */
 function effectiveEntitlements(): Entitlements {
-  return isAdminMode() ? ALL_ENTITLEMENTS : current;
+  return ADMIN_UNLOCK && isAdminMode() ? ALL_ENTITLEMENTS : current;
 }
 
 function getSnapshot(): Entitlements {
@@ -122,8 +126,9 @@ function createDefaultProvider(): BillingProvider {
   if (!__DEV__ && env.revenueCatIosKey) {
     try {
       // Lazy load: keeps react-native-purchases out of the dev/Metro and jest graph.
-      // eslint-disable-next-line @typescript-eslint/no-require-imports
-      const mod = require('./RevenueCatBillingProvider') as typeof import('./RevenueCatBillingProvider');
+      const mod =
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        require('./RevenueCatBillingProvider') as typeof import('./RevenueCatBillingProvider');
       return new mod.RevenueCatBillingProvider(env.revenueCatIosKey);
     } catch (e) {
       logger.error('RevenueCat provider unavailable; falling back to Mock', {
@@ -196,12 +201,17 @@ export const billingService = {
   },
 
   /** Subscribe to Palette Pro. Emits purchase-funnel analytics. */
-  async purchasePro(): Promise<BillingResult> {
-    track('palette_pro_purchase_started', { productId: 'palette_pro_monthly' });
+  async purchasePro(productId: string): Promise<BillingResult> {
+    track('palette_pro_purchase_started', { productId });
     try {
-      const result = await provider.purchasePro();
+      const result = await provider.purchasePro(productId);
       if (result.status === 'purchased') {
-        track('palette_pro_purchased', { productId: 'palette_pro_monthly' });
+        if (!result.entitlements.palettePro) {
+          const message = '購入後のPalette Pro権限を確認できませんでした。';
+          track('palette_pro_purchase_failed', { reason: message });
+          return { status: 'error', message };
+        }
+        track('palette_pro_purchased', { productId });
       } else if (result.status === 'error') {
         track('palette_pro_purchase_failed', { reason: result.message });
       }
@@ -219,6 +229,9 @@ export const billingService = {
     try {
       const result = await provider.restore();
       if (result.status === 'restored' || result.status === 'purchased') {
+        if (!result.entitlements.palettePro) {
+          return { status: 'error', message: '復元後のPalette Pro権限を確認できませんでした。' };
+        }
         track('purchase_restored', { productId: 'palette_pro_monthly' });
       }
       return result;
@@ -229,3 +242,4 @@ export const billingService = {
 };
 
 export type { BillingProduct, BillingProvider, BillingResult } from './BillingProvider';
+export { subscriptionPeriodLabel } from './BillingProvider';

@@ -84,6 +84,7 @@ export type ChordRootSpelling = {
 export type ChordCategory =
   | 'diatonic'
   | 'variation'
+  | 'augmentedTriad'
   | 'primaryDominant'
   | 'secondaryDominant'
   | 'passingDiminished'
@@ -186,6 +187,13 @@ export type ChordEvent = {
    * written before per-chord voicing existed; read paths normalize it to `root`.
    */
   voicingPosition?: VoicingPosition;
+  /** Single-event accompaniment override. Absent means inherit Project Global STYLE. */
+  accompanimentOverride?: ChordAccompanimentOverride;
+};
+
+export type ChordAccompanimentOverride = {
+  pattern: AccompanimentPattern;
+  variant: string;
 };
 
 export type PresetCategory = 'free' | 'pro';

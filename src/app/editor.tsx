@@ -17,6 +17,8 @@ import { Icon, type IconName } from '@/components/Icon';
 import {
   CPChordEvolutionSheet,
   CPChordContextMenu,
+  CPChordMetaLine,
+  CPChordStyleSheet,
   CPCoachMarks,
   CPSettingChip,
   CPSuggestionBar,
@@ -52,7 +54,13 @@ import * as session from '@/features/editor/session';
 import { getSession, useEditorSession } from '@/features/editor/session';
 import { useAutosave } from '@/features/editor/useAutosave';
 import { useChordSuggestions } from '@/features/editor/useChordSuggestions';
+import { useChordStyleOverride } from '@/features/editor/useChordStyleOverride';
 import { useEditorActions } from '@/features/editor/useEditorActions';
+import {
+  chordStyleOverrideAccessibilityLabel,
+  chordStyleOverrideBadge,
+  chordStyleOverrideOption,
+} from '@/features/editor/chordStyleOverrideOptions';
 import {
   libraryTabOptions,
   resolveLibraryTab,
@@ -210,13 +218,18 @@ export default function EditorScreen() {
   const [reduceMotion, setReduceMotion] = useState(false);
   const [showMoreTensions, setShowMoreTensions] = useState(false);
   const isAdmin = useAdminMode();
-  const openEvolutionPaywall = useCallback(() => router.push('/paywall'), [router]);
+  const openProPaywall = useCallback(() => router.push('/paywall'), [router]);
   const evolution = useChordEvolution({
     session: s,
     entitlements: ent,
     tier: ent.palettePro ? 'pro' : 'free',
-    onOpenPaywall: openEvolutionPaywall,
+    onOpenPaywall: openProPaywall,
     onError: setAudioError,
+  });
+  const chordStyleOverride = useChordStyleOverride({
+    session: s,
+    entitlements: ent,
+    onOpenPaywall: openProPaywall,
   });
   const playLift = useRef(new Animated.Value(0)).current;
   const stripScrollRef = useRef<ScrollView>(null);
@@ -369,6 +382,11 @@ export default function EditorScreen() {
 
   const totalBars = calcTotalBars(progression);
   const selectedEvent = selected >= 0 ? progression[selected] : undefined;
+  const globalStyleLabel =
+    chordStyleOverrideOption({
+      pattern: s.accompanimentPattern,
+      variant: s.accompanimentVariant,
+    })?.displayLabel ?? '全体STYLE';
   const selectedDegree = selectedEvent
     ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0, mode)
     : -1;
@@ -765,6 +783,10 @@ export default function EditorScreen() {
                   const neon = playNeonColor[ev.function];
                   const voicing = normalizeVoicingPosition(ev.voicingPosition);
                   const voicingBadge = voicingPositionBadge(voicing);
+                  const styleBadge = chordStyleOverrideBadge(ev.accompanimentOverride);
+                  const styleAccessibility = chordStyleOverrideAccessibilityLabel(
+                    ev.accompanimentOverride,
+                  );
                   return (
                     <React.Fragment key={ev.id}>
                       <Pressable
@@ -772,7 +794,14 @@ export default function EditorScreen() {
                         onLongPress={() => openChordMenu(i)}
                         delayLongPress={350}
                         accessibilityRole="button"
-                        accessibilityLabel={`${ev.displayName} ${ev.degreeLabel} ${VOICING_POSITION_LABELS[voicing]}`}
+                        accessibilityLabel={[
+                          ev.displayName,
+                          ev.degreeLabel,
+                          VOICING_POSITION_LABELS[voicing],
+                          styleAccessibility,
+                        ]
+                          .filter(Boolean)
+                          .join(' ')}
                         accessibilityHint="長押しで編集メニュー"
                         accessibilityState={{ selected: i === selected }}
                         onLayout={(e) => {
@@ -819,10 +848,12 @@ export default function EditorScreen() {
                             <Text style={[styles.timeName, isActivePlay && styles.timeNamePlaying]}>
                               {ev.displayName}
                             </Text>
-                            <Text style={[styles.timeDegree, { color: isActivePlay ? neon : fn }]}>
-                              {ev.degreeLabel}
-                              {voicingBadge ? ` · ${voicingBadge}` : ''}
-                            </Text>
+                            <CPChordMetaLine
+                              degreeLabel={ev.degreeLabel}
+                              voicingBadge={voicingBadge}
+                              styleBadge={styleBadge}
+                              style={[styles.timeDegree, { color: isActivePlay ? neon : fn }]}
+                            />
                           </View>
                           <View style={styles.timeDur}>
                             <Text
@@ -1101,6 +1132,10 @@ export default function EditorScreen() {
             voicingPosition={normalizeVoicingPosition(selectedEvent.voicingPosition)}
             context={chordContext}
             onRequestClose={() => setContextMenuOpen(false)}
+            onChangeAccompanimentStyle={() => {
+              setContextMenuOpen(false);
+              chordStyleOverride.open();
+            }}
             onEvolve={() => {
               const index = getSession().selected;
               setContextMenuOpen(false);
@@ -1144,6 +1179,22 @@ export default function EditorScreen() {
             }}
           />
         )}
+
+        {chordStyleOverride.targetEvent ? (
+          <CPChordStyleSheet
+            visible={chordStyleOverride.visible}
+            chordLabel={chordStyleOverride.targetEvent.displayName}
+            globalStyleLabel={globalStyleLabel}
+            value={chordStyleOverride.targetEvent.accompanimentOverride}
+            locked={!ent.palettePro}
+            onRequestClose={chordStyleOverride.close}
+            onSelect={(override) => {
+              const outcome = chordStyleOverride.select(override);
+              if (outcome.updated) hapticSuccess();
+              else if (outcome.blockedBy) hapticError();
+            }}
+          />
+        ) : null}
 
         {evolution.model ? (
           <CPChordEvolutionSheet

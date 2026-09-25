@@ -28,7 +28,7 @@ import type { BillingProduct, BillingProvider, BillingResult } from './BillingPr
 export const PALETTE_PRO_PRODUCT: BillingProduct = {
   productId: 'palette_pro_monthly',
   priceString: '¥500',
-  period: 'month',
+  subscriptionPeriod: 'P1M',
   title: 'Palette Pro',
 };
 
@@ -74,7 +74,10 @@ export class MockBillingProvider implements BillingProvider {
     return [this.product];
   }
 
-  async purchasePro(): Promise<BillingResult> {
+  async purchasePro(productId: string): Promise<BillingResult> {
+    if (productId !== this.product.productId) {
+      return { status: 'error', message: '選択した商品を購入できませんでした。' };
+    }
     const outcome = this.nextPurchaseOutcome;
     this.nextPurchaseOutcome = 'success'; // one-shot injection; reset after use
     if (outcome === 'cancelled') return { status: 'cancelled' };

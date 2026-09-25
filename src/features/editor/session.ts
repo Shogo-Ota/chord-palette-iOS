@@ -3,6 +3,7 @@ import { useSyncExternalStore } from 'react';
 import { normalizeAccompaniment } from '@/lib/accompaniment';
 import { normalizeInstrumentId } from '@/data/labels';
 import { DEFAULT_DRUM_BEAT, normalizeDrumBeat, type DrumBeat } from '@/lib/drum/drumBeat';
+import { isLocked, type Entitlements } from '@/lib/entitlements';
 import {
   DEFAULT_PUBLIC_INSTRUMENT_EFFECT,
   normalizePublicInstrumentEffect,
@@ -25,6 +26,12 @@ import {
   DEFAULT_PUBLIC_VARIANT,
   normalizePublicAccompanimentSelection,
 } from '@/lib/performance/publicAccompaniment';
+import {
+  chordStyleKey,
+  normalizeChordStyleOverride,
+  normalizeChordStyleOverrides,
+  type EffectiveChordStyle,
+} from '@/lib/performance/style';
 import { defaultVariantFor, type AccompanimentVariantId } from '@/lib/performance/variants';
 import {
   buildV101ListeningChords,
@@ -39,6 +46,7 @@ import { createProject, getProject, saveProject } from '@/repositories/projectRe
 import { DEFAULT_OCTAVE_SHIFT, setLastProjectId } from '@/repositories/sessionPrefsRepository';
 import type {
   AccompanimentPattern,
+  ChordAccompanimentOverride,
   ChordDuration,
   ChordEvent,
   GrooveId,
@@ -218,6 +226,25 @@ function applyProject(p: Project): void {
     normalizeAccompaniment(p.accompanimentPattern),
     p.accompanimentVariant,
   );
+  const globalStyle: EffectiveChordStyle = {
+    pattern: publicAccompaniment.accompanimentPattern,
+    variant: publicAccompaniment.accompanimentVariant,
+  };
+  const progression = normalizeChordStyleOverrides(
+    p.chordEvents.map((e) => {
+      const eventMode = normalizeKeyMode(e.modeContext ?? p.mode);
+      const transposed = transposeEvent(e, p.key, eventMode);
+      return {
+        ...transposed,
+        keyContext: e.keyContext ?? p.key,
+        modeContext: eventMode,
+        // v1.0.2 stored one Project-wide position. Promote it into every legacy
+        // chord exactly once; from here on the event is the production authority.
+        voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
+      };
+    }),
+    globalStyle,
+  );
   state = {
     ...initialState(),
     releaseCut: false,
@@ -238,19 +265,8 @@ function applyProject(p: Project): void {
     accompanimentEnergy: normalizeEnergy(p.accompanimentEnergy),
     // Respell each chord in the mode it was entered under. A mixed C-major/C-minor
     // project must reload as I–IV–V–I–i–iv–v–i, not be flattened into the last mode.
-    progression: p.chordEvents.map((e) => {
-      const eventMode = normalizeKeyMode(e.modeContext ?? p.mode);
-      const transposed = transposeEvent(e, p.key, eventMode);
-      return {
-        ...transposed,
-        keyContext: e.keyContext ?? p.key,
-        modeContext: eventMode,
-        // v1.0.2 stored one Project-wide position. Promote it into every legacy
-        // chord exactly once; from here on the event is the production authority.
-        voicingPosition: normalizeVoicingPosition(e.voicingPosition ?? p.voicingPosition),
-      };
-    }),
-    selected: p.chordEvents.length > 0 ? 0 : -1,
+    progression,
+    selected: progression.length > 0 ? 0 : -1,
     createdAt: p.createdAt,
   };
   emit();
@@ -340,10 +356,18 @@ export function replaceProgressionAtomically(
   selected = state.selected,
 ): boolean {
   if (state.progression !== expectedCurrent) return false;
-  const progression = next.map((event) => ({
-    ...event,
-    ...(event.rootSpelling ? { rootSpelling: { ...event.rootSpelling } } : {}),
-  }));
+  const currentById = new Map(expectedCurrent.map((event) => [event.id, event]));
+  const progression = next.map((event) => {
+    const source = currentById.get(event.id);
+    const { accompanimentOverride: _ignoredOverride, ...replacement } = event;
+    return {
+      ...replacement,
+      ...(event.rootSpelling ? { rootSpelling: { ...event.rootSpelling } } : {}),
+      ...(source?.accompanimentOverride
+        ? { accompanimentOverride: { ...source.accompanimentOverride } }
+        : {}),
+    };
+  });
   const nextSelected =
     progression.length === 0 ? -1 : Math.min(Math.max(selected, -1), progression.length - 1);
   commit(progression, nextSelected);
@@ -359,7 +383,7 @@ export function setSelected(index: number): void {
  * Leaves selection cleared so consecutive library taps keep appending
  * (explicit strip tap is required to enter replace mode).
  */
-export function addChord(chord: Omit<ChordEvent, 'id'>): void {
+export function addChord(chord: Omit<ChordEvent, 'id' | 'accompanimentOverride'>): void {
   if (!canAdd(state.progression, chord.durationBeats)) return;
   const next = [
     ...state.progression,
@@ -384,15 +408,21 @@ export function replaceSelected(
   if (state.selected < 0) return;
   const cur = state.progression[state.selected];
   if (!cur) return;
+  // Replacing harmony must not create or erase a STYLE override. The override belongs
+  // to the placed event identity, not to the library chord used as the replacement.
+  const { accompanimentOverride: _ignoredOverride, ...replacement } = chord;
   const next = state.progression.map((e, i) =>
     i === state.selected
       ? {
-          ...chord,
+          ...replacement,
           id: cur.id,
           durationBeats: chord.durationBeats ?? cur.durationBeats,
           keyContext: state.key,
           modeContext: state.mode,
           voicingPosition: normalizeVoicingPosition(chord.voicingPosition ?? cur.voicingPosition),
+          ...(cur.accompanimentOverride
+            ? { accompanimentOverride: { ...cur.accompanimentOverride } }
+            : {}),
         }
       : e,
   );
@@ -551,6 +581,64 @@ export function setSelectedVoicingPosition(position: VoicingPosition): void {
       index === state.selected ? { ...event, voicingPosition: next } : event,
     ),
   );
+}
+
+export type AccompanimentOverrideMutationOutcome = {
+  updated: boolean;
+  blockedBy?: 'palettePro';
+  invalidStyle?: true;
+};
+
+/**
+ * Set or clear the selected chord's single-event STYLE override.
+ *
+ * Existing saved overrides are grandfathered and therefore never checked merely
+ * because another chord operation occurs. This mutation alone owns the Pro gate:
+ * setting/changing requires Palette Pro, while `undefined` always removes the
+ * override so a lapsed subscriber can return to Global inheritance.
+ */
+export function setSelectedAccompanimentOverride(
+  override: ChordAccompanimentOverride | undefined,
+  entitlements: Entitlements,
+): AccompanimentOverrideMutationOutcome {
+  if (state.selected < 0) return { updated: false };
+  const current = state.progression[state.selected];
+  if (!current) return { updated: false };
+
+  if (override == null) {
+    if (!current.accompanimentOverride) return { updated: false };
+    const next = state.progression.map((event, index) => {
+      if (index !== state.selected) return event;
+      const { accompanimentOverride: _removed, ...inherited } = event;
+      return inherited;
+    });
+    commit(next);
+    return { updated: true };
+  }
+
+  if (isLocked(true, entitlements)) {
+    return { updated: false, blockedBy: 'palettePro' };
+  }
+
+  const globalStyle: EffectiveChordStyle = {
+    pattern: state.accompanimentPattern,
+    variant: state.accompanimentVariant,
+  };
+  const normalized = normalizeChordStyleOverride(override, globalStyle);
+  if (!normalized) return { updated: false, invalidStyle: true };
+  if (
+    current.accompanimentOverride &&
+    chordStyleKey(current.accompanimentOverride) === chordStyleKey(normalized)
+  ) {
+    return { updated: false };
+  }
+
+  commit(
+    state.progression.map((event, index) =>
+      index === state.selected ? { ...event, accompanimentOverride: { ...normalized } } : event,
+    ),
+  );
+  return { updated: true };
 }
 
 /**
@@ -729,7 +817,17 @@ function appendPrepared(incoming: Omit<ChordEvent, 'id'>[]): AppendOutcome {
  * Respects the 16-bar cap (extra chords are dropped and reported).
  */
 export function appendProject(project: Project): AppendOutcome {
-  const rebased = rebaseProgression(project.chordEvents, project.key, state.key).map((e) =>
+  const sourceStyle = normalizePublicAccompanimentSelection(
+    normalizeAccompaniment(project.accompanimentPattern),
+    project.accompanimentVariant,
+  );
+  // Valid saved overrides are grandfathered regardless of current entitlement.
+  // Invalid/non-public pairs inherit the source project's Global STYLE instead.
+  const inherited = normalizeChordStyleOverrides(project.chordEvents, {
+    pattern: sourceStyle.accompanimentPattern,
+    variant: sourceStyle.accompanimentVariant,
+  });
+  const rebased = rebaseProgression(inherited, project.key, state.key).map((e) =>
     relabelDegreesForKey(e, state.mode),
   );
   return appendPrepared(rebased);

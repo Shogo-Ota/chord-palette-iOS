@@ -142,6 +142,7 @@ describe('CPChordContextMenu Evolution entry', () => {
           canEvolve: true,
         }}
         onRequestClose={jest.fn()}
+        onChangeAccompanimentStyle={jest.fn()}
         onEvolve={onEvolve}
         onDuplicate={jest.fn()}
         onMoveLeft={jest.fn()}
@@ -155,5 +156,42 @@ describe('CPChordContextMenu Evolution entry', () => {
     expect(entry.props.accessibilityRole).toBe('button');
     fireEvent.press(entry);
     expect(onEvolve).toHaveBeenCalledTimes(1);
+  });
+
+  it('opens the existing single-chord STYLE action', () => {
+    const onChangeAccompanimentStyle = jest.fn();
+    const view = render(
+      <CPChordContextMenu
+        visible
+        chordLabel="F"
+        degreeLabel="IV"
+        durationBeats={1}
+        voicingPosition="root"
+        context={{
+          visible: true,
+          canDuplicate: true,
+          canMoveLeft: true,
+          canMoveRight: true,
+          canDelete: true,
+          canEditDuration: true,
+          canEditVoicing: true,
+          canEvolve: true,
+        }}
+        onRequestClose={jest.fn()}
+        onChangeAccompanimentStyle={onChangeAccompanimentStyle}
+        onEvolve={jest.fn()}
+        onDuplicate={jest.fn()}
+        onMoveLeft={jest.fn()}
+        onMoveRight={jest.fn()}
+        onDelete={jest.fn()}
+        onSetDuration={jest.fn()}
+        onSetVoicingPosition={jest.fn()}
+      />,
+    );
+
+    const entry = view.getByLabelText('このコードの伴奏STYLEを変更');
+    expect(entry.props.accessibilityRole).toBe('button');
+    fireEvent.press(entry);
+    expect(onChangeAccompanimentStyle).toHaveBeenCalledTimes(1);
   });
 });

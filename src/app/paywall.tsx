@@ -10,22 +10,21 @@ import { ScreenScaffold } from '@/components/ScreenScaffold';
 import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from '@/config/legal';
 import { logger } from '@/lib/logger';
 import { track } from '@/services/analytics';
-import { billingService, type BillingProduct } from '@/services/billing';
+import { billingService, subscriptionPeriodLabel, type BillingProduct } from '@/services/billing';
 import { colors, font, radius, rainbow } from '@/theme/tokens';
 
 /** Gold-framed Pro variant — the hero is what the screen is selling. */
 const PRO_ICON = require('../../assets/icon/app-icon-pro.png');
 
-/**
- * Fallback price shown until the provider's localized offering resolves. Kept in
- * sync with the App Store price point (¥500 — Apple has no ¥490 JPY tier). The
- * live price always comes from the store (`product.priceString`); this only shows
- * briefly before offerings load or if they fail to resolve.
- */
-const FALLBACK_PRICE = '¥500';
-const PERIOD_SUFFIX = '/ 月';
-
-type Perk = { glyph: string; color: string; bg: string; border: string; title: string; desc: string; included: boolean };
+type Perk = {
+  glyph: string;
+  color: string;
+  bg: string;
+  border: string;
+  title: string;
+  desc: string;
+  included: boolean;
+};
 const PERKS: Perk[] = [
   {
     glyph: '♪',
@@ -47,16 +46,27 @@ const PERKS: Perk[] = [
     desc: 'セカンダリードミナントや借用和音を使った進行プリセット',
     included: true,
   },
+  {
+    glyph: '♬',
+    color: colors.blueText,
+    bg: 'rgba(91,140,255,0.14)',
+    border: 'rgba(91,140,255,0.32)',
+    title: 'コードごとの伴奏STYLE',
+    desc: '配置したコード1件だけ、Block・Natural・Cityなどの弾き方を変更',
+    included: true,
+  },
   // NOTE: Do not advertise not-yet-available features on the paywall (App Store
   // Guideline 2.3.x). The "追加音色（予定）" perk is intentionally omitted until it
   // ships; re-add it here with `included: true` when the feature is live.
 ];
 
 type Status = 'idle' | 'purchasing' | 'restoring' | 'success' | 'error';
+type OfferingStatus = 'loading' | 'ready' | 'unavailable';
 
 export default function PaywallScreen() {
   const router = useRouter();
   const [product, setProduct] = useState<BillingProduct | null>(null);
+  const [offeringStatus, setOfferingStatus] = useState<OfferingStatus>('loading');
   const [status, setStatus] = useState<Status>('idle');
   const [errorMsg, setErrorMsg] = useState('');
 
@@ -71,16 +81,25 @@ export default function PaywallScreen() {
     billingService
       .getOfferings()
       .then((products) => {
-        if (active && products.length > 0) setProduct(products[0]);
+        if (!active) return;
+        const selected = products[0] ?? null;
+        setProduct(selected);
+        setOfferingStatus(selected ? 'ready' : 'unavailable');
       })
-      .catch((e) => logger.error('Failed to load offerings', { error: String(e) }));
+      .catch((e) => {
+        if (active) setOfferingStatus('unavailable');
+        logger.error('Failed to load offerings', { error: String(e) });
+      });
     return () => {
       active = false;
     };
   }, []);
 
   const busy = status === 'purchasing' || status === 'restoring';
-  const priceString = product?.priceString ?? FALLBACK_PRICE;
+  const priceString =
+    product?.priceString ?? (offeringStatus === 'loading' ? '価格を取得中…' : '利用できません');
+  const period = subscriptionPeriodLabel(product?.subscriptionPeriod ?? null);
+  const periodSuffix = period ? `/ ${period}` : '';
 
   const openLegal = (url: string) => {
     WebBrowser.openBrowserAsync(url).catch((e) =>
@@ -97,11 +116,11 @@ export default function PaywallScreen() {
   };
 
   const handlePurchase = async () => {
-    if (busy) return;
+    if (busy || !product) return;
     setErrorMsg('');
     setStatus('purchasing');
     try {
-      const result = await billingService.purchasePro();
+      const result = await billingService.purchasePro(product.productId);
       if (result.status === 'purchased' || result.status === 'restored') {
         closeSoon();
       } else if (result.status === 'cancelled') {
@@ -160,16 +179,24 @@ export default function PaywallScreen() {
       </View>
 
       {/* price card */}
-      <LinearGradient colors={rainbow} start={{ x: 0, y: 0 }} end={{ x: 1, y: 0.4 }} style={styles.priceBorder}>
+      <LinearGradient
+        colors={rainbow}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0.4 }}
+        style={styles.priceBorder}>
         <View style={styles.priceInner}>
-          <LinearGradient colors={['#7c4dff', '#d6409f']} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.priceIcon}>
+          <LinearGradient
+            colors={['#7c4dff', '#d6409f']}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.priceIcon}>
             <Icon name="crown" size={24} color="#fff" />
           </LinearGradient>
           <View style={{ flex: 1 }}>
             <View style={styles.priceLine}>
-              <Text style={styles.priceKind}>月額サブスク</Text>
+              <Text style={styles.priceKind}>サブスクリプション</Text>
               <Text style={styles.priceValue}>{priceString}</Text>
-              <Text style={styles.pricePeriod}>{PERIOD_SUFFIX}</Text>
+              <Text style={styles.pricePeriod}>{periodSuffix}</Text>
             </View>
             <Text style={styles.priceNote}>自動更新・いつでも解約可能</Text>
           </View>
@@ -201,7 +228,12 @@ export default function PaywallScreen() {
       </View>
 
       {/* purchase */}
-      <Pressable onPress={handlePurchase} disabled={busy || status === 'success'}>
+      <Pressable
+        testID="purchase-pro-button"
+        accessibilityRole="button"
+        accessibilityState={{ disabled: busy || status === 'success' || !product }}
+        onPress={handlePurchase}
+        disabled={busy || status === 'success' || !product}>
         <LinearGradient
           colors={
             status === 'success'
@@ -213,7 +245,7 @@ export default function PaywallScreen() {
           style={[
             styles.purchaseBtn,
             status === 'success' && styles.purchaseBtnSuccess,
-            busy && styles.purchaseBtnBusy,
+            (busy || !product) && styles.purchaseBtnBusy,
           ]}>
           {status === 'purchasing' ? (
             <View style={styles.btnRow}>
@@ -226,7 +258,9 @@ export default function PaywallScreen() {
               <Text style={styles.purchaseText}>登録が完了しました</Text>
             </View>
           ) : (
-            <Text style={styles.purchaseText}>Palette Pro に登録する（{priceString} {PERIOD_SUFFIX}）</Text>
+            <Text style={styles.purchaseText}>
+              {product ? `Palette Pro に登録する（${priceString} ${periodSuffix}）` : priceString}
+            </Text>
           )}
         </LinearGradient>
       </Pressable>
@@ -240,7 +274,10 @@ export default function PaywallScreen() {
         </View>
       )}
 
-      <Pressable style={styles.restore} onPress={handleRestore} disabled={busy || status === 'success'}>
+      <Pressable
+        style={styles.restore}
+        onPress={handleRestore}
+        disabled={busy || status === 'success'}>
         {status === 'restoring' ? (
           <View style={styles.btnRow}>
             <ActivityIndicator color={colors.textMuted} size="small" />
@@ -251,13 +288,20 @@ export default function PaywallScreen() {
         )}
       </Pressable>
 
-      <Text style={styles.footer}>
-        Palette Pro は月額 {priceString} の自動更新サブスクリプションです。料金は購入確定時に
-        Apple ID に請求されます。現在の期間終了の24時間前までに自動更新をオフにしない限り自動的に
-        更新され、更新料金（{priceString} / 月）は期間終了前の24時間以内に請求されます。{'\n'}
-        購入後は App Store のアカウント設定からいつでも管理・解約でき、解約すると現在の請求期間の
-        終了時に Pro 機能が無効になります。
-      </Text>
+      {product ? (
+        <Text style={styles.footer}>
+          Palette Pro は {priceString} {periodSuffix} の自動更新サブスクリプションです。料金は
+          購入確定時に Apple ID に請求されます。現在の期間終了の24時間前までに自動更新を
+          オフにしない限り自動的に更新され、更新料金（{priceString} {periodSuffix}）は
+          期間終了前の24時間以内に請求されます。{'\n'}
+          購入後は App Store のアカウント設定からいつでも管理・解約でき、解約すると現在の
+          請求期間の終了時に Pro 機能が無効になります。
+        </Text>
+      ) : (
+        <Text style={styles.footer}>
+          商品情報を取得できないため、現在は購入できません。時間をおいて再度お試しください。
+        </Text>
+      )}
 
       <View style={styles.legalRow}>
         <Pressable hitSlop={8} onPress={() => openLegal(TERMS_OF_USE_URL)}>
@@ -273,7 +317,12 @@ export default function PaywallScreen() {
 }
 
 const styles = StyleSheet.create({
-  closeRow: { flexDirection: 'row', justifyContent: 'flex-end', paddingVertical: 4, paddingBottom: 8 },
+  closeRow: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    paddingVertical: 4,
+    paddingBottom: 8,
+  },
   closeBtn: {
     width: 32,
     height: 32,
@@ -298,7 +347,13 @@ const styles = StyleSheet.create({
   },
   heroTitleRow: { flexDirection: 'row', alignItems: 'center' },
   heroTitle: { fontSize: 30, fontFamily: font.black, fontWeight: '900', color: colors.textPrimary },
-  heroSub: { fontSize: 15, color: colors.textTertiary, fontFamily: font.semibold, fontWeight: '600', marginTop: 8 },
+  heroSub: {
+    fontSize: 15,
+    color: colors.textTertiary,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    marginTop: 8,
+  },
 
   priceBorder: { borderRadius: radius['4xl'], padding: 1.5 },
   priceInner: {
@@ -310,11 +365,32 @@ const styles = StyleSheet.create({
     paddingVertical: 17,
     paddingHorizontal: 18,
   },
-  priceIcon: { width: 48, height: 48, borderRadius: radius.xl, alignItems: 'center', justifyContent: 'center' },
+  priceIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: radius.xl,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   priceLine: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
-  priceKind: { fontSize: 13, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
-  priceValue: { fontSize: 24, fontFamily: font.black, fontWeight: '900', color: colors.textPrimary },
-  pricePeriod: { fontSize: 13, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
+  priceKind: {
+    fontSize: 13,
+    color: colors.textMuted,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
+  priceValue: {
+    fontSize: 24,
+    fontFamily: font.black,
+    fontWeight: '900',
+    color: colors.textPrimary,
+  },
+  pricePeriod: {
+    fontSize: 13,
+    color: colors.textMuted,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
   priceNote: { fontSize: 11.5, color: colors.textDim, marginTop: 3 },
 
   perkRow: {
@@ -329,7 +405,14 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
   },
   perkRowSoon: { backgroundColor: colors.surfaceLocked, borderColor: colors.borderFaint },
-  perkIcon: { width: 46, height: 46, borderRadius: radius.lg, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
+  perkIcon: {
+    width: 46,
+    height: 46,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   perkGlyph: { fontSize: 20 },
   perkTitle: { fontSize: 15, fontFamily: font.bold, fontWeight: '700', color: colors.textPrimary },
   perkTitleSoon: { color: colors.textMuted },
@@ -350,7 +433,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
     paddingVertical: 4,
   },
-  perkSoonText: { fontSize: 10, color: colors.textDim, fontFamily: font.semibold, fontWeight: '600' },
+  perkSoonText: {
+    fontSize: 10,
+    color: colors.textDim,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
 
   purchaseBtn: {
     borderRadius: radius['2xl'],
@@ -385,7 +473,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  errorText: { flex: 1, fontSize: 12.5, color: colors.dangerSoft, fontFamily: font.semibold, fontWeight: '600', lineHeight: 17 },
+  errorText: {
+    flex: 1,
+    fontSize: 12.5,
+    color: colors.dangerSoft,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+    lineHeight: 17,
+  },
   purchaseText: {
     fontSize: 16.5,
     fontFamily: font.extrabold,
@@ -396,8 +491,19 @@ const styles = StyleSheet.create({
     textShadowRadius: 2,
   },
   restore: { alignItems: 'center', marginTop: 18, paddingVertical: 6 },
-  restoreText: { fontSize: 13.5, color: colors.textMuted, fontFamily: font.semibold, fontWeight: '600' },
-  footer: { textAlign: 'center', fontSize: 10.5, color: colors.textFaint, marginTop: 14, lineHeight: 17 },
+  restoreText: {
+    fontSize: 13.5,
+    color: colors.textMuted,
+    fontFamily: font.semibold,
+    fontWeight: '600',
+  },
+  footer: {
+    textAlign: 'center',
+    fontSize: 10.5,
+    color: colors.textFaint,
+    marginTop: 14,
+    lineHeight: 17,
+  },
   legalRow: {
     flexDirection: 'row',
     alignItems: 'center',

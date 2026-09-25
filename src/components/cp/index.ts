@@ -7,6 +7,8 @@
 export { CPChordCard } from './CPChordCard';
 export { CPChordEvolutionSheet } from './CPChordEvolutionSheet';
 export { CPChordContextMenu } from './CPChordContextMenu';
+export { CPChordMetaLine } from './CPChordMetaLine';
+export { CPChordStyleSheet } from './CPChordStyleSheet';
 export { CPSessionCapsule } from './CPSessionCapsule';
 export { CPSettingChip } from './CPSettingChip';
 export { CPPlayPauseButton } from './CPPlayPauseButton';

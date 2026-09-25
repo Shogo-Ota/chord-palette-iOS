@@ -28,7 +28,7 @@ export class DisabledBillingProvider implements BillingProvider {
     return [];
   }
 
-  async purchasePro(): Promise<BillingResult> {
+  async purchasePro(_productId: string): Promise<BillingResult> {
     return { status: 'error', message: UNAVAILABLE_MESSAGE };
   }
 

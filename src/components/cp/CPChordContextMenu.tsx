@@ -32,6 +32,7 @@ export type CPChordContextMenuProps = {
   context: ChordContextActions;
   onRequestClose: () => void;
   onEvolve: () => void;
+  onChangeAccompanimentStyle: () => void;
   onDuplicate: () => void;
   onMoveLeft: () => void;
   onMoveRight: () => void;
@@ -93,6 +94,7 @@ export function CPChordContextMenu({
   context,
   onRequestClose,
   onEvolve,
+  onChangeAccompanimentStyle,
   onDuplicate,
   onMoveLeft,
   onMoveRight,
@@ -133,6 +135,11 @@ export function CPChordContextMenu({
           ) : null}
 
           <View style={styles.rows}>
+            <MenuRow
+              icon="gear"
+              label="このコードの伴奏STYLEを変更"
+              onPress={onChangeAccompanimentStyle}
+            />
             {context.canEvolve ? (
               <MenuRow icon="rewind" label="このコードを発展" onPress={onEvolve} />
             ) : null}

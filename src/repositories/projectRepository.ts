@@ -5,11 +5,13 @@ import { DEFAULT_ACCOMPANIMENT, normalizeAccompaniment } from '@/lib/accompanime
 import { getDb } from '@/lib/db';
 import { normalizeGroove } from '@/lib/groove';
 import { DEFAULT_KEY_MODE, normalizeKeyMode } from '@/lib/keyMode';
+import { logger } from '@/lib/logger';
 import {
   DEFAULT_VOICING_POSITION,
   normalizeVoicingPosition,
 } from '@/lib/performance/baseVoicing/types';
 import { DEFAULT_ENERGY, normalizeEnergy } from '@/lib/performance/energy';
+import { normalizeChordStyleOverrides, type EffectiveChordStyle } from '@/lib/performance/style';
 import { defaultVariantFor, normalizeVariant } from '@/lib/performance/variants';
 import { buildPresetProgression } from '@/lib/presets';
 import type { ChordEvent, NewProjectInput, Project } from '@/types';
@@ -67,10 +69,35 @@ function promotePerChordVoicing(
   }));
 }
 
+function normalizeProjectChordEvents(
+  events: readonly ChordEvent[],
+  global: EffectiveChordStyle,
+  projectId: string,
+): ChordEvent[] {
+  return normalizeChordStyleOverrides(events, global, (event, rawOverride) => {
+    const raw =
+      rawOverride != null && typeof rawOverride === 'object'
+        ? (rawOverride as { pattern?: unknown; variant?: unknown })
+        : {};
+    logger.warn('Invalid per-chord accompaniment override; inheriting Global STYLE.', {
+      projectId,
+      eventId: event.id,
+      pattern: raw.pattern,
+      variant: raw.variant,
+    });
+  });
+}
+
 function rowToProject(row: ProjectRow): Project {
   const accompanimentPattern = normalizeAccompaniment(row.accompaniment_pattern);
+  const accompanimentVariant = normalizeVariant(accompanimentPattern, row.accompaniment_variant);
   const legacyPosition = normalizeVoicingPosition(row.voicing_position);
   const parsedEvents = JSON.parse(row.chord_events) as Project['chordEvents'];
+  const chordEvents = normalizeProjectChordEvents(
+    promotePerChordVoicing(parsedEvents, legacyPosition),
+    { pattern: accompanimentPattern, variant: accompanimentVariant },
+    row.id,
+  );
   return {
     id: row.id,
     title: row.title,
@@ -85,12 +112,12 @@ function rowToProject(row: ProjectRow): Project {
     accompanimentPattern,
     // Empty for rows written before variants existed, and stale if the accompaniment
     // was migrated — either way this lands on the pattern's original reading.
-    accompanimentVariant: normalizeVariant(accompanimentPattern, row.accompaniment_variant),
+    accompanimentVariant,
     accompanimentEnergy: normalizeEnergy(row.accompaniment_energy),
     // Kept at root on all new writes; the old column is consumed only as the
     // fallback used to promote legacy chord events below.
     voicingPosition: DEFAULT_VOICING_POSITION,
-    chordEvents: promotePerChordVoicing(parsedEvents, legacyPosition),
+    chordEvents,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -187,7 +214,16 @@ export async function createProject(input: NewProjectInput = {}): Promise<Projec
     createdAt: now,
     updatedAt: now,
   };
-  project.chordEvents = promotePerChordVoicing(project.chordEvents, input.voicingPosition);
+  const global = {
+    pattern: project.accompanimentPattern,
+    variant: normalizeVariant(project.accompanimentPattern, project.accompanimentVariant),
+  };
+  project.accompanimentVariant = global.variant;
+  project.chordEvents = normalizeProjectChordEvents(
+    promotePerChordVoicing(project.chordEvents, input.voicingPosition),
+    global,
+    project.id,
+  );
   project.voicingPosition = DEFAULT_VOICING_POSITION;
   await upsert(db, project);
   return project;
@@ -196,10 +232,19 @@ export async function createProject(input: NewProjectInput = {}): Promise<Projec
 /** Persist changes to an existing project (bumps updatedAt). Returns the saved project. */
 export async function saveProject(project: Project): Promise<Project> {
   const db = await getDb();
+  const global = {
+    pattern: project.accompanimentPattern,
+    variant: normalizeVariant(project.accompanimentPattern, project.accompanimentVariant),
+  };
   const saved: Project = {
     ...project,
+    accompanimentVariant: global.variant,
     voicingPosition: DEFAULT_VOICING_POSITION,
-    chordEvents: promotePerChordVoicing(project.chordEvents, project.voicingPosition),
+    chordEvents: normalizeProjectChordEvents(
+      promotePerChordVoicing(project.chordEvents, project.voicingPosition),
+      global,
+      project.id,
+    ),
     updatedAt: Date.now(),
   };
   await upsert(db, saved);

@@ -20,10 +20,30 @@ export interface BillingProduct {
   productId: string;
   /** Localized price string from the store, e.g. '¥500'. UI appends the period. */
   priceString: string;
-  /** Subscription period. MVP ships monthly only; UI renders '/月'. */
-  period: 'month';
+  /** ISO-8601 subscription period from the selected store package (e.g. P1M). */
+  subscriptionPeriod: string | null;
   /** Human title, e.g. 'Palette Pro'. */
   title: string;
+}
+
+/** Japanese display label for the actual store subscription period. */
+export function subscriptionPeriodLabel(period: string | null): string {
+  switch (period) {
+    case 'P1W':
+      return '週';
+    case 'P1M':
+      return '月';
+    case 'P2M':
+      return '2か月';
+    case 'P3M':
+      return '3か月';
+    case 'P6M':
+      return '6か月';
+    case 'P1Y':
+      return '年';
+    default:
+      return period ?? '';
+  }
 }
 
 /**
@@ -46,7 +66,7 @@ export interface BillingProvider {
   /** Fetch the displayable subscription products (localized price). */
   getOfferings(): Promise<BillingProduct[]>;
   /** Subscribe to Palette Pro (monthly). */
-  purchasePro(): Promise<BillingResult>;
+  purchasePro(productId: string): Promise<BillingResult>;
   /** Restore a previously purchased subscription. */
   restore(): Promise<BillingResult>;
   /** Current entitlements snapshot (palettePro=true only while active). */

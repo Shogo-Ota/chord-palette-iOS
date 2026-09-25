@@ -1,7 +1,4 @@
-import Purchases, {
-  type CustomerInfo,
-  type PurchasesPackage,
-} from 'react-native-purchases';
+import Purchases, { type CustomerInfo, type PurchasesPackage } from 'react-native-purchases';
 
 import { NO_ENTITLEMENTS, type Entitlements } from '@/lib/entitlements';
 import { logger } from '@/lib/logger';
@@ -29,6 +26,8 @@ const PURCHASE_ERROR_MESSAGE = '購入処理に失敗しました。時間をお
 const RESTORE_ERROR_MESSAGE = '復元に失敗しました。時間をおいて再度お試しください。';
 const NO_RESTORE_MESSAGE = '復元できるサブスクリプションが見つかりませんでした。';
 const NO_PRODUCT_MESSAGE = '商品情報を取得できませんでした。時間をおいて再度お試しください。';
+const NO_ENTITLEMENT_MESSAGE =
+  '購入情報を確認できませんでした。購入を復元するか、時間をおいて再度お試しください。';
 
 /** Map RevenueCat customerInfo → domain entitlements (active entitlement presence). */
 function toEntitlements(info: CustomerInfo): Entitlements {
@@ -43,30 +42,30 @@ function toEntitlements(info: CustomerInfo): Entitlements {
 /** Whether a thrown purchase error is a user cancellation (not a failure). */
 function isUserCancelled(e: unknown): boolean {
   return (
-    typeof e === 'object' &&
-    e !== null &&
-    (e as { userCancelled?: boolean }).userCancelled === true
+    typeof e === 'object' && e !== null && (e as { userCancelled?: boolean }).userCancelled === true
   );
 }
 
 export class RevenueCatBillingProvider implements BillingProvider {
   private readonly apiKey: string;
+  private readonly purchases: typeof Purchases;
   private entitlements: Entitlements = NO_ENTITLEMENTS;
   private readonly listeners = new Set<(e: Entitlements) => void>();
   private configured = false;
 
-  constructor(apiKey: string) {
+  constructor(apiKey: string, purchases: typeof Purchases = Purchases) {
     this.apiKey = apiKey;
+    this.purchases = purchases;
   }
 
   async init(): Promise<void> {
     if (!this.configured) {
-      Purchases.configure({ apiKey: this.apiKey });
-      Purchases.addCustomerInfoUpdateListener((info) => this.applyCustomerInfo(info));
+      this.purchases.configure({ apiKey: this.apiKey });
+      this.purchases.addCustomerInfoUpdateListener((info) => this.applyCustomerInfo(info));
       this.configured = true;
     }
     try {
-      const info = await Purchases.getCustomerInfo();
+      const info = await this.purchases.getCustomerInfo();
       this.applyCustomerInfo(info);
     } catch (e) {
       logger.error('RevenueCat getCustomerInfo failed', { error: String(e) });
@@ -74,16 +73,14 @@ export class RevenueCatBillingProvider implements BillingProvider {
   }
 
   async getOfferings(): Promise<BillingProduct[]> {
-    const offerings = await Purchases.getOfferings();
-    const current = offerings.current;
-    if (!current) return [];
-    return current.availablePackages.map((p) => toProduct(p));
+    const pkg = await this.resolveProPackage();
+    return pkg ? [toProduct(pkg)] : [];
   }
 
-  async purchasePro(): Promise<BillingResult> {
+  async purchasePro(productId: string): Promise<BillingResult> {
     let pkg: PurchasesPackage | null;
     try {
-      pkg = await this.resolveProPackage();
+      pkg = await this.resolveProPackage(productId);
     } catch (e) {
       logger.error('RevenueCat getOfferings failed', { error: String(e) });
       return { status: 'error', message: NO_PRODUCT_MESSAGE };
@@ -91,8 +88,11 @@ export class RevenueCatBillingProvider implements BillingProvider {
     if (!pkg) return { status: 'error', message: NO_PRODUCT_MESSAGE };
 
     try {
-      const { customerInfo } = await Purchases.purchasePackage(pkg);
+      const { customerInfo } = await this.purchases.purchasePackage(pkg);
       this.applyCustomerInfo(customerInfo);
+      if (!this.entitlements.palettePro) {
+        return { status: 'error', message: NO_ENTITLEMENT_MESSAGE };
+      }
       return { status: 'purchased', entitlements: this.entitlements };
     } catch (e) {
       if (isUserCancelled(e)) return { status: 'cancelled' };
@@ -103,7 +103,7 @@ export class RevenueCatBillingProvider implements BillingProvider {
 
   async restore(): Promise<BillingResult> {
     try {
-      const info = await Purchases.restorePurchases();
+      const info = await this.purchases.restorePurchases();
       this.applyCustomerInfo(info);
       if (this.entitlements.palettePro) {
         return { status: 'restored', entitlements: this.entitlements };
@@ -126,12 +126,18 @@ export class RevenueCatBillingProvider implements BillingProvider {
     };
   }
 
-  /** The monthly Palette Pro package from the current offering (fallback: first). */
-  private async resolveProPackage(): Promise<PurchasesPackage | null> {
-    const offerings = await Purchases.getOfferings();
+  /** The monthly Palette Pro package used by both display and purchase. */
+  private async resolveProPackage(expectedProductId?: string): Promise<PurchasesPackage | null> {
+    const offerings = await this.purchases.getOfferings();
     const current = offerings.current;
     if (!current) return null;
-    return current.monthly ?? current.availablePackages[0] ?? null;
+    const monthly =
+      current.monthly ??
+      current.availablePackages.find((pkg) => pkg.product.subscriptionPeriod === 'P1M') ??
+      null;
+    if (!monthly) return null;
+    if (expectedProductId && monthly.product.identifier !== expectedProductId) return null;
+    return monthly;
   }
 
   private applyCustomerInfo(info: CustomerInfo): void {
@@ -152,7 +158,7 @@ function toProduct(p: PurchasesPackage): BillingProduct {
   return {
     productId: p.product.identifier,
     priceString: p.product.priceString,
-    period: 'month',
+    subscriptionPeriod: p.product.subscriptionPeriod,
     title: p.product.title || 'Palette Pro',
   };
 }
