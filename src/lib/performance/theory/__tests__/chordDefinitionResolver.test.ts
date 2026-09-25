@@ -48,8 +48,8 @@ describe('catalog to theory correspondence', () => {
       unresolved: unresolved.map((result) => result.symbol),
       qualitiesWithNoBareDefinition: qualitiesWithoutDefinition(CHORD_CATALOG),
     }).toEqual({
-      definitions: 48,
-      resolved: 47,
+      definitions: 50,
+      resolved: 49,
       // sus2 has no counterpart: the book covers sus4 and does not treat sus2 as a quality.
       unresolved: ['sus2'],
       // Both are theory qualities the catalog never ships on their own. `11` is a

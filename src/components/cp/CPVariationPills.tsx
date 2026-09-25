@@ -22,6 +22,11 @@ export type CPVariationPill = {
 
 export type CPVariationPillsProps = {
   pills: CPVariationPill[];
+  /**
+   * `strong` marks the 強い色づけ row, so a deliberate character reads differently
+   * from the safe colours above it without needing its own component.
+   */
+  tone?: 'normal' | 'strong';
   onPress: (id: string) => void;
 };
 
@@ -30,16 +35,24 @@ export type CPVariationPillsProps = {
  * a degree offers, and whether the player may place them, are decided by the
  * caller.
  */
-export function CPVariationPills({ pills, onPress }: CPVariationPillsProps) {
+export function CPVariationPills({ pills, tone = 'normal', onPress }: CPVariationPillsProps) {
+  const strong = tone === 'strong';
   return (
     <View style={styles.row}>
       {pills.map((pill) => (
         <Pressable
           key={pill.id}
           accessibilityRole="button"
-          accessibilityLabel={`${pill.label} — ${pill.preview}`}
+          accessibilityLabel={
+            strong ? `${pill.label} — ${pill.preview}、強い色づけ` : `${pill.label} — ${pill.preview}`
+          }
           accessibilityState={{ selected: pill.active, disabled: false }}
-          style={[styles.pill, pill.active && styles.active, pill.locked && styles.locked]}
+          style={[
+            styles.pill,
+            strong && styles.strong,
+            pill.active && styles.active,
+            pill.locked && styles.locked,
+          ]}
           onPress={() => onPress(pill.id)}>
           <View style={styles.inner}>
             <Text style={styles.label}>{pill.label}</Text>
@@ -68,9 +81,16 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.s8,
     paddingHorizontal: spacing.s16,
   },
+  /** 強い色づけ: a warmer, dashed edge so it does not read as another safe colour. */
+  strong: {
+    backgroundColor: rgba(colors.gold, 0.1),
+    borderColor: rgba(colors.gold, 0.55),
+    borderStyle: 'dashed',
+  },
   active: {
     backgroundColor: rgba(colors.primary, 0.22),
     borderColor: colors.primary,
+    borderStyle: 'solid',
   },
   locked: {
     backgroundColor: colors.surfaceLocked,

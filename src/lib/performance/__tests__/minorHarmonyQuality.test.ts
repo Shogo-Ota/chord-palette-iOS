@@ -7,7 +7,7 @@
 import { diatonicLibrary, diatonicSeventhLibrary, MAJOR_KEYS } from '@/data/music';
 import { minorPrimaryDominants } from '@/data/minorAdvancedChords';
 import {
-  minorAlteredVariations,
+  minorStrongVariations,
   minorAvailableVariations,
   minorExtendedVariations,
   minorVariationChord,
@@ -88,7 +88,7 @@ describe('minor harmony quality gate', () => {
       const ids = [
         ...minorAvailableVariations(degree),
         ...minorExtendedVariations(degree),
-        ...minorAlteredVariations(degree),
+        ...minorStrongVariations(degree),
       ];
       for (const id of ids) {
         const chord = minorVariationChord('C', degree, id);

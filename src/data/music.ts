@@ -328,193 +328,284 @@ export function diatonicSeventhLibrary(key: MajorKey, mode: KeyMode = 'major'): 
 /* ------------------------------------------------------------------ */
 
 /**
- * Variation suffixes offered under the diatonic tab.
- * Free: sus4 / add9 (requirements §7). Pro: 6th / sus2 / 9 / 11 / 13.
+ * Every variation the editor can build, and the one place its price is decided.
+ *
+ * This is a registry, not an offer: it says a variation exists and whether it is
+ * free, and nothing about which degree may wear it. `label` and `suffix` here are
+ * only the fallback for a degree that does not name its own — the real caption and
+ * quality come from the degree table, because the same id reads as `maj9` on I and
+ * `m9` on ii.
+ *
+ * Free: sus4 / add9 (requirements §7), plus the plain `m7♭5`, which the seventh
+ * grid already hands out for free on vii°.
  */
-export const CHORD_VARIATIONS = [
+export const ALL_VARIATIONS = [
+  { id: 'sus2', label: 'sus2', suffix: 'sus2', isPro: true },
   { id: 'sus4', label: 'sus4', suffix: 'sus4', isPro: false },
   { id: 'add9', label: 'add9', suffix: 'add9', isPro: false },
-  { id: '6', label: '6th', suffix: '6', isPro: true },
-  { id: 'sus2', label: 'sus2', suffix: 'sus2', isPro: true },
+  { id: '6', label: '6', suffix: '6', isPro: true },
+  { id: 'sixNine', label: '6/9', suffix: '6/9', isPro: true },
   { id: '9', label: '9', suffix: '9', isPro: true },
   { id: '11', label: '11', suffix: '11', isPro: true },
   { id: '13', label: '13', suffix: '13', isPro: true },
-] as const;
-
-/**
- * Richer colours offered behind a second tier, so the first row a beginner sees
- * stays the short familiar one. Same two rules as the core set: the degree keeps
- * its quality and every tone stays inside the key.
- *
- * Deliberately absent: `maj11` puts the ♮11 avoid note over a major 3rd, and
- * `m9(11)` / `m13(9)` spell exactly the same notes as the `11` and `13` already
- * offered on minor degrees. Tones that leave the key or sit a semitone above a
- * chord tone live one tier further down, in {@link ALTERED_VARIATIONS}.
- */
-export const EXTENDED_VARIATIONS = [
-  { id: 'sixNine', label: '6/9', suffix: '6/9', isPro: true },
-  { id: 'maj9sharp11', label: 'maj9(#11)', suffix: 'maj9(#11)', isPro: true },
-  { id: 'maj13sharp11', label: 'maj13(#11)', suffix: 'maj13(#11)', isPro: true },
   { id: 'm6nine', label: 'm6/9', suffix: 'm6/9', isPro: true },
   { id: 'm13_9_11', label: 'm13(9,11)', suffix: 'm13(9,11)', isPro: true },
-  { id: 'm7b5_11', label: 'm7♭5(11)', suffix: 'm7♭5(11)', isPro: true },
-  { id: 'm7b5_b13', label: 'm7♭5(♭13)', suffix: 'm7♭5(♭13)', isPro: true },
-] as const;
-
-/**
- * The altered tier — the tensions classic theory lists for each degree that the
- * other two tiers must refuse. Two kinds live here, and they are kept together
- * because both ask the player to hear a deliberate clash rather than a colour:
- *
- *  - Out of key: I's #11 (the Lydian F# in C) and V's ♭9/#9/#11/♭13.
- *  - In key but a semitone above a chord tone: iii's ♭9, vi's ♭13, vii°'s ♭9.
- *
- * Folded below the extended tier so the first two rows keep their guarantee that
- * every tone belongs to the key and never fights a chord tone.
- */
-export const ALTERED_VARIATIONS = [
+  { id: 'm7_add11', label: 'm7(add11)', suffix: 'm7(add11)', isPro: true },
+  { id: 'maj7sharp11', label: 'maj7(#11)', suffix: 'maj7(#11)', isPro: true },
+  { id: 'maj9sharp11', label: 'maj9(#11)', suffix: 'maj9(#11)', isPro: true },
+  { id: 'maj13sharp11', label: 'maj13(#11)', suffix: 'maj13(#11)', isPro: true },
   { id: 'dom7b9', label: '♭9', suffix: '7(♭9)', isPro: true },
   { id: 'dom7sharp9', label: '#9', suffix: '7(#9)', isPro: true },
   { id: 'dom7sharp11', label: '#11', suffix: '7(#11)', isPro: true },
   { id: 'dom7b13', label: '♭13', suffix: '7(♭13)', isPro: true },
-  { id: 'm7b9', label: '♭9', suffix: 'm7(♭9)', isPro: true },
-  { id: 'm7b13', label: '♭13', suffix: 'm7(♭13)', isPro: true },
-  { id: 'm7b5_b9', label: '♭9', suffix: 'm7♭5(♭9)', isPro: true },
-] as const;
-
-/** Every variation the editor can build, core tier first. */
-export const ALL_VARIATIONS = [
-  ...CHORD_VARIATIONS,
-  ...EXTENDED_VARIATIONS,
-  ...ALTERED_VARIATIONS,
+  { id: 'm7b9', label: 'm7(♭9)', suffix: 'm7(♭9)', isPro: true },
+  { id: 'm7b13', label: 'm7(♭13)', suffix: 'm7(♭13)', isPro: true },
+  { id: 'm7b5', label: 'm7♭5', suffix: 'm7♭5', isPro: false },
+  { id: 'm7b5_11', label: 'm7♭5(11)', suffix: 'm7♭5(11)', isPro: true },
+  { id: 'm7b5_b9', label: 'm7♭5(♭9)', suffix: 'm7♭5(♭9)', isPro: true },
+  { id: 'm7b5_b13', label: 'm7♭5(♭13)', suffix: 'm7♭5(♭13)', isPro: true },
+  { id: 'dim7', label: 'dim7', suffix: 'dim7', isPro: true },
 ] as const;
 
 export type VariationId = (typeof ALL_VARIATIONS)[number]['id'];
 
 /**
- * Diatonic-correct tension mapping. For each major-key degree (I..vi) it maps a
- * variation to the concrete chord-quality suffix that (a) respects the degree's
- * major/minor quality and (b) stays INSIDE the key — i.e. avoid-notes and
- * non-diatonic tensions are simply not offered for that degree. vii° (diminished)
- * takes no variations. Index = degree (0 = I … 5 = vi). Only listed variations are
- * available; the editor greys out / omits the rest.
+ * Where a variation sits in the offer, and therefore which row shows it.
+ *
+ * `primary` is the always-visible row: reach for these without thinking.
+ * `secondary` is the same promise with more colour, folded away.
+ * `advanced` is the 強い色づけ row — a deliberate character, not a safe default.
+ */
+export type VariationUsability = 'primary' | 'secondary' | 'advanced';
+
+/**
+ * What kind of colour a variation adds. The player never sees these names; they
+ * exist so a later context-aware ranker can tell a Lydian #11 apart from an
+ * altered dominant ♭9 instead of lumping both under "outside the scale".
+ */
+export type VariationColorClass =
+  | 'standard'
+  | 'lydian'
+  | 'minorColor'
+  | 'alteredDominant'
+  | 'diminishedColor';
+
+/** One variation as a specific degree offers it. */
+export interface DegreeVariation {
+  id: VariationId;
+  /**
+   * Pill caption. Reads as the quality it actually produces on this degree, so
+   * `Dm9` is captioned `m9` and `G9` is captioned `9`.
+   */
+  label: string;
+  /** Quality suffix appended to the degree root: `m9` on ii spells `Dm9`. */
+  suffix: string;
+  usability: VariationUsability;
+  colorClass: VariationColorClass;
+  /** Whether every sounding tone belongs to the current key. */
+  scaleCompatibility: 'inside' | 'outside' | 'mixed';
+  /**
+   * How much the result leans on voicing to sound good. `high` means it contains a
+   * semitone rub that a bad voicing will expose — legal, but not a safe default.
+   */
+  dissonanceLevel: 'low' | 'medium' | 'high';
+  /** The tension this adds, for a future ranker to reason about. */
+  tensionClass?: string;
+}
+
+/**
+ * A degree variation, defaulting to the common case: inside the key, no character
+ * beyond the extension itself, and forgiving of voicing.
+ */
+export function variationOffer(
+  id: VariationId,
+  label: string,
+  suffix: string,
+  usability: VariationUsability,
+  colour: Partial<Omit<DegreeVariation, 'id' | 'label' | 'suffix' | 'usability'>> = {},
+): DegreeVariation {
+  return {
+    id,
+    label,
+    suffix,
+    usability,
+    colorClass: 'standard',
+    scaleCompatibility: 'inside',
+    dissonanceLevel: 'low',
+    ...colour,
+  };
+}
+
+/** The Lydian #11 — in key on IV, out of key on I. */
+const LYDIAN = {
+  colorClass: 'lydian',
+  dissonanceLevel: 'medium',
+  tensionClass: '#11',
+} as const;
+
+/** V's altered tensions: outside the key, and that is the point. */
+const ALTERED_DOMINANT = {
+  colorClass: 'alteredDominant',
+  scaleCompatibility: 'outside',
+  dissonanceLevel: 'high',
+} as const;
+
+/**
+ * What each major-key degree offers, in the order the editor shows it.
+ *
+ * The list is not the set of chords theory permits — it is the set worth reaching
+ * for. A degree gets as many entries as it can carry usefully and no more, so ii
+ * is long and iii is short. Ordering runs sus/add → 6 → 9 → 11 → 13 → 強い色づけ,
+ * which is also the order of increasing commitment.
  *
  * Reasoning per degree (in C for reference):
- *  I  (Ionian):     ♮11(F) is the avoid note → no 11; 9/13 voiced as maj9/maj13.
- *  ii (Dorian):     no avoid note → the full set (minor-quality forms).
- *  iii(Phrygian):   ♭9(F) & ♭13(C) are avoid → only sus4 & the 11 (add-11, no 9).
- *  IV (Lydian):     ♮4(B♭) is out of key → no sus4/11; 9/13 as maj9/maj13.
- *  V  (Mixolydian): ♮11(C) is the avoid note → no 11; 9/13 are dominant 9/13.
- *  vi (Aeolian):    ♮6(F#) is out of key → no 6/13; minor-quality forms.
+ *  I  (Ionian):     ♮11(F) is the avoid note → no 11. `maj13` is dropped: against
+ *                   the `maj9` beside it the difference is small and it needs the
+ *                   right voicing to show at all.
+ *  ii (Dorian):     no avoid note, so the whole ladder up to `m13` works. `m13` is
+ *                   spelled plainly rather than as `m13(9,11)`, which named the
+ *                   same notes twice.
+ *  iii(Phrygian):   ♭9(F) and ♭13(C) both rub. `m7(♭9)` is gone — the E–F semitone
+ *                   is the single easiest way to pick a chord by accident. The ♭13
+ *                   stays, under 強い色づけ.
+ *  IV (Lydian):     ♮4(B♭) leaves the key → no sus4/11. The #11 is diatonic here,
+ *                   so the whole Lydian family is welcome.
+ *  V  (Mixolydian): ♮11(C) is the avoid note → no 11. The four altered tensions
+ *                   belong to the dominant function, so they stay.
+ *  vi (Aeolian):    ♮6(F#) leaves the key → no 6/13.
+ *  vii°(Locrian):   the plain `m7♭5` comes first so the degree is reachable at all,
+ *                   and `dim7` earns its place on how clearly it resolves to I.
+ *                   `m7♭5(♭9)` is gone for the same reason as iii's — B–C rubs.
  */
-export const DEGREE_VARIATION_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
-  0: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
-  1: {
-    sus4: 'sus4',
-    sus2: 'sus2',
-    add9: 'm(add9)',
-    '6': 'm6',
-    '9': 'm9',
-    '11': 'm11',
-    '13': 'm13',
-  },
-  2: { sus4: 'sus4', '11': 'm(add11)' },
-  3: { sus2: 'sus2', add9: 'add9', '6': '6', '9': 'maj9', '13': 'maj13' },
-  4: { sus4: 'sus4', sus2: 'sus2', add9: 'add9', '6': '6', '9': '9', '13': '13' },
-  5: { sus4: 'sus4', sus2: 'sus2', add9: 'm(add9)', '9': 'm9', '11': 'm11' },
-};
+const MAJOR_DEGREE_VARIATIONS: readonly (readonly DegreeVariation[])[] = [
+  [
+    variationOffer('sus2', 'sus2', 'sus2', 'primary'),
+    variationOffer('sus4', 'sus4', 'sus4', 'primary'),
+    variationOffer('add9', 'add9', 'add9', 'primary', { tensionClass: '9' }),
+    variationOffer('6', '6', '6', 'primary', { tensionClass: '6' }),
+    variationOffer('sixNine', '6/9', '6/9', 'secondary', { tensionClass: '6/9' }),
+    variationOffer('9', 'maj9', 'maj9', 'secondary', { tensionClass: '9' }),
+    variationOffer('maj7sharp11', 'maj7(#11)', 'maj7(#11)', 'advanced', {
+      ...LYDIAN,
+      scaleCompatibility: 'outside',
+    }),
+    variationOffer('maj9sharp11', 'maj9(#11)', 'maj9(#11)', 'advanced', {
+      ...LYDIAN,
+      scaleCompatibility: 'outside',
+    }),
+  ],
+  [
+    variationOffer('sus2', 'sus2', 'sus2', 'primary'),
+    variationOffer('sus4', 'sus4', 'sus4', 'primary'),
+    variationOffer('add9', 'add9', 'm(add9)', 'primary', { tensionClass: '9' }),
+    variationOffer('6', 'm6', 'm6', 'primary', { tensionClass: '6' }),
+    variationOffer('m6nine', 'm6/9', 'm6/9', 'secondary', { tensionClass: '6/9' }),
+    variationOffer('9', 'm9', 'm9', 'secondary', { tensionClass: '9' }),
+    variationOffer('11', 'm11', 'm11', 'secondary', { tensionClass: '11' }),
+    variationOffer('13', 'm13', 'm13', 'secondary', {
+      dissonanceLevel: 'medium',
+      tensionClass: '13',
+    }),
+  ],
+  [
+    variationOffer('sus4', 'sus4', 'sus4', 'primary'),
+    variationOffer('11', 'm(add11)', 'm(add11)', 'primary', { tensionClass: '11' }),
+    variationOffer('m7_add11', 'm7(add11)', 'm7(add11)', 'secondary', { tensionClass: '11' }),
+    variationOffer('m7b13', 'm7(♭13)', 'm7(♭13)', 'advanced', {
+      colorClass: 'minorColor',
+      dissonanceLevel: 'high',
+      tensionClass: 'b13',
+    }),
+  ],
+  [
+    variationOffer('sus2', 'sus2', 'sus2', 'primary'),
+    variationOffer('add9', 'add9', 'add9', 'primary', { tensionClass: '9' }),
+    variationOffer('6', '6', '6', 'primary', { tensionClass: '6' }),
+    variationOffer('sixNine', '6/9', '6/9', 'secondary', { tensionClass: '6/9' }),
+    variationOffer('9', 'maj9', 'maj9', 'secondary', { tensionClass: '9' }),
+    variationOffer('maj7sharp11', 'maj7(#11)', 'maj7(#11)', 'advanced', LYDIAN),
+    variationOffer('maj9sharp11', 'maj9(#11)', 'maj9(#11)', 'advanced', LYDIAN),
+    variationOffer('maj13sharp11', 'maj13(#11)', 'maj13(#11)', 'advanced', LYDIAN),
+  ],
+  [
+    variationOffer('sus2', 'sus2', 'sus2', 'primary'),
+    variationOffer('sus4', 'sus4', 'sus4', 'primary'),
+    variationOffer('add9', 'add9', 'add9', 'primary', { tensionClass: '9' }),
+    variationOffer('6', '6', '6', 'primary', { tensionClass: '6' }),
+    variationOffer('9', '9', '9', 'secondary', { tensionClass: '9' }),
+    variationOffer('13', '13', '13', 'secondary', {
+      dissonanceLevel: 'medium',
+      tensionClass: '13',
+    }),
+    variationOffer('dom7b9', '♭9', '7(♭9)', 'advanced', { ...ALTERED_DOMINANT, tensionClass: 'b9' }),
+    variationOffer('dom7sharp9', '#9', '7(#9)', 'advanced', { ...ALTERED_DOMINANT, tensionClass: '#9' }),
+    variationOffer('dom7sharp11', '#11', '7(#11)', 'advanced', { ...ALTERED_DOMINANT, tensionClass: '#11' }),
+    variationOffer('dom7b13', '♭13', '7(♭13)', 'advanced', { ...ALTERED_DOMINANT, tensionClass: 'b13' }),
+  ],
+  [
+    variationOffer('sus2', 'sus2', 'sus2', 'primary'),
+    variationOffer('sus4', 'sus4', 'sus4', 'primary'),
+    variationOffer('add9', 'add9', 'm(add9)', 'primary', { tensionClass: '9' }),
+    variationOffer('9', 'm9', 'm9', 'secondary', { tensionClass: '9' }),
+    variationOffer('11', 'm11', 'm11', 'secondary', { tensionClass: '11' }),
+    variationOffer('m7b13', 'm7(♭13)', 'm7(♭13)', 'advanced', {
+      colorClass: 'minorColor',
+      dissonanceLevel: 'high',
+      tensionClass: 'b13',
+    }),
+  ],
+  [
+    variationOffer('m7b5', 'm7♭5', 'm7♭5', 'primary'),
+    variationOffer('m7b5_11', 'm7♭5(11)', 'm7♭5(11)', 'secondary', { tensionClass: '11' }),
+    variationOffer('dim7', 'dim7', 'dim7', 'secondary', {
+      colorClass: 'diminishedColor',
+      scaleCompatibility: 'outside',
+      dissonanceLevel: 'medium',
+    }),
+    variationOffer('m7b5_b13', 'm7♭5(♭13)', 'm7♭5(♭13)', 'advanced', {
+      colorClass: 'diminishedColor',
+      dissonanceLevel: 'medium',
+      tensionClass: 'b13',
+    }),
+  ],
+];
 
-/**
- * Extended-tier suffixes per degree, filtered by the same rules as the core map.
- *
- * In C for reference: I and IV take 6/9; only Lydian IV can carry a #11 (B is in
- * key, whereas I would need an F#); Dorian ii is the one minor degree whose ♮6 and
- * ♮11 are both in key; vi's 6/9 would need an F#, and the ♮11 is already covered by
- * its core `11`. vii° gains its first two colours: the 11th and ♭13 are diatonic
- * over m7♭5, while the 9th would be the Locrian ♭2.
- *
- * Two degrees are left empty on purpose. V could spell a diatonic 6/9 (G B D E A),
- * but dropping the 7th throws away the dominant pull the degree exists for, and the
- * remaining notes are just its core `6` and `add9` stacked. iii is boxed in by its
- * ♭9 and ♭13, which rules out every extended form.
- */
-const EXTENDED_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
-  0: { sixNine: '6/9' },
-  1: { m6nine: 'm6/9', m13_9_11: 'm13(9,11)' },
-  3: { sixNine: '6/9', maj9sharp11: 'maj9(#11)', maj13sharp11: 'maj13(#11)' },
-  6: { m7b5_11: 'm7♭5(11)', m7b5_b13: 'm7♭5(♭13)' },
-};
+/** What the given major-key degree offers, in display order. */
+export function degreeVariations(degreeIndex: number): readonly DegreeVariation[] {
+  return MAJOR_DEGREE_VARIATIONS[degreeIndex] ?? [];
+}
 
-/**
- * Altered-tier suffixes per degree. This is the one map that is allowed to break
- * the in-key rule, so it lists each degree's tensions exactly as classic theory
- * does and no further:
- *
- *  I   → #11 (Lydian). ii and IV need nothing here: every tension they take is
- *        already in key, and IV's #11 is diatonic so it stays in the extended tier.
- *  iii → ♭9 (Phrygian). V → the four altered dominant tones. vi → ♭13 (Aeolian).
- *  vii°→ ♭9 (Locrian).
- */
-const ALTERED_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = {
-  0: { maj9sharp11: 'maj9(#11)', maj13sharp11: 'maj13(#11)' },
-  2: { m7b9: 'm7(♭9)' },
-  4: {
-    dom7b9: '7(♭9)',
-    dom7sharp9: '7(#9)',
-    dom7sharp11: '7(#11)',
-    dom7b13: '7(♭13)',
-  },
-  5: { m7b13: 'm7(♭13)' },
-  6: { m7b5_b9: 'm7♭5(♭9)' },
-};
+/** Ids the given degree offers at one usability level, in display order. */
+export function variationsByUsability(
+  degreeIndex: number,
+  usability: VariationUsability,
+): VariationId[] {
+  return degreeVariations(degreeIndex)
+    .filter((entry) => entry.usability === usability)
+    .map((entry) => entry.id);
+}
 
-/** Suffix map covering all three tiers — the single lookup `variationChord` resolves against. */
-const ALL_DEGREE_SUFFIX: Record<number, Partial<Record<VariationId, string>>> = Object.fromEntries(
-  Array.from({ length: 7 }, (_, degree) => [
-    degree,
-    {
-      ...DEGREE_VARIATION_SUFFIX[degree],
-      ...EXTENDED_DEGREE_SUFFIX[degree],
-      ...ALTERED_DEGREE_SUFFIX[degree],
-    },
-  ]),
-);
-
-/**
- * Core-tier variations usable on the given degree, in button order — avoid-notes
- * and non-diatonic tensions removed. vii° (index 6) returns [].
- */
+/** The always-visible row for the given degree. */
 export function availableVariations(degreeIndex: number): VariationId[] {
-  const map = DEGREE_VARIATION_SUFFIX[degreeIndex] ?? {};
-  return CHORD_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
+  return variationsByUsability(degreeIndex, 'primary');
 }
 
-/**
- * Extended-tier variations usable on the given degree, in button order. Shown only
- * after the player opens the second tier, so the default row stays short.
- */
+/** The folded row of richer but still safe colours. */
 export function extendedVariations(degreeIndex: number): VariationId[] {
-  const map = EXTENDED_DEGREE_SUFFIX[degreeIndex] ?? {};
-  return EXTENDED_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
+  return variationsByUsability(degreeIndex, 'secondary');
 }
 
-/**
- * Altered-tier variations usable on the given degree, in button order. Shares the
- * second tier's disclosure with {@link extendedVariations} but is listed after it
- * and under its own heading, because these are the tones that leave the key or
- * rub against a chord tone. Filtered over {@link ALL_VARIATIONS} rather than
- * {@link ALTERED_VARIATIONS} because I's #11 reuses the ids IV offers in key.
- */
-export function alteredVariations(degreeIndex: number): VariationId[] {
-  const map = ALTERED_DEGREE_SUFFIX[degreeIndex] ?? {};
-  return ALL_VARIATIONS.filter((v) => v.id in map).map((v) => v.id);
+/** The 強い色づけ row — deliberate character rather than a safe default. */
+export function strongVariations(degreeIndex: number): VariationId[] {
+  return variationsByUsability(degreeIndex, 'advanced');
 }
 
 /**
  * Build a variation chord on a diatonic degree, respecting the degree's quality
- * and the key (e.g. I + add9 → Cadd9, but vi + add9 → Am(add9), not Aadd9). If a
- * variation is not diatonic for the degree it falls back to the raw suffix, but
- * the editor only offers {@link availableVariations} so that path is unused in UI.
+ * and the key (e.g. I + add9 → Cadd9, but vi + add9 → Am(add9), not Aadd9). A
+ * variation the degree does not offer falls back to the registry's plain form; the
+ * editor only ever offers what {@link degreeVariations} lists, so that path exists
+ * for projects saved before this degree stopped offering the variation.
  */
 export function variationChord(
   key: MajorKey,
@@ -522,17 +613,19 @@ export function variationChord(
   variationId: VariationId,
 ): LibraryChord {
   const root = MAJOR_SCALES[key][degreeIndex];
-  const v = ALL_VARIATIONS.find((x) => x.id === variationId) ?? ALL_VARIATIONS[0];
-  const suffix = ALL_DEGREE_SUFFIX[degreeIndex]?.[variationId] ?? v.suffix;
+  const registry = ALL_VARIATIONS.find((x) => x.id === variationId) ?? ALL_VARIATIONS[0];
+  const entry = degreeVariations(degreeIndex).find((x) => x.id === variationId);
+  const suffix = entry?.suffix ?? registry.suffix;
+  const label = entry?.label ?? registry.label;
   return {
     id: `var-${key}-${root}-${suffix}`,
     displayName: `${root}${suffix}`,
-    degreeLabel: `${DEGREE_LABELS[degreeIndex]} ${v.label}`,
+    degreeLabel: `${DEGREE_LABELS[degreeIndex]} ${label}`,
     function: DEGREE_FUNCTIONS[degreeIndex],
-    subLabel: v.label,
+    subLabel: label,
     category: 'variation',
-    variation: v.id,
-    isPro: v.isPro,
+    variation: registry.id,
+    isPro: registry.isPro,
     rootOffset: MAJOR_SCALE_OFFSETS[degreeIndex],
     suffix,
     definitionId: definitionIdForSuffix(suffix),

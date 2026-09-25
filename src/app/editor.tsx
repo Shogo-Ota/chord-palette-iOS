@@ -394,7 +394,7 @@ export default function EditorScreen() {
   const {
     core: corePills,
     extended: extendedPills,
-    altered: alteredPills,
+    strong: strongPills,
   } = useMemo(
     () =>
       advancedTiersAvailable
@@ -405,11 +405,11 @@ export default function EditorScreen() {
             selected: selectedEvent,
             entitlements: ent,
           })
-        : { core: [], extended: [], altered: [] },
+        : { core: [], extended: [], strong: [] },
     [advancedTiersAvailable, key, mode, selectedDegree, selectedEvent, ent],
   );
   /** Both folded tiers share one disclosure, so the toggle counts them together. */
-  const moreTensionCount = extendedPills.length + alteredPills.length;
+  const moreTensionCount = extendedPills.length + strongPills.length;
 
   const colW = (cols: number) => Math.floor((width - H_PAD * 2 - 8 * (cols - 1)) / cols);
   const wDia = colW(4);
@@ -1012,13 +1012,17 @@ export default function EditorScreen() {
                         {showMoreTensions && extendedPills.length > 0 && (
                           <CPVariationPills pills={extendedPills} onPress={pickVariation} />
                         )}
-                        {showMoreTensions && alteredPills.length > 0 && (
+                        {showMoreTensions && strongPills.length > 0 && (
                           <>
-                            <Text style={styles.varTierTitle}>オルタード</Text>
+                            <Text style={styles.varTierTitle}>強い色づけ</Text>
                             <Text style={styles.varTierHint}>
-                              スケール外の音や、隣とぶつかる音を含む強い響きです
+                              個性的な響きや、強めの緊張感を加えます
                             </Text>
-                            <CPVariationPills pills={alteredPills} onPress={pickVariation} />
+                            <CPVariationPills
+                              pills={strongPills}
+                              tone="strong"
+                              onPress={pickVariation}
+                            />
                           </>
                         )}
                       </>

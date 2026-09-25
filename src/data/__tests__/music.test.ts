@@ -1,19 +1,18 @@
 import {
-  ALTERED_VARIATIONS,
-  alteredVariations,
+  ALL_VARIATIONS,
   availableVariations,
-  CHORD_VARIATIONS,
   MAJOR_KEYS,
   degreeLabelFromOffset,
+  degreeVariations,
   diatonicLibrary,
   diatonicSevenths,
   diatonicTriads,
-  EXTENDED_VARIATIONS,
   extendedVariations,
   modalInterchange,
   noteAt,
   secondaryDominants,
   slashChord,
+  strongVariations,
   variationChord,
 } from '@/data/music';
 import { intervalsForChord } from '@/lib/theory/definitions';
@@ -73,16 +72,19 @@ describe('diatonicLibrary', () => {
   });
 });
 
-describe('CHORD_VARIATIONS (Pro gating, requirements §7)', () => {
-  it('offers sus4/add9 free and 6th/sus2/9/11/13 as Pro, without 5th', () => {
-    const ids = CHORD_VARIATIONS.map((v) => v.id);
-    expect(ids).toEqual(['sus4', 'add9', '6', 'sus2', '9', '11', '13']);
+describe('variation registry (Pro gating, requirements §7)', () => {
+  it('keeps sus4/add9 free and prices every colour, without a bare 5th', () => {
+    const ids: string[] = ALL_VARIATIONS.map((v) => v.id);
     expect(ids).not.toContain('5');
-    const free = CHORD_VARIATIONS.filter((v) => !v.isPro).map((v) => v.id);
-    expect(free).toEqual(['sus4', 'add9']);
+    // m7♭5 is free because the seventh grid already gives vii° away for free.
+    expect(ALL_VARIATIONS.filter((v) => !v.isPro).map((v) => v.id)).toEqual([
+      'sus4',
+      'add9',
+      'm7b5',
+    ]);
   });
 
-  it('marks sus4/add9 free and 6th/9th Pro on built chords', () => {
+  it('marks sus4/add9 free and 6/9 Pro on built chords', () => {
     expect(variationChord('C', 0, 'sus4')).toMatchObject({ displayName: 'Csus4', isPro: false });
     expect(variationChord('C', 0, 'add9')).toMatchObject({ displayName: 'Cadd9', isPro: false });
     expect(variationChord('C', 0, '6')).toMatchObject({ displayName: 'C6', isPro: true });
@@ -99,38 +101,34 @@ describe('variationChord — quality-aware, avoid-note-safe (C major)', () => {
     expect(variationChord('C', 1, '13').displayName).toBe('Dm13');
   });
 
-  it('offers only diatonic tensions per degree and none on vii°', () => {
-    // I: no ♮11.
-    expect(availableVariations(0)).toEqual(['sus4', 'add9', '6', 'sus2', '9', '13']);
+  it('offers a usable first row on every degree, sized to what the degree carries', () => {
+    // I: no ♮11, and sus2 leads because it is the least committal colour.
+    expect(availableVariations(0)).toEqual(['sus2', 'sus4', 'add9', '6']);
     // vi: no ♮6 / 13 (F# is out of key).
-    expect(availableVariations(5)).toEqual(['sus4', 'add9', 'sus2', '9', '11']);
-    // iii (Phrygian): only the 4/11 avoid the ♭9/♭13.
+    expect(availableVariations(5)).toEqual(['sus2', 'sus4', 'add9']);
+    // iii (Phrygian): the 4 and the 11 are the only forms that dodge its ♭9/♭13.
     expect(availableVariations(2)).toEqual(['sus4', '11']);
-    // vii° (diminished): no variations offered.
-    expect(availableVariations(6)).toEqual([]);
+    // vii° is reachable now — the plain half-diminished seventh is its first row.
+    expect(availableVariations(6)).toEqual(['m7b5']);
   });
 });
 
-describe('extendedVariations — second tier (C major)', () => {
-  it('keeps the core tier free of the extended ids', () => {
-    const extendedIds: string[] = EXTENDED_VARIATIONS.map((v) => v.id);
+describe('extendedVariations — the folded row of safe colours (C major)', () => {
+  it('never repeats an id the first row already showed', () => {
     for (let degree = 0; degree < 7; degree += 1) {
-      expect(availableVariations(degree).filter((id) => extendedIds.includes(id))).toEqual([]);
+      const primary = availableVariations(degree);
+      expect(extendedVariations(degree).filter((id) => primary.includes(id))).toEqual([]);
     }
   });
 
-  it('offers only in-key, avoid-note-safe colours per degree', () => {
-    expect(extendedVariations(0)).toEqual(['sixNine']);
+  it('carries the richer in-key colours per degree', () => {
+    expect(extendedVariations(0)).toEqual(['sixNine', '9']);
     // ii (Dorian): the one minor degree whose ♮6 and ♮11 are both in key.
-    expect(extendedVariations(1)).toEqual(['m6nine', 'm13_9_11']);
-    // IV (Lydian): the only degree that can carry a #11.
-    expect(extendedVariations(3)).toEqual(['sixNine', 'maj9sharp11', 'maj13sharp11']);
-    // vii° gains its first colours: 11 and ♭13 are diatonic over m7♭5.
-    expect(extendedVariations(6)).toEqual(['m7b5_11', 'm7b5_b13']);
-    // iii / V / vi: everything left would leave the key or duplicate the core tier.
-    expect(extendedVariations(2)).toEqual([]);
-    expect(extendedVariations(4)).toEqual([]);
-    expect(extendedVariations(5)).toEqual([]);
+    expect(extendedVariations(1)).toEqual(['m6nine', '9', '11', '13']);
+    // IV (Lydian): 6/9 and maj9; its #11 family is strong colour, not a safe one.
+    expect(extendedVariations(3)).toEqual(['sixNine', '9']);
+    // vii°: the diatonic 11th, plus dim7 for how clearly it resolves to I.
+    expect(extendedVariations(6)).toEqual(['m7b5_11', 'dim7']);
   });
 
   it('builds the degree-correct symbol and is spelled by the catalog', () => {
@@ -147,60 +145,93 @@ describe('extendedVariations — second tier (C major)', () => {
   });
 
   it('is Pro-gated in full', () => {
-    expect(EXTENDED_VARIATIONS.every((v) => v.isPro)).toBe(true);
+    for (let degree = 0; degree < 7; degree += 1) {
+      for (const id of extendedVariations(degree)) {
+        expect(variationChord('C', degree, id).isPro).toBe(true);
+      }
+    }
   });
 });
 
 /**
- * Mirrors ダイアトニックコード_テンション一覧 (C major): the altered column that
- * the in-key tiers must refuse, listed per degree and nothing beyond it.
+ * The 強い色づけ row: a deliberate character rather than a safe colour. Membership
+ * follows how strongly a tension colours the degree, which is why IV's diatonic #11
+ * belongs here while its 6/9 does not.
  */
-describe('alteredVariations — third tier (C major)', () => {
-  it('offers each degree exactly the altered tones classic theory names', () => {
-    expect(alteredVariations(0).map((id) => variationChord('C', 0, id).displayName)).toEqual([
+describe('strongVariations — the 強い色づけ row (C major)', () => {
+  it('gives each degree the character tensions worth offering', () => {
+    expect(strongVariations(0).map((id) => variationChord('C', 0, id).displayName)).toEqual([
+      'Cmaj7(#11)',
       'Cmaj9(#11)',
-      'Cmaj13(#11)',
     ]);
-    expect(alteredVariations(2).map((id) => variationChord('C', 2, id).displayName)).toEqual([
-      'Em7(♭9)',
+    expect(strongVariations(2).map((id) => variationChord('C', 2, id).displayName)).toEqual([
+      'Em7(♭13)',
     ]);
-    expect(alteredVariations(4).map((id) => variationChord('C', 4, id).displayName)).toEqual([
+    expect(strongVariations(3).map((id) => variationChord('C', 3, id).displayName)).toEqual([
+      'Fmaj7(#11)',
+      'Fmaj9(#11)',
+      'Fmaj13(#11)',
+    ]);
+    expect(strongVariations(4).map((id) => variationChord('C', 4, id).displayName)).toEqual([
       'G7(♭9)',
       'G7(#9)',
       'G7(#11)',
       'G7(♭13)',
     ]);
-    expect(alteredVariations(5).map((id) => variationChord('C', 5, id).displayName)).toEqual([
+    expect(strongVariations(5).map((id) => variationChord('C', 5, id).displayName)).toEqual([
       'Am7(♭13)',
     ]);
-    expect(alteredVariations(6).map((id) => variationChord('C', 6, id).displayName)).toEqual([
-      'Bm7♭5(♭9)',
+    expect(strongVariations(6).map((id) => variationChord('C', 6, id).displayName)).toEqual([
+      'Bm7♭5(♭13)',
     ]);
   });
 
-  it('leaves ii and IV empty — every tension they take is already in key', () => {
-    expect(alteredVariations(1)).toEqual([]);
-    expect(alteredVariations(3)).toEqual([]);
+  it('leaves ii empty — every tension Dorian takes is already a safe colour', () => {
+    expect(strongVariations(1)).toEqual([]);
   });
 
-  it('never leaks into the two in-key tiers', () => {
+  it('never leaks into the two safe rows', () => {
     for (let degree = 0; degree < 7; degree += 1) {
-      const altered = alteredVariations(degree);
-      expect(availableVariations(degree).filter((id) => altered.includes(id))).toEqual([]);
-      expect(extendedVariations(degree).filter((id) => altered.includes(id))).toEqual([]);
+      const strong = strongVariations(degree);
+      expect(availableVariations(degree).filter((id) => strong.includes(id))).toEqual([]);
+      expect(extendedVariations(degree).filter((id) => strong.includes(id))).toEqual([]);
     }
   });
 
   it('is spelled by the catalog and Pro-gated in full', () => {
     for (let degree = 0; degree < 7; degree += 1) {
-      for (const id of alteredVariations(degree)) {
+      for (const id of strongVariations(degree)) {
         const chord = variationChord('C', degree, id);
         expect(chord.definitionId).toBeDefined();
         expect(chord.isPro).toBe(true);
         expect(intervalsForChord(chord.suffix, chord.definitionId).length).toBeGreaterThan(0);
       }
     }
-    expect(ALTERED_VARIATIONS.every((v) => v.isPro)).toBe(true);
+  });
+
+  /**
+   * Leaving the key is not by itself a reason to fold a chord away: Bdim7 is a safe
+   * colour precisely because the departure is the whole point, and the ear hears it
+   * resolve. Holding a semitone rub is the line that matters, because that is what
+   * turns a wrong voicing into a wrong-sounding chord.
+   */
+  it('is the only row allowed to hold a semitone rub', () => {
+    for (let degree = 0; degree < 7; degree += 1) {
+      for (const entry of degreeVariations(degree)) {
+        if (entry.usability === 'advanced') continue;
+        expect(entry.dissonanceLevel).not.toBe('high');
+      }
+    }
+  });
+
+  it('keeps the always-visible row inside the key and forgiving of voicing', () => {
+    for (let degree = 0; degree < 7; degree += 1) {
+      for (const id of availableVariations(degree)) {
+        const entry = degreeVariations(degree).find((e) => e.id === id)!;
+        expect(entry.scaleCompatibility).toBe('inside');
+        expect(entry.dissonanceLevel).toBe('low');
+      }
+    }
   });
 });
 

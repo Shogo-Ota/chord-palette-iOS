@@ -17,8 +17,8 @@
 import { ACCOMPANIMENT_IDS, GROOVE_IDS } from '@/data/labels';
 import {
   MAJOR_KEYS,
-  availableVariations,
   chromaticBassNotes,
+  degreeVariations,
   diatonicLibrary,
   diatonicSeventhLibrary,
   modalInterchange,
@@ -55,9 +55,11 @@ function allLibraryChords(key: MajorKey): { label: string; chord: LibraryChord }
   for (const c of diatonicLibrary(key)) out.push({ label: `triad ${c.displayName}`, chord: c });
   for (const c of diatonicSeventhLibrary(key)) out.push({ label: `7th ${c.displayName}`, chord: c });
 
+  // Every row, not just the always-visible one: a pill the player can reach must
+  // sound, whichever tier it is folded under.
   for (let degree = 0; degree < 7; degree++) {
-    for (const id of availableVariations(degree)) {
-      const c = variationChord(key, degree, id);
+    for (const entry of degreeVariations(degree)) {
+      const c = variationChord(key, degree, entry.id);
       out.push({ label: `var ${c.displayName}`, chord: c });
     }
   }
