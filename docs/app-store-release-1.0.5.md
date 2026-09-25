@@ -18,9 +18,13 @@ https://expo.dev/accounts/shogoota/projects/chord-palette/builds/008b2740-78d6-4
 Superseded build 33:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 
-EAS submission for build 34, scheduled 2026-09-26 and still in progress when last
-checked — EAS holds it server-side, so it completes whether or not a local CLI is
-watching:
+EAS submission for build 34 is **stuck**. It was scheduled 2026-09-26 02:48 JST and was
+still `in progress` at 04:37, nearly two hours later; build 33's equivalent finished in
+four minutes. Check TestFlight before doing anything: if build 34 is already there, the
+stuck record is cosmetic, and if it is not, re-run
+`npx eas-cli submit --platform ios --profile production --id 008b2740`. Re-submitting
+while the first attempt is live is safe — Apple rejects a duplicate build number rather
+than accepting two.
 https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/6075b227-befd-4208-b81f-17db5b44535f
 
 Build 33 was uploaded on 2026-09-25 and is superseded:
@@ -105,7 +109,8 @@ Suggested test path for this update:
 - [x] Promotional text drafted in Japanese and English
 - [x] Sandbox purchase and restore verified on Preview build `2e8fa4ff`
 - [x] Production build created — `1.0.5 (34)`
-- [~] Production build upload scheduled — confirm it reached TestFlight
+- [ ] Production build uploaded — submission 6075b227 stuck `in progress`; confirm in
+      TestFlight whether build 34 arrived, and re-submit if it did not
 - [ ] Apple processing completed
 - [ ] `1.0.4` has left review, so version `1.0.5` can be created
 - [ ] Version `1.0.5` created and the build attached in App Store Connect
