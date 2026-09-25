@@ -1,6 +1,6 @@
 # App Store Release 1.0.5
 
-Status: Binary in TestFlight — not submitted for review
+Status: Release Candidate signed off — ready to submit for review
 Prepared: 2026-09-25
 Version/build: `1.0.5 (34)`
 
@@ -30,9 +30,9 @@ rather than accepting two.
 Build 33 was uploaded on 2026-09-25 and is superseded:
 https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/81868bc5-1bcc-4cc8-866d-a14f57d19458
 
-`1.0.4 (32)` is now Live and App Store Connect reports `In review: none`, so the version
-record for `1.0.5` can be created. Nothing is blocking submission except the owner's own
-device sign-off on build 34.
+`1.0.4 (32)` is Live and App Store Connect reports `In review: none`, so the version
+record for `1.0.5` can be created. The owner signed off build 34 on a device through
+TestFlight on 2026-09-26, so every step left is an App Store Connect web operation.
 
 ## What's New — Japanese
 
@@ -121,5 +121,5 @@ Suggested test path for this update:
 - [ ] Submitted for App Review
 - [ ] Screenshots — optional refresh showing the per-chord style badge. Can be updated
       during review or after release without a new build
-- [ ] Owner device sign-off on the production build through TestFlight
+- [x] Owner device sign-off on build 34 through TestFlight — PASS, 2026-09-26
 - [ ] Review outcome recorded here
