@@ -13,9 +13,13 @@ voice-leading connector that names the chord it resolves to.
 Release candidate detail: [release-1.0.5-checklist.md](release-1.0.5-checklist.md)
 
 Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/008b2740-78d6-4913-86d2-caf88d4d21e9
+
+Superseded build 33:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 
-EAS submission:
+EAS submission: pending for build 34.
+Build 33 was uploaded on 2026-09-25 and is superseded:
 https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/81868bc5-1bcc-4cc8-866d-a14f57d19458
 
 `1.0.4 (32)` was submitted on 2026-09-14 and is Waiting for Review. App Store Connect
@@ -97,7 +101,7 @@ Suggested test path for this update:
 - [x] Promotional text drafted in Japanese and English
 - [x] Sandbox purchase and restore verified on Preview build `2e8fa4ff`
 - [x] Production build created — `1.0.5 (34)`
-- [x] Production build uploaded to App Store Connect
+- [ ] Production build uploaded to App Store Connect
 - [ ] Apple processing completed
 - [ ] `1.0.4` has left review, so version `1.0.5` can be created
 - [ ] Version `1.0.5` created and the build attached in App Store Connect

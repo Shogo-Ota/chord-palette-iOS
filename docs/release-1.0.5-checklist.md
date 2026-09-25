@@ -7,6 +7,8 @@ carried the twelve-root `AUGMENTED TRIAD` group, which listed the same four
 pitch-class sets three times each.
 Branch: `feature/per-chord-style-override-latest`
 Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/008b2740-78d6-4913-86d2-caf88d4d21e9
+Superseded build 33:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 Submission: [app-store-release-1.0.5.md](app-store-release-1.0.5.md)
 Baseline release: `1.0.4 (32)`, production build
@@ -104,7 +106,7 @@ the gate, not the build.
 1. [x] Commit the feature work and the 1.0.5 version bump
 2. [x] `npx eas-cli build --platform ios --profile production`
 3. [x] Record the produced build number and commit it
-4. [x] `npx eas-cli submit --platform ios --profile production --id d28bd4eb`
+4. [ ] `npx eas-cli submit --platform ios --profile production --id 008b2740`
 5. [ ] Apple processing completed and the build visible in TestFlight
 6. [ ] Owner device sign-off on build 34 through TestFlight
 7. [ ] Confirm in App Store Connect that `1.0.4` has left review, so `1.0.5` can be created
