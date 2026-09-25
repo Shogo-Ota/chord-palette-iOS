@@ -219,31 +219,44 @@ Not counted as debt, because they are pre-existing environment or repository con
   the comment position moved, and the file is back to 0 errors / 0 warnings with no
   behavior change.
 
-## Augmented Triad included in this update (2026-09-25)
+## Augmented Triad: rescued, then held back from this release (2026-09-25)
 
-The Phase 1 Augmented Triad work is now part of this branch, not a deferred item. It had
-existed only in the working tree of the `Chord-Palette-aug-phase1` worktree and was
-committed to no branch, so it would have been lost when that worktree was cleaned.
+The Phase 1 Augmented Triad work existed only in the working tree of the
+`Chord-Palette-aug-phase1` worktree and was committed to no branch, so it would have
+been lost when that worktree was cleaned. It is on this branch now, and its domain and
+persistence work stays here. What does not ship is the UI.
 
-Ported additively:
+The `AUGMENTED TRIAD` group offered all twelve chromatic roots, and an augmented triad
+is symmetric: `Caug`, `Eaug` and `A♭aug` are the same three notes. Twelve cards listed
+the same four pitch-class sets three times each, with no target chord, in a tab whose
+every other group presents a technique and names where it leads. Shipping it would have
+taught players that the tab is a chord dump. The group was pulled from
+`advancedLibraryGroups` for both modes; `augmentedTriads()` and all three of its test
+suites remain, unchanged and passing, so nothing was lost.
+
+Augmented returns in a later release generated from a source degree and a target chord,
+with pitch-class-set dedupe and a small candidate count.
+
+Ported additively and still present:
 
 - `src/data/augmentedTriads.ts` and its unit test
 - `src/lib/performance/__tests__/augmentedTriadLibraryQuality.test.ts`
 - `src/repositories/__tests__/projectAugmentedTriadRepository.test.ts`
 - `docs/acceptance/phase-1-augmented-triad-acceptance.md`
 - `ChordCategory` gains `'augmentedTriad'`
-- `advancedLibraryGroups` gains one `augmented-triad` group, appended for both modes
 
 Library verification on this branch:
 
-- The 応用 tab shows `AUGMENTED TRIAD / 増三和音（Root・Major 3rd・Augmented 5th）`
-- 12 chromatic roots per key: `Caug D♭aug Daug E♭aug Eaug Faug G♭aug Gaug A♭aug Aaug B♭aug Baug`
+- `augmentedTriads(key, mode)` returns 12 chromatic roots per key:
+  `Caug D♭aug Daug E♭aug Eaug Faug G♭aug Gaug A♭aug Aaug B♭aug Baug`
 - Degree labels `Iaug ♭IIaug IIaug ♭IIIaug IIIaug IVaug #IVaug Vaug ♭VIaug VIaug ♭VIIaug VIIaug`
 - Present in all 12 keys and in both major and minor
 - Every card is `isPro: true`, `category: 'augmentedTriad'`, `suffix: 'aug'`,
   `definitionId: 'aug'`, badge `AUG`
 - Card ids are unique per key/mode/root
-- Existing groups are unchanged; the new group is appended last
+- Not reachable from the 応用 tab in this release, by the decision above
+- A project saved with an augmented chord keeps sounding: the event carries
+  `suffix: 'aug'` and `definitionId: 'aug'`, which the catalog still spells
 
 Harmony ownership is unchanged. The Theory catalog already owned `aug` as `[0, 4, 8]`;
 this only exposes that existing definition to the advanced library. `compact.v3`,

@@ -35,25 +35,36 @@ describe('minor advanced harmony provider', () => {
     }
   });
 
-  it('adds the approved augmented triad group to both modes', () => {
+  it('offers only groups that name the chord they lead to', () => {
     expect(advancedLibraryGroups('C', 'major').map((group) => group.id)).toEqual([
       'secondary-dominant',
       'passing-diminished',
       'substitute-chord',
       'chromatic-mediant',
-      'augmented-triad',
     ]);
     expect(advancedLibraryGroups('C', 'minor').map((group) => group.id)).toEqual([
       'minor-primary-dominant',
       'substitute-chord',
-      'augmented-triad',
     ]);
+  });
+
+  /**
+   * An augmented triad is symmetric, so all twelve roots named the same four
+   * pitch-class sets three times each, with no target. The domain function and its
+   * tests stay; only the chord-type dump is gone from the tab.
+   */
+  it('does not dump augmented triads into the tab', () => {
+    for (const mode of ['major', 'minor'] as const) {
+      const cards = advancedLibraryGroups('C', mode).flatMap((group) => group.chords);
+      expect(cards.filter((chord) => chord.suffix === 'aug')).toEqual([]);
+      expect(cards.filter((chord) => chord.category === 'augmentedTriad')).toEqual([]);
+    }
   });
 
   it('does not invent minor secondary dominants or reverse mixture', () => {
     const minor = advancedLibraryGroups('C', 'minor');
 
-    expect(minor.flatMap((group) => group.chords)).toHaveLength(16);
+    expect(minor.flatMap((group) => group.chords)).toHaveLength(4);
     expect(minor.some((group) => group.id.includes('secondary'))).toBe(false);
     expect(minor.some((group) => group.id.includes('modal'))).toBe(false);
     expect(minor.some((group) => group.id.includes('passing'))).toBe(false);

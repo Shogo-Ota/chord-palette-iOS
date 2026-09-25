@@ -1,8 +1,10 @@
 # Chord Palette 1.0.5 Release Candidate
 
 Updated: 2026-09-25
-Version/build: `1.0.5 (33)` — `expo.version` set to `1.0.5`; `autoIncrement` bumped
-`expo.ios.buildNumber` from `32` to `33` during the production build.
+Version/build: `1.0.5 (34)` — `expo.version` set to `1.0.5`; `autoIncrement` bumps
+`expo.ios.buildNumber` on each production build. Build 33 was superseded because it
+carried the twelve-root `AUGMENTED TRIAD` group, which listed the same four
+pitch-class sets three times each.
 Branch: `feature/per-chord-style-override-latest`
 Production build:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
@@ -23,10 +25,6 @@ the gate, not the build.
   change. A short badge appears on the degree line only, so a 1/4-bar card gains no
   row. Palette Pro owns setting and changing a STYLE; removal stays available after a
   lapse so a chord can always return to the project STYLE.
-- **Augmented triads in the 応用 library.** One `AUGMENTED TRIAD` group covering all
-  twelve chromatic roots, in both major and natural minor, as Palette Pro cards. The
-  Theory catalog already owned `aug` as `[0, 4, 8]`; this exposes that existing
-  definition rather than redefining harmony.
 
 ## Scope — what stays dark in production
 
@@ -67,8 +65,6 @@ the gate, not the build.
 - [x] Per-chord parity: each chord sounds exactly as it does when the whole project
       plays that one STYLE, which is what proves phrase index, absolute beat and RNG
       sequence are untouched
-- [x] Augmented triads: 12 unique roots in all 12 keys and both modes, every card
-      `isPro`, `category: 'augmentedTriad'`, `definitionId: 'aug'`, badge `AUG`
 - [x] Evolution freeze gate (`phase3FreezeGate`), Classic renderer freeze gate,
       Phase V4 frozen dependencies and the Pulse PNG goldens all pass unchanged
 - [x] Video public style set remains exactly `classic | flow`
@@ -81,7 +77,8 @@ the gate, not the build.
 | 32 | 1.0.4 production build (baseline) |
 | Preview `b6fe4580` | Per-chord STYLE on the stale base — superseded, kept for traceability |
 | Preview `2e8fa4ff` | Per-chord STYLE on the 1.0.4 base — **device and Sandbox billing approved** |
-| 33 | 1.0.5 production build |
+| 33 | 1.0.5, superseded — carried the twelve-root augmented group |
+| 34 | 1.0.5 production build |
 
 ## Device checks on Preview build 32 (`2e8fa4ff`)
 
@@ -100,8 +97,7 @@ the gate, not the build.
 - [x] RevenueCat Sandbox: Free state, Paywall, purchase, `palette_pro`, immediate
       redraw, chord reselection, picker resume, no auto-apply, restore, lapse,
       removal-only after lapse, MIDI and Video still available, real package price
-- [ ] Augmented triads visible in the 応用 tab on a device
-- [ ] Build 33 sign-off through TestFlight
+- [ ] Build 34 sign-off through TestFlight
 
 ## Release steps
 
@@ -110,7 +106,7 @@ the gate, not the build.
 3. [x] Record the produced build number and commit it
 4. [x] `npx eas-cli submit --platform ios --profile production --id d28bd4eb`
 5. [ ] Apple processing completed and the build visible in TestFlight
-6. [ ] Owner device sign-off on build 33 through TestFlight
+6. [ ] Owner device sign-off on build 34 through TestFlight
 7. [ ] Confirm in App Store Connect that `1.0.4` has left review, so `1.0.5` can be created
-8. [ ] Attach build 33, enter What's New and review notes, then submit for App Review
+8. [ ] Attach build 34, enter What's New and review notes, then submit for App Review
 9. [ ] Review outcome recorded in `docs/app-store-release-1.0.5.md`
