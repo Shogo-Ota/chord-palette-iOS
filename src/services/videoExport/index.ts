@@ -15,6 +15,8 @@ import { audioService } from '@/services/audio';
 import type { ChordEvent, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 import { videoPerformanceInput } from './performanceInput';
+import { nonDiatonicCycleIndices } from '@/lib/videoExport/nonDiatonic';
+
 import { buildVisualNoteTimeline } from './visualNoteTimeline';
 import { buildCompareExportPlan, type PreparedCompareExport } from './buildCompareExportPlan';
 import type { ExportPlan } from './types';
@@ -97,6 +99,8 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   const durationSec = cycleDurationSec(performance.totalBeats, performance.bpm);
   const visualNoteEvents =
     input.visualStyle === 'flow' ? buildVisualNoteTimeline(performance, durationSec) : undefined;
+  const auraIndices =
+    input.visualStyle === 'flow' ? nonDiatonicCycleIndices(input.progression) : undefined;
   const audio = await audioService.renderAudioFile(
     buildVideoAudioRequest(performance, durationSec),
   );
@@ -119,8 +123,14 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   // Keep the Classic payload byte-for-byte compatible: only Flow receives the
   // note-level sidecar while Classic continues to use segment timing alone.
   const plan = visualNoteEvents ? { ...basePlan, visualNoteEvents } : basePlan;
+  // The aura rides the same Flow-only seam. An empty list is dropped rather than sent,
+  // so a fully diatonic progression produces the payload it always did.
+  const flowPlan =
+    auraIndices && auraIndices.length > 0
+      ? { ...plan, nonDiatonicCycleIndices: auraIndices }
+      : plan;
 
-  return encodePlan(plan, opts);
+  return encodePlan(flowPlan, opts);
 }
 
 async function encodePlan(plan: ExportPlan, opts: VideoExportOptions): Promise<string> {

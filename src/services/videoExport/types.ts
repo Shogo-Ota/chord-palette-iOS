@@ -87,6 +87,16 @@ export type ExportPlan = {
    * blocks and keyboard landing without regenerating performance data.
    */
   visualNoteEvents?: readonly VisualNoteEvent[];
+  /**
+   * Positions in one progression pass whose chord leaves the key, so Flow can lay a
+   * violet aura around them. A separate sidecar rather than a flag on `ExportSegment`
+   * because the segment payload is shared with the frozen Classic renderer.
+   *
+   * Indexed by position, not by time: the export tiles the progression end to end, so
+   * position identifies the chord on every loop and the renderer never matches a
+   * floating-point start time.
+   */
+  nonDiatonicCycleIndices?: readonly number[];
 };
 
 export type ExportVideoResult = {

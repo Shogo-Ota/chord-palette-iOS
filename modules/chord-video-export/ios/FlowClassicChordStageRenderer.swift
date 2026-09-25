@@ -19,7 +19,9 @@ enum FlowClassicChordStageRenderer {
     timeSec: Double,
     cg: CGContext,
     frameWidth width: CGFloat,
-    frameHeight height: CGFloat
+    frameHeight height: CGFloat,
+    nonDiatonic: FlowNonDiatonicCycle = .empty,
+    auraStrength: CGFloat = 0
   ) {
     guard let current = state.currentSegment else { return }
 
@@ -32,13 +34,23 @@ enum FlowClassicChordStageRenderer {
       frameHeight: height
     )
 
-    drawProgressRail(state: state, frameWidth: width, frameHeight: height)
+    drawProgressRail(
+      state: state,
+      frameWidth: width,
+      frameHeight: height,
+      nonDiatonic: nonDiatonic,
+      auraStrength: auraStrength,
+      cg: cg
+    )
   }
 
   private static func drawProgressRail(
     state: FlowFrameState,
     frameWidth width: CGFloat,
-    frameHeight height: CGFloat
+    frameHeight height: CGFloat,
+    nonDiatonic: FlowNonDiatonicCycle,
+    auraStrength: CGFloat,
+    cg: CGContext
   ) {
     guard !state.cycleSegments.isEmpty else { return }
     let railY = height * 0.535
@@ -58,6 +70,16 @@ enum FlowClassicChordStageRenderer {
       let centerX = left + slotWidth * (CGFloat(index) + 0.5)
       let opacity: CGFloat = active ? 1 : 0.42
       let radius = height * (active ? 0.0042 : 0.0025)
+      // A violet ring behind the dot, so the timeline shows where the chromatic chords
+      // sit even before one of them is sounding.
+      if nonDiatonic.contains(cycleIndex: index) {
+        FlowNonDiatonicAuraRenderer.drawRailMark(
+          center: CGPoint(x: centerX, y: railY),
+          radius: radius,
+          alpha: active ? max(0.45, auraStrength) : 0.30,
+          cg: cg
+        )
+      }
       segment.color.withAlphaComponent(opacity).setFill()
       UIBezierPath(
         ovalIn: CGRect(

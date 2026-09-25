@@ -30,7 +30,9 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(bridge).toContain('@Field var visualNoteEvents: [VisualNoteEventRecord] = []');
     expect(bridge).toContain('FlowVisualNoteTimeline(');
     expect(registry).toContain('flowTimeline: FlowVisualNoteTimeline = .empty');
-    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline\)/);
+    expect(registry).toMatch(
+      /case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline, nonDiatonic: flowNonDiatonic\)/,
+    );
     expect(registry).not.toContain('PulseFrameRenderer()');
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
     expect(protocol).toContain('func makeImage(plan: RenderPlan, timeSec: Double)');
@@ -235,6 +237,8 @@ describe('Phase V4 Flow performance-motion architecture', () => {
       'FlowKeyboardRenderer.swift',
       'FlowVisualColorResolver.swift',
       'FlowVisualNoteTimeline.swift',
+      'FlowNonDiatonicAuraRenderer.swift',
+      'FlowNonDiatonicCycle.swift',
     ]) {
       expect(source(file).split('\n').length).toBeLessThan(500);
     }

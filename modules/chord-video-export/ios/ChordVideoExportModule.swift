@@ -46,6 +46,9 @@ struct ExportPlanRecord: Record {
   @Field var segments: [ExportSegmentRecord] = []
   /// Missing/empty is backwards compatible and ignored outside Flow.
   @Field var visualNoteEvents: [VisualNoteEventRecord] = []
+  /// Positions in one progression pass whose chord leaves the key. Flow only; an empty
+  /// list means every chord is diatonic and no aura is drawn.
+  @Field var nonDiatonicCycleIndices: [Int] = []
   /// Visual style contract. Unknown values fall back to Classic in the registry.
   @Field var visualStyle: String = "classic"
   /// Story template. Missing/unknown values preserve the existing Standard render.
@@ -123,11 +126,13 @@ public class ChordVideoExportModule: Module {
           return
         }
       }
+      let nonDiatonic = FlowNonDiatonicCycle(indices: planRecord.nonDiatonicCycleIndices)
       let frameRenderer = VideoFrameRendererRegistry.renderer(
         for: planRecord.visualStyle,
         templateId: planRecord.templateId,
         compareScene: compareScene,
-        flowTimeline: visualTimeline
+        flowTimeline: visualTimeline,
+        flowNonDiatonic: nonDiatonic
       )
 
       VideoWriter.write(

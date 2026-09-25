@@ -16,6 +16,7 @@ final class FlowFrameRenderer: VideoFrameRendering {
     red: 0x8e / 255, green: 0x9b / 255, blue: 0xae / 255, alpha: 1)
 
   private let timeline: FlowVisualNoteTimeline
+  private let nonDiatonic: FlowNonDiatonicCycle
   private var cachedKeys: (
     low: Int,
     high: Int,
@@ -23,8 +24,12 @@ final class FlowFrameRenderer: VideoFrameRendering {
     keys: [KeyRect]
   )?
 
-  init(timeline: FlowVisualNoteTimeline = .empty) {
+  init(
+    timeline: FlowVisualNoteTimeline = .empty,
+    nonDiatonic: FlowNonDiatonicCycle = .empty
+  ) {
     self.timeline = timeline
+    self.nonDiatonic = nonDiatonic
   }
 
   func makeImage(plan: RenderPlan, timeSec: Double) -> CGImage? {
@@ -81,10 +86,27 @@ final class FlowFrameRenderer: VideoFrameRendering {
         keyboardRect: keyboardRect,
         frameHeight: height
       )
+      let aura = auraIntensity(state: state, plan: plan, timeSec: timeSec)
+      // Behind the chord hierarchy, so the chord name and its function colour stay on
+      // top of the violet rather than inside it.
+      FlowNonDiatonicAuraRenderer.drawBackdrop(
+        intensity: aura,
+        cg: cg,
+        frameWidth: width,
+        frameHeight: height
+      )
       FlowClassicChordStageRenderer.draw(
         plan: plan,
         state: state,
         timeSec: timeSec,
+        cg: cg,
+        frameWidth: width,
+        frameHeight: height,
+        nonDiatonic: nonDiatonic,
+        auraStrength: aura.current
+      )
+      FlowNonDiatonicAuraRenderer.drawEdge(
+        intensity: aura,
         cg: cg,
         frameWidth: width,
         frameHeight: height
@@ -96,7 +118,9 @@ final class FlowFrameRenderer: VideoFrameRendering {
         fallbackColor: current.color,
         frameTimeSec: timeSec,
         rect: keyboardRect,
-        frameHeight: height
+        frameHeight: height,
+        aura: aura,
+        cg: cg
       )
     } else {
       drawFittedCenteredText(
@@ -116,6 +140,37 @@ final class FlowFrameRenderer: VideoFrameRendering {
     if plan.watermark {
       FlowBrandRenderer.draw(frameWidth: width, frameHeight: height)
     }
+  }
+
+  /// How strongly the violet aura reads now, from the same eased transition and beat
+  /// pulse the chord hero already uses. No separate clock, so the aura cannot drift out
+  /// of step with the audio.
+  private func auraIntensity(
+    state: FlowFrameState,
+    plan: RenderPlan,
+    timeSec: Double
+  ) -> FlowNonDiatonicAuraIntensity {
+    guard !nonDiatonic.isEmpty, let current = state.currentSegment else {
+      return FlowNonDiatonicAuraIntensity(current: 0, incoming: 0)
+    }
+    let beatDuration = 60.0 / Double(max(1, plan.bpm))
+    let beatPhase = (timeSec / beatDuration).truncatingRemainder(dividingBy: 1.0)
+    let pulse = CGFloat(exp(-beatPhase * 3.2))
+    let transition = min(0.16, current.durationSec * 0.45)
+    let chordProgress = CGFloat(
+      min(1.0, max(0.0, (timeSec - current.startSec) / max(0.03, transition)))
+    )
+    let ease = 1 - pow(1 - chordProgress, 3)
+    let count = max(1, state.cycleSegments.count)
+    let nextCycleIndex = (state.currentCycleIndex + 1) % count
+
+    return FlowNonDiatonicAuraIntensity.resolve(
+      currentIsNonDiatonic: nonDiatonic.contains(cycleIndex: state.currentCycleIndex),
+      nextIsNonDiatonic: nonDiatonic.contains(cycleIndex: nextCycleIndex),
+      ease: ease,
+      pulse: pulse,
+      segmentProgress: state.segmentProgress
+    )
   }
 
   private func keyboardKeys(plan: RenderPlan, totalWidth: CGFloat) -> [KeyRect] {

@@ -21,7 +21,9 @@ enum FlowKeyboardRenderer {
     fallbackColor: UIColor,
     frameTimeSec: Double,
     rect: CGRect,
-    frameHeight height: CGFloat
+    frameHeight height: CGFloat,
+    aura: FlowNonDiatonicAuraIntensity = FlowNonDiatonicAuraIntensity(current: 0, incoming: 0),
+    cg: CGContext? = nil
   ) {
     var landingByMidi: [Int: LandingVisual] = [:]
     for event in events {
@@ -35,6 +37,9 @@ enum FlowKeyboardRenderer {
       }
     }
     let blackHeight = rect.height * 0.61
+    // Collected while drawing so the violet afterglow can go over the function colour
+    // instead of replacing it: the key stays readable as T / SD / D underneath.
+    var litRects: [CGRect] = []
 
     for key in keys where !key.isBlack {
       let keyRect = CGRect(
@@ -57,6 +62,7 @@ enum FlowKeyboardRenderer {
         : whiteKey
       ).setFill()
       UIBezierPath(rect: keyRect).fill()
+      if intensity > 0 { litRects.append(keyRect) }
       blackKey.withAlphaComponent(0.74).setStroke()
       let border = UIBezierPath(rect: keyRect)
       border.lineWidth = 1
@@ -77,6 +83,16 @@ enum FlowKeyboardRenderer {
         : blackKey
       ).setFill()
       UIBezierPath(roundedRect: keyRect, cornerRadius: 2).fill()
+      if intensity > 0 { litRects.append(keyRect) }
+    }
+
+    if let cg {
+      FlowNonDiatonicAuraRenderer.drawKeyAfterglow(
+        intensity: aura,
+        rects: litRects,
+        cg: cg,
+        frameHeight: height
+      )
     }
 
     guard !plan.pitchClassNames.isEmpty else { return }

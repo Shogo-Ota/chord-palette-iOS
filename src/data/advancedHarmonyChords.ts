@@ -12,7 +12,14 @@ function rootSpelling(degreeIndex: number, alteration: -1 | 0 | 1): ChordRootSpe
   return { degreeIndex, alteration };
 }
 
-/** Four practical major-key diminished connectors, in UI priority order. */
+/**
+ * Four practical major-key diminished connectors, in UI priority order.
+ *
+ * Each one takes the harmonic function of the chord it leads to rather than a blanket
+ * dominant. A passing diminished has no destination of its own — it exists to arrive
+ * somewhere — so `C#dim7 → Dm` reads as subdominant motion, and colouring it as a
+ * dominant would tell the player it wants to resolve to the tonic.
+ */
 export function passingDiminishedChords(key: MajorKey): LibraryChord[] {
   const targets = diatonicSevenths(key, 'major');
   return MAJOR_PASSING_DIMINISHED_PALETTE.map((rule) => {
@@ -23,7 +30,7 @@ export function passingDiminishedChords(key: MajorKey): LibraryChord[] {
       id: `passing-diminished-${key}-${rule.id}`,
       displayName: `${root}dim7`,
       degreeLabel: rule.degreeLabel,
-      function: 'dominant',
+      function: target.function,
       subLabel: `→${target.displayName}`,
       badgeLabel: 'DIM',
       category: 'passingDiminished',

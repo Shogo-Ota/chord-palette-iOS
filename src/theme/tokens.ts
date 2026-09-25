@@ -199,3 +199,27 @@ export const playNeonColor: Record<ChordFunction, string> = {
   subdominant: colors.playNeonSubdominant,
   dominant: colors.playNeonDominant,
 };
+
+/**
+ * Colors the video renderer draws with, split by what each one means.
+ *
+ * `function` says what a chord does and owns the chord's own colour. `effect` is only
+ * ever laid around that colour, never in place of it — a borrowed iv stays yellow and
+ * gains a violet edge, so the viewer still reads it as a subdominant while seeing that
+ * this moment is not ordinary.
+ *
+ * The aura is violet because no harmonic function claims that hue, so it cannot be
+ * misread as a fourth function. It is brighter than the app's `primary` accent, which
+ * has to sit behind UI text; this one has to survive social-video compression at
+ * thumbnail size.
+ */
+export const videoColors = {
+  function: {
+    tonic: colors.tonic,
+    subdominant: colors.subdominant,
+    dominant: colors.dominant,
+  },
+  effect: {
+    nonDiatonicAura: '#a855f7',
+  },
+} as const;
