@@ -334,3 +334,21 @@ voicing, Shared Base, or Golden files and record:
 - Residual risk: Exact physical-device model and iOS version were not captured
 - Technical debt: Recorded above; all Low priority
 - Release: **READY FOR FREEZE — awaiting owner approval**
+
+## Production build 34 sign-off (2026-09-26)
+
+Result: PASS. Build 34 is the 1.0.5 Release Candidate.
+
+Verified on a device through TestFlight, on the production build rather than a Preview:
+
+- `C | Am | F | G` placed; `F` alone set to Arpeggio Type 1; `Arp` badge shown on `F`
+- Only `F` changes how it is played, and nothing propagates to `G` — which is the whole
+  point of the feature, and what separates it from a key change
+- `F` keeps its override when the project STYLE changes; 「全体のSTYLEを使用」 clears it
+- MIDI and video exports both match app playback at the STYLE switch position
+- No `AUGMENTED TRIAD` group in the 応用 tab, confirming the build 33 pullback
+- No regression in launch, editor or playback; nothing questionable in Engine or Voicing
+
+The earlier Preview sign-off covered the cases a production build cannot exercise
+cheaply — Sandbox billing, VoiceOver, short-chord boundaries and loop terminals — and is
+recorded above. This entry is the production-binary confirmation on top of it.

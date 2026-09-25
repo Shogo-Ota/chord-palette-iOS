@@ -98,7 +98,23 @@ https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae369dff-1922-4
 - [x] RevenueCat Sandbox: Free state, Paywall, purchase, `palette_pro`, immediate
       redraw, chord reselection, picker resume, no auto-apply, restore, lapse,
       removal-only after lapse, MIDI and Video still available, real package price
-- [ ] Build 34 sign-off through TestFlight
+
+## Device checks on production build 34, signed off 2026-09-26
+
+Owner sign-off on TestFlight. Build 34 is the 1.0.5 Release Candidate.
+
+- [x] `C | Am | F | G` placed
+- [x] `F` alone set to Arpeggio Type 1
+- [x] `Arp` badge shown on `F`
+- [x] Only `F` changes how it is played
+- [x] No STYLE propagation to `G`
+- [x] `F` keeps its override after the project STYLE changes
+- [x] 「全体のSTYLEを使用」 clears the override
+- [x] MIDI export matches app playback at the STYLE switch position
+- [x] Video export matches app playback at the STYLE switch position
+- [x] No `AUGMENTED TRIAD` group in the 応用 tab
+- [x] No regression in launch, editor or playback
+- [x] Nothing questionable in Engine or Voicing
 
 ## Release steps
 
