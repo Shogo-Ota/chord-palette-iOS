@@ -1,10 +1,11 @@
 # Chord Palette 1.0.5 Release Candidate
 
 Updated: 2026-09-25
-Version/build: `1.0.5 (33 expected)` — `expo.version` set to `1.0.5`;
-`autoIncrement` bumps `expo.ios.buildNumber` from `32` during the production build.
+Version/build: `1.0.5 (33)` — `expo.version` set to `1.0.5`; `autoIncrement` bumped
+`expo.ios.buildNumber` from `32` to `33` during the production build.
 Branch: `feature/per-chord-style-override-latest`
-Production build: pending
+Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 Submission: [app-store-release-1.0.5.md](app-store-release-1.0.5.md)
 Baseline release: `1.0.4 (32)`, production build
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae369dff-1922-4d42-b128-972d832cfdba
@@ -80,7 +81,7 @@ the gate, not the build.
 | 32 | 1.0.4 production build (baseline) |
 | Preview `b6fe4580` | Per-chord STYLE on the stale base — superseded, kept for traceability |
 | Preview `2e8fa4ff` | Per-chord STYLE on the 1.0.4 base — **device and Sandbox billing approved** |
-| 33 (expected) | 1.0.5 production build |
+| 33 | 1.0.5 production build |
 
 ## Device checks on Preview build 32 (`2e8fa4ff`)
 

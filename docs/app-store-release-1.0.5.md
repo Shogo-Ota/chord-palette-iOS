@@ -2,10 +2,11 @@
 
 Status: Prepared — not yet submitted (blocked on 1.0.4 leaving review)
 Prepared: 2026-09-25
-Version/build: `1.0.5 (33 expected)`
+Version/build: `1.0.5 (33)`
 Release candidate detail: [release-1.0.5-checklist.md](release-1.0.5-checklist.md)
 
-Production build: pending
+Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 
 EAS submission: pending
 
