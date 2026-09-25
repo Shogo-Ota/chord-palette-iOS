@@ -106,8 +106,9 @@ the gate, not the build.
 1. [x] Commit the feature work and the 1.0.5 version bump
 2. [x] `npx eas-cli build --platform ios --profile production`
 3. [x] Record the produced build number and commit it
-4. [~] `npx eas-cli submit --platform ios --profile production --id 008b2740` — scheduled,
-      confirm it reached TestFlight
+4. [ ] `npx eas-cli submit --platform ios --profile production --id 008b2740` — scheduled
+      2026-09-26 02:48 JST and still `in progress` two hours later. Confirm in TestFlight
+      whether build 34 arrived; re-run this command if it did not
 5. [ ] Apple processing completed and the build visible in TestFlight
 6. [ ] Owner device sign-off on build 34 through TestFlight
 7. [ ] Confirm in App Store Connect that `1.0.4` has left review, so `1.0.5` can be created
