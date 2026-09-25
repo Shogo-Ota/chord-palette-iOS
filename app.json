@@ -2,7 +2,7 @@
   "expo": {
     "name": "Chord Palette",
     "slug": "chord-palette",
-    "version": "1.0.4",
+    "version": "1.0.5",
     "orientation": "portrait",
     "icon": "./assets/icon/app-icon.png",
     "scheme": "chordpalette",
