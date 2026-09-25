@@ -23,6 +23,7 @@ Chord Paletteを「ミニDAW」にせず、**コード進行を最速で音楽�
 7. Shorts Video Templates
 8. Acoustic Guitar Tone
 9. Melody Presets
+10. Per-Chord Accompaniment Style Override（2026-09-25 追加。P1〜P4 実装・自動検証）
 
 ## 今回明確に非採用
 - Melody manual input / Piano Roll
