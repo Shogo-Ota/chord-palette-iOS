@@ -7,6 +7,7 @@ import { validateCase } from '../validate';
 function emptyPlan(): SessionPerformancePlan {
   return {
     notes: [],
+    controlChanges: [],
     chords: [
       {
         startBeat: 0,
@@ -62,10 +63,38 @@ describe('MIDI QA validators', () => {
 
   it('flags mid-bar single-note events on Block (C|F|G|C style)', () => {
     const snap = snapshot([
-      { startBeat: 0, durationBeat: 1, pitch: 60, velocity: 80, channel: 0, track: 'accompaniment' },
-      { startBeat: 0, durationBeat: 1, pitch: 64, velocity: 80, channel: 0, track: 'accompaniment' },
-      { startBeat: 0, durationBeat: 1, pitch: 67, velocity: 80, channel: 0, track: 'accompaniment' },
-      { startBeat: 1.5, durationBeat: 0.2, pitch: 64, velocity: 70, channel: 0, track: 'accompaniment' },
+      {
+        startBeat: 0,
+        durationBeat: 1,
+        pitch: 60,
+        velocity: 80,
+        channel: 0,
+        track: 'accompaniment',
+      },
+      {
+        startBeat: 0,
+        durationBeat: 1,
+        pitch: 64,
+        velocity: 80,
+        channel: 0,
+        track: 'accompaniment',
+      },
+      {
+        startBeat: 0,
+        durationBeat: 1,
+        pitch: 67,
+        velocity: 80,
+        channel: 0,
+        track: 'accompaniment',
+      },
+      {
+        startBeat: 1.5,
+        durationBeat: 0.2,
+        pitch: 64,
+        velocity: 70,
+        channel: 0,
+        track: 'accompaniment',
+      },
     ]);
     const verdict = validateCase('block__x__A', 'block', 'block.type1', 'A', snap, emptyPlan());
     expect(verdict.pass).toBe(false);
@@ -75,9 +104,30 @@ describe('MIDI QA validators', () => {
 
   it('passes a single downbeat triad on Block', () => {
     const snap = snapshot([
-      { startBeat: 0, durationBeat: 3.8, pitch: 48, velocity: 80, channel: 0, track: 'accompaniment' },
-      { startBeat: 0, durationBeat: 3.8, pitch: 52, velocity: 80, channel: 0, track: 'accompaniment' },
-      { startBeat: 0, durationBeat: 3.8, pitch: 55, velocity: 80, channel: 0, track: 'accompaniment' },
+      {
+        startBeat: 0,
+        durationBeat: 3.8,
+        pitch: 48,
+        velocity: 80,
+        channel: 0,
+        track: 'accompaniment',
+      },
+      {
+        startBeat: 0,
+        durationBeat: 3.8,
+        pitch: 52,
+        velocity: 80,
+        channel: 0,
+        track: 'accompaniment',
+      },
+      {
+        startBeat: 0,
+        durationBeat: 3.8,
+        pitch: 55,
+        velocity: 80,
+        channel: 0,
+        track: 'accompaniment',
+      },
     ]);
     const verdict = validateCase('block__ok__A', 'block', 'block.type1', 'A', snap, emptyPlan());
     const rhythm = verdict.analysis.failures.filter((f) => f.category === 'rhythm');

@@ -85,6 +85,7 @@ export function realizeCityType1(
             articulation: 'normal',
             rrIndex: 0,
             trackId: 'chord',
+            ownerChordIndex: voicing.chordIndex,
             seed,
           });
         }

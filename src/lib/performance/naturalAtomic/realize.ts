@@ -34,6 +34,7 @@ export function realizeAtomicNatural(
         articulation: 'legato',
         rrIndex: 0,
         trackId: 'bass',
+        ownerChordIndex: voicing.chordIndex,
         seed,
       });
     }
@@ -44,7 +45,7 @@ export function realizeAtomicNatural(
     if (!voicing) continue;
     const selectedNotes = selectNaturalAttackNotes(voicing, attack.selection);
     const harmonyTargetChordIndex =
-      attack.onsetBeat < voicing.chord.startBeat - 1e-9 ? attack.chordIndex : undefined;
+      attack.ownerChordIndex !== attack.chordIndex ? attack.chordIndex : undefined;
     for (const note of selectedNotes) {
       notes.push({
         timeBeat: attack.onsetBeat,
@@ -59,6 +60,7 @@ export function realizeAtomicNatural(
         articulation: 'normal',
         rrIndex: 0,
         trackId: 'chord',
+        ownerChordIndex: attack.ownerChordIndex,
         ...(harmonyTargetChordIndex == null ? {} : { harmonyTargetChordIndex }),
         seed,
       });

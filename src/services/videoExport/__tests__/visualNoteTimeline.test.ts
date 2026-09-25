@@ -43,6 +43,7 @@ function performance(
 ): SessionPerformancePlan {
   return {
     notes,
+    controlChanges: [],
     chords,
     progression: [],
     bpm,

@@ -6,7 +6,7 @@
 import { generatePerformance } from '../PerformanceEngine';
 import { collisionProfileFor, shiftProfile, validateHarmonyCollisions } from '../harmonyCollision';
 import { applyHarmonyGate } from '../harmonyGate';
-import { humanTemplateIdForPattern } from '../humanTemplate';
+import { humanTemplateById, humanTemplateIdForPattern } from '../humanTemplate';
 import { remeterChords } from '../meter';
 import { styleForRhythm } from '../model/styleCards';
 import { progressionToPerfChords } from '../progressionInput';
@@ -16,6 +16,8 @@ import {
   type InstrumentEffect,
 } from '../effect';
 import { beatsPerBarFor } from '../rhythms';
+import { naturalPedalEvents } from '../naturalAtomic/pedalPolicy';
+import { renderMaskedStyles, resolveEffectiveStyles, type EffectiveChordStyle } from '../style';
 import { resolveDrumPatternId } from '@/lib/drum/resolveDrumPattern';
 import { tierProfile, type Tier } from '../tier';
 import type { VoicingPosition } from '../baseVoicing';
@@ -53,6 +55,15 @@ export type PerformanceSessionInput = {
   humanTemplatePitchMode?: 'sharedBase' | 'userChord' | 'teacherFidelity';
 };
 
+/** Block is a plain held chord — never a Human MIDI Template. */
+function humanTemplateIdFor(
+  pattern: AccompanimentPattern,
+  variantTemplateId: string | undefined,
+): string | undefined {
+  if (pattern === 'block') return undefined;
+  return variantTemplateId ?? humanTemplateIdForPattern(pattern);
+}
+
 export function buildSessionPerformancePlan(
   session: PerformanceSessionInput,
   tier: Tier = 'free',
@@ -78,35 +89,54 @@ export function buildSessionPerformancePlan(
   const strength = tierProfile(tier);
   // The chosen Type names its own teacher take; a project saved before Types existed
   // falls back to the take its rhythm always played.
-  // Block is a plain held chord — never a Human MIDI Template.
   const resolvedVariant = resolveVariant(
     session.accompanimentPattern,
     session.accompanimentVariant,
   );
-  const humanTemplateId =
-    session.accompanimentPattern === 'block'
-      ? undefined
-      : (resolvedVariant.humanTemplateId ??
-        humanTemplateIdForPattern(session.accompanimentPattern));
-  const raw = generatePerformance(
-    { chords, bpm: session.tempoBpm, seed },
-    {
-      styleId: session.accompanimentPattern,
-      variantId: resolvedVariant.id,
-      grooveId: session.grooveId,
-      energy: session.accompanimentEnergy,
-      accompanimentStyle: styleForRhythm(session.accompanimentPattern) ?? 'band',
-      drums: false,
-      humanizeBoost: strength.humanizeBoost,
-      strumScale: strength.strumScale,
-      humanTemplateId,
-      humanTemplatePitchMode: session.humanTemplatePitchMode,
+  const humanTemplateId = humanTemplateIdFor(
+    session.accompanimentPattern,
+    resolvedVariant.humanTemplateId,
+  );
+  // A chord may name its own STYLE; every other chord inherits the project's. One
+  // render per distinct STYLE, each over the FULL progression, so phrase index and
+  // absolute beat never depend on which STYLEs happen to neighbour a chord.
+  const globalStyle: EffectiveChordStyle = {
+    pattern: session.accompanimentPattern,
+    variant: resolvedVariant.id,
+  };
+  const raw = renderMaskedStyles(
+    resolveEffectiveStyles(session.progression, globalStyle),
+    globalStyle,
+    chords,
+    (style) => {
+      const variant = resolveVariant(style.pattern, style.variant);
+      const styleTemplateId = humanTemplateIdFor(style.pattern, variant.humanTemplateId);
+      const template = humanTemplateById(styleTemplateId ?? '');
+      return {
+        notes: generatePerformance(
+          { chords, bpm: session.tempoBpm, seed },
+          {
+            styleId: style.pattern,
+            variantId: variant.id,
+            grooveId: session.grooveId,
+            energy: session.accompanimentEnergy,
+            accompanimentStyle: styleForRhythm(style.pattern) ?? 'band',
+            drums: false,
+            humanizeBoost: strength.humanizeBoost,
+            strumScale: strength.strumScale,
+            humanTemplateId: styleTemplateId,
+            humanTemplatePitchMode: session.humanTemplatePitchMode,
+          },
+        ),
+        controlChanges: template ? naturalPedalEvents(template, chords, variant.id) : [],
+      };
     },
   );
   // Detect illegal pitches only — do not snap. Degree runtime must be judged as-is.
-  const gated = applyHarmonyGate(raw, chords);
+  const gated = applyHarmonyGate(raw.notes, chords);
   const effect = session.instrumentEffect ?? instrumentEffectFromReleaseCut(session.releaseCut);
   const notes = applyInstrumentEffect(gated.notes, effect);
+  const controlChanges = effect === 'releaseCut' ? [] : raw.controlChanges;
   // Judged after the effect: sustain is what lengthens gates into one another, so
   // the notes that actually share air are only knowable here.
   const collisionReport = validateHarmonyCollisions(notes, chords, {
@@ -117,6 +147,7 @@ export function buildSessionPerformancePlan(
 
   return {
     notes,
+    controlChanges,
     chords,
     progression: session.progression,
     bpm: session.tempoBpm,

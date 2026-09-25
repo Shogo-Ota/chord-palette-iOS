@@ -186,6 +186,8 @@ interface NoteDraft {
   accent: number;
   ghost: boolean;
   pitch: number;
+  ownerChordIndex?: number;
+  harmonyTargetChordIndex?: number;
   /** Held across the following beat (set by the Variation `ties` rule). */
   tie?: boolean;
   /** Held as a phrase-end sustain (set by the Variation `phraseFill` rule). */
@@ -304,8 +306,11 @@ function collectStrikes(
       if (!pattern.hits[step]) continue;
       const gridBeat = bar * style.beatsPerBar + stepBeat(style, step);
       if (gridBeat >= totalBeats - EPSILON) continue; // stay inside the progression
+      const ownerChord = activeChord(chords, gridBeat);
       const chord = chordForStrike(chords, gridBeat, style, track);
-      if (!chord) continue;
+      if (!ownerChord || !chord) continue;
+      const ownerChordIndex = chords.indexOf(ownerChord);
+      const targetChordIndex = chords.indexOf(chord);
 
       let pitches: number[];
       if (track === 'chord') {
@@ -350,6 +355,10 @@ function collectStrikes(
         accent: pattern.accent[step] ?? 0.6,
         ghost: pattern.ghost?.[step] ?? false,
         pitches,
+        ownerChordIndex,
+        ...(targetChordIndex !== ownerChordIndex
+          ? { harmonyTargetChordIndex: targetChordIndex }
+          : {}),
       });
     }
   }
@@ -409,6 +418,8 @@ function toDrafts(strikes: Strike[], totalBeats: number): NoteDraft[] {
         accent: s.accent,
         ghost: s.ghost,
         pitch,
+        ownerChordIndex: s.ownerChordIndex,
+        harmonyTargetChordIndex: s.harmonyTargetChordIndex,
         tie: s.tie,
         sustain: s.sustain,
         strumRank: rank,
@@ -508,6 +519,10 @@ function renderTrack(
       articulation: pickArticulation({ track, style, ghost: d.ghost, gate, tie }),
       rrIndex: picker.next(track, d.pitch, velocity),
       trackId: track,
+      ...(d.ownerChordIndex == null ? {} : { ownerChordIndex: d.ownerChordIndex }),
+      ...(d.harmonyTargetChordIndex == null
+        ? {}
+        : { harmonyTargetChordIndex: d.harmonyTargetChordIndex }),
       seed,
     };
   });
@@ -749,6 +764,16 @@ export function generatePerformance(
     const kept = events.filter((e) => e.trackId !== 'chord' && e.trackId !== 'top');
     events.length = 0;
     events.push(...kept, ...realized);
+  }
+
+  // Legacy/library producers predate explicit ownership. Bind those notes once at
+  // the engine boundary; current public Block/Natural/City paths already tag their
+  // source chord directly.
+  for (const event of events) {
+    if (event.ownerChordIndex != null) continue;
+    const owner = activeChord(input.chords, event.timeBeat);
+    const ownerChordIndex = owner ? input.chords.indexOf(owner) : -1;
+    if (ownerChordIndex >= 0) event.ownerChordIndex = ownerChordIndex;
   }
 
   events.sort((a, b) => a.timeBeat - b.timeBeat || a.pitch - b.pitch);

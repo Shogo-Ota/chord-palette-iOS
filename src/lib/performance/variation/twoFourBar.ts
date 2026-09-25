@@ -56,6 +56,8 @@ export function applyTwoFourBar(
         accent: 0.62,
         ghost: false,
         pitches: [...source.pitches],
+        ownerChordIndex: source.ownerChordIndex,
+        harmonyTargetChordIndex: source.harmonyTargetChordIndex,
       };
       chord.push(stab);
       stabsPerPhrase.set(phrase, (stabsPerPhrase.get(phrase) ?? 0) + 1);

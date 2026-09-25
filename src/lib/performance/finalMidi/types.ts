@@ -55,6 +55,8 @@ export type FinalMidiSnapshot = {
 /** Inputs produced once from the editor session — shared by playback and export. */
 export type SessionPerformancePlan = {
   notes: NoteEvent[];
+  /** Fully resolved CC events; STYLE ownership has already been masked away. */
+  controlChanges: FinalMidiControlChange[];
   chords: PerfChord[];
   progression: ChordEvent[];
   bpm: number;

@@ -1,6 +1,6 @@
-import type { FinalMidiControlChange } from '../finalMidi/types';
 import type { HumanMidiTemplate } from '../humanTemplate/types';
 import type { PerfChord } from '../PerformanceEngine';
+import type { OwnedControlChange } from '../style/renderOwnership';
 import { mapNaturalSourceOnset, naturalDurationPolicy } from './durationPolicy';
 import { grooveProfileForVariant, type RegisteredGrooveProfile } from './grooveProfileRegistry';
 import { naturalRhythmStrategyFor } from './rhythmProfiles';
@@ -9,15 +9,15 @@ function midiValue(value: number): number {
   return Math.max(0, Math.min(127, Math.round(value)));
 }
 
-function sorted(events: FinalMidiControlChange[]): FinalMidiControlChange[] {
+function sorted(events: OwnedControlChange[]): OwnedControlChange[] {
   return events.sort((left, right) => left.startBeat - right.startBeat || left.value - right.value);
 }
 
 function templatePedalEvents(
   template: HumanMidiTemplate,
   chords: readonly PerfChord[],
-): FinalMidiControlChange[] {
-  const events: FinalMidiControlChange[] = [];
+): OwnedControlChange[] {
+  const events: OwnedControlChange[] = [];
   chords.forEach((chord, chordIndex) => {
     const barInLoop = (chordIndex % template.loopBars) + 1;
     const policy = naturalDurationPolicy(chord.durationBeats, template.meter.beatsPerBar);
@@ -32,6 +32,7 @@ function templatePedalEvents(
         controller: 64,
         value,
         channel: 0,
+        ownerChordIndex: chordIndex,
       });
       pedalDown = value >= 64;
     }
@@ -41,6 +42,7 @@ function templatePedalEvents(
         controller: 64,
         value: 0,
         channel: 0,
+        ownerChordIndex: chordIndex,
       });
     }
   });
@@ -50,8 +52,8 @@ function templatePedalEvents(
 function candidatePedalEvents(
   profile: RegisteredGrooveProfile,
   chords: readonly PerfChord[],
-): FinalMidiControlChange[] {
-  const events: FinalMidiControlChange[] = [];
+): OwnedControlChange[] {
+  const events: OwnedControlChange[] = [];
 
   chords.forEach((chord, chordIndex) => {
     const policy = naturalDurationPolicy(chord.durationBeats, 4);
@@ -66,6 +68,7 @@ function candidatePedalEvents(
         controller: 64,
         value,
         channel: 0,
+        ownerChordIndex: chordIndex,
       });
       pedalDown = value >= 64;
     }
@@ -75,6 +78,7 @@ function candidatePedalEvents(
         controller: 64,
         value: 0,
         channel: 0,
+        ownerChordIndex: chordIndex,
       });
     }
   });
@@ -90,7 +94,7 @@ export function naturalPedalEvents(
   template: HumanMidiTemplate,
   chords: readonly PerfChord[],
   variantId: unknown,
-): FinalMidiControlChange[] {
+): OwnedControlChange[] {
   const strategy = naturalRhythmStrategyFor(variantId);
   if (strategy.pedalPolicy === 'TEMPLATE') return templatePedalEvents(template, chords);
   const profile = grooveProfileForVariant(variantId);

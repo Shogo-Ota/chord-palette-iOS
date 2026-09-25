@@ -70,7 +70,7 @@ export function ensureChordAudible(
   const harmony = events.filter((e) => HARMONY_TRACKS.has(e.trackId));
   const injected: NoteEvent[] = [];
 
-  for (const chord of chords) {
+  for (const [ownerChordIndex, chord] of chords.entries()) {
     const start = chord.startBeat;
     const end = chord.startBeat + chord.durationBeats;
     const audible = harmony.some(
@@ -89,6 +89,7 @@ export function ensureChordAudible(
         articulation: 'normal',
         rrIndex: 0,
         trackId: 'chord',
+        ownerChordIndex,
         seed,
       });
     }

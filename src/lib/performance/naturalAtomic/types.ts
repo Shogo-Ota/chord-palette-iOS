@@ -1,7 +1,7 @@
 import type { NoteEvent } from '../NoteEvent';
 import type { FullVoicing, FullVoicingNote, PianoHandRole, VoicingMask } from '../chordComping';
 import { VOICING_MASKS } from '../chordComping';
-import type { FinalMidiControlChange } from '../finalMidi/types';
+import type { OwnedControlChange } from '../style/renderOwnership';
 import type { NaturalAttackVoicingSelection } from './attackVoicingPolicy';
 import type { NaturalAttackVelocityShape } from './attackVelocityPolicy';
 
@@ -11,6 +11,9 @@ export type NaturalVoicingMask = VoicingMask;
 export type { FullVoicing, FullVoicingNote, PianoHandRole };
 
 export type AtomicGrooveAttack = {
+  /** Chord whose STYLE/rhythm authored the attack. */
+  ownerChordIndex: number;
+  /** Chord whose voicing the attack spells (differs only for anticipation). */
   chordIndex: number;
   onsetBeat: number;
   durationBeat: number;
@@ -26,7 +29,7 @@ export type AtomicNaturalPlan = {
   fullVoicings: FullVoicing[];
   attacks: AtomicGrooveAttack[];
   notes: NoteEvent[];
-  controlChanges: FinalMidiControlChange[];
+  controlChanges: OwnedControlChange[];
 };
 
 export type AtomicHardGateFailure = {

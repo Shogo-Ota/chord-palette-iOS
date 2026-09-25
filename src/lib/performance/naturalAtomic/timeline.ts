@@ -70,6 +70,7 @@ export function extractAtomicNaturalTimeline(
       const targetChordIndex = chordIndex + (source.targetChordOffset ?? 0);
       if (!chords[targetChordIndex]) continue;
       groups.push({
+        ownerChordIndex: chordIndex,
         chordIndex: targetChordIndex,
         onsetBeat,
         durationBeat: source.durationBeat,

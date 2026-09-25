@@ -19,6 +19,10 @@ export interface Strike {
   accent: number;
   ghost: boolean;
   pitches: number[];
+  /** Chord whose STYLE/rhythm authored this strike. */
+  ownerChordIndex?: number;
+  /** Explicit harmony target when this strike anticipates another chord. */
+  harmonyTargetChordIndex?: number;
   /**
    * Set by the Variation layer: this strike is held (tied) across the following
    * beat/rest instead of being clipped. The engine forces a near-full gate and a

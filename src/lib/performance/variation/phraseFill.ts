@@ -50,6 +50,8 @@ export function applyPhraseFill(
         accent: 0.6,
         ghost: false,
         pitches: [...source.pitches],
+        ownerChordIndex: source.ownerChordIndex,
+        harmonyTargetChordIndex: source.harmonyTargetChordIndex,
       };
       chord.push(stab);
     }

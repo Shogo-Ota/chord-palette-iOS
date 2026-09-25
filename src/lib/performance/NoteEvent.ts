@@ -52,6 +52,12 @@ export interface NoteEvent {
   /** Which voice this note belongs to. */
   trackId: TrackId;
   /**
+   * Internal render ownership: the ChordEvent whose STYLE authored this attack.
+   * Used only before Final MIDI to mask mixed-STYLE passes; never serialized to SMF.
+   * Optional for legacy/test producers, which fall back to strict onset binding.
+   */
+  ownerChordIndex?: number;
+  /**
    * Explicit harmony ownership for an intentional anticipation.
    * Omitted notes are bound by timeline position; renderers ignore this metadata.
    */

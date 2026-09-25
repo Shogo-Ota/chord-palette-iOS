@@ -12,8 +12,6 @@ import {
 } from '@/lib/drum/drumKit';
 import type { InstrumentId } from '@/types';
 import type { NoteEvent } from '../NoteEvent';
-import { humanTemplateById } from '../humanTemplate';
-import { naturalPedalEvents } from '../naturalAtomic/pedalPolicy';
 import type {
   FinalMidiMarker,
   FinalMidiNote,
@@ -103,13 +101,6 @@ function markersFromProgression(plan: SessionPerformancePlan): FinalMidiMarker[]
 export function buildFinalMidiSnapshot(plan: SessionPerformancePlan): FinalMidiSnapshot {
   const accompaniment = perfNotesToFinal(plan.notes);
   const drums = drumNotesForPlan(plan);
-  // A Natural Type owns exactly one CC64 policy. Note lengths are never stretched
-  // to imitate pedal, and releaseCut removes CC64 at the canonical Final MIDI boundary.
-  const template = humanTemplateById(plan.humanTemplateId ?? '');
-  const controlChanges =
-    plan.instrumentEffect === 'releaseCut' || !template
-      ? []
-      : naturalPedalEvents(template, plan.chords, plan.accompanimentVariant);
 
   return {
     bpm: plan.bpm,
@@ -120,7 +111,9 @@ export function buildFinalMidiSnapshot(plan: SessionPerformancePlan): FinalMidiS
     gmProgram: gmProgramForInstrument(plan.instrumentId),
     drumMode: plan.drumMode,
     notes: [...accompaniment, ...drums],
-    controlChanges,
+    // STYLE is fully resolved before this boundary. Playback, SMF and Video consume
+    // the same CC list and never reinterpret accompaniment metadata.
+    controlChanges: plan.controlChanges,
     markers: markersFromProgression(plan),
   };
 }

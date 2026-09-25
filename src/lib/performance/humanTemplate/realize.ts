@@ -110,6 +110,7 @@ export function realizeHumanTemplate(
             articulation: 'normal',
             rrIndex: 0,
             trackId,
+            ownerChordIndex: chordIndex,
             seed: options.seed,
           });
         });
@@ -134,6 +135,7 @@ export function realizeHumanTemplate(
           articulation: 'normal',
           rrIndex: 0,
           trackId,
+          ownerChordIndex: chordIndex,
           seed: options.seed,
         });
       });

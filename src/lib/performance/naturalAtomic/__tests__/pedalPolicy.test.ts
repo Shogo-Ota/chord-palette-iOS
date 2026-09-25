@@ -94,6 +94,19 @@ describe('Natural pedal policy', () => {
     }
   });
 
+  it('owns a boundary Up with the previous chord and Down with the next chord', () => {
+    const source = plan('natural.type2', [2, 2, 2, 2]);
+    const boundary = source.chords[1]!.startBeat;
+    const atBoundary = eventsFor(source).filter(
+      (event) => Math.abs(event.startBeat - boundary) <= 1e-9,
+    );
+
+    expect(atBoundary.map((event) => [event.value, event.ownerChordIndex])).toEqual([
+      [0, 0],
+      [96, 1],
+    ]);
+  });
+
   it('retains Type1 teacher pedal and keeps Funk pedal-free', () => {
     expect(eventsFor(plan('natural.type1')).length).toBeGreaterThan(0);
     expect(eventsFor(plan('natural.type3'))).toEqual([]);

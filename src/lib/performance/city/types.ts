@@ -1,6 +1,6 @@
 import type { NoteEvent } from '../NoteEvent';
 import type { FullVoicing, VoicingMask } from '../chordComping';
-import type { FinalMidiControlChange } from '../finalMidi/types';
+import type { OwnedControlChange } from '../style/renderOwnership';
 
 export type CityType1CandidateId = 'A_FULL' | 'B_SUBTRACTIVE' | 'C_SUBTRACTIVE_ROLL';
 
@@ -20,5 +20,5 @@ export type CityType1Plan = {
   fullVoicings: FullVoicing[];
   attacks: CityType1Attack[];
   notes: NoteEvent[];
-  controlChanges: FinalMidiControlChange[];
+  controlChanges: OwnedControlChange[];
 };
