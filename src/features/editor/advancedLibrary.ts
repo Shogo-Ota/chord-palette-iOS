@@ -3,7 +3,6 @@ import {
   passingDiminishedChords,
   substituteChords,
 } from '@/data/advancedHarmonyChords';
-import { augmentedTriads } from '@/data/augmentedTriads';
 import { secondaryDominants } from '@/data/music';
 import { minorPrimaryDominants } from '@/data/minorAdvancedChords';
 import type { KeyMode, LibraryChord, MajorKey } from '@/types';
@@ -20,9 +19,14 @@ export interface AdvancedLibraryGroup {
  * Mode-specific advanced harmony provider.
  *
  * The screen renders groups and does not decide theory. Major exposes practical
- * non-diatonic palettes. Minor stays conservative: the sourced primary dominant,
- * the mode-independent tritone substitute, and the approved tonic augmented triad,
- * without inventing missing minor tables.
+ * non-diatonic palettes. Minor stays conservative: the sourced primary dominant and
+ * the mode-independent tritone substitute, without inventing missing minor tables.
+ *
+ * Every group presents a technique rather than a chord type, which is why each card
+ * carries the chord it leads to. `augmentedTriads` is deliberately not wired here:
+ * offering all twelve roots listed the same four pitch-class sets three times each,
+ * which is a chord-type dump rather than a technique. Augmented returns once it can
+ * name its target.
  */
 export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLibraryGroup[] {
   if (mode === 'minor') {
@@ -38,12 +42,6 @@ export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLib
         title: 'SUBSTITUTE CHORD',
         subtitle: '代理コード',
         chords: substituteChords(key, mode),
-      },
-      {
-        id: 'augmented-triad',
-        title: 'AUGMENTED TRIAD',
-        subtitle: '増三和音（Root・Major 3rd・Augmented 5th）',
-        chords: augmentedTriads(key, mode),
       },
     ];
   }
@@ -72,12 +70,6 @@ export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLib
       title: 'CHROMATIC MEDIANT',
       subtitle: 'クロマチック・メディアント（3度関係の色彩コード）',
       chords: chromaticMediantChords(key),
-    },
-    {
-      id: 'augmented-triad',
-      title: 'AUGMENTED TRIAD',
-      subtitle: '増三和音（Root・Major 3rd・Augmented 5th）',
-      chords: augmentedTriads(key, mode),
     },
   ];
 }
