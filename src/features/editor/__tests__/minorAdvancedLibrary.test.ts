@@ -35,23 +35,25 @@ describe('minor advanced harmony provider', () => {
     }
   });
 
-  it('organizes major into four practical groups and keeps minor conservative', () => {
+  it('adds the approved augmented triad group to both modes', () => {
     expect(advancedLibraryGroups('C', 'major').map((group) => group.id)).toEqual([
       'secondary-dominant',
       'passing-diminished',
       'substitute-chord',
       'chromatic-mediant',
+      'augmented-triad',
     ]);
     expect(advancedLibraryGroups('C', 'minor').map((group) => group.id)).toEqual([
       'minor-primary-dominant',
       'substitute-chord',
+      'augmented-triad',
     ]);
   });
 
   it('does not invent minor secondary dominants or reverse mixture', () => {
     const minor = advancedLibraryGroups('C', 'minor');
 
-    expect(minor.flatMap((group) => group.chords)).toHaveLength(4);
+    expect(minor.flatMap((group) => group.chords)).toHaveLength(16);
     expect(minor.some((group) => group.id.includes('secondary'))).toBe(false);
     expect(minor.some((group) => group.id.includes('modal'))).toBe(false);
     expect(minor.some((group) => group.id.includes('passing'))).toBe(false);

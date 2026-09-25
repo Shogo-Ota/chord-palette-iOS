@@ -3,6 +3,7 @@ import {
   passingDiminishedChords,
   substituteChords,
 } from '@/data/advancedHarmonyChords';
+import { augmentedTriads } from '@/data/augmentedTriads';
 import { secondaryDominants } from '@/data/music';
 import { minorPrimaryDominants } from '@/data/minorAdvancedChords';
 import type { KeyMode, LibraryChord, MajorKey } from '@/types';
@@ -18,9 +19,10 @@ export interface AdvancedLibraryGroup {
 /**
  * Mode-specific advanced harmony provider.
  *
- * The screen renders groups and does not decide theory. Major exposes four practical
- * non-diatonic palettes. Minor stays conservative: the sourced primary dominant plus
- * the mode-independent tritone substitute, without inventing missing minor tables.
+ * The screen renders groups and does not decide theory. Major exposes practical
+ * non-diatonic palettes. Minor stays conservative: the sourced primary dominant,
+ * the mode-independent tritone substitute, and the approved tonic augmented triad,
+ * without inventing missing minor tables.
  */
 export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLibraryGroup[] {
   if (mode === 'minor') {
@@ -36,6 +38,12 @@ export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLib
         title: 'SUBSTITUTE CHORD',
         subtitle: '代理コード',
         chords: substituteChords(key, mode),
+      },
+      {
+        id: 'augmented-triad',
+        title: 'AUGMENTED TRIAD',
+        subtitle: '増三和音（Root・Major 3rd・Augmented 5th）',
+        chords: augmentedTriads(key, mode),
       },
     ];
   }
@@ -64,6 +72,12 @@ export function advancedLibraryGroups(key: MajorKey, mode: KeyMode): AdvancedLib
       title: 'CHROMATIC MEDIANT',
       subtitle: 'クロマチック・メディアント（3度関係の色彩コード）',
       chords: chromaticMediantChords(key),
+    },
+    {
+      id: 'augmented-triad',
+      title: 'AUGMENTED TRIAD',
+      subtitle: '増三和音（Root・Major 3rd・Augmented 5th）',
+      chords: augmentedTriads(key, mode),
     },
   ];
 }
