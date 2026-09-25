@@ -1,6 +1,6 @@
 # App Store Release 1.0.5
 
-Status: Prepared — not yet submitted (blocked on 1.0.4 leaving review)
+Status: Binary uploaded — not submitted for review (blocked on 1.0.4 leaving review)
 Prepared: 2026-09-25
 Version/build: `1.0.5 (33)`
 Release candidate detail: [release-1.0.5-checklist.md](release-1.0.5-checklist.md)
@@ -8,11 +8,15 @@ Release candidate detail: [release-1.0.5-checklist.md](release-1.0.5-checklist.m
 Production build:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 
-EAS submission: pending
+EAS submission:
+https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/81868bc5-1bcc-4cc8-866d-a14f57d19458
 
 `1.0.4 (32)` was submitted on 2026-09-14 and is Waiting for Review. App Store Connect
-will not accept `1.0.5` until that version is approved, released, rejected or removed
-from review. Everything else for this submission is ready.
+will not accept a `1.0.5` version record until that version is approved, released,
+rejected or removed from review. Uploading the binary is independent of that, so
+build 33 is already in TestFlight and can be signed off on a device now. Creating the
+`1.0.5` version and submitting for review are the only steps left, and both belong to
+the owner.
 
 ## What's New — Japanese
 
@@ -89,8 +93,8 @@ Suggested test path for this update:
 - [x] What's New text drafted in Japanese and English
 - [x] Promotional text drafted in Japanese and English
 - [x] Sandbox purchase and restore verified on Preview build `2e8fa4ff`
-- [ ] Production build created
-- [ ] Production build uploaded to App Store Connect
+- [x] Production build created — `1.0.5 (33)`, status FINISHED, from commit `76c90f7`
+- [x] Production build uploaded to App Store Connect
 - [ ] Apple processing completed
 - [ ] `1.0.4` has left review, so version `1.0.5` can be created
 - [ ] Version `1.0.5` created and the build attached in App Store Connect

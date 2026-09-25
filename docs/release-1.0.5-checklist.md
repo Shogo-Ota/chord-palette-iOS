@@ -106,10 +106,11 @@ the gate, not the build.
 ## Release steps
 
 1. [x] Commit the feature work and the 1.0.5 version bump
-2. [ ] `npx eas-cli build --platform ios --profile production`
-3. [ ] Record the produced build number and commit it
-4. [ ] Confirm in App Store Connect that `1.0.4` has left review, so `1.0.5` can be created
-5. [ ] `npx eas-cli submit --platform ios --profile production --id <build id>`
-6. [ ] Apple processing completed and the build attached to version `1.0.5`
-7. [ ] Enter What's New and review notes, then submit for App Review
-8. [ ] Review outcome recorded in `docs/app-store-release-1.0.5.md`
+2. [x] `npx eas-cli build --platform ios --profile production`
+3. [x] Record the produced build number and commit it
+4. [x] `npx eas-cli submit --platform ios --profile production --id d28bd4eb`
+5. [ ] Apple processing completed and the build visible in TestFlight
+6. [ ] Owner device sign-off on build 33 through TestFlight
+7. [ ] Confirm in App Store Connect that `1.0.4` has left review, so `1.0.5` can be created
+8. [ ] Attach build 33, enter What's New and review notes, then submit for App Review
+9. [ ] Review outcome recorded in `docs/app-store-release-1.0.5.md`
