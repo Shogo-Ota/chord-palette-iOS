@@ -363,7 +363,11 @@ export default function EditorScreen() {
       chordSize === 'seventh' ? diatonicSeventhLibrary(key, mode) : diatonicLibrary(key, mode),
     [key, mode, chordSize],
   );
-  const advancedGroups = useMemo(() => advancedLibraryGroups(key, mode), [key, mode]);
+  /** The advanced tab narrows its offer to what this progression can use. */
+  const advancedGroups = useMemo(
+    () => advancedLibraryGroups(key, mode, { progression, selectedIndex: selected }),
+    [key, mode, progression, selected],
+  );
   const bassNotes = useMemo(() => chromaticBassNotes(key, mode), [key, mode]);
 
   const advancedTiersAvailable = supportsAdvancedTiers(mode);
@@ -1047,6 +1051,9 @@ export default function EditorScreen() {
                     style={groupIndex > 0 ? styles.groupSectionSpaced : undefined}>
                     <Text style={styles.groupTitle}>{group.title}</Text>
                     <Text style={styles.groupSubtitle}>{group.subtitle}</Text>
+                    {group.chords.length === 0 && group.emptyHint ? (
+                      <Text style={styles.varEmptyHint}>{group.emptyHint}</Text>
+                    ) : null}
                     <View style={styles.grid}>
                       {group.chords.map((chord) => (
                         <LibraryCard

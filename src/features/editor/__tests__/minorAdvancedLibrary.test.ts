@@ -41,33 +41,39 @@ describe('minor advanced harmony provider', () => {
       'passing-diminished',
       'substitute-chord',
       'chromatic-mediant',
+      'augmented-connector',
     ]);
     expect(advancedLibraryGroups('C', 'minor').map((group) => group.id)).toEqual([
       'minor-primary-dominant',
       'substitute-chord',
+      'augmented-connector',
     ]);
   });
 
   /**
-   * An augmented triad is symmetric, so all twelve roots named the same four
-   * pitch-class sets three times each, with no target. The domain function and its
-   * tests stay; only the chord-type dump is gone from the tab.
+   * An augmented triad is symmetric, so listing all twelve roots named the same four
+   * pitch-class sets three times each, with no target. The tab offers the technique
+   * instead: a handful of connectors, each naming the chord it resolves into.
    */
-  it('does not dump augmented triads into the tab', () => {
+  it('offers augmented as a connector rather than as a chord list', () => {
     for (const mode of ['major', 'minor'] as const) {
-      const cards = advancedLibraryGroups('C', mode).flatMap((group) => group.chords);
-      expect(cards.filter((chord) => chord.suffix === 'aug')).toEqual([]);
-      expect(cards.filter((chord) => chord.category === 'augmentedTriad')).toEqual([]);
+      const augmented = advancedLibraryGroups('C', mode)
+        .flatMap((group) => group.chords)
+        .filter((chord) => chord.suffix === 'aug');
+      expect(augmented.length).toBeLessThanOrEqual(3);
+      for (const chord of augmented) {
+        expect(chord.subLabel).toMatch(/^→.+/);
+      }
     }
   });
 
   it('does not invent minor secondary dominants or reverse mixture', () => {
     const minor = advancedLibraryGroups('C', 'minor');
 
-    expect(minor.flatMap((group) => group.chords)).toHaveLength(4);
     expect(minor.some((group) => group.id.includes('secondary'))).toBe(false);
     expect(minor.some((group) => group.id.includes('modal'))).toBe(false);
     expect(minor.some((group) => group.id.includes('passing'))).toBe(false);
     expect(minor.some((group) => group.id.includes('chromatic'))).toBe(false);
+    expect(minor.find((group) => group.id === 'minor-primary-dominant')!.chords).toHaveLength(3);
   });
 });
