@@ -104,6 +104,17 @@ describe('non-diatonic aura architecture', () => {
     );
   });
 
+  /**
+   * Swift only compiles on the build machine, so a malformed source file costs a whole
+   * remote build to discover. This caught one: a file written with the editor's own
+   * line-number gutter (`   10|  private let …`) baked into the source.
+   */
+  it('contains no line-number gutter leaked in from a file view', () => {
+    for (const file of AURA_FILES) {
+      expect(source(file)).not.toMatch(/^\s+\d+\|/m);
+    }
+  });
+
   it('keeps the aura inside the effect budget Flow already accepted', () => {
     for (const file of AURA_FILES) {
       expect(code(file)).not.toMatch(/CIFilter|Gaussian|particle|random|waveform/i);
