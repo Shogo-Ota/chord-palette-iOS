@@ -77,8 +77,42 @@ describe('a borrowed chord keeps the force it applies', () => {
     expect(role({ function: fn, category: 'modalInterchange' })).toBe(expected);
   });
 
-  it('only reaches colour when no function is available at all', () => {
-    expect(role({ category: 'modalInterchange' })).toBe('neutral');
+  /**
+   * Knowing a chord was borrowed is real information. With no function to defer to it
+   * reads as colour, because "borrowed from somewhere" is a statement about the chord —
+   * unlike neutral, which means nothing is known at all.
+   */
+  it('reads as colour when the function is missing but the borrowing is known', () => {
+    expect(resolveVisualHarmonicRole({ category: 'modalInterchange' })).toEqual({
+      role: 'color',
+      confidence: 'derived',
+    });
+  });
+});
+
+describe('neutral means nothing is known, and only that', () => {
+  it('is reached with neither a category nor a function', () => {
+    expect(resolveVisualHarmonicRole({})).toEqual({ role: 'neutral', confidence: 'fallback' });
+  });
+
+  /**
+   * These three carry no role of their own: a diatonic chord, a decorated one and a slash
+   * chord are all defined by the function underneath them, so without it there is nothing
+   * to say.
+   */
+  it.each<ChordCategory>(['diatonic', 'variation', 'slash'])(
+    'is reached for %s when the function is missing',
+    (category) => {
+      expect(role({ category })).toBe('neutral');
+    },
+  );
+
+  it('is never reached when a function is available', () => {
+    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
+      for (const category of [undefined, 'diatonic', 'slash', 'modalInterchange'] as const) {
+        expect(role({ function: fn, category })).not.toBe('neutral');
+      }
+    }
   });
 });
 

@@ -60,6 +60,18 @@ const ROLE_BY_FUNCTION: Record<ChordFunction, VisualHarmonicRole> = {
 };
 
 /**
+ * Categories that still say something once the function is missing.
+ *
+ * Knowing a chord was borrowed is real information — it is not the same as knowing
+ * nothing — so a borrowed chord with no function reads as colour rather than falling
+ * through to the unknown case. `diatonic`, `variation` and `slash` are absent because
+ * without a function they genuinely say nothing about what the chord is doing.
+ */
+const ROLE_BY_CATEGORY_ALONE: Partial<Record<ChordCategory, VisualHarmonicRole>> = {
+  modalInterchange: 'color',
+};
+
+/**
  * Resolve how a chord should read on screen.
  *
  * Technique first, function second. "What is this chord doing here" is a better guide to
@@ -76,6 +88,10 @@ export function resolveVisualHarmonicRole(input: VisualHarmonicInput): VisualHar
     return { role: byFunction, confidence: input.category ? 'derived' : 'fallback' };
   }
 
+  const byCategoryAlone = input.category ? ROLE_BY_CATEGORY_ALONE[input.category] : undefined;
+  if (byCategoryAlone) return { role: byCategoryAlone, confidence: 'derived' };
+
+  // Neither the technique nor the force is known, which is the only case neutral means.
   return { role: 'neutral', confidence: 'fallback' };
 }
 
