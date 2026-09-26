@@ -9,7 +9,7 @@ import {
   type AugmentedConnectorContext,
 } from '@/data/augmentedConnectors';
 import { pitchClassSetKey } from '@/data/chordPitchClassSet';
-import { degreeIndexFromRootOffset, secondaryDominants } from '@/data/music';
+import { degreeIndexFromRootOffset, modalInterchange, secondaryDominants } from '@/data/music';
 import { minorPrimaryDominants } from '@/data/minorAdvancedChords';
 import type { ChordEvent, KeyMode, LibraryChord, MajorKey } from '@/types';
 
@@ -187,6 +187,16 @@ export function advancedLibraryGroups(
       title: 'SUBSTITUTE CHORD',
       subtitle: '代理コード',
       chords: withoutDuplicates(substituteChords(key, mode)),
+    },
+    {
+      // Borrowing had no entry point at all: these five chords were defined, priced and
+      // categorised, and the only way to place one was to switch the library to minor and
+      // take its diatonic iv — which is a different claim. A minor section and a single
+      // borrowed chord are two authoring intents, and the tab now offers the second.
+      id: 'modal-interchange',
+      title: 'MODAL INTERCHANGE',
+      subtitle: '借用和音（同主調から借りるコード）',
+      chords: withoutDuplicates(modalInterchange(key)),
     },
     {
       id: 'chromatic-mediant',

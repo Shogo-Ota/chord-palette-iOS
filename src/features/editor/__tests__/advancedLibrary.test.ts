@@ -30,6 +30,7 @@ describe('the advanced tab presents techniques', () => {
       'secondary-dominant',
       'passing-diminished',
       'substitute-chord',
+      'modal-interchange',
       'chromatic-mediant',
       'augmented-connector',
     ]);

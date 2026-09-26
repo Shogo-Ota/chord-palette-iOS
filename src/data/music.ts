@@ -1,3 +1,4 @@
+import { chordDegreeLabel } from '@/lib/theory/degreeLabel';
 import { definitionIdForSuffix } from '@/lib/theory/definitions';
 import type { ChordFunction, DiatonicChord, KeyMode, LibraryChord, MajorKey } from '@/types';
 
@@ -689,14 +690,20 @@ const MODAL_CHORDS: {
   { offset: 3, degree: '♭III', suffix: '', seventh: 'maj7', function: 'tonic', pro: true },
 ];
 
-/** Modal-interchange chords borrowed from the parallel minor. */
+/**
+ * Modal-interchange chords borrowed from the parallel minor.
+ *
+ * The numeral is written from the root and the quality rather than from the table's own
+ * `degree` string, so a borrowed minor fourth reads `iv` and not `IVm`. Both say the same
+ * thing; only one of them says it the way Roman numerals are read.
+ */
 export function modalInterchange(key: MajorKey): LibraryChord[] {
   return MODAL_CHORDS.map((m) => {
     const root = noteAt(key, m.offset);
     return {
       id: `modal-${key}-${m.degree}`,
       displayName: `${root}${m.suffix}`,
-      degreeLabel: m.degree,
+      degreeLabel: chordDegreeLabel({ rootOffset: m.offset, suffix: m.suffix }),
       function: m.function,
       subLabel: `${root}${m.seventh}`,
       category: 'modalInterchange',

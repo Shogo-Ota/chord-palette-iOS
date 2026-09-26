@@ -40,6 +40,7 @@ describe('minor advanced harmony provider', () => {
       'secondary-dominant',
       'passing-diminished',
       'substitute-chord',
+      'modal-interchange',
       'chromatic-mediant',
       'augmented-connector',
     ]);
