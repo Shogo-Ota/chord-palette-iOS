@@ -38,6 +38,14 @@ export function buildPresetProgression(preset: Preset, key: MajorKey): PresetEve
       ...(c.bassOffset != null ? { bassOffset: c.bassOffset } : {}),
       ...(bassNote ? { bassNote } : {}),
       ...(c.variation ? { variation: c.variation } : {}),
+      // A preset's harmonic technique only survives if the preset states it. Dropping it
+      // here left `Fm` from 泣きの借用 reaching the video as an ordinary subdominant, with
+      // the fact that it was borrowed living only in a comment. `slash` is read from
+      // `bassOffset` because that field *is* the on-chord: no inference involved.
+      ...(c.chordCategory ? { category: c.chordCategory } : {}),
+      ...(c.chordCategory == null && c.bassOffset != null
+        ? { category: 'slash' as const }
+        : {}),
     };
   });
 }

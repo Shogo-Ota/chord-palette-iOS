@@ -429,6 +429,28 @@ export function replaceSelected(
   commit(next, state.selected);
 }
 
+/**
+ * Decorate the selected chord with a variation.
+ *
+ * Distinct from {@link replaceSelected} because it is a different act. Replacing answers
+ * "make this a different chord"; decorating answers "keep this chord, add a colour to it".
+ * `category` records where a chord came from — borrowed, substituted, diatonic — and an `Fm`
+ * taken from the parallel minor is still borrowed once it becomes `Fm9`. So the decoration
+ * updates the quality and the `variation` id and leaves the origin alone.
+ *
+ * The variation's own `category` is discarded rather than merged. A variation is not an
+ * origin, so it has nothing to say about one, and writing `'variation'` here is what erased
+ * the technique in the first place.
+ */
+export function applyVariationToSelected(
+  chord: Omit<ChordEvent, 'id' | 'durationBeats'> & { durationBeats?: ChordDuration },
+): void {
+  if (state.selected < 0) return;
+  const origin = state.progression[state.selected]?.category;
+  const { category: _decorationIsNotAnOrigin, ...decoration } = chord;
+  replaceSelected(origin ? { ...decoration, category: origin } : decoration);
+}
+
 export function setDuration(beats: ChordDuration): void {
   if (state.selected < 0) return;
   if (!canSetDuration(state.progression, state.selected, beats)) return;

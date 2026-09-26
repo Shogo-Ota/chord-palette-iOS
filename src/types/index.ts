@@ -215,6 +215,16 @@ export type PresetChord = {
   bassNote?: string;
   /** Variation id when the source chord was a decorated variation (optional). */
   variation?: string;
+  /**
+   * The harmonic technique this chord is an instance of, declared at authoring time.
+   *
+   * Only stated where the technique is unambiguous — a borrowed chord, a secondary
+   * dominant, a slash chord. Plain diatonic chords leave it absent rather than carrying a
+   * label that adds nothing, and nothing anywhere infers it from a root, a suffix or a
+   * degree label. Without this, a preset's `Fm` reached the video indistinguishable from a
+   * diatonic one, because the only thing that made it borrowed lived in the preset's prose.
+   */
+  chordCategory?: ChordCategory;
 };
 
 export type Preset = {

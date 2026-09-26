@@ -466,14 +466,18 @@ export default function EditorScreen() {
 
   /** Apply a variation pill to the selected degree (both tiers route through here). */
   function pickVariation(id: string) {
-    pickChord(variationChordForMode(key, selectedDegree, id as VariationId, mode));
+    pickChord(variationChordForMode(key, selectedDegree, id as VariationId, mode), 'decorate');
   }
 
   /**
    * Library pick: with a progression card selected → replace that card in place
    * (duration kept). With nothing selected → append a new chord.
+   *
+   * `intent` separates the two things a tap can mean. `replace` makes the card a different
+   * chord, so the new chord's origin wins. `decorate` adds a variation to the chord that is
+   * already there, which does not change where it came from.
    */
-  function pickChord(c: LibraryChord) {
+  function pickChord(c: LibraryChord, intent: 'replace' | 'decorate' = 'replace') {
     if (isLocked(c.isPro, ent)) {
       // Preview-only (試聴) for free users: audition the Pro chord's sound but do NOT
       // add/replace it in the progression (引用・編集 is Palette Pro). A non-blocking
@@ -493,7 +497,8 @@ export default function EditorScreen() {
     const editing = cur.selected >= 0;
     if (editing) {
       const { durationBeats: _ignored, ...patch } = libToEvent(c);
-      session.replaceSelected(patch);
+      if (intent === 'decorate') session.applyVariationToSelected(patch);
+      else session.replaceSelected(patch);
       hapticSoft();
     } else {
       const before = cur.progression.length;
