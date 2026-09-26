@@ -88,16 +88,6 @@ export type ExportPlan = {
    */
   visualNoteEvents?: readonly VisualNoteEvent[];
   /**
-   * Positions in one progression pass whose chord leaves the key, so Flow can lay an
-   * aura around them. A separate sidecar rather than a flag on `ExportSegment`
-   * because the segment payload is shared with the frozen Classic renderer.
-   *
-   * Indexed by position, not by time: the export tiles the progression end to end, so
-   * position identifies the chord on every loop and the renderer never matches a
-   * floating-point start time.
-   */
-  nonDiatonicCycleIndices?: readonly number[];
-  /**
    * What each chord in one progression pass is doing, and the colours that say so.
    *
    * Flow only, and a sidecar for a hard reason: Classic is frozen on its *output*, not

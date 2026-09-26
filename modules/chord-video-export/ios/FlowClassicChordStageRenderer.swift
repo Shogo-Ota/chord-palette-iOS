@@ -20,8 +20,7 @@ enum FlowClassicChordStageRenderer {
     cg: CGContext,
     frameWidth width: CGFloat,
     frameHeight height: CGFloat,
-    nonDiatonic: FlowNonDiatonicCycle = .empty,
-    auraStrength: CGFloat = 0,
+    emphasis: CGFloat = 0,
     rolePalette: FlowHarmonicRolePalette = .empty
   ) {
     guard let current = state.currentSegment else { return }
@@ -33,17 +32,14 @@ enum FlowClassicChordStageRenderer {
       cg: cg,
       frameWidth: width,
       frameHeight: height,
-      roleColors: rolePalette.isEmpty
-        ? nil
-        : rolePalette.colors(cycleIndex: state.currentCycleIndex, fallback: current.color)
+      roleColors: rolePalette.colors(cycleIndex: state.currentCycleIndex)
     )
 
     drawProgressRail(
       state: state,
       frameWidth: width,
       frameHeight: height,
-      nonDiatonic: nonDiatonic,
-      auraStrength: auraStrength,
+      emphasis: emphasis,
       rolePalette: rolePalette,
       cg: cg
     )
@@ -53,8 +49,7 @@ enum FlowClassicChordStageRenderer {
     state: FlowFrameState,
     frameWidth width: CGFloat,
     frameHeight height: CGFloat,
-    nonDiatonic: FlowNonDiatonicCycle,
-    auraStrength: CGFloat,
+    emphasis: CGFloat,
     rolePalette: FlowHarmonicRolePalette,
     cg: CGContext
   ) {
@@ -76,17 +71,15 @@ enum FlowClassicChordStageRenderer {
       let centerX = left + slotWidth * (CGFloat(index) + 0.5)
       let opacity: CGFloat = active ? 1 : 0.42
       let radius = height * (active ? 0.0042 : 0.0025)
-      let dotColor =
-        rolePalette.isEmpty
-        ? segment.color
-        : rolePalette.colors(cycleIndex: index, fallback: segment.color).main
-      // A ring behind the dot, so the timeline shows where the chromatic chords sit even
+      let roleColors = rolePalette.colors(cycleIndex: index)
+      let dotColor = roleColors?.main ?? segment.color
+      // A ring behind the dot, so the timeline shows where the coloured chords sit even
       // before one of them is sounding.
-      if nonDiatonic.contains(cycleIndex: index) {
-        FlowNonDiatonicAuraRenderer.drawRailMark(
+      if roleColors != nil {
+        FlowRoleAuraRenderer.drawRailMark(
           center: CGPoint(x: centerX, y: railY),
           radius: radius,
-          alpha: active ? max(0.45, auraStrength) : 0.30,
+          alpha: active ? max(0.45, emphasis) : 0.30,
           color: dotColor,
           cg: cg
         )
@@ -112,7 +105,9 @@ enum FlowClassicChordStageRenderer {
         segment.degreeLabel,
         baseFontSize: height * (active ? 0.015 : 0.012),
         weight: active ? .black : .semibold,
-        color: active ? dotColor : textMuted,
+        // Role colour is allowed here but kept dim: the chord name is the subject, and a
+        // theory label matching its brightness would compete with it.
+        color: active ? dotColor.withAlphaComponent(0.72) : textMuted,
         opacity: opacity,
         centerX: centerX,
         y: railY + height * 0.012,

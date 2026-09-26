@@ -16,7 +16,6 @@ final class FlowFrameRenderer: VideoFrameRendering {
     red: 0x8e / 255, green: 0x9b / 255, blue: 0xae / 255, alpha: 1)
 
   private let timeline: FlowVisualNoteTimeline
-  private let nonDiatonic: FlowNonDiatonicCycle
   private let rolePalette: FlowHarmonicRolePalette
   private var cachedKeys: (
     low: Int,
@@ -27,11 +26,9 @@ final class FlowFrameRenderer: VideoFrameRendering {
 
   init(
     timeline: FlowVisualNoteTimeline = .empty,
-    nonDiatonic: FlowNonDiatonicCycle = .empty,
     rolePalette: FlowHarmonicRolePalette = .empty
   ) {
     self.timeline = timeline
-    self.nonDiatonic = nonDiatonic
     self.rolePalette = rolePalette
   }
 
@@ -73,11 +70,10 @@ final class FlowFrameRenderer: VideoFrameRendering {
         height: height * 0.12
       )
       let keys = keyboardKeys(plan: plan, totalWidth: keyboardRect.width)
-      let aura = auraIntensity(state: state, plan: plan, timeSec: timeSec)
-      let roleColors = rolePalette.colors(
-        cycleIndex: state.currentCycleIndex,
-        fallback: current.color
-      )
+      let emphasis = roleEmphasis(state: state, plan: plan, timeSec: timeSec)
+      // Absent means diatonic, and diatonic means every layer below renders as it always
+      // did — same colour, same bloom, no outline.
+      let roleColors = rolePalette.colors(cycleIndex: state.currentCycleIndex)
       let visibleEvents = timeline.visibleEvents(
         at: timeSec,
         lookAheadSec: FlowPerformanceMotionPreset.fallLeadSec,
@@ -88,21 +84,23 @@ final class FlowFrameRenderer: VideoFrameRendering {
         plan: plan,
         keys: keys,
         segments: plan.segments,
-        fallbackColor: roleColors.note,
+        fallbackColor: current.color,
         frameTimeSec: timeSec,
         fallTopY: height * 0.14,
         keyboardRect: keyboardRect,
         frameHeight: height
       )
-      // Only the soft bloom is drawn here. The violet rim and halo belong to the chord
-      // glyphs themselves, so the hero paints them while it owns the text geometry.
-      FlowNonDiatonicAuraRenderer.drawBackdrop(
-        intensity: aura,
-        color: roleColors.glowOuter,
-        cg: cg,
-        frameWidth: width,
-        frameHeight: height
-      )
+      // Only the soft bloom is drawn here. The rim and halo belong to the chord glyphs
+      // themselves, so the hero paints them while it owns the text geometry.
+      if let roleColors {
+        FlowRoleAuraRenderer.drawBackdrop(
+          emphasis: emphasis,
+          color: roleColors.glowOuter,
+          cg: cg,
+          frameWidth: width,
+          frameHeight: height
+        )
+      }
       FlowClassicChordStageRenderer.draw(
         plan: plan,
         state: state,
@@ -110,21 +108,17 @@ final class FlowFrameRenderer: VideoFrameRendering {
         cg: cg,
         frameWidth: width,
         frameHeight: height,
-        nonDiatonic: nonDiatonic,
-        auraStrength: aura.current,
+        emphasis: emphasis.current,
         rolePalette: rolePalette
       )
       FlowKeyboardRenderer.draw(
         plan: plan,
         events: visibleEvents,
         keys: keys,
-        fallbackColor: roleColors.note,
+        fallbackColor: current.color,
         frameTimeSec: timeSec,
         rect: keyboardRect,
-        frameHeight: height,
-        aura: aura,
-        auraColor: roleColors.glowCore,
-        cg: cg
+        frameHeight: height
       )
     } else {
       drawFittedCenteredText(
@@ -146,17 +140,15 @@ final class FlowFrameRenderer: VideoFrameRendering {
     }
   }
 
-  /// How strongly the violet aura reads now, from the same eased transition and beat
-  /// pulse the chord hero already uses. No separate clock, so the aura cannot drift out
+  /// How strongly the advanced-harmony emphasis reads now, from the same eased transition
+  /// and beat pulse the chord hero already uses. No separate clock, so it cannot drift out
   /// of step with the audio.
-  private func auraIntensity(
+  private func roleEmphasis(
     state: FlowFrameState,
     plan: RenderPlan,
     timeSec: Double
-  ) -> FlowNonDiatonicAuraIntensity {
-    guard !nonDiatonic.isEmpty, let current = state.currentSegment else {
-      return FlowNonDiatonicAuraIntensity(current: 0, incoming: 0)
-    }
+  ) -> FlowRoleEmphasis {
+    guard !rolePalette.isEmpty, let current = state.currentSegment else { return .none }
     let beatDuration = 60.0 / Double(max(1, plan.bpm))
     let beatPhase = (timeSec / beatDuration).truncatingRemainder(dividingBy: 1.0)
     let pulse = CGFloat(exp(-beatPhase * 3.2))
@@ -168,9 +160,9 @@ final class FlowFrameRenderer: VideoFrameRendering {
     let count = max(1, state.cycleSegments.count)
     let nextCycleIndex = (state.currentCycleIndex + 1) % count
 
-    return FlowNonDiatonicAuraIntensity.resolve(
-      currentIsNonDiatonic: nonDiatonic.contains(cycleIndex: state.currentCycleIndex),
-      nextIsNonDiatonic: nonDiatonic.contains(cycleIndex: nextCycleIndex),
+    return FlowRoleEmphasis.resolve(
+      currentHasRole: rolePalette.has(cycleIndex: state.currentCycleIndex),
+      nextHasRole: rolePalette.has(cycleIndex: nextCycleIndex),
       ease: ease,
       pulse: pulse,
       segmentProgress: state.segmentProgress

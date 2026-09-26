@@ -8,17 +8,34 @@ import { HARMONIC_VISUAL_TOKENS } from '@/theme/videoHarmonicTokens';
 import { functionColor } from '@/theme/tokens';
 import type { ChordCategory, ChordEvent, ChordFunction } from '@/types';
 
-function role(input: { function?: ChordFunction; category?: ChordCategory }): VisualHarmonicRole {
+function role(input: {
+  function?: ChordFunction;
+  category?: ChordCategory;
+  chordId?: string;
+}): VisualHarmonicRole {
   return resolveVisualHarmonicRole(input).role;
 }
 
+/** The id a passing-diminished card carries, which is how its rule is recovered. */
+const dimId = (rule: string) => `passing-diminished-C-${rule}`;
+
 describe('what a chord is doing decides how it reads', () => {
-  it.each<[string, { function?: ChordFunction; category?: ChordCategory }, VisualHarmonicRole]>([
+  it.each<
+    [string, { function?: ChordFunction; category?: ChordCategory; chordId?: string }, VisualHarmonicRole]
+  >([
     ['Cmaj7 as tonic', { function: 'tonic', category: 'diatonic' }, 'stable'],
     ['Fmaj7 as subdominant', { function: 'subdominant', category: 'diatonic' }, 'motion'],
     ['G7 as dominant', { function: 'dominant', category: 'diatonic' }, 'tension'],
     ['E7 → Am7', { function: 'dominant', category: 'secondaryDominant' }, 'secondaryTension'],
-    ['G#dim7 → Am7', { function: 'tonic', category: 'passingDiminished' }, 'leadingTension'],
+    [
+      'G#dim7 → Am7',
+      {
+        function: 'dominant',
+        category: 'passingDiminished',
+        chordId: dimId('sharp-five-to-six'),
+      },
+      'leadingTension',
+    ],
     ['D♭7 → Cmaj7', { function: 'dominant', category: 'substituteChord' }, 'tension'],
     ['E♭maj7 as colour', { function: 'tonic', category: 'chromaticMediant' }, 'color'],
     ['Caug → F', { function: 'tonic', category: 'augmentedTriad' }, 'transition'],
@@ -31,7 +48,12 @@ describe('what a chord is doing decides how it reads', () => {
   });
 
   it('reports whether a role was decided by technique or derived from function', () => {
-    expect(resolveVisualHarmonicRole({ category: 'passingDiminished' }).confidence).toBe('explicit');
+    expect(
+      resolveVisualHarmonicRole({
+        category: 'passingDiminished',
+        chordId: dimId('sharp-one-to-two'),
+      }).confidence,
+    ).toBe('explicit');
     expect(
       resolveVisualHarmonicRole({ category: 'modalInterchange', function: 'subdominant' })
         .confidence,
@@ -41,25 +63,44 @@ describe('what a chord is doing decides how it reads', () => {
 });
 
 /**
- * A passing diminished is the case the whole resolver exists for. The data layer stamps
- * `G#dim7 → Am7` as tonic, because it borrows the function of the chord it reaches, and a
- * library card is right to show that. On screen it is the hardest pull in the progression,
- * so the technique has to outrank the borrowed function.
+ * The four diminished connectors are the case the resolver exists for, and the case the
+ * category alone cannot answer.
+ *
+ * `♭III°7` and `#IV°7` sound the same four pitches in C — a diminished seventh is
+ * symmetric — yet one decorates ii by voice leading and the other is the dominant of V.
+ * Colouring both the same would be colouring by notes, which is what the role system
+ * exists not to do.
  */
-describe('technique outranks the function a chord borrows', () => {
-  it('reads a passing diminished as a pull however its function is stamped', () => {
-    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
-      expect(role({ function: fn, category: 'passingDiminished' })).toBe('leadingTension');
-    }
+describe('a diminished seventh is read by what it does, not by being diminished', () => {
+  it.each<[string, string, VisualHarmonicRole]>([
+    ['C#dim7 → Dm7 (vii°7/ii)', 'sharp-one-to-two', 'leadingTension'],
+    ['E♭dim7 → Dm7 (chromatic passing)', 'flat-three-to-two', 'transition'],
+    ['F#dim7 → G7 (vii°7/V)', 'sharp-four-to-five', 'leadingTension'],
+    ['G#dim7 → Am7 (vii°7/vi)', 'sharp-five-to-six', 'leadingTension'],
+  ])('reads %s as %s', (_label, rule, expected) => {
+    expect(role({ category: 'passingDiminished', chordId: dimId(rule) })).toBe(expected);
   });
 
-  it('never lets a passing diminished read as restful', () => {
-    const verdict = resolveVisualHarmonicRole({
-      function: 'tonic',
-      category: 'passingDiminished',
+  it('gives the same four notes different roles when they do different work', () => {
+    const chromatic = role({ category: 'passingDiminished', chordId: dimId('flat-three-to-two') });
+    const dominant = role({ category: 'passingDiminished', chordId: dimId('sharp-four-to-five') });
+    expect(chromatic).not.toBe(dominant);
+  });
+
+  /**
+   * Never guess. A diminished card whose rule cannot be recovered has not said what it is
+   * doing, and defaulting to the loudest role would be the worst available answer.
+   */
+  it('falls back to neutral rather than assuming tension', () => {
+    expect(resolveVisualHarmonicRole({ category: 'passingDiminished' })).toEqual({
+      role: 'neutral',
+      confidence: 'fallback',
     });
-    expect(verdict.role).not.toBe('stable');
-    expect(HARMONIC_VISUAL_TOKENS[verdict.role].main).not.toBe(functionColor.tonic);
+    expect(role({ category: 'passingDiminished', chordId: 'passing-diminished-C-unknown' })).toBe(
+      'neutral',
+    );
+    // Even a stamped function must not smuggle a role in through the back door.
+    expect(role({ function: 'dominant', category: 'passingDiminished' })).toBe('neutral');
   });
 });
 
@@ -178,32 +219,71 @@ describe('the palette keeps the five families apart', () => {
   });
 });
 
+/**
+ * The palette is also the switch that decides which chords get any of this. An entry means
+ * "paint this one by its role"; no entry means "render it exactly as Flow always did".
+ * Lighting every chord marks none of them.
+ */
 describe('the palette handed to the renderer', () => {
-  const event = (fn: ChordFunction, category?: ChordCategory): ChordEvent =>
-    ({ function: fn, category }) as unknown as ChordEvent;
+  const event = (fn: ChordFunction, category?: ChordCategory, chordId?: string): ChordEvent =>
+    ({ function: fn, category, chordId }) as unknown as ChordEvent;
 
-  it('carries one entry per progression position, in order', () => {
+  const diatonic = [
+    event('tonic', 'diatonic'),
+    event('subdominant', 'diatonic'),
+    event('dominant', 'diatonic'),
+    event('tonic', 'diatonic'),
+  ];
+
+  it('sends nothing at all for a fully diatonic progression', () => {
+    expect(harmonicRoleVisuals(diatonic)).toEqual([]);
+  });
+
+  it.each<[string, ChordCategory]>([
+    ['a decorated diatonic chord', 'variation'],
+    ['a slash chord', 'slash'],
+    ['the minor primary dominant', 'primaryDominant'],
+  ])('leaves %s untouched', (_label, category) => {
+    expect(harmonicRoleVisuals([event('tonic', category)])).toEqual([]);
+  });
+
+  it('marks only the advanced-harmony position, by its index in the pass', () => {
     const progression = [
-      event('tonic', 'diatonic'),
-      event('subdominant', 'diatonic'),
-      event('dominant', 'diatonic'),
-      event('tonic', 'passingDiminished'),
+      ...diatonic.slice(0, 2),
+      event('dominant', 'passingDiminished', 'passing-diminished-C-sharp-five-to-six'),
+      diatonic[3]!,
     ];
     expect(harmonicRoleVisuals(progression).map((entry) => [entry.cycleIndex, entry.role])).toEqual([
-      [0, 'stable'],
-      [1, 'motion'],
-      [2, 'tension'],
-      [3, 'leadingTension'],
+      [2, 'leadingTension'],
     ]);
   });
 
+  it('gives the two kinds of diminished connector different colours', () => {
+    const entries = harmonicRoleVisuals([
+      event('dominant', 'passingDiminished', 'passing-diminished-C-sharp-four-to-five'),
+      event('subdominant', 'passingDiminished', 'passing-diminished-C-flat-three-to-two'),
+    ]);
+    expect(entries.map((entry) => entry.role)).toEqual(['leadingTension', 'transition']);
+    expect(entries[0]!.main).not.toBe(entries[1]!.main);
+  });
+
   it('sends the token colours unchanged, so the renderer makes no colour decisions', () => {
-    const [entry] = harmonicRoleVisuals([event('tonic', 'passingDiminished')]);
+    const [entry] = harmonicRoleVisuals([
+      event('dominant', 'passingDiminished', 'passing-diminished-C-sharp-five-to-six'),
+    ]);
     expect(entry).toMatchObject(HARMONIC_VISUAL_TOKENS.leadingTension);
   });
 
+  /** A chord that reached neutral has said nothing, so it gets the untouched path too. */
+  it('omits a chord whose role could not be decided', () => {
+    expect(harmonicRoleVisuals([event('dominant', 'passingDiminished')])).toEqual([]);
+  });
+
   it('agrees with the role list used elsewhere', () => {
-    const progression = [event('dominant', 'secondaryDominant'), event('tonic', 'diatonic')];
+    const progression = [
+      event('dominant', 'secondaryDominant'),
+      event('subdominant', 'modalInterchange'),
+    ];
     expect(harmonicRoleVisuals(progression).map((entry) => entry.role)).toEqual(
       visualHarmonicRoles(progression),
     );

@@ -28,10 +28,11 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     const writer = source('VideoWriter.swift');
 
     expect(bridge).toContain('@Field var visualNoteEvents: [VisualNoteEventRecord] = []');
+    expect(bridge).toContain('@Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []');
     expect(bridge).toContain('FlowVisualNoteTimeline(');
     expect(registry).toContain('flowTimeline: FlowVisualNoteTimeline = .empty');
     expect(registry).toMatch(
-      /case \.flow:\s+return FlowFrameRenderer\(\s+timeline: flowTimeline,\s+nonDiatonic: flowNonDiatonic,\s+rolePalette: flowRolePalette\s+\)/,
+      /case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline, rolePalette: flowRolePalette\)/,
     );
     expect(registry).not.toContain('PulseFrameRenderer()');
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
@@ -112,15 +113,19 @@ describe('Phase V4 Flow performance-motion architecture', () => {
 
     // Colour still comes from the plan, never invented by a renderer. A role palette may
     // refine it, and with none sent every layer falls back to the segment's own colour.
-    expect(hero).toContain('main: segment.color');
-    expect(hero).toContain('roleColors');
-    expect(stage).toContain('fallback: segment.color');
+    // A diatonic chord takes the segment colour and Flow's original single-shadow text.
+    expect(hero).toContain('drawLegacyChordName');
+    expect(hero).toContain('color: segment.color');
+    expect(stage).toContain('?? segment.color');
+    // Notes and keys stay on the segment colour whatever the chord's role is.
+    expect(keyboard).not.toContain('roleColors');
+    expect(blocks).not.toContain('roleColors');
     expect(colors).toContain('while lower < upper');
     expect(colors).toContain('return segment.color');
     expect(blocks).toContain('FlowVisualColorResolver.color');
     expect(keyboard).not.toContain('FlowVisualColorResolver.color');
     expect(keyboard).toContain('fallbackColor.withAlphaComponent');
-    expect(renderer).toContain('fallback: current.color');
+    expect(renderer).toContain('fallbackColor: current.color');
     expect(colors).not.toMatch(/bpm|beat|durationSec\s*=|startSec\s*=/i);
     expect(flowSources).not.toMatch(/CIFilter|Gaussian|particle|random/i);
   });
@@ -243,8 +248,10 @@ describe('Phase V4 Flow performance-motion architecture', () => {
       'FlowKeyboardRenderer.swift',
       'FlowVisualColorResolver.swift',
       'FlowVisualNoteTimeline.swift',
-      'FlowNonDiatonicAuraRenderer.swift',
-      'FlowNonDiatonicCycle.swift',
+      'FlowRoleAuraRenderer.swift',
+      'FlowRoleEmphasis.swift',
+      'FlowHarmonicRolePalette.swift',
+      'FlowChordGlyphRenderer.swift',
     ]) {
       expect(source(file).split('\n').length).toBeLessThan(500);
     }

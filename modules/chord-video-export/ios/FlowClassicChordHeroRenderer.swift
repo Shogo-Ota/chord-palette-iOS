@@ -28,45 +28,57 @@ enum FlowClassicChordHeroRenderer {
     )
     let ease = 1 - pow(1 - chordProgress, 3)
 
-    let colors =
-      roleColors
-      ?? FlowHarmonicRoleColors(
-        main: segment.color,
-        outline: segment.color,
-        glowCore: segment.color,
-        glowOuter: segment.color,
-        note: segment.color
-      )
-
-    // Wider and a touch stronger than before, so the chord owns the frame on a phone.
+    // A diatonic chord keeps Flow's original bloom exactly. Only advanced harmony gets the
+    // wider, slightly stronger one, so the difference between them is the signal.
     drawRadialGlow(
       cg,
       center: CGPoint(x: width / 2, y: height * 0.33),
-      radius: width * 0.74,
-      color: colors.glowOuter,
-      alpha: (0.21 + 0.17 * pulse) * ease
+      radius: width * (roleColors == nil ? 0.62 : 0.74),
+      color: roleColors?.glowOuter ?? segment.color,
+      alpha: (roleColors == nil ? 0.16 + 0.14 * pulse : 0.21 + 0.17 * pulse) * ease
     )
 
     let slide = (1 - ease) * height * 0.03
-    FlowChordGlyphRenderer.draw(
-      segment.displayName,
-      font: .systemFont(ofSize: height * 0.085, weight: .black),
-      layers: FlowChordGlyphRenderer.Layers(
-        fill: colors.main,
-        outline: colors.outline,
-        glowCore: colors.glowCore,
-        glowOuter: colors.glowOuter
-      ),
-      centerX: width / 2,
-      y: height * 0.30 + slide,
-      maxWidth: width * 0.94,
-      scale: 1.0 + 0.045 * pulse * ease,
-      intensity: ease,
-      impact: pulse,
-      outlineWidth: height * 0.0026,
-      glowRadius: height * 0.02 * (0.5 + pulse),
-      cg: cg
-    )
+    let chordFont = UIFont.systemFont(ofSize: height * 0.085, weight: .black)
+    let chordScale = 1.0 + 0.045 * pulse * ease
+    let chordY = height * 0.30 + slide
+    let chordGlowRadius = height * 0.02 * (0.5 + pulse)
+
+    if let roleColors {
+      FlowChordGlyphRenderer.draw(
+        segment.displayName,
+        font: chordFont,
+        layers: FlowChordGlyphRenderer.Layers(
+          fill: roleColors.main,
+          outline: roleColors.outline,
+          glowCore: roleColors.glowCore,
+          glowOuter: roleColors.glowOuter
+        ),
+        centerX: width / 2,
+        y: chordY,
+        maxWidth: width * 0.94,
+        scale: chordScale,
+        intensity: ease,
+        impact: pulse,
+        outlineWidth: height * 0.0026,
+        glowRadius: chordGlowRadius,
+        cg: cg
+      )
+    } else {
+      // Flow's original chord name: one colour, one shadow, no outline.
+      drawLegacyChordName(
+        segment.displayName,
+        font: chordFont,
+        color: segment.color,
+        centerX: width / 2,
+        y: chordY,
+        maxWidth: width * 0.94,
+        scale: chordScale,
+        glowRadius: chordGlowRadius,
+        alpha: ease,
+        cg: cg
+      )
+    }
 
     // Secondary by design: same size as before, no glow, neutral colour. The chord name
     // got brighter, so anything competing with it has to stay where it was.
@@ -131,6 +143,50 @@ enum FlowClassicChordHeroRenderer {
       endCenter: center,
       endRadius: radius,
       options: []
+    )
+    cg.restoreGState()
+  }
+
+  private static func drawLegacyChordName(
+    _ text: String,
+    font: UIFont,
+    color: UIColor,
+    centerX: CGFloat,
+    y: CGFloat,
+    maxWidth: CGFloat,
+    scale: CGFloat,
+    glowRadius: CGFloat,
+    alpha: CGFloat,
+    cg: CGContext
+  ) {
+    guard alpha > 0.001 else { return }
+    let paragraph = NSMutableParagraphStyle()
+    paragraph.alignment = .center
+    paragraph.lineBreakMode = .byTruncatingTail
+    let rect = CGRect(
+      x: centerX - maxWidth / 2,
+      y: y,
+      width: maxWidth,
+      height: font.lineHeight * 1.4
+    )
+    cg.saveGState()
+    cg.translateBy(x: rect.midX, y: rect.midY)
+    cg.scaleBy(x: scale, y: scale)
+    cg.translateBy(x: -rect.midX, y: -rect.midY)
+    if glowRadius > 0.1 {
+      cg.setShadow(
+        offset: .zero,
+        blur: glowRadius,
+        color: color.withAlphaComponent(0.8 * alpha).cgColor
+      )
+    }
+    (text as NSString).draw(
+      in: rect,
+      withAttributes: [
+        .font: font,
+        .foregroundColor: color.withAlphaComponent(alpha),
+        .paragraphStyle: paragraph,
+      ]
     )
     cg.restoreGState()
   }

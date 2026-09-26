@@ -1,3 +1,5 @@
+import { passingDiminishedRuleForChordId } from '@/data/advancedHarmonyChords';
+import type { PassingDiminishedKind } from '@/lib/musicTheory';
 import type { ChordCategory, ChordEvent, ChordFunction } from '@/types';
 
 /**
@@ -35,6 +37,8 @@ export interface VisualHarmonicVerdict {
 export interface VisualHarmonicInput {
   function?: ChordFunction;
   category?: ChordCategory;
+  /** Library card id, which is how a chord's originating rule is recovered. */
+  chordId?: string;
 }
 
 /**
@@ -44,13 +48,30 @@ export interface VisualHarmonicInput {
  * `modalInterchange` is deliberately absent. Borrowing from the parallel minor says
  * where a chord came from, not what force it applies: `Fm` in C is subdominant motion
  * and `B♭7` is a dominant pull, and flattening both into one colour would lose that.
+ *
+ * `passingDiminished` is absent for a different reason: the category is not specific
+ * enough. A diminished seventh can be the dominant of the chord after it or a
+ * voice-leading connector into it, and those two do not feel alike, so the rule behind
+ * the card decides — see {@link ROLE_BY_DIMINISHED_KIND}.
  */
 const ROLE_BY_TECHNIQUE: Partial<Record<ChordCategory, VisualHarmonicRole>> = {
-  passingDiminished: 'leadingTension',
   secondaryDominant: 'secondaryTension',
   substituteChord: 'tension',
   chromaticMediant: 'color',
   augmentedTriad: 'transition',
+};
+
+/**
+ * How each kind of diminished seventh reads.
+ *
+ * A secondary leading-tone diminished is a rootless dominant with a flat ninth, so it
+ * belongs with the tension family. A chromatic passing diminished holds common tones and
+ * slides the rest by a semitone into the next chord, which is the same thing an augmented
+ * connector does — a connector, not a demand — so it shares `transition`.
+ */
+const ROLE_BY_DIMINISHED_KIND: Record<PassingDiminishedKind, VisualHarmonicRole> = {
+  secondaryLeadingTone: 'leadingTension',
+  chromaticPassing: 'transition',
 };
 
 const ROLE_BY_FUNCTION: Record<ChordFunction, VisualHarmonicRole> = {
@@ -79,6 +100,15 @@ const ROLE_BY_CATEGORY_ALONE: Partial<Record<ChordCategory, VisualHarmonicRole>>
  * chromatic approach is not coloured like a diminished seventh in general.
  */
 export function resolveVisualHarmonicRole(input: VisualHarmonicInput): VisualHarmonicVerdict {
+  if (input.category === 'passingDiminished') {
+    // No implicit tension: a diminished seventh whose rule cannot be recovered has not
+    // told us what it is doing, and guessing the loudest answer would be the worst one.
+    const kind = passingDiminishedRuleForChordId(input.chordId)?.kind;
+    return kind
+      ? { role: ROLE_BY_DIMINISHED_KIND[kind], confidence: 'explicit' }
+      : { role: 'neutral', confidence: 'fallback' };
+  }
+
   const byTechnique = input.category ? ROLE_BY_TECHNIQUE[input.category] : undefined;
   if (byTechnique) return { role: byTechnique, confidence: 'explicit' };
 
@@ -95,10 +125,35 @@ export function resolveVisualHarmonicRole(input: VisualHarmonicInput): VisualHar
   return { role: 'neutral', confidence: 'fallback' };
 }
 
+/**
+ * Categories the video treats as advanced harmony.
+ *
+ * Only these get role colour and the extra light that goes with it. Everything else — a
+ * diatonic chord, a decorated one, a slash chord — renders exactly as Flow always did,
+ * because marking every chord as special marks none of them.
+ */
+const ROLE_STYLED_CATEGORIES: readonly ChordCategory[] = [
+  'passingDiminished',
+  'secondaryDominant',
+  'substituteChord',
+  'chromaticMediant',
+  'modalInterchange',
+  'augmentedTriad',
+];
+
+export function isRoleStyledChord(event: ChordEvent): boolean {
+  return event.category != null && ROLE_STYLED_CATEGORIES.includes(event.category);
+}
+
+export function visualHarmonicRoleFor(event: ChordEvent): VisualHarmonicVerdict {
+  return resolveVisualHarmonicRole({
+    function: event.function,
+    category: event.category,
+    chordId: event.chordId,
+  });
+}
+
 /** Roles for one progression pass, in order. */
 export function visualHarmonicRoles(progression: readonly ChordEvent[]): VisualHarmonicRole[] {
-  return progression.map(
-    (event) =>
-      resolveVisualHarmonicRole({ function: event.function, category: event.category }).role,
-  );
+  return progression.map((event) => visualHarmonicRoleFor(event).role);
 }

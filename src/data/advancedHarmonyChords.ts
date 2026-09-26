@@ -4,6 +4,7 @@ import {
   MAJOR_BACKDOOR_DOMINANT_PALETTE,
   MAJOR_CHROMATIC_MEDIANT_PALETTE,
   MAJOR_PASSING_DIMINISHED_PALETTE,
+  type PassingDiminishedPaletteRule,
 } from '@/lib/musicTheory';
 import { definitionIdForSuffix } from '@/lib/theory/definitions';
 import type { ChordRootSpelling, KeyMode, LibraryChord, MajorKey } from '@/types';
@@ -12,13 +13,20 @@ function rootSpelling(degreeIndex: number, alteration: -1 | 0 | 1): ChordRootSpe
   return { degreeIndex, alteration };
 }
 
+/** The id every passing-diminished card carries, and the rule it was built from. */
+export function passingDiminishedRuleForChordId(
+  chordId: string | undefined,
+): PassingDiminishedPaletteRule | undefined {
+  if (!chordId) return undefined;
+  return MAJOR_PASSING_DIMINISHED_PALETTE.find((rule) => chordId.endsWith(`-${rule.id}`));
+}
+
 /**
  * Four practical major-key diminished connectors, in UI priority order.
  *
- * Each one takes the harmonic function of the chord it leads to rather than a blanket
- * dominant. A passing diminished has no destination of its own — it exists to arrive
- * somewhere — so `C#dim7 → Dm` reads as subdominant motion, and colouring it as a
- * dominant would tell the player it wants to resolve to the tonic.
+ * Each one states its own harmonic function. Copying the target's function was wrong in a
+ * way worth recording: it made `#V°7` a tonic, because the `vi` it resolves into is one,
+ * which told the player that the hardest pull in the progression was a chord of rest.
  */
 export function passingDiminishedChords(key: MajorKey): LibraryChord[] {
   const targets = diatonicSevenths(key, 'major');
@@ -30,7 +38,7 @@ export function passingDiminishedChords(key: MajorKey): LibraryChord[] {
       id: `passing-diminished-${key}-${rule.id}`,
       displayName: `${root}dim7`,
       degreeLabel: rule.degreeLabel,
-      function: target.function,
+      function: rule.harmonicFunction,
       subLabel: `→${target.displayName}`,
       badgeLabel: 'DIM',
       category: 'passingDiminished',

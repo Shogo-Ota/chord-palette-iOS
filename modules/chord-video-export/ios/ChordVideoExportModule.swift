@@ -56,9 +56,6 @@ struct ExportPlanRecord: Record {
   @Field var segments: [ExportSegmentRecord] = []
   /// Missing/empty is backwards compatible and ignored outside Flow.
   @Field var visualNoteEvents: [VisualNoteEventRecord] = []
-  /// Positions in one progression pass whose chord leaves the key. Flow only; an empty
-  /// list means every chord is diatonic and no aura is drawn.
-  @Field var nonDiatonicCycleIndices: [Int] = []
   /// Role palette per position. Flow only — Classic's accepted output is frozen, so it
   /// keeps resolving every layer from the segment's harmonic-function colour.
   @Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []
@@ -139,7 +136,6 @@ public class ChordVideoExportModule: Module {
           return
         }
       }
-      let nonDiatonic = FlowNonDiatonicCycle(indices: planRecord.nonDiatonicCycleIndices)
       let rolePalette = FlowHarmonicRolePalette(
         // Last entry wins rather than trapping: a duplicated position is a malformed
         // payload, and losing a colour is better than crashing an export over it.
@@ -164,7 +160,6 @@ public class ChordVideoExportModule: Module {
         templateId: planRecord.templateId,
         compareScene: compareScene,
         flowTimeline: visualTimeline,
-        flowNonDiatonic: nonDiatonic,
         flowRolePalette: rolePalette
       )
 

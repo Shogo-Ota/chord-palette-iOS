@@ -17,9 +17,10 @@ struct FlowHarmonicRoleColors {
 /// Position rather than time, because the export tiles the progression end to end, so the
 /// same position is the same chord on every loop.
 ///
-/// Empty means Classic-style rendering: every layer derives from the segment's own
-/// harmonic-function colour, exactly as it did before roles existed. Classic itself never
-/// receives this palette, because its accepted output is frozen.
+/// A position with no entry is a diatonic chord, and `colors` returns nil for it so every
+/// renderer takes its original path: the segment's own harmonic-function colour, Flow's
+/// original bloom, and no outline. Classic never receives this palette at all, because its
+/// accepted output is frozen.
 struct FlowHarmonicRolePalette {
   static let empty = FlowHarmonicRolePalette(colorsByCycleIndex: [:])
 
@@ -31,16 +32,13 @@ struct FlowHarmonicRolePalette {
 
   var isEmpty: Bool { colorsByCycleIndex.isEmpty }
 
-  /// Colours for a position, or the segment's own colour spread across every layer when
-  /// no role was sent.
-  func colors(cycleIndex: Int, fallback: UIColor) -> FlowHarmonicRoleColors {
+  /// Whether this position is advanced harmony, and so gets the extra light.
+  func has(cycleIndex: Int) -> Bool {
+    colorsByCycleIndex[cycleIndex] != nil
+  }
+
+  /// Colours for a position, or nil when the chord there is diatonic.
+  func colors(cycleIndex: Int) -> FlowHarmonicRoleColors? {
     colorsByCycleIndex[cycleIndex]
-      ?? FlowHarmonicRoleColors(
-        main: fallback,
-        outline: fallback,
-        glowCore: fallback,
-        glowOuter: fallback,
-        note: fallback
-      )
   }
 }

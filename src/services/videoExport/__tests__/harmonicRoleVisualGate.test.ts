@@ -23,24 +23,24 @@ function code(file: string): string {
 }
 
 const AURA_FILES = [
-  'FlowNonDiatonicAuraRenderer.swift',
-  'FlowNonDiatonicCycle.swift',
+  'FlowRoleAuraRenderer.swift',
+  'FlowRoleEmphasis.swift',
   'FlowChordGlyphRenderer.swift',
   'FlowHarmonicRolePalette.swift',
 ] as const;
 
-describe('non-diatonic aura architecture', () => {
+describe('harmonic role visual architecture', () => {
   it('reaches Flow through the same sidecar seam as the note timeline', () => {
     const service = repoSource('src/services/videoExport/index.ts');
     const bridge = source('ChordVideoExportModule.swift');
     const registry = source('VideoFrameRendererRegistry.swift');
 
     // Flow only, so the frozen Classic renderer keeps the payload it was accepted with.
-    expect(service).toContain("input.visualStyle === 'flow' ? nonDiatonicCycleIndices");
-    expect(bridge).toContain('@Field var nonDiatonicCycleIndices: [Int] = []');
-    expect(registry).toContain('flowNonDiatonic: FlowNonDiatonicCycle = .empty');
+    expect(service).toContain("input.visualStyle === 'flow' ? harmonicRoleVisuals");
+    expect(bridge).toContain('@Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []');
+    expect(registry).toContain('flowRolePalette: FlowHarmonicRolePalette = .empty');
     expect(registry).toMatch(
-      /case \.flow:\s+return FlowFrameRenderer\(\s+timeline: flowTimeline,\s+nonDiatonic: flowNonDiatonic,\s+rolePalette: flowRolePalette\s+\)/,
+      /case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline, rolePalette: flowRolePalette\)/,
     );
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
   });
@@ -49,18 +49,39 @@ describe('non-diatonic aura architecture', () => {
     const classic = source('FrameRenderer.swift');
     const writer = source('VideoWriter.swift');
 
-    expect(classic).not.toMatch(/nonDiatonic|aura/i);
-    expect(writer).not.toMatch(/nonDiatonic|aura/i);
+    expect(classic).not.toMatch(/role|aura/i);
+    expect(writer).not.toMatch(/role|aura/i);
   });
 
-  it('keys the aura by cycle position rather than by a floating-point time', () => {
-    const cycle = source('FlowNonDiatonicCycle.swift');
+  it('keys the palette by cycle position rather than by a floating-point time', () => {
+    const palette = source('FlowHarmonicRolePalette.swift');
+    const emphasis = source('FlowRoleEmphasis.swift');
     const renderer = source('FlowFrameRenderer.swift');
 
-    expect(cycle).toContain('func contains(cycleIndex: Int)');
-    expect(cycle).toContain('Set(indices)');
-    expect(renderer).toContain('nonDiatonic.contains(cycleIndex: state.currentCycleIndex)');
-    expect(cycle).not.toMatch(/startSec|durationSec|timeSec/);
+    expect(palette).toContain('func has(cycleIndex: Int)');
+    expect(palette).toContain('func colors(cycleIndex: Int) -> FlowHarmonicRoleColors?');
+    expect(renderer).toContain('rolePalette.has(cycleIndex: state.currentCycleIndex)');
+    expect(palette).not.toMatch(/startSec|durationSec|timeSec/);
+    expect(emphasis).not.toMatch(/startSec|durationSec|timeSec/);
+  });
+
+  /**
+   * The whole point of the palette is contrast with its neighbours, so a chord with no
+   * entry has to render on Flow's original path — not merely in its original colour.
+   */
+  it('leaves a diatonic chord on every original path', () => {
+    const renderer = source('FlowFrameRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+    const keyboard = source('FlowKeyboardRenderer.swift');
+
+    // Absent entry means nil, which each renderer branches on.
+    expect(hero).toContain('if let roleColors {');
+    expect(hero).toContain('} else {');
+    expect(hero).toContain('roleColors == nil ? 0.62 : 0.74');
+    expect(renderer).toContain('if let roleColors {');
+    // Keys and falling notes never see a role colour at all.
+    expect(keyboard).not.toMatch(/role|aura/i);
+    expect(renderer).toContain('fallbackColor: current.color');
   });
 
   it('drives the aura from the chord pulse already on screen, with no second clock', () => {
@@ -72,30 +93,29 @@ describe('non-diatonic aura architecture', () => {
       expect(renderer).toContain(shared);
       expect(hero).toContain(shared);
     }
-    expect(renderer).toContain('FlowNonDiatonicAuraIntensity.resolve');
+    expect(renderer).toContain('FlowRoleEmphasis.resolve');
   });
 
   it('runs anticipation, impact and decay so the moment reads as temporary', () => {
-    const cycle = source('FlowNonDiatonicCycle.swift');
-
-    expect(cycle).toContain('anticipationWindow');
-    expect(cycle).toContain('nextIsNonDiatonic');
-    expect(cycle).toContain('sustain');
-    expect(cycle).toContain('breath');
-    // Anticipation only announces a chord that is not itself chromatic.
-    expect(cycle).toContain('guard nextIsNonDiatonic, !currentIsNonDiatonic else { return 0 }');
+    const emphasis = source('FlowRoleEmphasis.swift');
+    expect(emphasis).toContain('anticipationWindow');
+    expect(emphasis).toContain('nextHasRole');
+    expect(emphasis).toContain('sustain');
+    expect(emphasis).toContain('breath');
+    // Anticipation only announces a chord that is not itself coloured.
+    expect(emphasis).toContain('guard nextHasRole, !currentHasRole else { return 0 }');
   });
 
   it('lays violet around the function colour and never in place of it', () => {
-    const aura = source('FlowNonDiatonicAuraRenderer.swift');
+    const aura = source('FlowRoleAuraRenderer.swift');
     const renderer = source('FlowFrameRenderer.swift');
     const keyboard = source('FlowKeyboardRenderer.swift');
     const hero = source('FlowClassicChordHeroRenderer.swift');
 
     // The aura takes the chord's role colour rather than owning one, so light is always
     // the chord's own colour getting brighter.
-    expect(aura).toContain('color auraColor: UIColor');
-    expect(aura).not.toMatch(/0xa8 \/ 255/);
+    expect(aura).toContain('color: UIColor');
+    expect(aura).not.toMatch(/0x[0-9a-f]{2} \/ 255/i);
     expect(aura).not.toContain('segment.color');
     // The soft bloom sits behind the chord hierarchy.
     expect(renderer.indexOf('drawBackdrop')).toBeLessThan(
@@ -104,11 +124,10 @@ describe('non-diatonic aura architecture', () => {
     // The glyph renderer owns every layer, and it is the only thing that paints them.
     expect(hero).toContain('FlowChordGlyphRenderer.draw');
     expect(hero).not.toMatch(/strokeWidth|strokeColor/);
-    // Keys keep their function fill; the aura is laid over the top.
+    // The keyboard is out of scope entirely: the chord name is the subject of the frame,
+    // and spreading role colour across the lower half would take the frame away from it.
     expect(keyboard).toContain('fallbackColor.withAlphaComponent');
-    expect(keyboard.indexOf('litRects.append')).toBeLessThan(
-      keyboard.indexOf('FlowNonDiatonicAuraRenderer.drawKeyAfterglow'),
-    );
+    expect(keyboard).not.toMatch(/role|aura|Afterglow/i);
   });
 
   /**
@@ -117,7 +136,7 @@ describe('non-diatonic aura architecture', () => {
    * around them.
    */
   it('draws no rectangle around the chord area', () => {
-    const aura = code('FlowNonDiatonicAuraRenderer.swift');
+    const aura = code('FlowRoleAuraRenderer.swift');
     const renderer = code('FlowFrameRenderer.swift');
 
     // The box was the one rect built from frame width. Key halos and rail rings are
@@ -159,11 +178,17 @@ describe('non-diatonic aura architecture', () => {
 
   it('keeps the degree label out of the chord name’s way', () => {
     const hero = source('FlowClassicChordHeroRenderer.swift');
-    const degreeSection = hero.slice(hero.indexOf('let degreeFont'));
+    const stage = source('FlowClassicChordStageRenderer.swift');
+    const degreeSection = hero.slice(
+      hero.indexOf('let degreeFont'),
+      hero.indexOf('private static func drawLegacyChordName'),
+    );
 
-    // No glow layers on the secondary label, whatever the chord name gained.
+    // The label gets no glow layers and no contour, whatever the chord name gained.
     expect(degreeSection).not.toContain('FlowChordGlyphRenderer');
     expect(degreeSection).not.toContain('setShadow');
+    // On the rail it may carry role colour, but dimmed so it cannot compete.
+    expect(stage).toContain('dotColor.withAlphaComponent(0.72)');
   });
 
   /**
@@ -221,8 +246,9 @@ describe('non-diatonic aura architecture', () => {
     // Colour values live in the TypeScript tokens; Swift only reads what it was sent.
     expect(palette).not.toMatch(/0x[0-9a-f]{2} \/ 255/i);
     expect(glyph).not.toMatch(/0x[0-9a-f]{2} \/ 255/i);
-    // With no palette sent, every layer falls back to the segment's own colour.
-    expect(palette).toContain('fallback: UIColor');
+    // Absence is expressed as nil, so each renderer branches to its original path rather
+    // than being handed a colour that stands in for "no answer".
+    expect(palette).toContain('-> FlowHarmonicRoleColors?');
   });
 
   it('separates what a chord does from whether it is ordinary, in the tokens', () => {

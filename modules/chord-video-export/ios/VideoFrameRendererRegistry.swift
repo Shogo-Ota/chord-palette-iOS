@@ -15,7 +15,6 @@ enum VideoFrameRendererRegistry {
     templateId: String = "standard",
     compareScene: CompareScene? = nil,
     flowTimeline: FlowVisualNoteTimeline = .empty,
-    flowNonDiatonic: FlowNonDiatonicCycle = .empty,
     flowRolePalette: FlowHarmonicRolePalette = .empty
   ) -> any VideoFrameRendering {
     if templateId == "compare", let compareScene {
@@ -23,11 +22,7 @@ enum VideoFrameRendererRegistry {
     }
     switch NativeVideoVisualStyle(normalizing: value) {
     case .flow:
-      return FlowFrameRenderer(
-        timeline: flowTimeline,
-        nonDiatonic: flowNonDiatonic,
-        rolePalette: flowRolePalette
-      )
+      return FlowFrameRenderer(timeline: flowTimeline, rolePalette: flowRolePalette)
     case .classic:
       return ClassicFrameRendererAdapter()
     }

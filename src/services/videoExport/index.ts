@@ -16,7 +16,6 @@ import type { ChordEvent, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 import { videoPerformanceInput } from './performanceInput';
 import { harmonicRoleVisuals } from '@/lib/videoExport/harmonicRoleVisuals';
-import { nonDiatonicCycleIndices } from '@/lib/videoExport/nonDiatonic';
 
 import { buildVisualNoteTimeline } from './visualNoteTimeline';
 import { buildCompareExportPlan, type PreparedCompareExport } from './buildCompareExportPlan';
@@ -100,8 +99,6 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   const durationSec = cycleDurationSec(performance.totalBeats, performance.bpm);
   const visualNoteEvents =
     input.visualStyle === 'flow' ? buildVisualNoteTimeline(performance, durationSec) : undefined;
-  const auraIndices =
-    input.visualStyle === 'flow' ? nonDiatonicCycleIndices(input.progression) : undefined;
   // Classic is frozen on its output, so the role palette reaches Flow only and
   // `ExportSegment.colorHex` keeps resolving to the harmonic-function colour.
   const roleVisuals =
@@ -130,11 +127,12 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   const plan = visualNoteEvents ? { ...basePlan, visualNoteEvents } : basePlan;
   // The aura rides the same Flow-only seam. An empty list is dropped rather than sent,
   // so a fully diatonic progression produces the payload it always did.
-  const withAura =
-    auraIndices && auraIndices.length > 0
-      ? { ...plan, nonDiatonicCycleIndices: auraIndices }
+  // An empty list is dropped rather than sent, so a fully diatonic progression produces
+  // the payload, and the frames, it always did.
+  const flowPlan =
+    roleVisuals && roleVisuals.length > 0
+      ? { ...plan, harmonicRoleVisuals: roleVisuals }
       : plan;
-  const flowPlan = roleVisuals ? { ...withAura, harmonicRoleVisuals: roleVisuals } : withAura;
 
   return encodePlan(flowPlan, opts);
 }
