@@ -42,6 +42,7 @@ export default function ExportScreen() {
     return {
       title: s.title,
       key: s.key,
+      mode: s.mode,
       bpm: s.tempoBpm,
       progression: s.progression,
       grooveId: s.grooveId,

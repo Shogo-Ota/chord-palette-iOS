@@ -1,6 +1,9 @@
 import { passingDiminishedRuleForChordId } from '@/data/advancedHarmonyChords';
+import { chordPitchClasses } from '@/data/chordPitchClassSet';
+import { MINOR_SCALE_OFFSETS } from '@/data/minorMode';
+import { MAJOR_SCALE_OFFSETS } from '@/data/music';
 import type { PassingDiminishedKind } from '@/lib/musicTheory';
-import type { ChordCategory, ChordEvent, ChordFunction } from '@/types';
+import type { ChordCategory, ChordEvent, ChordFunction, KeyMode } from '@/types';
 
 /**
  * What a chord is *doing*, as the video should make a viewer feel it.
@@ -143,6 +146,63 @@ const ROLE_STYLED_CATEGORIES: readonly ChordCategory[] = [
 
 export function isRoleStyledChord(event: ChordEvent): boolean {
   return event.category != null && ROLE_STYLED_CATEGORIES.includes(event.category);
+}
+
+const MAJOR = new Set<number>(MAJOR_SCALE_OFFSETS as readonly number[]);
+const PARALLEL_MINOR = new Set<number>(MINOR_SCALE_OFFSETS);
+
+/**
+ * Whether a chord with no stated technique is borrowed from the parallel minor.
+ *
+ * Two conditions, both required: it leaves the major scale, and it stays entirely inside the
+ * parallel natural minor. That pair is not a heuristic — it is what borrowing from the
+ * parallel minor means — and it is why the other techniques do not get caught by it. `E7`
+ * brings a G# and `G#dim7` brings a B, neither of which the parallel minor contains, so they
+ * fall through to their own categories.
+ *
+ * Pitch classes are counted from the tonic, so this needs no key name. Only major contexts are
+ * inferred: in a minor key the major V is the standard dominant rather than a borrowing, and
+ * reading parallel-major membership as borrowing there would misclassify it. That direction is
+ * left for its own phase.
+ */
+function isBorrowedFromParallelMinor(event: ChordEvent, harmonicMode: KeyMode): boolean {
+  if (harmonicMode !== 'major') return false;
+  const sounding = chordPitchClasses({
+    rootOffset: event.rootOffset ?? 0,
+    suffix: event.suffix ?? '',
+    definitionId: event.definitionId,
+  });
+  if (event.bassOffset != null) sounding.push(((event.bassOffset % 12) + 12) % 12);
+  const pitches = [...new Set(sounding)];
+  return (
+    pitches.some((pitch) => !MAJOR.has(pitch)) && pitches.every((pitch) => PARALLEL_MINOR.has(pitch))
+  );
+}
+
+/**
+ * How a chord should read, given the mode the song is in.
+ *
+ * A stated technique always wins. `B♭7` is the backdoor dominant and `E♭maj7` is a chromatic
+ * mediant, and both happen to sit inside the parallel minor, so inferring borrowing from their
+ * pitches would overwrite what the player actually chose.
+ */
+export function visualHarmonicRoleInContext(
+  event: ChordEvent,
+  harmonicMode: KeyMode,
+): VisualHarmonicVerdict {
+  const stated = visualHarmonicRoleFor(event);
+  if (stated.confidence === 'explicit' || isRoleStyledChord(event)) return stated;
+  if (!isBorrowedFromParallelMinor(event, harmonicMode)) return stated;
+  // Borrowing says where the chord came from, so the force it applies still decides the colour.
+  const byFunction = event.function ? ROLE_BY_FUNCTION[event.function] : undefined;
+  return byFunction
+    ? { role: byFunction, confidence: 'derived' }
+    : { role: 'color', confidence: 'derived' };
+}
+
+export function isBorrowedInContext(event: ChordEvent, harmonicMode: KeyMode): boolean {
+  if (isRoleStyledChord(event)) return false;
+  return isBorrowedFromParallelMinor(event, harmonicMode);
 }
 
 export function visualHarmonicRoleFor(event: ChordEvent): VisualHarmonicVerdict {

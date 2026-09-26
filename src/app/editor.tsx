@@ -196,7 +196,10 @@ export default function EditorScreen() {
 
   /* ---- session-backed state (aliased for the render below) ------ */
   const key = s.key;
+  /** The song's mode: what degree labels mean and what a video analyses against. */
   const mode = s.mode;
+  /** Which chord list is on screen. Moving it says nothing about the song. */
+  const paletteMode = s.paletteMode;
   const progression = s.progression;
   const selected = s.selected;
   const bpm = s.tempoBpm;
@@ -360,21 +363,23 @@ export default function EditorScreen() {
   /* ---- derived library ------------------------------------------ */
   const diatonicGrid = useMemo(
     () =>
-      chordSize === 'seventh' ? diatonicSeventhLibrary(key, mode) : diatonicLibrary(key, mode),
-    [key, mode, chordSize],
+      chordSize === 'seventh'
+        ? diatonicSeventhLibrary(key, paletteMode)
+        : diatonicLibrary(key, paletteMode),
+    [key, paletteMode, chordSize],
   );
   /** The advanced tab narrows its offer to what this progression can use. */
   const advancedGroups = useMemo(
-    () => advancedLibraryGroups(key, mode, { progression, selectedIndex: selected }),
-    [key, mode, progression, selected],
+    () => advancedLibraryGroups(key, paletteMode, { progression, selectedIndex: selected }),
+    [key, paletteMode, progression, selected],
   );
-  const bassNotes = useMemo(() => chromaticBassNotes(key, mode), [key, mode]);
+  const bassNotes = useMemo(() => chromaticBassNotes(key, paletteMode), [key, paletteMode]);
 
-  const advancedTiersAvailable = supportsAdvancedTiers(mode);
-  const tabOptions = useMemo(() => libraryTabOptions(mode), [mode]);
+  const advancedTiersAvailable = supportsAdvancedTiers(paletteMode);
+  const tabOptions = useMemo(() => libraryTabOptions(paletteMode), [paletteMode]);
   useEffect(() => {
-    setTab((cur) => resolveLibraryTab(cur, mode));
-  }, [mode]);
+    setTab((cur) => resolveLibraryTab(cur, paletteMode));
+  }, [paletteMode]);
 
   /* Multi-key (modulation) visualization: color each chord by its key context.
    * Only shown when the progression actually spans >1 key (single-key unchanged). */
@@ -392,7 +397,7 @@ export default function EditorScreen() {
       variant: s.accompanimentVariant,
     })?.displayLabel ?? '全体STYLE';
   const selectedDegree = selectedEvent
-    ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0, mode)
+    ? degreeIndexFromRootOffset(selectedEvent.rootOffset ?? 0, paletteMode)
     : -1;
 
   const {
@@ -404,13 +409,13 @@ export default function EditorScreen() {
       advancedTiersAvailable
         ? variationTiers({
             key,
-            mode,
+            mode: paletteMode,
             degree: selectedDegree,
             selected: selectedEvent,
             entitlements: ent,
           })
         : { core: [], extended: [], strong: [] },
-    [advancedTiersAvailable, key, mode, selectedDegree, selectedEvent, ent],
+    [advancedTiersAvailable, key, paletteMode, selectedDegree, selectedEvent, ent],
   );
   /** Both folded tiers share one disclosure, so the toggle counts them together. */
   const moreTensionCount = extendedPills.length + strongPills.length;
@@ -466,7 +471,10 @@ export default function EditorScreen() {
 
   /** Apply a variation pill to the selected degree (both tiers route through here). */
   function pickVariation(id: string) {
-    pickChord(variationChordForMode(key, selectedDegree, id as VariationId, mode), 'decorate');
+    pickChord(
+      variationChordForMode(key, selectedDegree, id as VariationId, paletteMode),
+      'decorate',
+    );
   }
 
   /**
@@ -588,6 +596,14 @@ export default function EditorScreen() {
   function changeMode(m: KeyMode) {
     session.setMode(m);
     track('key_mode_changed', { mode: m });
+  }
+
+  /**
+   * Show the other chord list. Deliberately does not touch the song's mode: reaching into the
+   * minor grid for a borrowed `Fm` is not a decision to write in C minor.
+   */
+  function changePaletteMode(m: KeyMode) {
+    session.setPaletteMode(m);
   }
 
   function changeTempo(next: number) {
@@ -938,6 +954,19 @@ export default function EditorScreen() {
               options={tabOptions}
               value={tab}
               onChange={(k) => setTab(k as LibraryTab)}
+              style={styles.tabTrack}
+            />
+
+            <Text style={styles.subHint}>
+              パレット — 表示するコード一覧（曲のキーは変わりません）
+            </Text>
+            <SegTrack
+              options={[
+                { key: 'major', label: 'メジャー' },
+                { key: 'minor', label: 'マイナー' },
+              ]}
+              value={paletteMode}
+              onChange={(m) => changePaletteMode(m as KeyMode)}
               style={styles.tabTrack}
             />
 

@@ -12,7 +12,7 @@ import { type Tier } from '@/lib/performance/tier';
 import { VideoExportError } from '@/lib/errors';
 import { logger } from '@/lib/logger';
 import { audioService } from '@/services/audio';
-import type { ChordEvent, MajorKey } from '@/types';
+import type { ChordEvent, KeyMode, MajorKey } from '@/types';
 import { buildVideoAudioRequest } from './buildVideoAudioRequest';
 import { videoPerformanceInput } from './performanceInput';
 import { harmonicRoleVisuals } from '@/lib/videoExport/harmonicRoleVisuals';
@@ -30,6 +30,12 @@ export type { VideoVisualStyle, VideoVisualStyleDefinition } from './videoVisual
 export type VideoExportInput = {
   title: string;
   key: MajorKey;
+  /**
+   * The song's harmonic mode. Passed explicitly so an export reproduces from its own input
+   * rather than reading editor state: the same progression and key can read differently in
+   * major and in minor, and it is the input that has to say which.
+   */
+  mode?: KeyMode;
   bpm: number;
   progression: ChordEvent[];
   grooveId: string;
@@ -102,7 +108,9 @@ async function exportToFile(input: VideoExportInput, opts: VideoExportOptions): 
   // Classic is frozen on its output, so the role palette reaches Flow only and
   // `ExportSegment.colorHex` keeps resolving to the harmonic-function colour.
   const roleVisuals =
-    input.visualStyle === 'flow' ? harmonicRoleVisuals(input.progression) : undefined;
+    input.visualStyle === 'flow'
+      ? harmonicRoleVisuals(input.progression, input.mode ?? 'major')
+      : undefined;
   const audio = await audioService.renderAudioFile(
     buildVideoAudioRequest(performance, durationSec),
   );

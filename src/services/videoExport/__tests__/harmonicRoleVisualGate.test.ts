@@ -36,7 +36,7 @@ describe('harmonic role visual architecture', () => {
     const registry = source('VideoFrameRendererRegistry.swift');
 
     // Flow only, so the frozen Classic renderer keeps the payload it was accepted with.
-    expect(service).toContain("input.visualStyle === 'flow' ? harmonicRoleVisuals");
+    expect(service).toMatch(/input\.visualStyle === 'flow'\s*\?\s*harmonicRoleVisuals\(/);
     expect(bridge).toContain('@Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []');
     expect(registry).toContain('flowRolePalette: FlowHarmonicRolePalette = .empty');
     expect(registry).toMatch(
@@ -234,7 +234,7 @@ describe('harmonic role visual architecture', () => {
     // The shared segment colour still resolves from harmonic function alone.
     expect(plan).toContain('colorHex: functionColor[ev.function]');
     expect(plan).not.toContain('harmonicRoleVisuals');
-    expect(service).toContain("input.visualStyle === 'flow' ? harmonicRoleVisuals");
+    expect(service).toMatch(/input\.visualStyle === 'flow'\s*\?\s*harmonicRoleVisuals\(/);
     expect(bridge).toContain('@Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []');
     expect(classic).not.toMatch(/harmonicRole|rolePalette|VisualHarmonicRole/i);
   });

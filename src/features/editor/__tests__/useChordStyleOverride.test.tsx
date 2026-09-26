@@ -36,6 +36,7 @@ function editorSession(progression: ChordEvent[], selected = 0): EditorSession {
     title: 'Test',
     key: 'C',
     mode: 'major',
+  paletteMode: 'major',
     tempoBpm: 100,
     instrumentId: 'piano',
     grooveId: 'pop8',

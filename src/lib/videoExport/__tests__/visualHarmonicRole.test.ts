@@ -362,6 +362,19 @@ describe('a suggestion keeps where it came from', () => {
       score: 0.48,
     });
 
+  /** The plain `F` of C major, for the cases that need a chord that is genuinely in the key. */
+  const diatonicSuggestion = (reason: SuggestionReason) =>
+    suggestionToChordEvent({
+      rootOffset: 5,
+      suffix: '',
+      function: 'subdominant',
+      degreeLabel: 'IV',
+      displayName: 'F',
+      isPro: false,
+      reason,
+      score: 0.6,
+    });
+
   it.each<[SuggestionReason, string]>([
     ['modal', 'modalInterchange'],
     ['secondaryDominant', 'secondaryDominant'],
@@ -382,7 +395,18 @@ describe('a suggestion keeps where it came from', () => {
   });
 
   it('leaves a diatonic suggestion on the untouched path', () => {
+    const placed = { id: 'x', ...diatonicSuggestion('functional') } as ChordEvent;
+    expect(harmonicRoleVisuals([placed], 'major')).toEqual([]);
+  });
+
+  /**
+   * The `functional` reason marks the chord diatonic, and an `Fm` in a major song is not, so the
+   * reason cannot be the last word. A missing technique means nothing was claimed, which leaves
+   * the pitches free to say the chord is borrowed.
+   */
+  it('still hears a borrowed Fm that arrived labelled diatonic', () => {
     const placed = { id: 'x', ...suggestion('functional') } as ChordEvent;
-    expect(harmonicRoleVisuals([placed])).toEqual([]);
+    expect(harmonicRoleVisuals([placed], 'major')).toHaveLength(1);
+    expect(harmonicRoleVisuals([placed], 'minor')).toEqual([]);
   });
 });

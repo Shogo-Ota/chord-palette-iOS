@@ -68,8 +68,17 @@ export type EditorSession = {
   projectId: string | null;
   title: string;
   key: MajorKey;
-  /** How `key` is read. Decides the diatonic library and degree labels, never the pitches. */
+  /**
+   * How the song itself is read — the harmonic mode. Decides degree labels and is the
+   * reference a video analyses against, and it is what gets saved.
+   */
   mode: KeyMode;
+  /**
+   * Which chord list the library is showing. A view onto the palette, not a claim about the
+   * song: opening the minor grid to reach for a borrowed `Fm` does not move the song to C
+   * minor, so this is deliberately not persisted and not part of `toProject`.
+   */
+  paletteMode: KeyMode;
   tempoBpm: number;
   instrumentId: InstrumentId;
   grooveId: GrooveId;
@@ -115,6 +124,7 @@ function initialState(): EditorSession {
     title: '新しい進行',
     key: 'C',
     mode: DEFAULT_KEY_MODE,
+    paletteMode: DEFAULT_KEY_MODE,
     tempoBpm: 100,
     instrumentId: 'piano',
     grooveId: 'pop8',
@@ -256,6 +266,8 @@ function applyProject(p: Project): void {
     title: p.title,
     key: p.key,
     mode: normalizeKeyMode(p.mode),
+    // A freshly opened project shows the palette its own mode; the player moves it from there.
+    paletteMode: normalizeKeyMode(p.mode),
     tempoBpm: p.tempoBpm,
     instrumentId: normalizeInstrumentId(p.instrumentId),
     grooveId: p.grooveId,
@@ -391,7 +403,7 @@ export function addChord(chord: Omit<ChordEvent, 'id' | 'accompanimentOverride'>
       ...chord,
       id: nextEventId(),
       keyContext: state.key,
-      modeContext: state.mode,
+      modeContext: state.paletteMode,
       voicingPosition: normalizeVoicingPosition(chord.voicingPosition),
     },
   ];
@@ -418,7 +430,7 @@ export function replaceSelected(
           id: cur.id,
           durationBeats: chord.durationBeats ?? cur.durationBeats,
           keyContext: state.key,
-          modeContext: state.mode,
+          modeContext: state.paletteMode,
           voicingPosition: normalizeVoicingPosition(chord.voicingPosition ?? cur.voicingPosition),
           ...(cur.accompanimentOverride
             ? { accompanimentOverride: { ...cur.accompanimentOverride } }
@@ -540,10 +552,27 @@ export function transposeTo(key: MajorKey): void {
  * section boundary: C–F–G–C entered in major remains I–IV–V–I after the user switches to
  * minor and appends Cm–Fm–Gm–Cm as i–iv–v–i.
  */
+/**
+ * Declare the song major or minor. This is the reference everything analytical reads, so it
+ * is saved, and the palette follows it — having just said the song is in C minor, the minor
+ * chord list is what you want to see.
+ */
 export function setMode(mode: KeyMode): void {
   const next = normalizeKeyMode(mode);
   if (next === state.mode) return;
-  set({ mode: next, dirty: true });
+  set({ mode: next, paletteMode: next, dirty: true });
+}
+
+/**
+ * Show the other chord list without saying anything about the song.
+ *
+ * Not a document change, so it does not mark the project dirty: a player who opened the
+ * minor grid, looked, and closed it has not edited anything.
+ */
+export function setPaletteMode(mode: KeyMode): void {
+  const next = normalizeKeyMode(mode);
+  if (next === state.paletteMode) return;
+  set({ paletteMode: next });
 }
 
 export function setTempo(bpm: number): void {
@@ -818,8 +847,11 @@ export type AppendOutcome = { appended: number; dropped: number };
 
 /** Assign fresh ids, clip to the 16-bar cap, and commit (history-aware / undoable). */
 function appendPrepared(incoming: Omit<ChordEvent, 'id'>[]): AppendOutcome {
-  // Appended chords are rendered/rebased into the current session key, so they
-  // belong to it (appendProject relabels, appendPreset renders in `state.key`).
+  // Appended chords are rendered/rebased into the current session key, so they belong to it
+  // (appendProject relabels, appendPreset renders in `state.key`). `modeContext` takes the
+  // harmonic mode rather than the palette one here because no palette was involved: the
+  // degree label was just computed in the song's mode, and the two have to agree or the
+  // root will be spelled against a scale the label does not use.
   const withIds = incoming.map((e) => ({
     ...e,
     id: nextEventId(),
