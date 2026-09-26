@@ -1,4 +1,4 @@
-import { harmonicVisualToken } from '@/theme/videoHarmonicTokens';
+import { borrowedVisualToken, harmonicVisualToken } from '@/theme/videoHarmonicTokens';
 import type { HarmonicRoleVisual } from '@/services/videoExport/types';
 import { isRoleStyledChord, visualHarmonicRoleFor } from '@/lib/videoExport/visualHarmonicRole';
 import type { ChordEvent } from '@/types';
@@ -25,7 +25,13 @@ export function harmonicRoleVisuals(progression: readonly ChordEvent[]): Harmoni
     // A chord that reached `neutral` has told us nothing, so it gets the same untouched
     // presentation as a diatonic one instead of a colour standing in for an answer.
     if (role === 'neutral') return entries;
-    entries.push({ cycleIndex, role, ...harmonicVisualToken(role) });
+    // A borrowed chord keeps the colour of the function it performs; the light alone says
+    // it was borrowed. Every other technique replaces the function colour outright.
+    const token =
+      event.category === 'modalInterchange' && event.function
+        ? borrowedVisualToken(event.function)
+        : harmonicVisualToken(role);
+    entries.push({ cycleIndex, role, ...token });
     return entries;
   }, []);
 }

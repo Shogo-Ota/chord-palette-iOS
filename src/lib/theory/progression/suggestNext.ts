@@ -23,7 +23,14 @@ import {
   secondaryDominants,
 } from '@/data/music';
 import { minorPrimaryDominants } from '@/data/minorAdvancedChords';
-import type { ChordDuration, ChordEvent, ChordFunction, KeyMode, MajorKey } from '@/types';
+import type {
+  ChordCategory,
+  ChordDuration,
+  ChordEvent,
+  ChordFunction,
+  KeyMode,
+  MajorKey,
+} from '@/types';
 
 import { suggestionPolicyFor, type ProgressionTemplate } from './suggestionPolicies';
 
@@ -264,6 +271,23 @@ export function suggestNext(
  * Turn a suggestion into an id-less {@link ChordEvent} ready for `session.addChord`.
  * Pure — the feature layer supplies the desired `durationBeats` (default a full bar).
  */
+/**
+ * Where a suggestion came from, in the vocabulary a placed chord already speaks.
+ *
+ * The strip is the only way to place a borrowed chord — modal interchange has no card in
+ * the 応用 tab — so dropping this on the way in made the category unreachable on any event,
+ * and anything downstream that reads it saw an ordinary diatonic chord.
+ */
+const CATEGORY_BY_REASON: Record<SuggestionReason, ChordCategory> = {
+  start: 'diatonic',
+  functional: 'diatonic',
+  template: 'diatonic',
+  cadence: 'diatonic',
+  minorDominant: 'primaryDominant',
+  secondaryDominant: 'secondaryDominant',
+  modal: 'modalInterchange',
+};
+
 export function suggestionToChordEvent(
   s: ProgressionSuggestion,
   durationBeats: ChordDuration = 4,
@@ -277,6 +301,7 @@ export function suggestionToChordEvent(
     isPro: s.isPro,
     rootOffset: s.rootOffset,
     suffix: s.suffix,
+    category: CATEGORY_BY_REASON[s.reason],
   };
 }
 

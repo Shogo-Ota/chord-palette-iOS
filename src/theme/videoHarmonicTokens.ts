@@ -1,4 +1,5 @@
 import type { VisualHarmonicRole } from '@/lib/videoExport/visualHarmonicRole';
+import { colors, type ChordFunction } from '@/theme/tokens';
 
 /**
  * The four colours the video paints one chord with.
@@ -100,4 +101,44 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualHarmonicRole, Harmoni
 
 export function harmonicVisualToken(role: VisualHarmonicRole): HarmonicVisualToken {
   return HARMONIC_VISUAL_TOKENS[role];
+}
+
+/**
+ * Borrowed chords keep the colour of the function they perform.
+ *
+ * Every other advanced technique replaces the function colour, because the technique is
+ * what the chord is doing: a secondary dominant is a pull first and a chord second. Modal
+ * interchange is not like that. Borrowing says where a chord came from, and `Fm` in C still
+ * does a subdominant's job, so recolouring it would hide the one thing the colour is for.
+ *
+ * So the fill stays the harmonic-function colour and the outline and glow carry the
+ * borrowing on their own. `F` and `Fm` come out the same hue; the lit edge is the whole
+ * difference, which is exactly the claim being made — same job, borrowed from elsewhere.
+ */
+export const BORROWED_VISUAL_TOKENS: Readonly<Record<ChordFunction, HarmonicVisualToken>> = {
+  tonic: {
+    main: colors.tonic,
+    outline: '#5ee88a',
+    glowCore: '#a7f3c0',
+    glowOuter: colors.tonic,
+    note: '#1da84f',
+  },
+  subdominant: {
+    main: colors.subdominant,
+    outline: '#f5cf4a',
+    glowCore: '#fae79a',
+    glowOuter: colors.subdominant,
+    note: '#c99a07',
+  },
+  dominant: {
+    main: colors.dominant,
+    outline: '#f88585',
+    glowCore: '#fcbdbd',
+    glowOuter: colors.dominant,
+    note: '#d13a3a',
+  },
+};
+
+export function borrowedVisualToken(harmonicFunction: ChordFunction): HarmonicVisualToken {
+  return BORROWED_VISUAL_TOKENS[harmonicFunction];
 }

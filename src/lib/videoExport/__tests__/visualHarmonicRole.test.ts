@@ -4,8 +4,12 @@ import {
   visualHarmonicRoles,
   type VisualHarmonicRole,
 } from '@/lib/videoExport/visualHarmonicRole';
-import { HARMONIC_VISUAL_TOKENS } from '@/theme/videoHarmonicTokens';
+import { BORROWED_VISUAL_TOKENS, HARMONIC_VISUAL_TOKENS } from '@/theme/videoHarmonicTokens';
 import { functionColor } from '@/theme/tokens';
+import {
+  suggestionToChordEvent,
+  type SuggestionReason,
+} from '@/lib/theory/progression/suggestNext';
 import type { ChordCategory, ChordEvent, ChordFunction } from '@/types';
 
 function role(input: {
@@ -287,5 +291,105 @@ describe('the palette handed to the renderer', () => {
     expect(harmonicRoleVisuals(progression).map((entry) => entry.role)).toEqual(
       visualHarmonicRoles(progression),
     );
+  });
+});
+
+/**
+ * Borrowing says where a chord came from, not what it does. `Fm` in C still performs a
+ * subdominant's job, so it keeps the subdominant colour and the lit edge carries the
+ * borrowing on its own — `F` and `Fm` come out the same hue, and the light is the whole
+ * difference.
+ */
+describe('a borrowed chord keeps its function colour and is marked by light', () => {
+  const borrowed = (fn: ChordFunction): ChordEvent =>
+    ({ function: fn, category: 'modalInterchange' }) as unknown as ChordEvent;
+
+  it('is treated as advanced harmony, so it gets the outline and glow', () => {
+    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
+      expect(harmonicRoleVisuals([borrowed(fn)])).toHaveLength(1);
+    }
+  });
+
+  it('fills with the harmonic-function colour rather than a role colour', () => {
+    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
+      const [entry] = harmonicRoleVisuals([borrowed(fn)]);
+      expect(entry!.main).toBe(functionColor[fn]);
+      expect(entry).toMatchObject(BORROWED_VISUAL_TOKENS[fn]);
+    }
+  });
+
+  it('is never given the fixed borrowed-chord colour when a function is known', () => {
+    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
+      const [entry] = harmonicRoleVisuals([borrowed(fn)]);
+      expect(entry!.role).not.toBe('color');
+      expect(entry!.main).not.toBe(HARMONIC_VISUAL_TOKENS.color.main);
+    }
+  });
+
+  it('reads the same hue as the diatonic chord doing the same job', () => {
+    const [borrowedSubdominant] = harmonicRoleVisuals([borrowed('subdominant')]);
+    // A diatonic subdominant sends no entry at all and renders `functionColor.subdominant`.
+    expect(harmonicRoleVisuals([{ function: 'subdominant', category: 'diatonic' } as unknown as ChordEvent])).toEqual([]);
+    expect(borrowedSubdominant!.main).toBe(functionColor.subdominant);
+  });
+
+  it('keeps the rim and the core brighter than the fill, like every other token', () => {
+    const luma = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
+    for (const [name, token] of Object.entries(BORROWED_VISUAL_TOKENS)) {
+      expect({ name, brighter: luma(token.outline) > luma(token.main) }).toEqual({
+        name,
+        brighter: true,
+      });
+      expect({ name, brightest: luma(token.glowCore) > luma(token.outline) }).toEqual({
+        name,
+        brightest: true,
+      });
+    }
+  });
+});
+
+/**
+ * The suggestion strip is the only way to place a borrowed chord — modal interchange has no
+ * card in the 応用 tab — so dropping the category on the way in made it unreachable on any
+ * placed event, and the video had no way to know the chord was borrowed at all.
+ */
+describe('a suggestion keeps where it came from', () => {
+  const suggestion = (reason: SuggestionReason, fn: ChordFunction = 'subdominant') =>
+    suggestionToChordEvent({
+      rootOffset: 5,
+      suffix: 'm',
+      function: fn,
+      degreeLabel: 'IVm',
+      displayName: 'Fm',
+      isPro: true,
+      reason,
+      score: 0.48,
+    });
+
+  it.each<[SuggestionReason, string]>([
+    ['modal', 'modalInterchange'],
+    ['secondaryDominant', 'secondaryDominant'],
+    ['minorDominant', 'primaryDominant'],
+    ['functional', 'diatonic'],
+    ['template', 'diatonic'],
+    ['cadence', 'diatonic'],
+    ['start', 'diatonic'],
+  ])('carries %s through as %s', (reason, category) => {
+    expect(suggestion(reason).category).toBe(category);
+  });
+
+  it('makes a borrowed chord placed from the strip reach the video as borrowed', () => {
+    const placed = { id: 'x', ...suggestion('modal') } as ChordEvent;
+    const [entry] = harmonicRoleVisuals([placed]);
+    expect(entry).toBeDefined();
+    expect(entry!.main).toBe(functionColor.subdominant);
+  });
+
+  it('leaves a diatonic suggestion on the untouched path', () => {
+    const placed = { id: 'x', ...suggestion('functional') } as ChordEvent;
+    expect(harmonicRoleVisuals([placed])).toEqual([]);
   });
 });
