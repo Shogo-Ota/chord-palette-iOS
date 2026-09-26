@@ -74,3 +74,6 @@ example
 # generated native folders
 /ios
 /android
+
+# Scratch frames pulled from exported video during investigation.
+.tmp-frames/

@@ -1,10 +1,5 @@
-import {
-  degreeLabelFromOffset,
-  keyTonicPc,
-  noteAt,
-  noteAtDegree,
-  rootDegreeLabel,
-} from '@/data/music';
+import { degreeLabelFromOffset, keyTonicPc, noteAt, noteAtDegree } from '@/data/music';
+import { chordDegreeLabel, respellDegree } from '@/lib/theory/degreeLabel';
 import type { ChordEvent, KeyMode, MajorKey } from '@/types';
 
 function mod12(n: number): number {
@@ -69,10 +64,18 @@ export function transposeProgression(
  */
 export function relabelDegreesForKey(event: ChordEvent, mode: KeyMode = 'major'): ChordEvent {
   if (event.rootOffset == null) return event;
-  const base = rootDegreeLabel(event.rootOffset, mode);
-  const degreeLabel =
-    event.bassOffset != null ? `${base}/${degreeLabelFromOffset(event.bassOffset)}` : base;
-  return { ...event, degreeLabel };
+  return {
+    ...event,
+    degreeLabel: chordDegreeLabel(
+      {
+        rootOffset: event.rootOffset,
+        suffix: event.suffix ?? '',
+        rootSpelling: event.rootSpelling,
+        bassOffset: event.bassOffset,
+      },
+      mode,
+    ),
+  };
 }
 
 /**
@@ -86,7 +89,13 @@ export function rebaseEvent(event: ChordEvent, fromKey: MajorKey, toKey: MajorKe
   const shift = keyTonicPc(fromKey) - keyTonicPc(toKey);
   const rootOffset = mod12(event.rootOffset + shift);
   const bassOffset = event.bassOffset != null ? mod12(event.bassOffset + shift) : event.bassOffset;
-  return { ...event, rootOffset, bassOffset };
+  // `rootSpelling` is a degree of the *reference* key, so leaving it behind would point it
+  // at a different pitch than `rootOffset` does: a `#V` rebased from C to G stayed `#V`
+  // while the offset moved to 1, which is `#I`. Move both or neither.
+  const rootSpelling = event.rootSpelling
+    ? respellDegree(event.rootSpelling, shift, event.modeContext ?? 'major')
+    : event.rootSpelling;
+  return { ...event, rootOffset, bassOffset, rootSpelling };
 }
 
 /**
