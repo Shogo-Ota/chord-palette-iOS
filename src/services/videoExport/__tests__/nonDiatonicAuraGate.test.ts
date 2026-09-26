@@ -85,23 +85,57 @@ describe('non-diatonic aura architecture', () => {
     const aura = source('FlowNonDiatonicAuraRenderer.swift');
     const renderer = source('FlowFrameRenderer.swift');
     const keyboard = source('FlowKeyboardRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
 
     // The aura owns one colour and never reads a segment's own colour.
     expect(aura).toContain('0xa8 / 255');
     expect(aura).not.toContain('segment.color');
     expect(aura).not.toContain('fallbackColor');
-    // The backdrop is drawn before the chord hierarchy, the edge after it.
+    // The soft bloom sits behind the chord hierarchy.
     expect(renderer.indexOf('drawBackdrop')).toBeLessThan(
       renderer.indexOf('FlowClassicChordStageRenderer.draw'),
     );
-    expect(renderer.indexOf('FlowClassicChordStageRenderer.draw')).toBeLessThan(
-      renderer.indexOf('drawEdge'),
-    );
+    // A negative stroke width strokes and fills at once, so the glyph keeps its
+    // function colour and only gains a rim.
+    expect(hero).toContain('.foregroundColor: color.withAlphaComponent(alpha)');
+    expect(hero).toContain('attributes[.strokeColor]');
+    expect(hero).toMatch(/attributes\[\.strokeWidth\] = -/);
     // Keys keep their function fill; the aura is laid over the top.
     expect(keyboard).toContain('fallbackColor.withAlphaComponent');
     expect(keyboard.indexOf('litRects.append')).toBeLessThan(
       keyboard.indexOf('FlowNonDiatonicAuraRenderer.drawKeyAfterglow'),
     );
+  });
+
+  /**
+   * Outlining the whole chord area read as the chord being fenced in rather than lit up.
+   * The aura gathers on the letters now, so no renderer may go back to drawing a box
+   * around them.
+   */
+  it('draws no rectangle around the chord area', () => {
+    const aura = code('FlowNonDiatonicAuraRenderer.swift');
+    const renderer = code('FlowFrameRenderer.swift');
+
+    // The box was the one rect built from frame width. Key halos and rail rings are
+    // still rounded rects and ovals, but they trace things that are already there.
+    expect(aura).not.toMatch(/CGRect\(\s*x: width/);
+    expect(aura).not.toContain('drawEdge');
+    expect(renderer).not.toContain('drawEdge');
+    // What remains of the aura's own drawing: a radial bloom, key halos, rail rings.
+    expect(aura).toContain('drawRadialGradient');
+    expect(aura).not.toContain('drawLinearGradient');
+  });
+
+  it('puts the rim and halo on the glyphs, scaled by the chord transition', () => {
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+    const stage = source('FlowClassicChordStageRenderer.swift');
+
+    expect(hero).toContain('auraStrength: CGFloat = 0');
+    // `ease` is the chord attack, so the rim arrives with the chord and not before it.
+    expect(hero).toContain('auraStrength: auraStrength * ease');
+    expect(stage).toContain('auraStrength: auraStrength');
+    // The halo is the same glyphs drawn again, not a shape approximating them.
+    expect(hero).toMatch(/blur: glowRadius \* 2\.4/);
   });
 
   /**

@@ -81,31 +81,46 @@ function passingDiminishedTarget(chord: LibraryChord): number | undefined {
 }
 
 /**
- * Keep only the diminished connectors that lead somewhere this progression goes.
+ * Order the diminished connectors by how well each fits this progression, keeping all
+ * of them.
  *
- * The technique exists to bridge two chords, so one whose target is nowhere in the
- * progression is a chord the player has no use for yet. Matching is by degree, not by
- * name, because the card points at the seventh chord (`→G7`) while the progression may
- * hold the triad (`G`).
+ * An earlier version dropped connectors whose target was not already in the
+ * progression, which got the direction of the library backwards: to write
+ * `F → G → G#dim → Am` the player needs `G#dim7 → Am` offered *before* `Am` exists.
+ * Hiding a connector until its destination is already written means hiding it exactly
+ * when it is needed. These four are the curated shortlist, short enough to show whole.
  *
- * When nothing matches, the curated shortlist stands rather than emptying a row that
- * still has something to teach — and that shortlist is four connectors, never every
- * diminished seventh.
+ * Fit is matched by degree, not by name, because the card points at the seventh chord
+ * (`→G7`) while the progression may hold the triad (`G`).
  */
-function reachableTargets(
+function byProgressionFit(
   chords: readonly LibraryChord[],
   mode: KeyMode,
   context: AdvancedLibraryContext | undefined,
 ): LibraryChord[] {
   if (!context || context.progression.length === 0) return [...chords];
-  const present = new Set(
-    context.progression.map((event) => degreeIndexFromRootOffset(event.rootOffset ?? 0, mode)),
+  const degrees = context.progression.map((event) =>
+    degreeIndexFromRootOffset(event.rootOffset ?? 0, mode),
   );
-  const narrowed = chords.filter((chord) => {
+  const present = new Set(degrees);
+  // The chord after the selected one is where the player is about to insert, so a
+  // connector aimed there is the single most useful card on this tap.
+  const degreeAfterSelection =
+    context.selectedIndex >= 0 ? degrees[context.selectedIndex + 1] : undefined;
+  const fit = (chord: LibraryChord): number => {
     const target = passingDiminishedTarget(chord);
-    return target != null && present.has(target);
-  });
-  return narrowed.length > 0 ? narrowed : [...chords];
+    if (target == null) return 0;
+    const bridgesAnAdjacentPair = degrees.some((_, index) => degrees[index + 1] === target);
+    return (
+      (target === degreeAfterSelection ? 4 : 0) +
+      (bridgesAnAdjacentPair ? 2 : 0) +
+      (present.has(target) ? 1 : 0)
+    );
+  };
+  return chords
+    .map((chord, index) => ({ chord, index, score: fit(chord) }))
+    .sort((a, b) => b.score - a.score || a.index - b.index)
+    .map(({ chord }) => chord);
 }
 
 /**
@@ -165,7 +180,7 @@ export function advancedLibraryGroups(
       id: 'passing-diminished',
       title: 'PASSING DIMINISHED',
       subtitle: 'パッシングディミニッシュ（経過dim）',
-      chords: withoutDuplicates(reachableTargets(passingDiminishedChords(key), mode, context)),
+      chords: withoutDuplicates(byProgressionFit(passingDiminishedChords(key), mode, context)),
     },
     {
       id: 'substitute-chord',

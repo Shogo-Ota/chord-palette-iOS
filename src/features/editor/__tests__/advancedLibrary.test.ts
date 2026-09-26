@@ -114,18 +114,36 @@ describe('no row offers the same sound twice', () => {
 });
 
 describe('the progression narrows the offer', () => {
-  it('keeps only the diminished connectors this progression can reach', () => {
+  /**
+   * All four connectors always show. Hiding one until its destination is already in the
+   * progression would hide it exactly when it is needed: writing `F → G → G#dim → Am`
+   * means reaching for `G#dim7 → Am` before `Am` exists.
+   */
+  it('offers every diminished connector whatever the progression holds', () => {
+    for (const progression of [[C, F, G, C], [C, Dm, G, C], [F, G, Am]]) {
+      const groups = advancedLibraryGroups('C', 'major', { progression, selectedIndex: 0 });
+      expect(cardsIn(groups, 'passing-diminished').map((chord) => chord.displayName).sort()).toEqual(
+        ['C#dim7', 'E♭dim7', 'F#dim7', 'G#dim7'],
+      );
+    }
+  });
+
+  it('leads with the connector that bridges two chords already written', () => {
+    // F → G → Am: the connector into vi is the one that can be dropped in right now.
     const groups = advancedLibraryGroups('C', 'major', {
-      progression: [C, Dm, G, C],
-      selectedIndex: 0,
+      progression: [F, G, Am],
+      selectedIndex: 1,
     });
-    // #I°7 and ♭III°7 both target ii, which is in the progression; #IV°7 targets V,
-    // which is too. #V°7 targets vi, which is not.
-    expect(cardsIn(groups, 'passing-diminished').map((chord) => chord.subLabel)).toEqual([
-      '→Dm7',
-      '→Dm7',
-      '→G7',
-    ]);
+    const diminished = cardsIn(groups, 'passing-diminished');
+    expect(`${diminished[0]!.displayName} ${diminished[0]!.subLabel}`).toBe('G#dim7 →Am7');
+  });
+
+  it('keeps the curated order when the progression says nothing', () => {
+    expect(
+      cardsIn(advancedLibraryGroups('C', 'major'), 'passing-diminished').map(
+        (chord) => `${chord.displayName} ${chord.subLabel}`,
+      ),
+    ).toEqual(['C#dim7 →Dm7', 'E♭dim7 →Dm7', 'F#dim7 →G7', 'G#dim7 →Am7']);
   });
 
   it('leads with the augmented connector that bridges two adjacent chords', () => {

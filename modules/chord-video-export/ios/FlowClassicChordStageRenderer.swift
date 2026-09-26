@@ -31,7 +31,8 @@ enum FlowClassicChordStageRenderer {
       timeSec: timeSec,
       cg: cg,
       frameWidth: width,
-      frameHeight: height
+      frameHeight: height,
+      auraStrength: auraStrength
     )
 
     drawProgressRail(

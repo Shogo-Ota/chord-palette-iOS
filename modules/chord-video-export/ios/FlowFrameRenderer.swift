@@ -87,8 +87,8 @@ final class FlowFrameRenderer: VideoFrameRendering {
         frameHeight: height
       )
       let aura = auraIntensity(state: state, plan: plan, timeSec: timeSec)
-      // Behind the chord hierarchy, so the chord name and its function colour stay on
-      // top of the violet rather than inside it.
+      // Only the soft bloom is drawn here. The violet rim and halo belong to the chord
+      // glyphs themselves, so the hero paints them while it owns the text geometry.
       FlowNonDiatonicAuraRenderer.drawBackdrop(
         intensity: aura,
         cg: cg,
@@ -104,12 +104,6 @@ final class FlowFrameRenderer: VideoFrameRendering {
         frameHeight: height,
         nonDiatonic: nonDiatonic,
         auraStrength: aura.current
-      )
-      FlowNonDiatonicAuraRenderer.drawEdge(
-        intensity: aura,
-        cg: cg,
-        frameWidth: width,
-        frameHeight: height
       )
       FlowKeyboardRenderer.draw(
         plan: plan,

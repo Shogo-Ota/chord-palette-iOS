@@ -8,10 +8,14 @@ import UIKit
 /// while seeing that this moment is not ordinary. Violet is used because no function
 /// claims that hue, so the aura cannot be mistaken for a fourth function.
 ///
-/// Built from a stroked edge, two radial glows and a thin vertical beam. Deliberately
-/// no blur filters and no particles: the aura has to survive social-video compression
-/// at thumbnail size, and a soft-edged gradient reads at that size where scattered
-/// specks turn to mud. It also has to stay cheap enough to draw every frame.
+/// Everything gathers on the letters. An earlier version outlined the whole chord area
+/// with a violet rectangle, which read as the chord being fenced in rather than lit up.
+/// What is left is a soft bloom behind the text, a violet rim on the glyphs themselves
+/// (drawn by the chord hero, which owns the text geometry) and an afterglow on the keys.
+///
+/// Deliberately no blur filters and no particles: the aura has to survive social-video
+/// compression at thumbnail size, and a soft-edged gradient reads at that size where
+/// scattered specks turn to mud. It also has to stay cheap enough to draw every frame.
 enum FlowNonDiatonicAuraRenderer {
   /// Violet, matching `videoColors.effect.nonDiatonicAura`.
   static let auraColor = UIColor(
@@ -41,54 +45,14 @@ enum FlowNonDiatonicAuraRenderer {
       radius: width * 0.52,
       alpha: 0.10 * intensity.current
     )
-
-    if intensity.current > 0.001 {
-      beam(
-        cg,
-        center: center,
-        halfWidth: width * 0.016,
-        top: height * 0.13,
-        bottom: height * 0.52,
-        alpha: 0.16 * intensity.current
-      )
-    }
   }
 
-  /// Draw the violet edge over the chord area, after the chord name is painted.
+  /// Lay a violet afterglow around keys that are already lit in their function colour.
   ///
-  /// The outline goes last so it reads as a frame around the chord rather than a shape
-  /// the chord name sits on top of.
-  static func drawEdge(
-    intensity: FlowNonDiatonicAuraIntensity,
-    cg: CGContext,
-    frameWidth width: CGFloat,
-    frameHeight height: CGFloat
-  ) {
-    guard intensity.current > 0.001 else { return }
-    let rect = CGRect(
-      x: width * 0.10,
-      y: height * 0.255,
-      width: width * 0.80,
-      height: height * 0.185
-    )
-    let path = UIBezierPath(roundedRect: rect, cornerRadius: height * 0.022)
-    cg.saveGState()
-    cg.setShadow(
-      offset: .zero,
-      blur: height * 0.012 * (0.7 + 0.5 * intensity.current),
-      color: auraColor.withAlphaComponent(0.7 * intensity.current).cgColor
-    )
-    auraColor.withAlphaComponent(0.72 * intensity.current).setStroke()
-    path.lineWidth = max(1, height * 0.0016)
-    path.stroke()
-    cg.restoreGState()
-  }
-
-  /// Lay a violet afterglow over keys that are already lit in their function colour.
-  ///
-  /// The key keeps its function colour underneath; this only adds an outline and a
-  /// low-alpha wash, so a pressed key reads as "lit, and chromatic" rather than as a
-  /// violet key.
+  /// Kept deliberately weak. A first pass washed the key in violet strongly enough that
+  /// a red key read as a pink key, which loses the function the colour was there to
+  /// carry. The glow now sits mostly outside the key: a halo, a faint rim, and almost no
+  /// fill, so the key still reads as T / SD / D with something around it.
   static func drawKeyAfterglow(
     intensity: FlowNonDiatonicAuraIntensity,
     rects: [CGRect],
@@ -99,15 +63,15 @@ enum FlowNonDiatonicAuraRenderer {
     cg.saveGState()
     cg.setShadow(
       offset: .zero,
-      blur: height * 0.006 * (0.6 + 0.6 * intensity.current),
-      color: auraColor.withAlphaComponent(0.6 * intensity.current).cgColor
+      blur: height * 0.009 * (0.6 + 0.6 * intensity.current),
+      color: auraColor.withAlphaComponent(0.55 * intensity.current).cgColor
     )
     for rect in rects {
       let path = UIBezierPath(roundedRect: rect, cornerRadius: rect.width * 0.22)
-      auraColor.withAlphaComponent(0.18 * intensity.current).setFill()
+      auraColor.withAlphaComponent(0.06 * intensity.current).setFill()
       path.fill()
-      auraColor.withAlphaComponent(0.62 * intensity.current).setStroke()
-      path.lineWidth = max(1, rect.width * 0.09)
+      auraColor.withAlphaComponent(0.30 * intensity.current).setStroke()
+      path.lineWidth = max(1, rect.width * 0.06)
       path.stroke()
     }
     cg.restoreGState()
@@ -170,41 +134,4 @@ enum FlowNonDiatonicAuraRenderer {
     cg.restoreGState()
   }
 
-  /// A thin upright shaft through the chord, brightest at the chord's centre line.
-  private static func beam(
-    _ cg: CGContext,
-    center: CGPoint,
-    halfWidth: CGFloat,
-    top: CGFloat,
-    bottom: CGFloat,
-    alpha: CGFloat
-  ) {
-    guard alpha > 0.001 else { return }
-    let colors = [
-      auraColor.withAlphaComponent(0).cgColor,
-      auraColor.withAlphaComponent(alpha).cgColor,
-      auraColor.withAlphaComponent(0).cgColor,
-    ] as CFArray
-    guard
-      let gradient = CGGradient(
-        colorsSpace: CGColorSpaceCreateDeviceRGB(),
-        colors: colors,
-        locations: [0, 0.5, 1]
-      )
-    else { return }
-    cg.saveGState()
-    cg.clip(to: CGRect(
-      x: center.x - halfWidth,
-      y: top,
-      width: halfWidth * 2,
-      height: bottom - top
-    ))
-    cg.drawLinearGradient(
-      gradient,
-      start: CGPoint(x: 0, y: top),
-      end: CGPoint(x: 0, y: bottom),
-      options: []
-    )
-    cg.restoreGState()
-  }
 }

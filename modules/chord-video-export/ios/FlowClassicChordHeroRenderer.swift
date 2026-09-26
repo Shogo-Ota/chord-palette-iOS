@@ -9,13 +9,18 @@ enum FlowClassicChordHeroRenderer {
   private static let textPrimary = UIColor(
     red: 0xee / 255, green: 0xf1 / 255, blue: 0xf6 / 255, alpha: 1)
 
+  /// Violet rim and halo for a chord that leaves the key. Zero for a diatonic chord.
+  private static let auraColor = UIColor(
+    red: 0xa8 / 255, green: 0x55 / 255, blue: 0xf7 / 255, alpha: 1)
+
   static func draw(
     segment: RenderSegment,
     bpm: Int,
     timeSec: Double,
     cg: CGContext,
     frameWidth width: CGFloat,
-    frameHeight height: CGFloat
+    frameHeight height: CGFloat,
+    auraStrength: CGFloat = 0
   ) {
     let beatDuration = 60.0 / Double(max(1, bpm))
     let beatPhase = (timeSec / beatDuration).truncatingRemainder(dividingBy: 1.0)
@@ -47,6 +52,7 @@ enum FlowClassicChordHeroRenderer {
       glowColor: segment.color,
       glowRadius: height * 0.02 * (0.5 + pulse),
       alpha: ease,
+      auraStrength: auraStrength * ease,
       cg: cg
     )
 
@@ -126,17 +132,13 @@ enum FlowClassicChordHeroRenderer {
     glowColor: UIColor,
     glowRadius: CGFloat,
     alpha: CGFloat,
+    auraStrength: CGFloat = 0,
     cg: CGContext
   ) {
     guard alpha > 0.001 else { return }
     let paragraph = NSMutableParagraphStyle()
     paragraph.alignment = .center
     paragraph.lineBreakMode = .byTruncatingTail
-    let attributes: [NSAttributedString.Key: Any] = [
-      .font: font,
-      .foregroundColor: color.withAlphaComponent(alpha),
-      .paragraphStyle: paragraph,
-    ]
     let rect = CGRect(
       x: centerX - maxWidth / 2,
       y: y,
@@ -147,12 +149,44 @@ enum FlowClassicChordHeroRenderer {
     cg.translateBy(x: rect.midX, y: rect.midY)
     cg.scaleBy(x: scale, y: scale)
     cg.translateBy(x: -rect.midX, y: -rect.midY)
+
+    // Halo pass: the same glyphs in violet under a wide violet shadow, so the bloom
+    // follows the shape of the letters instead of a box around them.
+    if auraStrength > 0.001 {
+      cg.saveGState()
+      cg.setShadow(
+        offset: .zero,
+        blur: glowRadius * 2.4,
+        color: auraColor.withAlphaComponent(0.85 * auraStrength * alpha).cgColor
+      )
+      (text as NSString).draw(
+        in: rect,
+        withAttributes: [
+          .font: font,
+          .foregroundColor: auraColor.withAlphaComponent(0.55 * auraStrength * alpha),
+          .paragraphStyle: paragraph,
+        ]
+      )
+      cg.restoreGState()
+    }
+
     if glowRadius > 0.1 {
       cg.setShadow(
         offset: .zero,
         blur: glowRadius,
         color: glowColor.withAlphaComponent(0.8 * alpha).cgColor
       )
+    }
+    // A negative stroke width strokes and fills in one pass, so the letter keeps its
+    // function colour and gains a violet rim rather than being recoloured.
+    var attributes: [NSAttributedString.Key: Any] = [
+      .font: font,
+      .foregroundColor: color.withAlphaComponent(alpha),
+      .paragraphStyle: paragraph,
+    ]
+    if auraStrength > 0.001 {
+      attributes[.strokeColor] = auraColor.withAlphaComponent(0.95 * auraStrength * alpha)
+      attributes[.strokeWidth] = -2.2 * auraStrength
     }
     (text as NSString).draw(in: rect, withAttributes: attributes)
     cg.restoreGState()
