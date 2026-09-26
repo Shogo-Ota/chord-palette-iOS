@@ -23,6 +23,7 @@ enum FlowKeyboardRenderer {
     rect: CGRect,
     frameHeight height: CGFloat,
     aura: FlowNonDiatonicAuraIntensity = FlowNonDiatonicAuraIntensity(current: 0, incoming: 0),
+    auraColor: UIColor = .clear,
     cg: CGContext? = nil
   ) {
     var landingByMidi: [Int: LandingVisual] = [:]
@@ -89,6 +90,7 @@ enum FlowKeyboardRenderer {
     if let cg {
       FlowNonDiatonicAuraRenderer.drawKeyAfterglow(
         intensity: aura,
+        color: auraColor,
         rects: litRects,
         cg: cg,
         frameHeight: height

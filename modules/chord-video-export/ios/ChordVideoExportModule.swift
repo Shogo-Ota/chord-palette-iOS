@@ -28,6 +28,16 @@ struct VisualNoteEventRecord: Record {
 }
 
 /// JS-facing render plan (mirrors ExportPlan in TS).
+struct HarmonicRoleVisualRecord: Record {
+  @Field var cycleIndex: Int = 0
+  @Field var role: String = ""
+  @Field var main: String = "#ffffff"
+  @Field var outline: String = "#ffffff"
+  @Field var glowCore: String = "#ffffff"
+  @Field var glowOuter: String = "#ffffff"
+  @Field var note: String = "#ffffff"
+}
+
 struct ExportPlanRecord: Record {
   @Field var width: Int = 1080
   @Field var height: Int = 1920
@@ -49,6 +59,9 @@ struct ExportPlanRecord: Record {
   /// Positions in one progression pass whose chord leaves the key. Flow only; an empty
   /// list means every chord is diatonic and no aura is drawn.
   @Field var nonDiatonicCycleIndices: [Int] = []
+  /// Role palette per position. Flow only — Classic's accepted output is frozen, so it
+  /// keeps resolving every layer from the segment's harmonic-function colour.
+  @Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []
   /// Visual style contract. Unknown values fall back to Classic in the registry.
   @Field var visualStyle: String = "classic"
   /// Story template. Missing/unknown values preserve the existing Standard render.
@@ -127,12 +140,29 @@ public class ChordVideoExportModule: Module {
         }
       }
       let nonDiatonic = FlowNonDiatonicCycle(indices: planRecord.nonDiatonicCycleIndices)
+      let rolePalette = FlowHarmonicRolePalette(
+        colorsByCycleIndex: Dictionary(
+          uniqueKeysWithValues: planRecord.harmonicRoleVisuals.map {
+            (
+              $0.cycleIndex,
+              FlowHarmonicRoleColors(
+                main: Self.color(fromHex: $0.main),
+                outline: Self.color(fromHex: $0.outline),
+                glowCore: Self.color(fromHex: $0.glowCore),
+                glowOuter: Self.color(fromHex: $0.glowOuter),
+                note: Self.color(fromHex: $0.note)
+              )
+            )
+          }
+        )
+      )
       let frameRenderer = VideoFrameRendererRegistry.renderer(
         for: planRecord.visualStyle,
         templateId: planRecord.templateId,
         compareScene: compareScene,
         flowTimeline: visualTimeline,
-        flowNonDiatonic: nonDiatonic
+        flowNonDiatonic: nonDiatonic,
+        flowRolePalette: rolePalette
       )
 
       VideoWriter.write(

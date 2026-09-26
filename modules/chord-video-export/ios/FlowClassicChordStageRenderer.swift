@@ -21,7 +21,8 @@ enum FlowClassicChordStageRenderer {
     frameWidth width: CGFloat,
     frameHeight height: CGFloat,
     nonDiatonic: FlowNonDiatonicCycle = .empty,
-    auraStrength: CGFloat = 0
+    auraStrength: CGFloat = 0,
+    rolePalette: FlowHarmonicRolePalette = .empty
   ) {
     guard let current = state.currentSegment else { return }
 
@@ -32,7 +33,9 @@ enum FlowClassicChordStageRenderer {
       cg: cg,
       frameWidth: width,
       frameHeight: height,
-      auraStrength: auraStrength
+      roleColors: rolePalette.isEmpty
+        ? nil
+        : rolePalette.colors(cycleIndex: state.currentCycleIndex, fallback: current.color)
     )
 
     drawProgressRail(
@@ -71,17 +74,22 @@ enum FlowClassicChordStageRenderer {
       let centerX = left + slotWidth * (CGFloat(index) + 0.5)
       let opacity: CGFloat = active ? 1 : 0.42
       let radius = height * (active ? 0.0042 : 0.0025)
-      // A violet ring behind the dot, so the timeline shows where the chromatic chords
-      // sit even before one of them is sounding.
+      let dotColor =
+        rolePalette.isEmpty
+        ? segment.color
+        : rolePalette.colors(cycleIndex: index, fallback: segment.color).main
+      // A ring behind the dot, so the timeline shows where the chromatic chords sit even
+      // before one of them is sounding.
       if nonDiatonic.contains(cycleIndex: index) {
         FlowNonDiatonicAuraRenderer.drawRailMark(
           center: CGPoint(x: centerX, y: railY),
           radius: radius,
           alpha: active ? max(0.45, auraStrength) : 0.30,
+          color: dotColor,
           cg: cg
         )
       }
-      segment.color.withAlphaComponent(opacity).setFill()
+      dotColor.withAlphaComponent(opacity).setFill()
       UIBezierPath(
         ovalIn: CGRect(
           x: centerX - radius,
@@ -102,7 +110,7 @@ enum FlowClassicChordStageRenderer {
         segment.degreeLabel,
         baseFontSize: height * (active ? 0.015 : 0.012),
         weight: active ? .black : .semibold,
-        color: active ? segment.color : textMuted,
+        color: active ? dotColor : textMuted,
         opacity: opacity,
         centerX: centerX,
         y: railY + height * 0.012,

@@ -8,22 +8,25 @@ import UIKit
 /// while seeing that this moment is not ordinary. Violet is used because no function
 /// claims that hue, so the aura cannot be mistaken for a fourth function.
 ///
-/// Everything gathers on the letters. An earlier version outlined the whole chord area
-/// with a violet rectangle, which read as the chord being fenced in rather than lit up.
-/// What is left is a soft bloom behind the text, a violet rim on the glyphs themselves
-/// (drawn by the chord hero, which owns the text geometry) and an afterglow on the keys.
+/// The extra light a chord gets for leaving the key.
+///
+/// It no longer owns a colour. Hue comes from the chord's visual harmonic role, so a
+/// chromatic approach glows magenta and a borrowed subdominant glows green — what marks
+/// the chord as special is that this layer exists at all, not that it is a different
+/// colour from the chord it surrounds.
+///
+/// An earlier version outlined the whole chord area with a rectangle, which read as the
+/// chord being fenced in rather than lit up. What is left is a bloom behind the text, an
+/// afterglow around lit keys, and a ring on the rail dot.
 ///
 /// Deliberately no blur filters and no particles: the aura has to survive social-video
 /// compression at thumbnail size, and a soft-edged gradient reads at that size where
 /// scattered specks turn to mud. It also has to stay cheap enough to draw every frame.
 enum FlowNonDiatonicAuraRenderer {
-  /// Violet, matching `videoColors.effect.nonDiatonicAura`.
-  static let auraColor = UIColor(
-    red: 0xa8 / 255, green: 0x55 / 255, blue: 0xf7 / 255, alpha: 1)
-
   /// Draw the aura behind the chord hero, before the chord name is painted over it.
   static func drawBackdrop(
     intensity: FlowNonDiatonicAuraIntensity,
+    color auraColor: UIColor,
     cg: CGContext,
     frameWidth width: CGFloat,
     frameHeight height: CGFloat
@@ -37,13 +40,15 @@ enum FlowNonDiatonicAuraRenderer {
       cg,
       center: center,
       radius: width * 0.86,
-      alpha: 0.20 * intensity.combined
+      alpha: 0.20 * intensity.combined,
+      auraColor: auraColor
     )
     radialGlow(
       cg,
       center: center,
       radius: width * 0.52,
-      alpha: 0.10 * intensity.current
+      alpha: 0.10 * intensity.current,
+      auraColor: auraColor
     )
   }
 
@@ -55,6 +60,7 @@ enum FlowNonDiatonicAuraRenderer {
   /// fill, so the key still reads as T / SD / D with something around it.
   static func drawKeyAfterglow(
     intensity: FlowNonDiatonicAuraIntensity,
+    color auraColor: UIColor,
     rects: [CGRect],
     cg: CGContext,
     frameHeight height: CGFloat
@@ -82,6 +88,7 @@ enum FlowNonDiatonicAuraRenderer {
     center: CGPoint,
     radius: CGFloat,
     alpha: CGFloat,
+    color auraColor: UIColor,
     cg: CGContext
   ) {
     guard alpha > 0.001 else { return }
@@ -108,7 +115,8 @@ enum FlowNonDiatonicAuraRenderer {
     _ cg: CGContext,
     center: CGPoint,
     radius: CGFloat,
-    alpha: CGFloat
+    alpha: CGFloat,
+    auraColor: UIColor
   ) {
     guard alpha > 0.001, radius > 0 else { return }
     let colors = [

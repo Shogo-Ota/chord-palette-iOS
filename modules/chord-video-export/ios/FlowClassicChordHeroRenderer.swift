@@ -9,10 +9,6 @@ enum FlowClassicChordHeroRenderer {
   private static let textPrimary = UIColor(
     red: 0xee / 255, green: 0xf1 / 255, blue: 0xf6 / 255, alpha: 1)
 
-  /// Violet rim and halo for a chord that leaves the key. Zero for a diatonic chord.
-  private static let auraColor = UIColor(
-    red: 0xa8 / 255, green: 0x55 / 255, blue: 0xf7 / 255, alpha: 1)
-
   static func draw(
     segment: RenderSegment,
     bpm: Int,
@@ -20,7 +16,7 @@ enum FlowClassicChordHeroRenderer {
     cg: CGContext,
     frameWidth width: CGFloat,
     frameHeight height: CGFloat,
-    auraStrength: CGFloat = 0
+    roleColors: FlowHarmonicRoleColors? = nil
   ) {
     let beatDuration = 60.0 / Double(max(1, bpm))
     let beatPhase = (timeSec / beatDuration).truncatingRemainder(dividingBy: 1.0)
@@ -32,30 +28,48 @@ enum FlowClassicChordHeroRenderer {
     )
     let ease = 1 - pow(1 - chordProgress, 3)
 
+    let colors =
+      roleColors
+      ?? FlowHarmonicRoleColors(
+        main: segment.color,
+        outline: segment.color,
+        glowCore: segment.color,
+        glowOuter: segment.color,
+        note: segment.color
+      )
+
+    // Wider and a touch stronger than before, so the chord owns the frame on a phone.
     drawRadialGlow(
       cg,
       center: CGPoint(x: width / 2, y: height * 0.33),
-      radius: width * 0.62,
-      color: segment.color,
-      alpha: (0.16 + 0.14 * pulse) * ease
+      radius: width * 0.74,
+      color: colors.glowOuter,
+      alpha: (0.21 + 0.17 * pulse) * ease
     )
 
     let slide = (1 - ease) * height * 0.03
-    drawCenteredScaled(
+    FlowChordGlyphRenderer.draw(
       segment.displayName,
       font: .systemFont(ofSize: height * 0.085, weight: .black),
-      color: segment.color,
+      layers: FlowChordGlyphRenderer.Layers(
+        fill: colors.main,
+        outline: colors.outline,
+        glowCore: colors.glowCore,
+        glowOuter: colors.glowOuter
+      ),
       centerX: width / 2,
       y: height * 0.30 + slide,
       maxWidth: width * 0.94,
       scale: 1.0 + 0.045 * pulse * ease,
-      glowColor: segment.color,
+      intensity: ease,
+      impact: pulse,
+      outlineWidth: height * 0.0026,
       glowRadius: height * 0.02 * (0.5 + pulse),
-      alpha: ease,
-      auraStrength: auraStrength * ease,
       cg: cg
     )
 
+    // Secondary by design: same size as before, no glow, neutral colour. The chord name
+    // got brighter, so anything competing with it has to stay where it was.
     let degreeFont = UIFont.systemFont(ofSize: height * 0.030, weight: .bold)
     let degreeY = height * 0.40 + slide * 0.5
     let degree =
@@ -118,77 +132,6 @@ enum FlowClassicChordHeroRenderer {
       endRadius: radius,
       options: []
     )
-    cg.restoreGState()
-  }
-
-  private static func drawCenteredScaled(
-    _ text: String,
-    font: UIFont,
-    color: UIColor,
-    centerX: CGFloat,
-    y: CGFloat,
-    maxWidth: CGFloat,
-    scale: CGFloat,
-    glowColor: UIColor,
-    glowRadius: CGFloat,
-    alpha: CGFloat,
-    auraStrength: CGFloat = 0,
-    cg: CGContext
-  ) {
-    guard alpha > 0.001 else { return }
-    let paragraph = NSMutableParagraphStyle()
-    paragraph.alignment = .center
-    paragraph.lineBreakMode = .byTruncatingTail
-    let rect = CGRect(
-      x: centerX - maxWidth / 2,
-      y: y,
-      width: maxWidth,
-      height: font.lineHeight * 1.4
-    )
-    cg.saveGState()
-    cg.translateBy(x: rect.midX, y: rect.midY)
-    cg.scaleBy(x: scale, y: scale)
-    cg.translateBy(x: -rect.midX, y: -rect.midY)
-
-    // Halo pass: the same glyphs in violet under a wide violet shadow, so the bloom
-    // follows the shape of the letters instead of a box around them.
-    if auraStrength > 0.001 {
-      cg.saveGState()
-      cg.setShadow(
-        offset: .zero,
-        blur: glowRadius * 2.4,
-        color: auraColor.withAlphaComponent(0.85 * auraStrength * alpha).cgColor
-      )
-      (text as NSString).draw(
-        in: rect,
-        withAttributes: [
-          .font: font,
-          .foregroundColor: auraColor.withAlphaComponent(0.55 * auraStrength * alpha),
-          .paragraphStyle: paragraph,
-        ]
-      )
-      cg.restoreGState()
-    }
-
-    if glowRadius > 0.1 {
-      cg.setShadow(
-        offset: .zero,
-        blur: glowRadius,
-        color: glowColor.withAlphaComponent(0.8 * alpha).cgColor
-      )
-    }
-    // A negative stroke width strokes and fills in one pass, so the letter keeps its
-    // function colour and gains a violet rim rather than being recoloured.
-    var attributes: [NSAttributedString.Key: Any] = [
-      .font: font,
-      .foregroundColor: color.withAlphaComponent(alpha),
-      .paragraphStyle: paragraph,
-    ]
-    if auraStrength > 0.001 {
-      attributes[.strokeColor] = auraColor.withAlphaComponent(0.95 * auraStrength * alpha)
-      attributes[.strokeWidth] = -2.2 * auraStrength
-    }
-    (text as NSString).draw(in: rect, withAttributes: attributes)
     cg.restoreGState()
   }
 

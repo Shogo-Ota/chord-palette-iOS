@@ -26,7 +26,7 @@ describe('Pulse renderer architecture gate', () => {
     expect(registry).not.toContain('case pulse');
     expect(registry).not.toContain('case .pulse');
     expect(registry).not.toContain('PulseFrameRenderer()');
-    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline, nonDiatonic: flowNonDiatonic\)/);
+    expect(registry).toMatch(/case \.flow:\s+return FlowFrameRenderer\(\s+timeline: flowTimeline,\s+nonDiatonic: flowNonDiatonic,\s+rolePalette: flowRolePalette\s+\)/);
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
   });
 

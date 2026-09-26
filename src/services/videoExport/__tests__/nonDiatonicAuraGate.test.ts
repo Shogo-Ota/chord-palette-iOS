@@ -22,7 +22,12 @@ function code(file: string): string {
     .replace(/^[ \t]*\/\/.*$/gm, '');
 }
 
-const AURA_FILES = ['FlowNonDiatonicAuraRenderer.swift', 'FlowNonDiatonicCycle.swift'] as const;
+const AURA_FILES = [
+  'FlowNonDiatonicAuraRenderer.swift',
+  'FlowNonDiatonicCycle.swift',
+  'FlowChordGlyphRenderer.swift',
+  'FlowHarmonicRolePalette.swift',
+] as const;
 
 describe('non-diatonic aura architecture', () => {
   it('reaches Flow through the same sidecar seam as the note timeline', () => {
@@ -35,7 +40,7 @@ describe('non-diatonic aura architecture', () => {
     expect(bridge).toContain('@Field var nonDiatonicCycleIndices: [Int] = []');
     expect(registry).toContain('flowNonDiatonic: FlowNonDiatonicCycle = .empty');
     expect(registry).toMatch(
-      /case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline, nonDiatonic: flowNonDiatonic\)/,
+      /case \.flow:\s+return FlowFrameRenderer\(\s+timeline: flowTimeline,\s+nonDiatonic: flowNonDiatonic,\s+rolePalette: flowRolePalette\s+\)/,
     );
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
   });
@@ -87,19 +92,18 @@ describe('non-diatonic aura architecture', () => {
     const keyboard = source('FlowKeyboardRenderer.swift');
     const hero = source('FlowClassicChordHeroRenderer.swift');
 
-    // The aura owns one colour and never reads a segment's own colour.
-    expect(aura).toContain('0xa8 / 255');
+    // The aura takes the chord's role colour rather than owning one, so light is always
+    // the chord's own colour getting brighter.
+    expect(aura).toContain('color auraColor: UIColor');
+    expect(aura).not.toMatch(/0xa8 \/ 255/);
     expect(aura).not.toContain('segment.color');
-    expect(aura).not.toContain('fallbackColor');
     // The soft bloom sits behind the chord hierarchy.
     expect(renderer.indexOf('drawBackdrop')).toBeLessThan(
       renderer.indexOf('FlowClassicChordStageRenderer.draw'),
     );
-    // A negative stroke width strokes and fills at once, so the glyph keeps its
-    // function colour and only gains a rim.
-    expect(hero).toContain('.foregroundColor: color.withAlphaComponent(alpha)');
-    expect(hero).toContain('attributes[.strokeColor]');
-    expect(hero).toMatch(/attributes\[\.strokeWidth\] = -/);
+    // The glyph renderer owns every layer, and it is the only thing that paints them.
+    expect(hero).toContain('FlowChordGlyphRenderer.draw');
+    expect(hero).not.toMatch(/strokeWidth|strokeColor/);
     // Keys keep their function fill; the aura is laid over the top.
     expect(keyboard).toContain('fallbackColor.withAlphaComponent');
     expect(keyboard.indexOf('litRects.append')).toBeLessThan(
@@ -126,16 +130,40 @@ describe('non-diatonic aura architecture', () => {
     expect(aura).not.toContain('drawLinearGradient');
   });
 
-  it('puts the rim and halo on the glyphs, scaled by the chord transition', () => {
-    const hero = source('FlowClassicChordHeroRenderer.swift');
-    const stage = source('FlowClassicChordStageRenderer.swift');
+  /**
+   * Stroking glyph paths traces every boundary a font contains, and `#` is four bars that
+   * cross, so each crossing got its own interior outline. Unioning the same string drawn
+   * around a ring leaves only the silhouette uncovered, and the fill goes on last.
+   */
+  it('outlines the string silhouette instead of stroking glyph paths', () => {
+    const glyph = source('FlowChordGlyphRenderer.swift');
 
-    expect(hero).toContain('auraStrength: CGFloat = 0');
-    // `ease` is the chord attack, so the rim arrives with the chord and not before it.
-    expect(hero).toContain('auraStrength: auraStrength * ease');
-    expect(stage).toContain('auraStrength: auraStrength');
-    // The halo is the same glyphs drawn again, not a shape approximating them.
-    expect(hero).toMatch(/blur: glowRadius \* 2\.4/);
+    expect(glyph).not.toMatch(/strokeWidth|strokeColor|setStroke/);
+    expect(glyph).toContain('contourSteps');
+    expect(glyph).toContain('cos(angle) * width');
+    expect(glyph).toContain('sin(angle) * width');
+    // The fill has to be the final pass or the ring shows through the letters.
+    expect(glyph.lastIndexOf('layers.fill')).toBeGreaterThan(glyph.indexOf('drawContour'));
+  });
+
+  it('builds three glow layers, all from the chord’s own role colour', () => {
+    const glyph = source('FlowChordGlyphRenderer.swift');
+
+    // Diffuse aura, then near glow, then contour, then fill.
+    expect(glyph.indexOf('layers.glowOuter')).toBeLessThan(glyph.indexOf('layers.glowCore'));
+    expect(glyph.indexOf('layers.glowCore')).toBeLessThan(glyph.indexOf('layers.outline'));
+    // The spread stays dim while the core carries the brightness.
+    expect(glyph).toMatch(/glowRadius \* 3\.2/);
+    expect(glyph).toContain('0.34 * intensity');
+  });
+
+  it('keeps the degree label out of the chord name’s way', () => {
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+    const degreeSection = hero.slice(hero.indexOf('let degreeFont'));
+
+    // No glow layers on the secondary label, whatever the chord name gained.
+    expect(degreeSection).not.toContain('FlowChordGlyphRenderer');
+    expect(degreeSection).not.toContain('setShadow');
   });
 
   /**
@@ -165,6 +193,36 @@ describe('non-diatonic aura architecture', () => {
     for (const file of AURA_FILES) {
       expect(code(file)).not.toMatch(/"[^"]*"/);
     }
+  });
+
+  /**
+   * Classic is frozen on its output, not only on its source: the audit defines Classic as
+   * "the current output produced by FrameRenderer.makeImage". So the role palette reaches
+   * Flow through a sidecar, and the segment colour every renderer shares is untouched.
+   */
+  it('leaves the Classic output untouched by sending roles beside the segments', () => {
+    const plan = repoSource('src/lib/exportPlan.ts');
+    const service = repoSource('src/services/videoExport/index.ts');
+    const bridge = source('ChordVideoExportModule.swift');
+    const classic = source('FrameRenderer.swift');
+
+    // The shared segment colour still resolves from harmonic function alone.
+    expect(plan).toContain('colorHex: functionColor[ev.function]');
+    expect(plan).not.toContain('harmonicRoleVisuals');
+    expect(service).toContain("input.visualStyle === 'flow' ? harmonicRoleVisuals");
+    expect(bridge).toContain('@Field var harmonicRoleVisuals: [HarmonicRoleVisualRecord] = []');
+    expect(classic).not.toMatch(/harmonicRole|rolePalette|VisualHarmonicRole/i);
+  });
+
+  it('lets the renderer paint but never choose a colour', () => {
+    const palette = source('FlowHarmonicRolePalette.swift');
+    const glyph = source('FlowChordGlyphRenderer.swift');
+
+    // Colour values live in the TypeScript tokens; Swift only reads what it was sent.
+    expect(palette).not.toMatch(/0x[0-9a-f]{2} \/ 255/i);
+    expect(glyph).not.toMatch(/0x[0-9a-f]{2} \/ 255/i);
+    // With no palette sent, every layer falls back to the segment's own colour.
+    expect(palette).toContain('fallback: UIColor');
   });
 
   it('separates what a chord does from whether it is ordinary, in the tokens', () => {

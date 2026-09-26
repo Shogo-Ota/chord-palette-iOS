@@ -88,8 +88,8 @@ export type ExportPlan = {
    */
   visualNoteEvents?: readonly VisualNoteEvent[];
   /**
-   * Positions in one progression pass whose chord leaves the key, so Flow can lay a
-   * violet aura around them. A separate sidecar rather than a flag on `ExportSegment`
+   * Positions in one progression pass whose chord leaves the key, so Flow can lay an
+   * aura around them. A separate sidecar rather than a flag on `ExportSegment`
    * because the segment payload is shared with the frozen Classic renderer.
    *
    * Indexed by position, not by time: the export tiles the progression end to end, so
@@ -97,7 +97,34 @@ export type ExportPlan = {
    * floating-point start time.
    */
   nonDiatonicCycleIndices?: readonly number[];
+  /**
+   * What each chord in one progression pass is doing, and the colours that say so.
+   *
+   * Flow only, and a sidecar for a hard reason: Classic is frozen on its *output*, not
+   * merely on its source, so `ExportSegment.colorHex` has to keep resolving to the same
+   * harmonic-function colour it always did. Sending the role palette beside the segments
+   * lets Flow paint by role while Classic renders byte-identically.
+   */
+  harmonicRoleVisuals?: readonly HarmonicRoleVisual[];
 };
+
+/** One chord's visual role and palette, positioned within a progression pass. */
+export type HarmonicRoleVisual = Readonly<{
+  /** Position in one progression pass. */
+  cycleIndex: number;
+  /** Role name, carried for diagnostics and tests rather than for drawing. */
+  role: string;
+  /** Glyph fill, "#rrggbb". */
+  main: string;
+  /** Rim around the letters. */
+  outline: string;
+  /** Tight glow hugging the glyphs. */
+  glowCore: string;
+  /** Wide bloom; the renderer applies the alpha. */
+  glowOuter: string;
+  /** Falling blocks and key highlights. */
+  note: string;
+}>;
 
 export type ExportVideoResult = {
   /** file:// URI of the temporary MP4. */

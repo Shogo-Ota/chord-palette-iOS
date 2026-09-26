@@ -17,6 +17,7 @@ final class FlowFrameRenderer: VideoFrameRendering {
 
   private let timeline: FlowVisualNoteTimeline
   private let nonDiatonic: FlowNonDiatonicCycle
+  private let rolePalette: FlowHarmonicRolePalette
   private var cachedKeys: (
     low: Int,
     high: Int,
@@ -26,10 +27,12 @@ final class FlowFrameRenderer: VideoFrameRendering {
 
   init(
     timeline: FlowVisualNoteTimeline = .empty,
-    nonDiatonic: FlowNonDiatonicCycle = .empty
+    nonDiatonic: FlowNonDiatonicCycle = .empty,
+    rolePalette: FlowHarmonicRolePalette = .empty
   ) {
     self.timeline = timeline
     self.nonDiatonic = nonDiatonic
+    self.rolePalette = rolePalette
   }
 
   func makeImage(plan: RenderPlan, timeSec: Double) -> CGImage? {
@@ -70,6 +73,11 @@ final class FlowFrameRenderer: VideoFrameRendering {
         height: height * 0.12
       )
       let keys = keyboardKeys(plan: plan, totalWidth: keyboardRect.width)
+      let aura = auraIntensity(state: state, plan: plan, timeSec: timeSec)
+      let roleColors = rolePalette.colors(
+        cycleIndex: state.currentCycleIndex,
+        fallback: current.color
+      )
       let visibleEvents = timeline.visibleEvents(
         at: timeSec,
         lookAheadSec: FlowPerformanceMotionPreset.fallLeadSec,
@@ -80,17 +88,17 @@ final class FlowFrameRenderer: VideoFrameRendering {
         plan: plan,
         keys: keys,
         segments: plan.segments,
-        fallbackColor: current.color,
+        fallbackColor: roleColors.note,
         frameTimeSec: timeSec,
         fallTopY: height * 0.14,
         keyboardRect: keyboardRect,
         frameHeight: height
       )
-      let aura = auraIntensity(state: state, plan: plan, timeSec: timeSec)
       // Only the soft bloom is drawn here. The violet rim and halo belong to the chord
       // glyphs themselves, so the hero paints them while it owns the text geometry.
       FlowNonDiatonicAuraRenderer.drawBackdrop(
         intensity: aura,
+        color: roleColors.glowOuter,
         cg: cg,
         frameWidth: width,
         frameHeight: height
@@ -103,17 +111,19 @@ final class FlowFrameRenderer: VideoFrameRendering {
         frameWidth: width,
         frameHeight: height,
         nonDiatonic: nonDiatonic,
-        auraStrength: aura.current
+        auraStrength: aura.current,
+        rolePalette: rolePalette
       )
       FlowKeyboardRenderer.draw(
         plan: plan,
         events: visibleEvents,
         keys: keys,
-        fallbackColor: current.color,
+        fallbackColor: roleColors.note,
         frameTimeSec: timeSec,
         rect: keyboardRect,
         frameHeight: height,
         aura: aura,
+        auraColor: roleColors.glowCore,
         cg: cg
       )
     } else {

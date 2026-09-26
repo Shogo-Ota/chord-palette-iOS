@@ -31,7 +31,7 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     expect(bridge).toContain('FlowVisualNoteTimeline(');
     expect(registry).toContain('flowTimeline: FlowVisualNoteTimeline = .empty');
     expect(registry).toMatch(
-      /case \.flow:\s+return FlowFrameRenderer\(timeline: flowTimeline, nonDiatonic: flowNonDiatonic\)/,
+      /case \.flow:\s+return FlowFrameRenderer\(\s+timeline: flowTimeline,\s+nonDiatonic: flowNonDiatonic,\s+rolePalette: flowRolePalette\s+\)/,
     );
     expect(registry).not.toContain('PulseFrameRenderer()');
     expect(registry).toMatch(/case \.classic:\s+return ClassicFrameRendererAdapter\(\)/);
@@ -107,16 +107,20 @@ describe('Phase V4 Flow performance-motion architecture', () => {
     const colors = source('FlowVisualColorResolver.swift');
     const blocks = source('FlowFallingBlockRenderer.swift');
     const keyboard = source('FlowKeyboardRenderer.swift');
-    const flowSources = `${stage}\n${hero}\n${renderer}\n${colors}\n${blocks}\n${keyboard}`;
+    const glyph = source('FlowChordGlyphRenderer.swift');
+    const flowSources = `${stage}\n${hero}\n${renderer}\n${colors}\n${blocks}\n${keyboard}\n${glyph}`;
 
-    expect(hero).toContain('color: segment.color');
-    expect(stage).toContain('segment.color.withAlphaComponent');
+    // Colour still comes from the plan, never invented by a renderer. A role palette may
+    // refine it, and with none sent every layer falls back to the segment's own colour.
+    expect(hero).toContain('main: segment.color');
+    expect(hero).toContain('roleColors');
+    expect(stage).toContain('fallback: segment.color');
     expect(colors).toContain('while lower < upper');
     expect(colors).toContain('return segment.color');
     expect(blocks).toContain('FlowVisualColorResolver.color');
     expect(keyboard).not.toContain('FlowVisualColorResolver.color');
     expect(keyboard).toContain('fallbackColor.withAlphaComponent');
-    expect(renderer).toContain('fallbackColor: current.color');
+    expect(renderer).toContain('fallback: current.color');
     expect(colors).not.toMatch(/bpm|beat|durationSec\s*=|startSec\s*=/i);
     expect(flowSources).not.toMatch(/CIFilter|Gaussian|particle|random/i);
   });
@@ -157,8 +161,10 @@ describe('Phase V4 Flow performance-motion architecture', () => {
       expect(classic).toContain(contract);
       expect(hero).toContain(contract);
     }
+    // The hero still owns the background bloom; the light on the letters moved to the
+    // glyph renderer when the outline became a silhouette rather than a glyph stroke.
     expect(hero).toContain('cg.drawRadialGradient');
-    expect(hero).toContain('cg.setShadow');
+    expect(source('FlowChordGlyphRenderer.swift')).toContain('cg.setShadow');
   });
 
   it('uses the approved icon and product-name horizontal lockup', () => {
