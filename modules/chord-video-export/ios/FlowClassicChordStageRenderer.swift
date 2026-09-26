@@ -44,6 +44,7 @@ enum FlowClassicChordStageRenderer {
       frameHeight: height,
       nonDiatonic: nonDiatonic,
       auraStrength: auraStrength,
+      rolePalette: rolePalette,
       cg: cg
     )
   }
@@ -54,6 +55,7 @@ enum FlowClassicChordStageRenderer {
     frameHeight height: CGFloat,
     nonDiatonic: FlowNonDiatonicCycle,
     auraStrength: CGFloat,
+    rolePalette: FlowHarmonicRolePalette,
     cg: CGContext
   ) {
     guard !state.cycleSegments.isEmpty else { return }

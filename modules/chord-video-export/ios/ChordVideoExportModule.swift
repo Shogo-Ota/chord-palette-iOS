@@ -141,8 +141,10 @@ public class ChordVideoExportModule: Module {
       }
       let nonDiatonic = FlowNonDiatonicCycle(indices: planRecord.nonDiatonicCycleIndices)
       let rolePalette = FlowHarmonicRolePalette(
+        // Last entry wins rather than trapping: a duplicated position is a malformed
+        // payload, and losing a colour is better than crashing an export over it.
         colorsByCycleIndex: Dictionary(
-          uniqueKeysWithValues: planRecord.harmonicRoleVisuals.map {
+          planRecord.harmonicRoleVisuals.map {
             (
               $0.cycleIndex,
               FlowHarmonicRoleColors(
@@ -153,7 +155,8 @@ public class ChordVideoExportModule: Module {
                 note: Self.color(fromHex: $0.note)
               )
             )
-          }
+          },
+          uniquingKeysWith: { _, latest in latest }
         )
       )
       let frameRenderer = VideoFrameRendererRegistry.renderer(
