@@ -1,7 +1,7 @@
 # Chord Palette 1.0.5 Release Candidate
 
 Updated: 2026-09-27
-Version/build: **`1.0.5 (35)` — the current release candidate.** `expo.version` stays at
+Version/build: **`1.0.5 (35)` — submitted for App Review, Waiting for Review.** `expo.version` stays at
 `1.0.5`; `autoIncrement` bumps `expo.ios.buildNumber` on each production build.
 Branch: `feature/diatonic-variation-redesign`
 Build source commit: `6769baa`
@@ -147,13 +147,15 @@ Owner sign-off on TestFlight. Build 34 is the 1.0.5 Release Candidate.
 ## Release steps
 
 1. [x] Commit the feature work and the 1.0.5 version bump
-2. [x] `npx eas-cli build --platform ios --profile production`
-3. [x] Record the produced build number and commit it
-4. [x] `npx eas-cli submit --platform ios --profile production --id 008b2740` — the first
-      attempt was canceled after two hours without reaching TestFlight; a re-run
-      succeeded in four minutes
+2. [x] `npx eas build --profile production --platform ios` — build 35 from commit `6769baa`
+3. [x] Record the produced build number and commit it — `7fe190f`
+4. [x] `npx eas submit --platform ios --latest` — submission `774ed8f6`, uploaded first try.
+      Build 34's first upload attempt had been canceled after two hours without reaching
+      TestFlight and only succeeded on a re-run, so an upload that runs long should be
+      checked against TestFlight rather than against the submission record.
 5. [x] Apple processing completed and the build visible in TestFlight
-6. [ ] Owner device sign-off on build 34 through TestFlight
-7. [x] `1.0.4` is Live and `In review: none`, so `1.0.5` can be created
-8. [ ] Attach build 34, enter What's New and review notes, then submit for App Review
+6. [x] Owner device sign-off on build 35 through TestFlight — PASS, 2026-09-27
+7. [x] `1.0.4` is Live, so `1.0.5` could take build 35
+8. [x] Attach build 35, enter What's New and review notes, then submit for App Review —
+      submitted 2026-09-27, **Waiting for Review**
 9. [ ] Review outcome recorded in `docs/app-store-release-1.0.5.md`

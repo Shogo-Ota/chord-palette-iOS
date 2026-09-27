@@ -1,8 +1,8 @@
 # App Store Release 1.0.5
 
-Status: Build 35 uploaded and replacing build 34 in the version record. **Not submitted for
-review.**
-Prepared: 2026-09-25. Build replaced: 2026-09-27.
+Status: **Waiting for Review.** Build 35 attached to the 1.0.5 version record and submitted
+for App Review.
+Prepared: 2026-09-25. Build replaced and submitted: 2026-09-27.
 Version/build: **`1.0.5 (35)`**, from commit `6769baa`
 
 The version number did not move to 1.0.6 because 1.0.5 was never submitted: the version
@@ -37,9 +37,14 @@ rather than accepting two.
 Build 33 was uploaded on 2026-09-25 and is superseded:
 https://expo.dev/accounts/shogoota/projects/chord-palette/submissions/81868bc5-1bcc-4cc8-866d-a14f57d19458
 
-`1.0.4 (32)` is Live and App Store Connect reports `In review: none`, so the version
-record for `1.0.5` can be created. The owner signed off build 34 on a device through
-TestFlight on 2026-09-26, so every step left is an App Store Connect web operation.
+`1.0.4 (32)` is Live, so the `1.0.5` version record took build 35. The owner signed off
+build 35 on a device through TestFlight on 2026-09-27 — the full checklist passed, covering
+launch, the editor, harmonic mode and palette mode, the Modal Interchange entry, the
+borrowed `Fm` / `G#dim7` / `B♭7` treatments, diatonic legacy Flow, Classic unchanged, video
+export, playback, Pro entitlement and MIDI export — and the version was submitted the same
+day. Nothing is left but the review outcome.
+
+Build 34 was signed off on 2026-09-26 and superseded without shipping.
 
 ## What's New — Japanese
 
@@ -112,21 +117,23 @@ Suggested test path for this update:
 - [x] What's New text drafted in Japanese and English
 - [x] Promotional text drafted in Japanese and English
 - [x] Sandbox purchase and restore verified on Preview build `2e8fa4ff`
-- [x] Production build created — `1.0.5 (34)`
-- [x] Production build uploaded and visible in TestFlight as `1.0.5 (34)`
+- [x] Production build created — `1.0.5 (35)`, superseding `(34)`
+- [x] Production build uploaded and visible in TestFlight as `1.0.5 (35)`
 - [x] Apple processing completed
-- [x] `1.0.4` has left review — it is Live and `In review: none`, so `1.0.5` can be created
-- [ ] Version `1.0.5` created and the build attached in App Store Connect
-- [ ] What's New text entered
-- [ ] Promotional text updated
-- [ ] `palette_pro_monthly` confirmed still available for sale
-- [ ] RevenueCat current Offering confirmed to resolve the monthly package
-- [ ] App Privacy answers re-checked — no new collection ships in this update
-- [ ] Export compliance answered by `ITSAppUsesNonExemptEncryption: false`
-- [ ] Content-rights declaration confirmed
-- [ ] Release option confirmed
-- [ ] Submitted for App Review
+- [x] `1.0.4` has left review — it is Live, so `1.0.5` could take build 35
+- [x] Version `1.0.5` created and build 35 attached in App Store Connect
+- [x] What's New text entered
+- [x] Promotional text updated
+- [x] `palette_pro_monthly` confirmed still available for sale
+- [x] RevenueCat current Offering confirmed to resolve the monthly package
+- [x] App Privacy answers re-checked — no new collection ships in this update
+- [x] Export compliance answered by `ITSAppUsesNonExemptEncryption: false`
+- [x] Content-rights declaration confirmed
+- [x] Release option confirmed
+- [x] **Submitted for App Review — 2026-09-27, Waiting for Review**
 - [ ] Screenshots — optional refresh showing the per-chord style badge. Can be updated
       during review or after release without a new build
-- [x] Owner device sign-off on build 34 through TestFlight — PASS, 2026-09-26
+- [x] Owner device sign-off on build 35 through TestFlight — PASS, 2026-09-27
+- [x] Owner device sign-off on build 34 through TestFlight — PASS, 2026-09-26 (superseded)
+- [ ] Review outcome
 - [ ] Review outcome recorded here
