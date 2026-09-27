@@ -1,3 +1,4 @@
+import { visualAccentFamilyFor } from '@/lib/videoExport/visualAccentFamily';
 import { harmonicVisualToken } from '@/theme/videoHarmonicTokens';
 import type { HarmonicRoleVisual } from '@/services/videoExport/types';
 import {
@@ -37,7 +38,10 @@ export function harmonicRoleVisuals(
     // A chord that reached `neutral` has told us nothing, so it gets the same untouched
     // presentation as a diatonic one instead of a colour standing in for an answer.
     if (role === 'neutral') return entries;
-    entries.push({ cycleIndex, role, ...harmonicVisualToken(role) });
+    // The role is carried through unchanged for diagnostics, but the colours come from the accent
+    // family, which is not always the role's own — see `visualAccentFamilyFor`.
+    const family = visualAccentFamilyFor(role, event.category);
+    entries.push({ cycleIndex, role, ...harmonicVisualToken(family) });
     return entries;
   }, []);
 }

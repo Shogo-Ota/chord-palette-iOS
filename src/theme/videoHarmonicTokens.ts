@@ -1,4 +1,4 @@
-import type { VisualHarmonicRole } from '@/lib/videoExport/visualHarmonicRole';
+import type { VisualAccentFamily } from '@/lib/videoExport/visualAccentFamily';
 
 /**
  * The colours of the *light* around one chord. Never its fill.
@@ -30,18 +30,32 @@ export interface HarmonicVisualToken {
  * white-ish halos that lose their hue at thumbnail size, which is the opposite of the
  * goal.
  *
- * Three families have to be separable at a glance for the system to mean anything: warm for a
- * pull, violet for colour borrowed from elsewhere, amber for passing through. Within the warm
- * group the tension roles step from red toward magenta, which keeps them related — they are all
- * a pull — while staying tellable apart.
+ * Four families have to be separable at a glance for the system to mean anything: warm for a
+ * pull, cyan for an alternate route to the same place, violet for colour borrowed from elsewhere,
+ * amber for passing through. Within the warm group the tension roles step from red toward
+ * magenta, which keeps them related — they are all a pull — while staying tellable apart.
  */
-export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualHarmonicRole, HarmonicVisualToken>> = {
-  // A substitute standing in for the dominant.
+export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, HarmonicVisualToken>> = {
+  // A pull whose light is free to be red, because its body is not.
   tension: {
     accent: '#ff3b5c',
     outline: '#ff7a90',
     glowCore: '#ffb3c0',
     glowOuter: '#ff3b5c',
+  },
+  /**
+   * The substituted route to the tonic.
+   *
+   * Cyan because the body is already dominant red: red is the property of the function, and a
+   * second red on top of it would say nothing the fill had not said. Against the near-black navy
+   * these read as electric rather than pastel, which is what keeps them from looking like a
+   * highlight.
+   */
+  substitute: {
+    accent: '#22d3ee',
+    outline: '#67e8f9',
+    glowCore: '#a5f3fc',
+    glowOuter: '#22d3ee',
   },
   // A dominant aimed at something other than the tonic: the same pull, one step aside.
   secondaryTension: {
@@ -80,6 +94,6 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualHarmonicRole, Harmoni
   },
 };
 
-export function harmonicVisualToken(role: VisualHarmonicRole): HarmonicVisualToken {
-  return HARMONIC_VISUAL_TOKENS[role];
+export function harmonicVisualToken(family: VisualAccentFamily): HarmonicVisualToken {
+  return HARMONIC_VISUAL_TOKENS[family];
 }
