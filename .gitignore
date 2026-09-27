@@ -77,3 +77,5 @@ example
 
 # Scratch frames pulled from exported video during investigation.
 .tmp-frames/
+# Scratch output from local dev servers, builds and one-off probes.
+.tmp-*
