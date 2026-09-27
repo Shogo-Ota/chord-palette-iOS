@@ -1,22 +1,50 @@
 # Chord Palette 1.0.5 Release Candidate
 
-Updated: 2026-09-25
-Version/build: `1.0.5 (34)` — `expo.version` set to `1.0.5`; `autoIncrement` bumps
-`expo.ios.buildNumber` on each production build. Build 33 was superseded because it
-carried the twelve-root `AUGMENTED TRIAD` group, which listed the same four
-pitch-class sets three times each.
-Branch: `feature/per-chord-style-override-latest`
+Updated: 2026-09-27
+Version/build: **`1.0.5 (35)` — the current release candidate.** `expo.version` stays at
+`1.0.5`; `autoIncrement` bumps `expo.ios.buildNumber` on each production build.
+Branch: `feature/diatonic-variation-redesign`
+Build source commit: `6769baa`
 Production build:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/16d2dd20-802f-462e-8767-26009690cdc0
+
+Build 34 is **superseded, not shipped.** It was signed off on a device and uploaded, but it
+was never submitted for review, and it predates the Visual Harmonic Role work that is the
+reason 1.0.5 is worth shipping now. Since the version record was still unsubmitted, the
+build inside it could be replaced rather than the version number moved to 1.0.6.
+
+Superseded build 34:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/008b2740-78d6-4913-86d2-caf88d4d21e9
-Superseded build 33:
+Superseded build 33 — it carried the twelve-root `AUGMENTED TRIAD` group, which listed the
+same four pitch-class sets three times each:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 Submission: [app-store-release-1.0.5.md](app-store-release-1.0.5.md)
 Baseline release: `1.0.4 (32)`, production build
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/ae369dff-1922-4d42-b128-972d832cfdba
 (commit `ed365f1`)
 
-`1.0.4` has since been approved and is Live, and App Store Connect reports
-`In review: none`. The only step left before submission is device sign-off on build 34.
+`1.0.4` is Live and App Store Connect reports `In review: none`, so the `1.0.5` version
+record can take build 35 in place of 34.
+
+## What build 35 adds over build 34
+
+The Visual Harmonic Role system for Flow video export, frozen and accepted on device —
+see [video-harmonic-role-visual-freeze.md](acceptance/video-harmonic-role-visual-freeze.md).
+A chord's body keeps its harmonic-function colour and the light around it carries the
+technique, so a diatonic progression renders exactly as it always did while a borrowed,
+substituted or chromatic chord is marked out.
+
+Also in build 35: the song's harmonic mode is separate from the chord library's palette
+mode, borrowed chords have a front door in the advanced tab, and Roman-numeral degree
+labels follow the chord quality (`iv` rather than `IVm`).
+
+## Production environment
+
+`EXPO_PUBLIC_CHORD_EVOLUTION_ENABLED` is **absent** from the `production` profile, so
+Chord Evolution stays dark, as it did in build 34. The local `.env` that carries the flag
+for development is gitignored and there is no `.easignore`, so it is not part of the
+archive EAS builds from; it was additionally moved aside for the duration of this build so
+the claim needs no inference.
 
 ## Scope — what ships to players
 

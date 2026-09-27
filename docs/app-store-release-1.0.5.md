@@ -1,21 +1,28 @@
 # App Store Release 1.0.5
 
-Status: Release Candidate signed off — ready to submit for review
-Prepared: 2026-09-25
-Version/build: `1.0.5 (34)`
+Status: Build 35 uploaded and replacing build 34 in the version record. **Not submitted for
+review.**
+Prepared: 2026-09-25. Build replaced: 2026-09-27.
+Version/build: **`1.0.5 (35)`**, from commit `6769baa`
 
-Build 33 was uploaded and then superseded. It carried an `AUGMENTED TRIAD` group that
-listed all twelve roots, which is three cards for each of the four augmented
-pitch-class sets — `Caug`, `Eaug` and `A♭aug` are the same three notes. That is a chord
-type dumped into a tab whose other groups all present a technique with a named target,
-so it was pulled rather than shipped. Augmented returns in a later release as a
-voice-leading connector that names the chord it resolves to.
+The version number did not move to 1.0.6 because 1.0.5 was never submitted: the version
+record exists but is still editable, so the build inside it is swapped instead. Build 35
+carries the frozen Visual Harmonic Role work that build 34 predates.
+
 Release candidate detail: [release-1.0.5-checklist.md](release-1.0.5-checklist.md)
 
-Production build:
+Production build 35:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/16d2dd20-802f-462e-8767-26009690cdc0
+
+Superseded build 34 — signed off on a device and uploaded, never submitted:
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/008b2740-78d6-4913-86d2-caf88d4d21e9
 
-Superseded build 33:
+Superseded build 33 — it carried an `AUGMENTED TRIAD` group that listed all twelve roots,
+which is three cards for each of the four augmented pitch-class sets: `Caug`, `Eaug` and
+`A♭aug` are the same three notes. That is a chord type dumped into a tab whose other groups
+all present a technique with a named target, so it was pulled rather than shipped.
+Augmented returns in a later release as a voice-leading connector that names the chord it
+resolves to.
 https://expo.dev/accounts/shogoota/projects/chord-palette/builds/d28bd4eb-1911-4ee4-82f6-b4401f90946c
 
 EAS submission for build 34, uploaded 2026-09-26 and confirmed in TestFlight:
