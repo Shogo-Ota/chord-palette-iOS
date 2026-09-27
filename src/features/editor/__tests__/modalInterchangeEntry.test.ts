@@ -86,18 +86,26 @@ describe('A–D. the advanced tab can place a borrowed chord', () => {
 });
 
 describe('E–F. the video treats a borrowed chord as advanced harmony', () => {
-  it('gives each one the role its function maps to', () => {
+  /**
+   * All five read alike, because the light says one thing about all of them: this chord came
+   * from outside the key. What they do once they are here differs, and that difference is on
+   * screen already in the glyph fill, which the renderer takes from the chord's function.
+   */
+  it('gives every one of them the borrowed-chord light', () => {
     const roles = borrowedCards().map((card) => {
       const [entry] = harmonicRoleVisuals([placed(card)]);
       return `${card.displayName}=${entry?.role}`;
     });
-    expect(roles).toEqual(['Fm=motion', 'Gm=tension', 'B♭=motion', 'A♭=motion', 'E♭=stable']);
+    expect(roles).toEqual(['Fm=color', 'Gm=color', 'B♭=color', 'A♭=color', 'E♭=color']);
   });
 
-  it('paints the borrowed subdominant green/teal', () => {
+  it('lights the borrowed subdominant without recolouring the letters', () => {
     const fm = borrowedCards().find((c) => c.displayName === 'Fm')!;
     const [entry] = harmonicRoleVisuals([placed(fm)]);
-    expect(entry!.main).toBe('#34d399');
+    // Violet light for the borrowing. The glyph itself stays subdominant amber, which the
+    // renderer takes from the segment, so no fill is sent here at all.
+    expect(entry!.accent).toBe('#a855f7');
+    expect(entry).not.toHaveProperty('main');
   });
 });
 

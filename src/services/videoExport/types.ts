@@ -104,16 +104,19 @@ export type HarmonicRoleVisual = Readonly<{
   cycleIndex: number;
   /** Role name, carried for diagnostics and tests rather than for drawing. */
   role: string;
-  /** Glyph fill, "#rrggbb". */
-  main: string;
+  /**
+   * Small identifying marks, "#rrggbb". The rail dot only.
+   *
+   * Not the glyph fill: that stays on the segment's own harmonic-function colour, so `F` and a
+   * borrowed `Fm` read as the same subdominant and only the light tells them apart.
+   */
+  accent: string;
   /** Rim around the letters. */
   outline: string;
   /** Tight glow hugging the glyphs. */
   glowCore: string;
   /** Wide bloom; the renderer applies the alpha. */
   glowOuter: string;
-  /** Falling blocks and key highlights. */
-  note: string;
 }>;
 
 export type ExportVideoResult = {

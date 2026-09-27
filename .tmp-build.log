@@ -1,0 +1,86 @@
+★ eas-cli@24.8.0 is now available.
+To upgrade, run:
+npm install -g eas-cli
+Proceeding with outdated version.
+
+Resolved "development" environment for the build. Learn more: https://docs.expo.dev/eas/environment-variables/#setting-the-environment-for-your-builds
+No environment variables with visibility "Plain text" and "Sensitive" found for the "development" environment on EAS.
+Environment variables loaded from the "development" build profile "env" configuration: SENTRY_DISABLE_AUTO_UPLOAD.
+
+
+
+√ Using remote iOS credentials (Expo server)
+
+Distribution Certificate is not validated for non-interactive builds.
+Skipping Provisioning Profile validation on Apple Servers because we aren't authenticated.
+
+Project Credentials Configuration
+
+Project                   @shogoota/chord-palette
+Bundle Identifier         app.chordpalette
+                          
+Ad Hoc Configuration      
+                          
+Distribution Certificate  
+Serial Number             683185AD433C2D2F2E5CDBDCD90BDAFF
+Expiration Date           Mon, 12 Jul 2027 14:17:26 GMT+0900
+Apple Team                VC4Y4AWS2K (Shogo Ota (Individual))
+Updated                   2 months ago
+                          
+Provisioning Profile      
+Developer Portal ID       ZMJK22286U
+Status                    active
+Expiration                Mon, 12 Jul 2027 14:17:26 GMT+0900
+Apple Team                VC4Y4AWS2K (Shogo Ota (Individual))
+Provisioned devices       - iPhone (UDID: 00008150-001919A02639401C)
+Updated                   2 months ago
+                          
+All credentials are ready to build @shogoota/chord-palette (app.chordpalette)
+
+
+Compressing project files and uploading to EAS Build. Learn more: https://expo.fyi/eas-build-archive
+- Compressing project files
+Your project archive is 197 MB. You can reduce its size and the time it takes to upload by excluding files that are unnecessary for the build process in .easignore file. Learn more: https://expo.fyi/eas-build-archive
+- Uploading to EAS Build (0 / 197 MB)
+√ Uploaded to EAS 7s
+- Computing project fingerprint
+⌛️ Computing the project fingerprint is taking longer than expected...
+⏩ To skip this step, set the environment variable: EAS_SKIP_AUTO_FINGERPRINT=1
+√ Computed project fingerprint
+
+See logs: https://expo.dev/accounts/shogoota/projects/chord-palette/builds/a50c8f67-489d-4923-9c9b-d91a4abd87a4
+
+Waiting for build to complete. You can press Ctrl+C to exit.
+- Waiting for build to complete.
+√ Build finished
+
+  ▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄▄
+  █ ▄▄▄▄▄ █▄▄█▄█ ▄ █ █ █▀▀▄▄▄███▀ ▄  ▀██▀▀▀ █ ▄▄▄▄▄ █
+  █ █   █ █  ██   ▄█   ▀█▄▀  ▄██▄  ▄▄██  █ ▄█ █   █ █
+  █ █▄▄▄█ █▄▄▄█▄▀ ▀▀▀▄▄▄▀ ▄▄▄ █▀ ▀▀█▄█ █ ▀███ █▄▄▄█ █
+  █▄▄▄▄▄▄▄█▄█▄█▄█ █▄▀▄█▄▀ █▄█ █ █ ▀▄▀▄▀ ▀ █ █▄▄▄▄▄▄▄█
+  █ ▄▄ ▀▀▄▀   █▀ ▀▀█ █ ▄█▄  ▄▄ ▄▄▀▄▀▀█▄▀▀█▄█▄▀█▄ ▄▀▄█
+  █▄█▄▄▀ ▄▄▄██▀██▄▄ ██▄▄█ █ ▀█ █▀ █  ▄▄ █▀█ █▄▄ ▄  ██
+  █▄▀ ▀ ▄▄▀ ▀▄█ ▀▀ ▀▀▄▀    ▄▀ ▀█▄▄ ▀▀█▄▄   ▄ █ ▀▄▄▄ █
+  █  ▀█ ▀▄▀█▀▄██▄▄█▀▀█ ▀██▄█  █ █▄▀▀██▀█▄ █▄▄ █▀▀█ ▀█
+  █████▄ ▄█  █ ██ ▄ ▄▀██▀▄▀▀██▀▀▀██▄▄  ▀▄▄▀ ▄█▄  ▄▀ █
+  █▀▄▀▀█▄▄▄▄▀▄▀█▄▄██ ▀█▄▀▄ ▀▀ ▄▀▀▀▀▄▄▄▀ ▀▄▀  ▀▄█▀██▄█
+  █ ▄▄█▄ ▄ ▄▀ █▄█▄ ▄▄  ▄ ▀▄█▄█▄ ▀▀▀▀▄▄ █▄▄▄██ ▀▀ ██▄█
+  █▄█▄  ▄▄▄  ▄▄ █▄▄▀▀ ▀▄▀ ▄▄▄ ▄▄█▄█▀▀▄█ ▄▀  ▄▄▄ ▄▀███
+  █▄▄█  █▄█ █▄▄ ▀█ ▄  ▀   █▄█ ▀█ ██▀██ ▄▀▀▄ █▄█ ▄▄▄ █
+  █▀██   ▄ ▄██▀  █▄▄▀▀▀  ▄ ▄  ▀   ▀▀▄▀██  █▄▄▄▄▄▄█▀▀█
+  ██▀▀▀ ▀▄█▀ ▀▀██▄▀█ █▄█▄ ▄▄▄▄▀█ █▀▄▀ ██▄▄██▀█ █▀▄▀ █
+  █▄▀ █  ▄█▀▀ ▀  █  █ ▀▄█▀█▄ █▀  ▀ █ ▄▄▀▀  ▀█ ██▀█▄▄█
+  █▄  ▀▀▄▄▄  █▀▄▄▀██▀█ ▄ ██ ▄▄█▄ ▀ █▀▄▀▀ █▀█ ▄ ▄███▄█
+  █▀ ▀ ▀█▄▄ ▀ ▄█ ▀▄ █ ▀█▄ ▀ █ █▄ ▄▄▀▄▄█▀▄█▀ ▄▀   ▀▄▀█
+  ██▄▄██ ▄█▄▄  ▄▄ ██ ██ ██ ██ ▄▀█▄ █▀█  ▀▀▄▄▄▄▄ ▀▄▀ █
+  ██ ▀▀█▄▄ ▄█▀▄▀▀▄ ▄ ▀ █ ▄▄▀▀▀█▀▄ ▄▀▀▀ ▄▄▄█ ▀█ ▄▄▄▄██
+  █▄▄▄███▄█▀█  ▄█ ▄  ▀▄█▄ ▄▄▄ █▀▄▄▀▄█▀ █ █▀ ▄▄▄ █ █ █
+  █ ▄▄▄▄▄ ██▄ ▄▄▀▀ ██▄█▀█ █▄█ ▀▀▀█ █▀▄▀ ▀▄▀ █▄█  ▄  █
+  █ █   █ █▀▄█▀█ ██ ▀▀▀▄▄ ▄▄ ▄█ ▀▀▀███ █▀▄▄  ▄▄ ▄█▄██
+  █ █▄▄▄█ █      ▄▀▄▀▀ █ ▄██▄███▀   █▄█▀▄▀▀██▄  ▄▀▄▄█
+  █▄▄▄▄▄▄▄█▄█▄▄████▄█▄▄▄███▄█▄██▄▄▄███▄▄▄▄██▄█▄██▄▄▄█
+
+
+🍏 Open this link on your iOS devices (or scan the QR code) to install the app:
+https://expo.dev/accounts/shogoota/projects/chord-palette/builds/a50c8f67-489d-4923-9c9b-d91a4abd87a4

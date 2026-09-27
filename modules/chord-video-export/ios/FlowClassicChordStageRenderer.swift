@@ -72,7 +72,7 @@ enum FlowClassicChordStageRenderer {
       let opacity: CGFloat = active ? 1 : 0.42
       let radius = height * (active ? 0.0042 : 0.0025)
       let roleColors = rolePalette.colors(cycleIndex: index)
-      let dotColor = roleColors?.main ?? segment.color
+      let dotColor = roleColors?.accent ?? segment.color
       // A ring behind the dot, so the timeline shows where the coloured chords sit even
       // before one of them is sounding.
       if roleColors != nil {

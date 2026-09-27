@@ -3,24 +3,28 @@ import { chordPitchClasses } from '@/data/chordPitchClassSet';
 import { MINOR_SCALE_OFFSETS } from '@/data/minorMode';
 import { MAJOR_SCALE_OFFSETS } from '@/data/music';
 import type { PassingDiminishedKind } from '@/lib/musicTheory';
-import type { ChordCategory, ChordEvent, ChordFunction, KeyMode } from '@/types';
+import type { ChordCategory, ChordEvent, KeyMode } from '@/types';
 
 /**
- * What a chord is *doing*, as the video should make a viewer feel it.
+ * What kind of special a chord is, as the video should make a viewer feel it.
  *
  * A presentation classification, not a theory one. Nothing here decides a pitch, a
- * voicing or a duration; it decides a colour. The music domain keeps its own answer in
- * `ChordEvent.function`, and that answer is not changed to suit a video.
+ * voicing or a duration; it decides the colour of the *light* around a chord. The body of
+ * the glyph is painted from `ChordEvent.function` through the legacy T/SD/D colours, and this
+ * role never overrides it. The two carry different facts on purpose: the fill says what force
+ * the chord applies, the light says why it is worth noticing.
  *
- * The distinction matters most for a passing diminished. `G#dim7 → Am7` is stamped
- * `tonic` in the data, because it borrows the function of the chord it leads to, and a
- * library card is right to show that. On screen it is the opposite of restful: it is the
- * hardest pull in the progression. Both statements are true about different things, so
- * they get different colours rather than one being corrected into the other.
+ * That split is why no role names an ordinary tonic or subdominant. An ordinary chord gets no
+ * light at all — it sends no palette entry and renders exactly as Flow always did — so a role
+ * meaning "this is a plain subdominant" would have nothing left to describe.
+ *
+ * The distinction matters most for a passing diminished. `G#dim7 → Am7` is stamped `tonic` in
+ * the data, because it borrows the function of the chord it leads to, and a library card is
+ * right to show that. Its light is nonetheless the hardest pull in the progression. Both
+ * statements are true about different things, so they live in different places rather than one
+ * being corrected into the other.
  */
 export type VisualHarmonicRole =
-  | 'stable'
-  | 'motion'
   | 'tension'
   | 'secondaryTension'
   | 'leadingTension'
@@ -36,31 +40,36 @@ export interface VisualHarmonicVerdict {
   confidence: VisualHarmonicConfidence;
 }
 
-/** Only what a placed chord already carries. No new theory is inferred. */
+/**
+ * Only what a placed chord already carries. No new theory is inferred.
+ *
+ * `function` is deliberately absent: it paints the glyph body, and deriving the light from it
+ * as well would say the same thing twice while adding a second hue that fights the first.
+ */
 export interface VisualHarmonicInput {
-  function?: ChordFunction;
   category?: ChordCategory;
   /** Library card id, which is how a chord's originating rule is recovered. */
   chordId?: string;
 }
 
 /**
- * Techniques whose whole purpose is the move they make, so the technique outranks the
- * function the chord happens to borrow.
+ * The technique a chord announces, which is the whole of what its light says.
  *
- * `modalInterchange` is deliberately absent. Borrowing from the parallel minor says
- * where a chord came from, not what force it applies: `Fm` in C is subdominant motion
- * and `B♭7` is a dominant pull, and flattening both into one colour would lose that.
+ * `modalInterchange` reads as colour rather than as the force it applies. The force is already
+ * on screen in the fill — a borrowed `Fm` is painted subdominant amber, the same as the `F`
+ * beside it — so the light is free to carry the one thing the fill cannot: that this chord came
+ * from outside the key.
  *
- * `passingDiminished` is absent for a different reason: the category is not specific
- * enough. A diminished seventh can be the dominant of the chord after it or a
- * voice-leading connector into it, and those two do not feel alike, so the rule behind
- * the card decides — see {@link ROLE_BY_DIMINISHED_KIND}.
+ * `passingDiminished` is absent because the category is not specific enough. A diminished
+ * seventh can be the dominant of the chord after it or a voice-leading connector into it, and
+ * those two do not feel alike, so the rule behind the card decides — see
+ * {@link ROLE_BY_DIMINISHED_KIND}.
  */
 const ROLE_BY_TECHNIQUE: Partial<Record<ChordCategory, VisualHarmonicRole>> = {
   secondaryDominant: 'secondaryTension',
   substituteChord: 'tension',
   chromaticMediant: 'color',
+  modalInterchange: 'color',
   augmentedTriad: 'transition',
 };
 
@@ -77,30 +86,12 @@ const ROLE_BY_DIMINISHED_KIND: Record<PassingDiminishedKind, VisualHarmonicRole>
   chromaticPassing: 'transition',
 };
 
-const ROLE_BY_FUNCTION: Record<ChordFunction, VisualHarmonicRole> = {
-  tonic: 'stable',
-  subdominant: 'motion',
-  dominant: 'tension',
-};
-
 /**
- * Categories that still say something once the function is missing.
+ * Resolve what kind of light a chord gets.
  *
- * Knowing a chord was borrowed is real information — it is not the same as knowing
- * nothing — so a borrowed chord with no function reads as colour rather than falling
- * through to the unknown case. `diatonic`, `variation` and `slash` are absent because
- * without a function they genuinely say nothing about what the chord is doing.
- */
-const ROLE_BY_CATEGORY_ALONE: Partial<Record<ChordCategory, VisualHarmonicRole>> = {
-  modalInterchange: 'color',
-};
-
-/**
- * Resolve how a chord should read on screen.
- *
- * Technique first, function second. "What is this chord doing here" is a better guide to
- * how it should feel than "what chord is it", which is why a diminished seventh used as a
- * chromatic approach is not coloured like a diminished seventh in general.
+ * The technique decides, and nothing else does. A chord announcing no technique reaches
+ * `neutral`, which the caller drops rather than draws, so it keeps Flow's original
+ * presentation instead of being tinted by a guess.
  */
 export function resolveVisualHarmonicRole(input: VisualHarmonicInput): VisualHarmonicVerdict {
   if (input.category === 'passingDiminished') {
@@ -115,16 +106,7 @@ export function resolveVisualHarmonicRole(input: VisualHarmonicInput): VisualHar
   const byTechnique = input.category ? ROLE_BY_TECHNIQUE[input.category] : undefined;
   if (byTechnique) return { role: byTechnique, confidence: 'explicit' };
 
-  const byFunction = input.function ? ROLE_BY_FUNCTION[input.function] : undefined;
-  if (byFunction) {
-    // A borrowed chord reaches here on purpose, and lands on the force it applies.
-    return { role: byFunction, confidence: input.category ? 'derived' : 'fallback' };
-  }
-
-  const byCategoryAlone = input.category ? ROLE_BY_CATEGORY_ALONE[input.category] : undefined;
-  if (byCategoryAlone) return { role: byCategoryAlone, confidence: 'derived' };
-
-  // Neither the technique nor the force is known, which is the only case neutral means.
+  // No technique was announced, which is the only case neutral means.
   return { role: 'neutral', confidence: 'fallback' };
 }
 
@@ -193,11 +175,9 @@ export function visualHarmonicRoleInContext(
   const stated = visualHarmonicRoleFor(event);
   if (stated.confidence === 'explicit' || isRoleStyledChord(event)) return stated;
   if (!isBorrowedFromParallelMinor(event, harmonicMode)) return stated;
-  // Borrowing says where the chord came from, so the force it applies still decides the colour.
-  const byFunction = event.function ? ROLE_BY_FUNCTION[event.function] : undefined;
-  return byFunction
-    ? { role: byFunction, confidence: 'derived' }
-    : { role: 'color', confidence: 'derived' };
+  // The same reading a chord gets when it names the borrowing itself, which is the point: the
+  // palette a chord was taken from cannot change how it looks.
+  return { role: 'color', confidence: 'derived' };
 }
 
 export function isBorrowedInContext(event: ChordEvent, harmonicMode: KeyMode): boolean {
@@ -206,11 +186,7 @@ export function isBorrowedInContext(event: ChordEvent, harmonicMode: KeyMode): b
 }
 
 export function visualHarmonicRoleFor(event: ChordEvent): VisualHarmonicVerdict {
-  return resolveVisualHarmonicRole({
-    function: event.function,
-    category: event.category,
-    chordId: event.chordId,
-  });
+  return resolveVisualHarmonicRole({ category: event.category, chordId: event.chordId });
 }
 
 /** Roles for one progression pass, in order. */

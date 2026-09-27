@@ -81,15 +81,19 @@ describe('a stated technique outranks what the pitches suggest', () => {
   });
 });
 
-describe('borrowing colours by the force the chord applies', () => {
-  it('gives a borrowed Fm7 the subdominant role', () => {
-    const event = chord({ rootOffset: 5, suffix: 'm7', function: 'subdominant' });
-    expect(visualHarmonicRoleInContext(event, 'major').role).toBe('motion');
-  });
-
-  it('gives a borrowed Gm7 the dominant role', () => {
-    const event = chord({ rootOffset: 7, suffix: 'm7', function: 'dominant' });
-    expect(visualHarmonicRoleInContext(event, 'major').role).toBe('tension');
+/**
+ * The force a borrowed chord applies is already on screen in the glyph fill, so the light is
+ * free to carry the borrowing itself. That is why every borrowed chord reads the same way here
+ * regardless of function: `Fm7` and `Gm7` differ in the fill, not in the light.
+ */
+describe('borrowing is what the light says', () => {
+  it.each([
+    ['Fm7', 5, 'm7', 'subdominant'],
+    ['Gm7', 7, 'm7', 'dominant'],
+    ['E♭maj7', 3, 'maj7', 'tonic'],
+  ] as const)('gives a borrowed %s the borrowed-chord light', (_name, rootOffset, suffix, fn) => {
+    const event = chord({ rootOffset, suffix, function: fn });
+    expect(visualHarmonicRoleInContext(event, 'major').role).toBe('color');
   });
 });
 
@@ -108,7 +112,7 @@ describe('the palette a chord was taken from does not change how it reads', () =
 
   it.each(routes)('reads the same Fm the same way from $label', ({ event }) => {
     const withFunction = { ...event, function: 'subdominant' as ChordFunction };
-    expect(visualHarmonicRoleInContext(withFunction, 'major').role).toBe('motion');
+    expect(visualHarmonicRoleInContext(withFunction, 'major').role).toBe('color');
     expect(harmonicRoleVisuals([withFunction], 'major')).toHaveLength(1);
   });
 });
@@ -156,6 +160,6 @@ describe('an explicit Modal Interchange chord reads the same in either palette',
       function: 'subdominant',
       modeContext: paletteMode,
     });
-    expect(visualHarmonicRoleInContext(event, 'major').role).toBe('motion');
+    expect(visualHarmonicRoleInContext(event, 'major').role).toBe('color');
   });
 });

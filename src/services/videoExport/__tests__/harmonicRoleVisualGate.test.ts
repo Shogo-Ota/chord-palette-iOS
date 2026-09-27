@@ -84,6 +84,25 @@ describe('harmonic role visual architecture', () => {
     expect(renderer).toContain('fallbackColor: current.color');
   });
 
+  /**
+   * The body of the chord is the harmonic function and nothing else. An advanced chord differs
+   * from an ordinary one by the light around it, so `F` and a borrowed `Fm` have to come out of
+   * the renderer the same amber — a viewer who has learned that amber means subdominant must not
+   * have that taken away by the chord also being special.
+   */
+  it('fills the glyph from the segment, never from the role', () => {
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+    const stage = source('FlowClassicChordStageRenderer.swift');
+    const palette = source('FlowHarmonicRolePalette.swift');
+
+    expect(hero).toContain('fill: segment.color');
+    expect(hero).not.toMatch(/fill:\s*roleColors/);
+    // The palette carries no fill to reach for in the first place.
+    expect(palette).not.toMatch(/\blet main\b/);
+    // Small marks may still identify the chord; the rail dot is the only one.
+    expect(stage).toContain('roleColors?.accent ?? segment.color');
+  });
+
   it('drives the aura from the chord pulse already on screen, with no second clock', () => {
     const renderer = source('FlowFrameRenderer.swift');
     const hero = source('FlowClassicChordHeroRenderer.swift');

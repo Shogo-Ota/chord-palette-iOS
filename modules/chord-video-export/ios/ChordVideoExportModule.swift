@@ -31,11 +31,10 @@ struct VisualNoteEventRecord: Record {
 struct HarmonicRoleVisualRecord: Record {
   @Field var cycleIndex: Int = 0
   @Field var role: String = ""
-  @Field var main: String = "#ffffff"
+  @Field var accent: String = "#ffffff"
   @Field var outline: String = "#ffffff"
   @Field var glowCore: String = "#ffffff"
   @Field var glowOuter: String = "#ffffff"
-  @Field var note: String = "#ffffff"
 }
 
 struct ExportPlanRecord: Record {
@@ -144,11 +143,10 @@ public class ChordVideoExportModule: Module {
             (
               $0.cycleIndex,
               FlowHarmonicRoleColors(
-                main: Self.color(fromHex: $0.main),
+                accent: Self.color(fromHex: $0.accent),
                 outline: Self.color(fromHex: $0.outline),
                 glowCore: Self.color(fromHex: $0.glowCore),
-                glowOuter: Self.color(fromHex: $0.glowOuter),
-                note: Self.color(fromHex: $0.note)
+                glowOuter: Self.color(fromHex: $0.glowOuter)
               )
             )
           },

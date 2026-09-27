@@ -12,57 +12,71 @@ import {
 } from '@/lib/theory/progression/suggestNext';
 import type { ChordCategory, ChordEvent, ChordFunction } from '@/types';
 
-function role(input: {
-  function?: ChordFunction;
-  category?: ChordCategory;
-  chordId?: string;
-}): VisualHarmonicRole {
+function role(input: { category?: ChordCategory; chordId?: string }): VisualHarmonicRole {
   return resolveVisualHarmonicRole(input).role;
 }
 
 /** The id a passing-diminished card carries, which is how its rule is recovered. */
 const dimId = (rule: string) => `passing-diminished-C-${rule}`;
 
-describe('what a chord is doing decides how it reads', () => {
-  it.each<
-    [string, { function?: ChordFunction; category?: ChordCategory; chordId?: string }, VisualHarmonicRole]
-  >([
-    ['Cmaj7 as tonic', { function: 'tonic', category: 'diatonic' }, 'stable'],
-    ['Fmaj7 as subdominant', { function: 'subdominant', category: 'diatonic' }, 'motion'],
-    ['G7 as dominant', { function: 'dominant', category: 'diatonic' }, 'tension'],
-    ['E7 → Am7', { function: 'dominant', category: 'secondaryDominant' }, 'secondaryTension'],
+describe('the technique a chord announces decides its light', () => {
+  it.each<[string, { category?: ChordCategory; chordId?: string }, VisualHarmonicRole]>([
+    ['E7 → Am7', { category: 'secondaryDominant' }, 'secondaryTension'],
     [
       'G#dim7 → Am7',
-      {
-        function: 'dominant',
-        category: 'passingDiminished',
-        chordId: dimId('sharp-five-to-six'),
-      },
+      { category: 'passingDiminished', chordId: dimId('sharp-five-to-six') },
       'leadingTension',
     ],
-    ['D♭7 → Cmaj7', { function: 'dominant', category: 'substituteChord' }, 'tension'],
-    ['E♭maj7 as colour', { function: 'tonic', category: 'chromaticMediant' }, 'color'],
-    ['Caug → F', { function: 'tonic', category: 'augmentedTriad' }, 'transition'],
+    ['D♭7 → Cmaj7', { category: 'substituteChord' }, 'tension'],
+    ['E♭maj7 as colour', { category: 'chromaticMediant' }, 'color'],
+    ['Fm borrowed', { category: 'modalInterchange' }, 'color'],
+    ['Caug → F', { category: 'augmentedTriad' }, 'transition'],
   ])('reads %s as %s', (_label, input, expected) => {
     expect(role(input)).toBe(expected);
   });
 
-  it('falls back to neutral when nothing is known', () => {
+  it('falls back to neutral when no technique is announced', () => {
     expect(resolveVisualHarmonicRole({})).toEqual({ role: 'neutral', confidence: 'fallback' });
   });
 
-  it('reports whether a role was decided by technique or derived from function', () => {
+  it('reports a technique as an explicit decision', () => {
     expect(
       resolveVisualHarmonicRole({
         category: 'passingDiminished',
         chordId: dimId('sharp-one-to-two'),
       }).confidence,
     ).toBe('explicit');
-    expect(
-      resolveVisualHarmonicRole({ category: 'modalInterchange', function: 'subdominant' })
-        .confidence,
-    ).toBe('derived');
-    expect(resolveVisualHarmonicRole({ function: 'tonic' }).confidence).toBe('fallback');
+    expect(resolveVisualHarmonicRole({ category: 'modalInterchange' }).confidence).toBe('explicit');
+  });
+});
+
+/**
+ * The harmonic function is what fills the glyph, so taking the light from it as well would
+ * paint one fact twice and put a second hue on screen that competes with the first.
+ */
+describe('the function never reaches the light', () => {
+  it.each<ChordFunction>(['tonic', 'subdominant', 'dominant'])(
+    'leaves a plain %s chord with no light at all',
+    (fn) => {
+      const event = { function: fn, category: 'diatonic' } as unknown as ChordEvent;
+      expect(harmonicRoleVisuals([event])).toEqual([]);
+    },
+  );
+
+  it('gives every borrowed chord the same light whatever force it applies', () => {
+    const borrowed = (fn: ChordFunction) =>
+      ({ function: fn, category: 'modalInterchange' }) as unknown as ChordEvent;
+    const roles = (['tonic', 'subdominant', 'dominant'] as const).map(
+      (fn) => harmonicRoleVisuals([borrowed(fn)])[0]!.role,
+    );
+    expect(new Set(roles)).toEqual(new Set(['color']));
+  });
+
+  it('is not consulted even when a technique leaves the role undecided', () => {
+    // A diminished card whose rule cannot be recovered stays neutral rather than borrowing
+    // the stamped function to produce a colour.
+    const event = { function: 'dominant', category: 'passingDiminished' } as unknown as ChordEvent;
+    expect(harmonicRoleVisuals([event])).toEqual([]);
   });
 });
 
@@ -91,10 +105,6 @@ describe('a diminished seventh is read by what it does, not by being diminished'
     expect(chromatic).not.toBe(dominant);
   });
 
-  /**
-   * Never guess. A diminished card whose rule cannot be recovered has not said what it is
-   * doing, and defaulting to the loudest role would be the worst available answer.
-   */
   it('falls back to neutral rather than assuming tension', () => {
     expect(resolveVisualHarmonicRole({ category: 'passingDiminished' })).toEqual({
       role: 'neutral',
@@ -103,83 +113,50 @@ describe('a diminished seventh is read by what it does, not by being diminished'
     expect(role({ category: 'passingDiminished', chordId: 'passing-diminished-C-unknown' })).toBe(
       'neutral',
     );
-    // Even a stamped function must not smuggle a role in through the back door.
-    expect(role({ function: 'dominant', category: 'passingDiminished' })).toBe('neutral');
   });
 });
 
-/**
- * Borrowing from the parallel minor says where a chord came from, not what force it
- * applies. `Fm` in C is subdominant motion and `B♭7` is a dominant pull, so the category
- * defers to the function rather than flattening both into one colour.
- */
-describe('a borrowed chord keeps the force it applies', () => {
-  it.each<[string, ChordFunction, VisualHarmonicRole]>([
-    ['IVm (Fm)', 'subdominant', 'motion'],
-    ['♭VII7 (B♭7)', 'dominant', 'tension'],
-    ['♭III (E♭maj7 borrowed)', 'tonic', 'stable'],
-  ])('reads %s as %s', (_label, fn, expected) => {
-    expect(role({ function: fn, category: 'modalInterchange' })).toBe(expected);
-  });
-
-  /**
-   * Knowing a chord was borrowed is real information. With no function to defer to it
-   * reads as colour, because "borrowed from somewhere" is a statement about the chord —
-   * unlike neutral, which means nothing is known at all.
-   */
-  it('reads as colour when the function is missing but the borrowing is known', () => {
-    expect(resolveVisualHarmonicRole({ category: 'modalInterchange' })).toEqual({
-      role: 'color',
-      confidence: 'derived',
-    });
-  });
-});
-
-describe('neutral means nothing is known, and only that', () => {
-  it('is reached with neither a category nor a function', () => {
-    expect(resolveVisualHarmonicRole({})).toEqual({ role: 'neutral', confidence: 'fallback' });
-  });
-
-  /**
-   * These three carry no role of their own: a diatonic chord, a decorated one and a slash
-   * chord are all defined by the function underneath them, so without it there is nothing
-   * to say.
-   */
-  it.each<ChordCategory>(['diatonic', 'variation', 'slash'])(
-    'is reached for %s when the function is missing',
+describe('neutral means no technique was announced, and only that', () => {
+  it.each<ChordCategory>(['diatonic', 'variation', 'slash', 'primaryDominant'])(
+    'is reached for %s',
     (category) => {
       expect(role({ category })).toBe('neutral');
     },
   );
 
-  it('is never reached when a function is available', () => {
-    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
-      for (const category of [undefined, 'diatonic', 'slash', 'modalInterchange'] as const) {
-        expect(role({ function: fn, category })).not.toBe('neutral');
-      }
-    }
+  it('is reached with no category at all', () => {
+    expect(role({})).toBe('neutral');
   });
 });
 
-describe('the palette keeps the five families apart', () => {
-  it('gives every role its own fill', () => {
-    const fills = Object.values(HARMONIC_VISUAL_TOKENS).map((token) => token.main);
-    expect(new Set(fills).size).toBe(fills.length);
+describe('the palette keeps the light families apart', () => {
+  it('gives every role its own accent', () => {
+    const accents = Object.values(HARMONIC_VISUAL_TOKENS).map((token) => token.accent);
+    expect(new Set(accents).size).toBe(accents.length);
   });
 
-  it('never repeats a harmonic-function colour, so the systems stay distinguishable', () => {
+  /**
+   * The light has to be tellable from the fill it sits on, and the fill is always one of the
+   * three function colours. A role reusing one of them would make an advanced chord look like
+   * an ordinary chord of a different function.
+   */
+  it('never repeats a harmonic-function colour', () => {
     const functionColors = new Set(Object.values(functionColor));
     for (const token of Object.values(HARMONIC_VISUAL_TOKENS)) {
-      expect(functionColors.has(token.main)).toBe(false);
+      for (const layer of ['accent', 'outline', 'glowCore', 'glowOuter'] as const) {
+        expect({ layer, collides: functionColors.has(token[layer]) }).toEqual({
+          layer,
+          collides: false,
+        });
+      }
     }
   });
 
   /**
-   * Light is the chord's own colour getting brighter. A fill under a glow of a different
-   * hue reads as two unrelated things at once, so every layer has to share the fill's
-   * dominant channel ordering.
+   * The light layers share a hue with each other — not with the fill, which is the whole
+   * signal. A rim of one hue over a halo of another would read as two effects at once.
    */
-  it('keeps every layer in the same hue family as the fill', () => {
+  it('keeps every light layer in one hue family', () => {
     const rank = (hex: string) => {
       const channels = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
       return channels
@@ -189,8 +166,8 @@ describe('the palette keeps the five families apart', () => {
         .join('');
     };
     for (const [name, token] of Object.entries(HARMONIC_VISUAL_TOKENS)) {
-      const expected = rank(token.main);
-      for (const layer of ['outline', 'glowCore', 'glowOuter', 'note'] as const) {
+      const expected = rank(token.accent);
+      for (const layer of ['outline', 'glowCore', 'glowOuter'] as const) {
         expect({ name, layer, order: rank(token[layer]) }).toEqual({
           name,
           layer,
@@ -200,13 +177,13 @@ describe('the palette keeps the five families apart', () => {
     }
   });
 
-  it('makes the rim and the core brighter than the fill, so they read as light', () => {
+  it('makes the rim and the core brighter than the accent, so they read as light', () => {
     const luma = (hex: string) => {
       const [r, g, b] = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
       return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
     };
     for (const [name, token] of Object.entries(HARMONIC_VISUAL_TOKENS)) {
-      expect({ name, brighter: luma(token.outline) > luma(token.main) }).toEqual({
+      expect({ name, brighter: luma(token.outline) > luma(token.accent) }).toEqual({
         name,
         brighter: true,
       });
@@ -214,19 +191,14 @@ describe('the palette keeps the five families apart', () => {
         name,
         brightest: true,
       });
-      // Notes sit under the chord name in the hierarchy, so they stay calmer than it.
-      expect({ name, calmer: luma(token.note) < luma(token.main) }).toEqual({
-        name,
-        calmer: true,
-      });
     }
   });
 });
 
 /**
  * The palette is also the switch that decides which chords get any of this. An entry means
- * "paint this one by its role"; no entry means "render it exactly as Flow always did".
- * Lighting every chord marks none of them.
+ * "light this one"; no entry means "render it exactly as Flow always did". Lighting every
+ * chord marks none of them.
  */
 describe('the palette handed to the renderer', () => {
   const event = (fn: ChordFunction, category?: ChordCategory, chordId?: string): ChordEvent =>
@@ -268,7 +240,7 @@ describe('the palette handed to the renderer', () => {
       event('subdominant', 'passingDiminished', 'passing-diminished-C-flat-three-to-two'),
     ]);
     expect(entries.map((entry) => entry.role)).toEqual(['leadingTension', 'transition']);
-    expect(entries[0]!.main).not.toBe(entries[1]!.main);
+    expect(entries[0]!.accent).not.toBe(entries[1]!.accent);
   });
 
   it('sends the token colours unchanged, so the renderer makes no colour decisions', () => {
@@ -278,7 +250,15 @@ describe('the palette handed to the renderer', () => {
     expect(entry).toMatchObject(HARMONIC_VISUAL_TOKENS.leadingTension);
   });
 
-  /** A chord that reached neutral has said nothing, so it gets the untouched path too. */
+  /** No entry carries a fill, because the renderer fills from the segment's own colour. */
+  it('never sends a glyph fill', () => {
+    const [entry] = harmonicRoleVisuals([event('dominant', 'secondaryDominant')]);
+    expect(entry).not.toHaveProperty('main');
+    expect(Object.keys(entry!).sort()).toEqual(
+      ['accent', 'cycleIndex', 'glowCore', 'glowOuter', 'outline', 'role'].sort(),
+    );
+  });
+
   it('omits a chord whose role could not be decided', () => {
     expect(harmonicRoleVisuals([event('dominant', 'passingDiminished')])).toEqual([]);
   });
@@ -295,12 +275,11 @@ describe('the palette handed to the renderer', () => {
 });
 
 /**
- * Borrowing says where a chord came from, not what it does, so the colour comes from the
- * function and the borrowing is carried by the outline and the glow alone. `Fm7` in C does a
- * subdominant's job, so it takes the role that subdominant maps to — `motion` — rather than
- * a colour reserved for borrowed chords.
+ * `F` and a borrowed `Fm` are the same subdominant, and the video says so: both are filled
+ * amber, and only `Fm` is lit. The difference a viewer sees is the light, not the colour of
+ * the letters.
  */
-describe('a borrowed chord is coloured by its function and marked by light', () => {
+describe('a borrowed chord is filled like its function and marked by light', () => {
   const borrowed = (fn: ChordFunction): ChordEvent =>
     ({ function: fn, category: 'modalInterchange' }) as unknown as ChordEvent;
 
@@ -310,44 +289,25 @@ describe('a borrowed chord is coloured by its function and marked by light', () 
     }
   });
 
-  it.each<[string, ChordFunction, VisualHarmonicRole]>([
-    ['IVm7 (Fm7)', 'subdominant', 'motion'],
-    ['♭VII7 (B♭7)', 'dominant', 'tension'],
-    ['♭III (E♭maj7 borrowed)', 'tonic', 'stable'],
-  ])('sends %s the token its function maps to', (_label, fn, expectedRole) => {
-    const [entry] = harmonicRoleVisuals([borrowed(fn)]);
-    expect(entry!.role).toBe(expectedRole);
-    expect(entry).toMatchObject(HARMONIC_VISUAL_TOKENS[expectedRole]);
+  it('carries the borrowed-chord light rather than a light standing for its function', () => {
+    const [entry] = harmonicRoleVisuals([borrowed('subdominant')]);
+    expect(entry!.role).toBe('color');
+    expect(entry).toMatchObject(HARMONIC_VISUAL_TOKENS.color);
   });
 
-  it('is never given the fixed borrowed-chord colour when a function is known', () => {
-    for (const fn of ['tonic', 'subdominant', 'dominant'] as const) {
-      const [entry] = harmonicRoleVisuals([borrowed(fn)]);
-      expect(entry!.role).not.toBe('color');
-      expect(entry!.main).not.toBe(HARMONIC_VISUAL_TOKENS.color.main);
-    }
-  });
-
-  /**
-   * The diatonic chord doing the same job sends no entry at all, so it keeps the legacy
-   * function colour. The two systems sit side by side on purpose: legacy for the ordinary
-   * chords, role colour plus light for the ones worth noticing.
-   */
-  it('stands apart from the diatonic chord doing the same job', () => {
-    const [borrowedSubdominant] = harmonicRoleVisuals([borrowed('subdominant')]);
-    expect(borrowedSubdominant!.main).toBe(HARMONIC_VISUAL_TOKENS.motion.main);
+  it('stands apart from the diatonic chord doing the same job only by the light', () => {
     expect(
       harmonicRoleVisuals([
         { function: 'subdominant', category: 'diatonic' } as unknown as ChordEvent,
       ]),
     ).toEqual([]);
+    expect(harmonicRoleVisuals([borrowed('subdominant')])).toHaveLength(1);
   });
 });
 
 /**
- * The suggestion strip is the only way to place a borrowed chord — modal interchange has no
- * card in the 応用 tab — so dropping the category on the way in made it unreachable on any
- * placed event, and the video had no way to know the chord was borrowed at all.
+ * The suggestion strip places borrowed chords too, so dropping the category on the way in made
+ * the borrowing unreachable on any placed event.
  */
 describe('a suggestion keeps where it came from', () => {
   const suggestion = (reason: SuggestionReason, fn: ChordFunction = 'subdominant') =>
@@ -391,7 +351,7 @@ describe('a suggestion keeps where it came from', () => {
     const placed = { id: 'x', ...suggestion('modal') } as ChordEvent;
     const [entry] = harmonicRoleVisuals([placed]);
     expect(entry).toBeDefined();
-    expect(entry!.role).toBe('motion');
+    expect(entry!.role).toBe('color');
   });
 
   it('leaves a diatonic suggestion on the untouched path', () => {

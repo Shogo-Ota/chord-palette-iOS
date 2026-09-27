@@ -49,7 +49,9 @@ enum FlowClassicChordHeroRenderer {
         segment.displayName,
         font: chordFont,
         layers: FlowChordGlyphRenderer.Layers(
-          fill: roleColors.main,
+          // The function colour, same as a diatonic chord would get. Only the three
+          // light layers below say this chord is advanced harmony.
+          fill: segment.color,
           outline: roleColors.outline,
           glowCore: roleColors.glowCore,
           glowOuter: roleColors.glowOuter

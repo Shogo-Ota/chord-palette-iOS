@@ -1,15 +1,16 @@
 import UIKit
 
-/// The four colours the video paints one chord with, all sharing a hue.
+/// The colours of the light around one chord. Never its fill.
 ///
-/// Light is the chord's own colour getting brighter, never a second colour layered over
-/// it: a magenta chord under a green glow reads as two unrelated things at once.
+/// The glyph body stays on the segment's own harmonic-function colour, so a borrowed `Fm`
+/// is the same subdominant amber as the `F` beside it and only the light says it was
+/// borrowed. These three share a hue with each other, deliberately not with the fill.
 struct FlowHarmonicRoleColors {
-  let main: UIColor
+  /// Small identifying marks: the rail dot, and nothing large.
+  let accent: UIColor
   let outline: UIColor
   let glowCore: UIColor
   let glowOuter: UIColor
-  let note: UIColor
 }
 
 /// Role colours per position in one progression pass.
@@ -18,9 +19,10 @@ struct FlowHarmonicRoleColors {
 /// same position is the same chord on every loop.
 ///
 /// A position with no entry is a diatonic chord, and `colors` returns nil for it so every
-/// renderer takes its original path: the segment's own harmonic-function colour, Flow's
-/// original bloom, and no outline. Classic never receives this palette at all, because its
-/// accepted output is frozen.
+/// renderer takes its original path: Flow's original bloom and no outline. The
+/// harmonic-function colour is not part of that distinction — every chord is filled with it,
+/// advanced or not. Classic never receives this palette at all, because its accepted output is
+/// frozen.
 struct FlowHarmonicRolePalette {
   static let empty = FlowHarmonicRolePalette(colorsByCycleIndex: [:])
 

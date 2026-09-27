@@ -958,7 +958,7 @@ export default function EditorScreen() {
             />
 
             <Text style={styles.subHint}>
-              パレット — 表示するコード一覧（曲のキーは変わりません）
+              パレット — 借用(Modal Interchange)など他の調のコードを表示
             </Text>
             <SegTrack
               options={[
