@@ -115,8 +115,10 @@ export type HarmonicRoleVisual = Readonly<{
   outline: string;
   /** Tight glow hugging the glyphs. */
   glowCore: string;
-  /** Wide bloom; the renderer applies the alpha. */
+  /** Wide bloom around the glyphs; the renderer applies the alpha. */
   glowOuter: string;
+  /** The wash behind the chord — hero bloom and frame backdrop only. */
+  aura: string;
 }>;
 
 export type ExportVideoResult = {

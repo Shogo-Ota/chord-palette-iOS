@@ -95,7 +95,7 @@ final class FlowFrameRenderer: VideoFrameRendering {
       if let roleColors {
         FlowRoleAuraRenderer.drawBackdrop(
           emphasis: emphasis,
-          color: roleColors.glowOuter,
+          color: roleColors.aura,
           cg: cg,
           frameWidth: width,
           frameHeight: height

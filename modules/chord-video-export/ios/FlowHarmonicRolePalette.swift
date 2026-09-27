@@ -11,6 +11,9 @@ struct FlowHarmonicRoleColors {
   let outline: UIColor
   let glowCore: UIColor
   let glowOuter: UIColor
+  /// The wash behind the chord. Deeper than `glowOuter`, because it covers most of the frame
+  /// and the chord itself has to stay the brightest thing in it.
+  let aura: UIColor
 }
 
 /// Role colours per position in one progression pass.

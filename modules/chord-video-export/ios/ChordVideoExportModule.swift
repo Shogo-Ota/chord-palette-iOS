@@ -35,6 +35,7 @@ struct HarmonicRoleVisualRecord: Record {
   @Field var outline: String = "#ffffff"
   @Field var glowCore: String = "#ffffff"
   @Field var glowOuter: String = "#ffffff"
+  @Field var aura: String = "#ffffff"
 }
 
 struct ExportPlanRecord: Record {
@@ -146,7 +147,8 @@ public class ChordVideoExportModule: Module {
                 accent: Self.color(fromHex: $0.accent),
                 outline: Self.color(fromHex: $0.outline),
                 glowCore: Self.color(fromHex: $0.glowCore),
-                glowOuter: Self.color(fromHex: $0.glowOuter)
+                glowOuter: Self.color(fromHex: $0.glowOuter),
+                aura: Self.color(fromHex: $0.aura)
               )
             )
           },

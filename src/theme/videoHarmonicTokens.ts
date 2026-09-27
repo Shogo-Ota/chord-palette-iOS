@@ -20,8 +20,18 @@ export interface HarmonicVisualToken {
   outline: string;
   /** Tight glow hugging the glyphs. The brightest value in the set. */
   glowCore: string;
-  /** Wide, low-opacity bloom. Same hue, spread out; alpha is applied at draw time. */
+  /** Wide, low-opacity bloom around the glyphs. Alpha is applied at draw time. */
   glowOuter: string;
+  /**
+   * The wash behind the chord: the hero's bloom and the frame's backdrop, nothing else.
+   *
+   * Separate from `glowOuter` because the two are read at very different sizes. Light hugging
+   * the letters can be bright without taking the frame over, while the same value spread across
+   * most of the screen stops being an accent and becomes the subject — which is how a borrowed
+   * `Fm` came to read as a violet chord rather than an amber one. Deeper here, then, so the
+   * background can say "something is different about this chord" without saying it loudest.
+   */
+  aura: string;
 }
 
 /**
@@ -42,6 +52,7 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#ff7a90',
     glowCore: '#ffb3c0',
     glowOuter: '#ff3b5c',
+    aura: '#ff3b5c',
   },
   /**
    * The substituted route to the tonic.
@@ -56,6 +67,9 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#67e8f9',
     glowCore: '#a5f3fc',
     glowOuter: '#22d3ee',
+    // Deeper than the glow, so the letters keep the electric cyan and the room behind them
+    // only turns faintly teal.
+    aura: '#0891b2',
   },
   // A dominant aimed at something other than the tonic: the same pull, one step aside.
   secondaryTension: {
@@ -63,6 +77,7 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#ff93b0',
     glowCore: '#ffc2d4',
     glowOuter: '#ff5e8a',
+    aura: '#ff5e8a',
   },
   // The hardest pull: a chromatic approach resolving by semitone. The brightest family.
   leadingTension: {
@@ -70,6 +85,7 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#ff7bf3',
     glowCore: '#ffb5f8',
     glowOuter: '#f038e8',
+    aura: '#f038e8',
   },
   // Colour from outside the key, with no destination demanded.
   color: {
@@ -77,6 +93,9 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#c99bff',
     glowCore: '#e0c4ff',
     glowOuter: '#a855f7',
+    // The one family tuned away from its glow. A borrowed chord is still doing a plain
+    // subdominant's job, and an amber `Fm` under a bright violet sky stopped looking amber.
+    aura: '#4c1d95',
   },
   // Passing through. Warm and forward-leaning rather than tense.
   transition: {
@@ -84,6 +103,7 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#fcd34d',
     glowCore: '#fde996',
     glowOuter: '#fbbf24',
+    aura: '#fbbf24',
   },
   // Nothing is known about this chord's role, so the caller draws no light at all.
   neutral: {
@@ -91,6 +111,7 @@ export const HARMONIC_VISUAL_TOKENS: Readonly<Record<VisualAccentFamily, Harmoni
     outline: '#c2cdda',
     glowCore: '#dde4ec',
     glowOuter: '#94a3b8',
+    aura: '#94a3b8',
   },
 };
 

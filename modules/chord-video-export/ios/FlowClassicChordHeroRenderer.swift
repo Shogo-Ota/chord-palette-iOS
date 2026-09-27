@@ -34,7 +34,7 @@ enum FlowClassicChordHeroRenderer {
       cg,
       center: CGPoint(x: width / 2, y: height * 0.33),
       radius: width * (roleColors == nil ? 0.62 : 0.74),
-      color: roleColors?.glowOuter ?? segment.color,
+      color: roleColors?.aura ?? segment.color,
       alpha: (roleColors == nil ? 0.16 + 0.14 * pulse : 0.21 + 0.17 * pulse) * ease
     )
 

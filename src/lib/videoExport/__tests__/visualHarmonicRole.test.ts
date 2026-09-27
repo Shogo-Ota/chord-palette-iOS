@@ -143,7 +143,7 @@ describe('the palette keeps the light families apart', () => {
   it('never repeats a harmonic-function colour', () => {
     const functionColors = new Set(Object.values(functionColor));
     for (const token of Object.values(HARMONIC_VISUAL_TOKENS)) {
-      for (const layer of ['accent', 'outline', 'glowCore', 'glowOuter'] as const) {
+      for (const layer of ['accent', 'outline', 'glowCore', 'glowOuter', 'aura'] as const) {
         expect({ layer, collides: functionColors.has(token[layer]) }).toEqual({
           layer,
           collides: false,
@@ -167,7 +167,7 @@ describe('the palette keeps the light families apart', () => {
     };
     for (const [name, token] of Object.entries(HARMONIC_VISUAL_TOKENS)) {
       const expected = rank(token.accent);
-      for (const layer of ['outline', 'glowCore', 'glowOuter'] as const) {
+      for (const layer of ['outline', 'glowCore', 'glowOuter', 'aura'] as const) {
         expect({ name, layer, order: rank(token[layer]) }).toEqual({
           name,
           layer,
@@ -192,6 +192,38 @@ describe('the palette keeps the light families apart', () => {
         brightest: true,
       });
     }
+  });
+
+  /**
+   * The wash behind the chord covers most of the frame, so it can never be the brightest thing
+   * in it. Equal is allowed — most families have nothing to gain from a separate value — but
+   * brighter would put the background ahead of the chord.
+   */
+  it('never lets the backdrop outshine the glow around the letters', () => {
+    const luma = (hex: string) => {
+      const [r, g, b] = [1, 3, 5].map((offset) => parseInt(hex.slice(offset, offset + 2), 16));
+      return 0.2126 * r! + 0.7152 * g! + 0.0722 * b!;
+    };
+    for (const [name, token] of Object.entries(HARMONIC_VISUAL_TOKENS)) {
+      expect({ name, calmer: luma(token.aura) <= luma(token.glowOuter) }).toEqual({
+        name,
+        calmer: true,
+      });
+    }
+  });
+
+  /**
+   * Only the two families that needed it were tuned. Every other backdrop stays exactly the
+   * colour it was before the field existed, so their frames are unchanged.
+   */
+  it('leaves the untuned families on the colour they already had', () => {
+    const tuned = ['color', 'substitute'];
+    for (const [name, token] of Object.entries(HARMONIC_VISUAL_TOKENS)) {
+      if (tuned.includes(name)) continue;
+      expect({ name, aura: token.aura }).toEqual({ name, aura: token.glowOuter });
+    }
+    expect(HARMONIC_VISUAL_TOKENS.color.aura).toBe('#4c1d95');
+    expect(HARMONIC_VISUAL_TOKENS.substitute.aura).toBe('#0891b2');
   });
 });
 
@@ -255,7 +287,7 @@ describe('the palette handed to the renderer', () => {
     const [entry] = harmonicRoleVisuals([event('dominant', 'secondaryDominant')]);
     expect(entry).not.toHaveProperty('main');
     expect(Object.keys(entry!).sort()).toEqual(
-      ['accent', 'cycleIndex', 'glowCore', 'glowOuter', 'outline', 'role'].sort(),
+      ['accent', 'aura', 'cycleIndex', 'glowCore', 'glowOuter', 'outline', 'role'].sort(),
     );
   });
 

@@ -103,6 +103,25 @@ describe('harmonic role visual architecture', () => {
     expect(stage).toContain('roleColors?.accent ?? segment.color');
   });
 
+  /**
+   * The backdrop and the light on the letters are different values, because the same colour that
+   * reads as a rim reads as a takeover once it fills the frame. Keeping them one value is what
+   * made a borrowed `Fm` look violet rather than amber.
+   */
+  it('takes the backdrop from the aura and the letters from the glow', () => {
+    const renderer = source('FlowFrameRenderer.swift');
+    const hero = source('FlowClassicChordHeroRenderer.swift');
+    const glyph = source('FlowChordGlyphRenderer.swift');
+
+    expect(renderer).toContain('color: roleColors.aura');
+    expect(hero).toContain('color: roleColors?.aura ?? segment.color');
+    // The glyph layers are the one place the aura must not reach.
+    expect(glyph).not.toMatch(/\blayers\.aura\b/);
+    for (const layer of ['layers.outline', 'layers.glowCore', 'layers.glowOuter']) {
+      expect(glyph).toContain(layer);
+    }
+  });
+
   it('drives the aura from the chord pulse already on screen, with no second clock', () => {
     const renderer = source('FlowFrameRenderer.swift');
     const hero = source('FlowClassicChordHeroRenderer.swift');
